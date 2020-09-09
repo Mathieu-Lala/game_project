@@ -1,0 +1,30 @@
+/.github/workflows/job.yaml
+/cmake
+/doc
+    /UML.uml
+/asset
+    /config
+    /shaders
+    /font
+    /locales
+    /img
+    /models
+    /audio
+/src
+    /Engine
+        /include
+        /src
+            /Event.cpp
+    /Application
+        /Example
+            /src
+                /main.cpp
+        /GameProject
+            /src
+                /main.cpp
+/tests
+    /unit-tests
+        /regular
+        /constexpr
+    /benchmark
+    /fuzz
