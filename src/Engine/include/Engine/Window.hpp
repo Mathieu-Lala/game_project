@@ -10,7 +10,9 @@
 
 #include <spdlog/spdlog.h>
 
-#include <iostream>
+//#include <iostream>
+
+#include "Engine/Event.hpp"
 
 namespace engine {
 
@@ -18,7 +20,8 @@ class Window {
 public:
 
     Window(glm::ivec2 &&size, const char *title) :
-        m_handle   { ::glfwCreateWindow(size.x, size.y, title, nullptr, nullptr) }
+        m_handle        { ::glfwCreateWindow(size.x, size.y, title, nullptr, nullptr) },
+        m_ui_context    { ImGui::CreateContext() }
     {
         spdlog::info("Engine::Window instanciated");
         if (!m_handle)
@@ -26,25 +29,29 @@ public:
 
         setActive();
 
-        m_ui_context = ImGui::CreateContext();
-
         if (!ImGui_ImplGlfw_InitForOpenGL(m_handle, true))
-            throw int{};
+            throw std::logic_error("Engine::Window initialization glfw failed");
 
-        if (!ImGui_ImplOpenGL3_Init("#version 130")) // GLSL version
-            throw int{};
+        if (!ImGui_ImplOpenGL3_Init("#version 130")) // todo : handle GLSL version
+            throw std::logic_error("Engine::Window initialization opengl3 failed");
 
         // Vsync
         glfwSwapInterval(1);
 
+        s_instance = this;
+
+        glfwSetWindowCloseCallback(m_handle, callback_eventClose);
+
         // todo
-        glfwSetWindowCloseCallback(m_handle, [](GLFWwindow *window){ std::cout << "closing\n"; });
-        glfwSetWindowSizeCallback(m_handle, [](GLFWwindow *, int, int){ std::cout << "resize\n"; });
-        glfwSetWindowPosCallback(m_handle, [](GLFWwindow*, int, int){ std::cout << "moved\n"; });
-        glfwSetKeyCallback(m_handle, [](GLFWwindow *, int, int, int, int){ std::cout << "key pressed\n"; });
-        glfwSetMouseButtonCallback(m_handle, [](GLFWwindow *, int, int, int){ std::cout << "mouse pressed\n"; });
-        glfwSetCursorPosCallback(m_handle, [](GLFWwindow *, double, double){ std::cout << "mouse moved\n"; });
-        // missing joysticks
+//        glfwSetWindowSizeCallback(m_handle, [](GLFWwindow *, int, int){ std::cout << "resize\n"; });
+//        glfwSetWindowPosCallback(m_handle, [](GLFWwindow*, int, int){ std::cout << "moved\n"; });
+
+        glfwSetKeyCallback(m_handle, callback_eventKeyBoard);
+
+//        glfwSetMouseButtonCallback(m_handle, [](GLFWwindow *, int, int, int){ std::cout << "mouse pressed\n"; });
+//        glfwSetCursorPosCallback(m_handle, [](GLFWwindow *, double, double){ std::cout << "mouse moved\n"; });
+
+        // missing joysticks / mouse wheel
     }
 
     ~Window()
@@ -82,11 +89,62 @@ public:
         render();
     }
 
-//private:
+    Event getNextEvent()
+    {
+        ::glfwPollEvents();
+
+        if (!m_events.empty()) {
+            auto nextEvent = m_events.front();
+            m_events.erase(m_events.begin());
+            return nextEvent;
+
+        } else {
+            const auto nextTick = std::chrono::steady_clock::now();
+            const auto timeElapsed = nextTick - m_lastTick;
+            m_lastTick = nextTick;
+
+            return TimeElapsed{ timeElapsed };
+        }
+    }
+
+private:
+
+    static Window *s_instance;
+
+    std::chrono::steady_clock::time_point m_lastTick{ std::chrono::steady_clock::now() };
 
     ::GLFWwindow *m_handle{ nullptr };
     ::ImGuiContext *m_ui_context{ nullptr };
 
+    std::vector<Event> m_events;
+
+    static
+    auto callback_eventClose(GLFWwindow *) -> void
+    {
+        s_instance->m_events.emplace_back(CloseWindow{});
+    }
+
+    static
+    auto callback_eventKeyBoard(GLFWwindow *, int key, int scancode, int action, int mods) -> void
+    {
+        Key k{
+            .alt        = !!(mods & GLFW_MOD_ALT),
+            .control    = !!(mods & GLFW_MOD_CONTROL),
+            .system     = !!(mods & GLFW_MOD_SUPER),
+            .shift      = !!(mods & GLFW_MOD_SHIFT),
+            .scancode   = scancode,
+            .key        = key
+        };
+        switch (action) {
+        case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<Key>{ std::move(k) }); break;
+        case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<Key>{ std::move(k) }); break;
+        //case GLFW_REPEAT: s_instance->m_events.emplace_back(???{ key }); break;
+        default: std::abort(); break;
+        }
+    };
+
 };
+
+Window *Window::s_instance{ nullptr };
 
 } // namespace engine
