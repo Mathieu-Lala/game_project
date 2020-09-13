@@ -9,10 +9,13 @@ macro(run_conan)
 
   conan_add_remote(NAME bincrafters URL https://api.bintray.com/conan/bincrafters/public-conan)
 
+# TODO : handle properly libstd, compiler ...
+
   conan_cmake_run(
     BASIC_SETUP
     NO_OUTPUT_DIRS
     CMAKE_TARGETS
+    SKIP_STD
 
     PROFILE default
     CONANFILE conanfile.txt
@@ -22,7 +25,7 @@ macro(run_conan)
 
     SETTINGS
     cppstd=20
-    compiler.libcxx=libstdc++11
+#    compiler.libcxx=libstdc++11
   )
 
 endmacro()

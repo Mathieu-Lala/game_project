@@ -35,9 +35,11 @@
 .vs
 .vscode
 .idea
+CMakeSettings.json
 
 # Output directory
 build
+out
 
 # Generated files
 imgui.ini

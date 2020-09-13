@@ -12,11 +12,8 @@ glew/2.1.0
 # Mathematics
 glm/0.9.9.5@g-truc/stable
 
-# Logging libary
+# Logging libary, spdlog use {fmt} so we can use CONAN_PKG::fmt
 spdlog/1.6.0
-
-# Until C++20 std::format
-fmt/6.0.0@bincrafters/stable
 
 [generators]
 cmake
