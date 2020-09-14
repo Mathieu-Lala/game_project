@@ -7,17 +7,14 @@ macro(download_imgui file)
   endif()
 endmacro()
 
-message(
-  STATUS "Downloading from https://raw.githubusercontent.com/ocornut/imgui")
+message(STATUS "Downloading from https://github.com/ocornut/imgui")
 download_imgui(imgui_impl_glfw.cpp)
 download_imgui(imgui_impl_glfw.h)
 download_imgui(imgui_impl_opengl3.cpp)
 download_imgui(imgui_impl_opengl3.h)
 
-add_library(
-  engine
-  src/Engine/Window.cpp ${CMAKE_BINARY_DIR}/download/imgui/imgui_impl_glfw.cpp
-  ${CMAKE_BINARY_DIR}/download/imgui/imgui_impl_opengl3.cpp)
+add_library(engine ${CMAKE_BINARY_DIR}/download/imgui/imgui_impl_glfw.cpp
+                   ${CMAKE_BINARY_DIR}/download/imgui/imgui_impl_opengl3.cpp)
 target_include_directories(engine PUBLIC include
                                          ${CMAKE_BINARY_DIR}/download/imgui)
 target_link_libraries(

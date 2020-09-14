@@ -87,7 +87,7 @@ public:
         render();
     }
 
-    Event getNextEvent()
+    auto getNextEvent() -> Event
     {
         ::glfwPollEvents();
 

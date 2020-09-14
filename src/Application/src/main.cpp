@@ -1,6 +1,41 @@
 #include <fstream>
 
 #include <Engine/Core.hpp>
+#include <Engine/Shader.hpp>
+
+constexpr auto VERTEX_SHADER =
+R"GLSL(#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+
+out vec3 ourColor;
+
+void main()
+{
+    gl_Position = vec4(aPos, 1.0);
+    ourColor = aColor;
+}
+)GLSL";
+
+constexpr auto FRAGMENT_SHADER =
+R"GLSL(#version 330 core
+out vec4 FragColor;
+
+in vec3 ourColor;
+
+void main()
+{
+    FragColor = vec4(ourColor, 1.0f);
+}
+)GLSL";
+
+constexpr
+float VERTICES[] = {
+    // positions          // colors
+    0.5f,  -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  // bottom right
+    -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,  // bottom left
+    0.0f,   0.5f, 0.0f,   0.0f, 0.0f, 1.0f   // top
+};
 
 int main()
 {
@@ -9,6 +44,25 @@ int main()
     auto &window = holder.instance->window(glm::ivec2{ 400, 400 }, "Hello world #1");
 
     std::vector<engine::Event> eventsProcessed{ engine::TimeElapsed{} };
+
+    engine::Shader shader{ VERTEX_SHADER, FRAGMENT_SHADER };
+
+    unsigned int VBO;
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES), VERTICES, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
+    glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     bool show_demo_window = true;
     while (window->isOpen()) {
@@ -52,9 +106,16 @@ int main()
             glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            shader.use();
+            glBindVertexArray(VAO);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+
         });
 
     }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
 
     for (const auto &event : eventsProcessed) {
         std::visit(engine::overloaded{
