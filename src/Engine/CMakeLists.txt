@@ -28,6 +28,7 @@ target_link_libraries(
          CONAN_PKG::glew
          CONAN_PKG::glm
          CONAN_PKG::spdlog
-         CONAN_PKG::imgui)
+         CONAN_PKG::imgui
+         CONAN_PKG::nlohmann_json)
 
 target_compile_definitions(engine PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLEW)

@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include <Engine/Core.hpp>
 
 int main()
@@ -56,10 +58,14 @@ int main()
 
     for (const auto &event : eventsProcessed) {
         std::visit(engine::overloaded{
-            [](const auto &event_obj) { spdlog::info("Event: {}", event_obj.name); },
+            [](const auto &event_obj) { spdlog::trace("Event: {}", event_obj.name); },
             [](const std::monostate &) { spdlog::info("monorail"); } },
             event);
     }
+
+    nlohmann::json serialized(eventsProcessed);
+    std::ofstream f{ "recorded_events.json" };
+    f << serialized;
 
     // otherwise the singleton will be destroy after the main -> dead signal
     holder.instance.reset(nullptr);

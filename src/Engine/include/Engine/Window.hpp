@@ -10,8 +10,6 @@
 
 #include <spdlog/spdlog.h>
 
-//#include <iostream>
-
 #include "Engine/Event.hpp"
 
 namespace engine {
@@ -20,7 +18,7 @@ class Window {
 public:
 
     Window(glm::ivec2 &&size, const char *title) :
-        m_handle        { ::glfwCreateWindow(size.x, size.y, title, nullptr, nullptr) },
+        m_handle        { ::glfwCreateWindow(size.x, size.y, title, nullptr, nullptr) }, // todo : handle monitor
         m_ui_context    { ImGui::CreateContext() }
     {
         spdlog::info("Engine::Window instanciated");
@@ -48,10 +46,10 @@ public:
 
         glfwSetKeyCallback(m_handle, callback_eventKeyBoard);
 
-//        glfwSetMouseButtonCallback(m_handle, [](GLFWwindow *, int, int, int){ std::cout << "mouse pressed\n"; });
-//        glfwSetCursorPosCallback(m_handle, [](GLFWwindow *, double, double){ std::cout << "mouse moved\n"; });
+        glfwSetMouseButtonCallback(m_handle, callback_eventMousePressed);
+        glfwSetCursorPosCallback(m_handle, callback_eventMouseMoved);
 
-        // missing joysticks / mouse wheel
+        // todo : joysticks / mouse wheel / fullscreen / request_focus...
     }
 
     ~Window()
@@ -138,10 +136,28 @@ private:
         switch (action) {
         case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<Key>{ std::move(k) }); break;
         case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<Key>{ std::move(k) }); break;
-        //case GLFW_REPEAT: s_instance->m_events.emplace_back(???{ key }); break;
+        //case GLFW_REPEAT: s_instance->m_events.emplace_back(???{ key }); break; // todo
         default: std::abort(); break;
         }
     };
+
+    static
+    auto callback_eventMousePressed(GLFWwindow *window, int button, int action, int /* mods // todo */) -> void
+    {
+        double x, y;
+        ::glfwGetCursorPos(window, &x, &y);
+        switch (action) {
+        case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<MouseButton>{ button, { x, y } }); break;
+        case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<MouseButton>{ button, { x, y } }); break;
+        default: std::abort(); break;
+        }
+    }
+
+    static
+    auto callback_eventMouseMoved(GLFWwindow *, double x, double y) -> void
+    {
+        s_instance->m_events.emplace_back(Moved<Mouse>{ x, y });
+    }
 
 };
 
