@@ -201,7 +201,7 @@ private:
     }
 
     static
-    auto callback_eventKeyBoard(GLFWwindow *window, int key, int scancode, int action, int mods) -> void
+    auto callback_eventKeyBoard(GLFWwindow *, int key, int scancode, int action, int mods) -> void
     {
         if (s_instance->m_eventMode == RECORD) {
             Key k{
@@ -222,7 +222,7 @@ private:
     };
 
     static
-    auto callback_eventMousePressed(GLFWwindow *window, int button, int action, int mods) -> void
+    auto callback_eventMousePressed(GLFWwindow *window, int button, int action, int) -> void
     {
         if (s_instance->m_eventMode == RECORD) {
             double x, y;
