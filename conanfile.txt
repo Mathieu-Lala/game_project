@@ -3,20 +3,20 @@
 imgui/1.73@bincrafters/stable
 
 # Window / Cursor / Event libary
-#glfw/3.3.2
-#
-## OpenGL loader
-#glew/2.1.0
-##glad/0.1.29@bincrafters/stable
-#
-## Mathematics
-#glm/0.9.9.5@g-truc/stable
-#
-## Json libary
-#nlohmann_json/3.9.0
-#
-## Logging libary, spdlog use {fmt} so we can use CONAN_PKG::fmt
-#spdlog/1.6.0
+glfw/3.3.2
+
+# OpenGL loader
+glew/2.1.0
+#glad/0.1.29@bincrafters/stable
+
+# Mathematics
+glm/0.9.9.5@g-truc/stable
+
+# Json libary
+nlohmann_json/3.9.0
+
+# Logging libary, spdlog use {fmt} so we can use CONAN_PKG::fmt
+spdlog/1.6.0
 
 [options]
 fmt:header_only=True
