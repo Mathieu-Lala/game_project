@@ -45,4 +45,7 @@ case "$(uname)" in
   ;;
 esac
 
+# for conan
+export PATH="$PATH:$HOME/.local/bin"
+
 cmake $argument .
