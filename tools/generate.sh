@@ -45,7 +45,10 @@ case "$(uname)" in
   ;;
 esac
 
-# for conan
-export PATH="$PATH:$HOME/.local/bin"
+if [[ $(uname) =~ "Linux" ]]; then
+  export PATH="$PATH:$HOME/.local/bin"
+  export CC="gcc-10"
+  export CXX="g++-10"
+fi
 
 cmake $argument .
