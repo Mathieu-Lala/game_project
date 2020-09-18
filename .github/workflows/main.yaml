@@ -2,9 +2,6 @@ name: C++ CMake Build
 
 on: [push]
 
-env:
-  PATH: "$PATH:$HOME/.local/bin"
-
 jobs:
   build:
     strategy:
