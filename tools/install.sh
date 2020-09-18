@@ -25,9 +25,9 @@ case $key in
 esac
 done
 
-export PATH="$PATH:$HOME/.local/bin"
+#export PATH="$PATH:$HOME/.local/bin"
 
 python -m pip install --upgrade pip --user --verbose
 if [ -f requirements.txt ]; then pip install -r requirements.txt --user --verbose; fi
 
-conan --version || exit 1
+#conan --version || exit 1
