@@ -25,9 +25,10 @@ case $key in
 esac
 done
 
-#export PATH="$PATH:$HOME/.local/bin"
+if [[ $(uname) =~ "Linux" ]]; then
+    sudo apt update & > /dev/null
+    sudo apt install -y gcc-10 g++-10
+fi
 
 python -m pip install --upgrade pip --user --verbose
 if [ -f requirements.txt ]; then pip install -r requirements.txt --user --verbose; fi
-
-#conan --version || exit 1
