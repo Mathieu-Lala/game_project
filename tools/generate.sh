@@ -51,4 +51,6 @@ if [[ $(uname) =~ "Linux" ]]; then
   export CXX="g++-10"
 fi
 
+export CONAN_SYSREQUIRES_MODE=enabled
+
 cmake $argument .

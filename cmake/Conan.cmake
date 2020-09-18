@@ -12,7 +12,7 @@ macro(run_conan)
 # TODO : handle properly libstd, compiler ...
 
   if(UNIX)
-    set(EXTRA_SETTINGS compiler.libcxx=libstdc++11)
+    set(EXTRA_SETTINGS "compiler.libcxx=libstdc++11")
   else()
     set(EXTRA_SETTINGS)
   endif()
