@@ -58,3 +58,9 @@ jobs:
         shell: bash
         run: ./tools/build.sh \
           --build_type ${{ matrix.build_type }} \
+
+      # TODO :
+        # add steps 'launch' : start the application during one frame
+        # add steps 'unit-tests'
+        # add steps 'benchmark'
+        # ..
