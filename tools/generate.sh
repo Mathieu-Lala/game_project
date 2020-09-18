@@ -29,6 +29,11 @@ case $key in
     shift
     shift
     ;;
+    --arch)
+    arch="$2"
+    shift
+    shift
+    ;;
     *)
     shift
     ;;

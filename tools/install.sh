@@ -32,3 +32,7 @@ fi
 
 python -m pip install --upgrade pip --user --verbose
 if [ -f requirements.txt ]; then pip install -r requirements.txt --user --verbose; fi
+
+if [[ $(uname) =~ "Linux" ]]; then
+    conan profile update settings.compiler.libcxx=libstdc++11 default
+fi

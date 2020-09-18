@@ -53,3 +53,8 @@ jobs:
         run: ./tools/generate.sh \
           --build_type ${{ matrix.build_type }} \
           --arch ${{ matrix.arch }}
+
+      - name: Build
+        shell: bash
+        run: ./tools/build.sh \
+          --build_type ${{ matrix.build_type }} \
