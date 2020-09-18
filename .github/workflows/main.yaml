@@ -49,6 +49,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2
 
-#      - name: Configure
-#        shell: bash
-#        run: cmake -B build/${{ matrix.build_type }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -A ${{ matrix.arch }} .
+      - name: Configure
+        shell: bash
+        run: cmake -B build/${{ matrix.build_type }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -A ${{ matrix.arch }} .
