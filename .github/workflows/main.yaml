@@ -36,7 +36,7 @@ jobs:
           python-version: '3.x'
           architecture: ${{ matrix.arch }}
 
-      -name: Hello
+      - name: Hello
         shell: bash
         run: echo "Hello World! ${{ matrix.os }} ${{ matrix.build_type }} ${{ matrix.arch }}"
 
