@@ -46,8 +46,8 @@ jobs:
         with:
           path: ~/.conan
           key: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2-${{ hashFiles('**/conanfile.txt') }}
-            restore-keys: |
-              ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2
+          restore-keys: |
+            ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2
 
 #      - name: Configure
 #        shell: bash
