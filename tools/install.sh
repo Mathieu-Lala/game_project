@@ -26,4 +26,6 @@ esac
 done
 
 export PATH="$PATH:$HOME/.local/bin"
-python -m pip install --user -r requirements.txt >/dev/null
+
+python -m pip install --upgrade pip --user
+if [ -f requirements.txt ]; then pip install -r requirements.txt --user; fi
