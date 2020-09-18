@@ -32,12 +32,34 @@ struct Moved {
     Source source;
 };
 
-
 // Event Type
+
+/// Window Related
 
 struct CloseWindow {
     constexpr static std::string_view name{ "CloseWindow" };
     constexpr static std::array<std::string_view, 0> elements{};
+};
+
+struct OpenWindow {
+    constexpr static std::string_view name{ "OpenWindow" };
+    constexpr static std::array<std::string_view, 0> elements{};
+};
+
+struct ResizeWindow {
+    constexpr static std::string_view name{ "ResizeWindow" };
+    constexpr static auto elements =
+        std::to_array<std::string_view>({ "width", "height" });
+    int width;
+    int height;
+};
+
+struct MoveWindow { // note : could use Moved<Window> ?
+    constexpr static std::string_view name{ "MoveWindow" };
+    constexpr static auto elements =
+        std::to_array<std::string_view>({ "x", "y" });
+    int x;
+    int y;
 };
 
 struct TimeElapsed {
@@ -45,6 +67,8 @@ struct TimeElapsed {
     constexpr static std::array elements{ std::string_view{ "elapsed" } };
     std::chrono::steady_clock::duration elapsed;
 };
+
+/// Input Related
 
 struct Key {
     constexpr static std::string_view name{ "Key" };
@@ -74,10 +98,14 @@ struct MouseButton {
     Mouse mouse;
 };
 
+//
 
 using Event = std::variant<
     std::monostate,
+    OpenWindow,
     CloseWindow,
+    ResizeWindow,
+    MoveWindow,
     TimeElapsed,
     Pressed<Key>,
     Released<Key>,

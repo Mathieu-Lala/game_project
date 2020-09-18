@@ -1,6 +1,6 @@
 #pragma once
 
-// note : ugly af
+// note : black box : engine::Event -> Json and Json -> engine::Event
 // do not include this file by yourself
 
 #include "Engine/Utility.hpp" // for overloaded

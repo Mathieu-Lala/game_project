@@ -1,40 +1,49 @@
 #pragma once
 
-#include <GL/glew.h>
+#include "Engine/Graphics.hpp"
 
 namespace engine {
 
 class Shader {
 public:
 
-    Shader(const char *vertexCode, const char *fragmentCode)
+    Shader(const char *vertexCode, const char *fragmentCode) :
+        ID  { ::glCreateProgram() }
     {
-        auto vertex = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex, 1, &vertexCode, NULL);
-        glCompileShader(vertex);
+        shader_<GL_VERTEX_SHADER> vertex{ vertexCode };
+        shader_<GL_FRAGMENT_SHADER> fragment{ fragmentCode };
 
-        auto fragment = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment, 1, &fragmentCode, NULL);
-        glCompileShader(fragment);
-
-        ID = glCreateProgram();
-        glAttachShader(ID, vertex);
-        glAttachShader(ID, fragment);
-        glLinkProgram(ID);
-
-        glDeleteShader(vertex);
-        glDeleteShader(fragment);
+        ::glAttachShader(ID, vertex.ID);
+        ::glAttachShader(ID, fragment.ID);
+        ::glLinkProgram(ID);
     }
 
     ~Shader()
     {
-        glDeleteProgram(ID);
+        ::glDeleteProgram(ID);
     }
 
-    auto use() -> void { glUseProgram(ID); }
+    auto use() -> void { ::glUseProgram(ID); }
 
 private:
     unsigned int ID;
+
+    // helper class for consitancy
+    template<std::size_t type>
+    struct shader_ {
+
+        shader_(const char *source) :
+            ID  { ::glCreateShader(type) }
+        {
+            ::glShaderSource(ID, 1, &source, nullptr);
+            ::glCompileShader(ID);
+        }
+
+        ~shader_() { ::glDeleteShader(ID); }
+
+        unsigned int ID;
+
+    };
 
 };
 
