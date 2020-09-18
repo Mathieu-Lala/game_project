@@ -41,13 +41,13 @@ jobs:
         run: echo "Hello World! ${{ matrix.os }} ${{ matrix.build_type }} ${{ matrix.arch }}"
 
 # https://github.com/marketplace/actions/cache
-     - name: Conan cache
-       uses: actions/cache@v2
-       with:
-         path: ~/.conan
-         key: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2-${{ hashFiles('**/conanfile.txt') }}
-         restore-keys: |
-           ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2
+      - name: Conan cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.conan
+          key: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2-${{ hashFiles('**/conanfile.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2
 
 #      - name: Configure
 #        shell: bash
