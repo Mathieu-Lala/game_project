@@ -27,5 +27,7 @@ done
 
 export PATH="$PATH:$HOME/.local/bin"
 
-python -m pip install --upgrade pip --user
-if [ -f requirements.txt ]; then pip install -r requirements.txt --user; fi
+python -m pip install --upgrade pip --user --verbose
+if [ -f requirements.txt ]; then pip install -r requirements.txt --user --verbose; fi
+
+conan --version || exit 1
