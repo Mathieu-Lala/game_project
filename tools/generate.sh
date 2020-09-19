@@ -62,4 +62,4 @@ fi
 export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
 
-cmake $argument .
+cmake $argument -DWARNINGS_AS_ERRORS=OFF .
