@@ -50,13 +50,10 @@ case "$(uname)" in
   ;;
 esac
 
-if [[ $(uname) =~ "Ubuntu" ]]; then
+if [[ $(uname -a) =~ "Ubuntu" ]]; then
   export CC="gcc-10"
   export CXX="g++-10"
 fi
-
-$CC --version
-$CXX --version
 
 export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
