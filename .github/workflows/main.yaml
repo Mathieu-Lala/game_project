@@ -40,13 +40,13 @@ jobs:
         shell: bash
         run: ./tools/install.sh
 
-# https://github.com/marketplace/actions/cache
-      - name: Conan cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.conan
-          key: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2-${{ hashFiles('**/conanfile.txt') }}
-          restore-keys: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2
+## https://github.com/marketplace/actions/cache
+#      - name: Cache Build
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.conan
+#          key: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2-${{ hashFiles('**/conanfile.txt') }}
+#          restore-keys: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2
 
       - name: Generate
         shell: bash
