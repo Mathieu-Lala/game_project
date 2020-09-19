@@ -48,7 +48,7 @@ jobs:
           key: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2-${{ hashFiles('**/conanfile.txt') }}
           restore-keys: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v2
 
-      - name: Configure
+      - name: Generate
         shell: bash
         run: ./tools/generate.sh \
           --build_type ${{ matrix.build_type }} \
