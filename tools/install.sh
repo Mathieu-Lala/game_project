@@ -31,7 +31,7 @@ done
 
 if [[ $(uname -a) =~ "Ubuntu" ]]; then
     sudo apt update & > /dev/null
-    sudo apt install -y gcc-10 g++-10
+    sudo apt install -y gcc-10 g++-10 pkg-config
 fi
 
 python -m pip install --upgrade pip --user
