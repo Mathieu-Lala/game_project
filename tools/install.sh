@@ -25,13 +25,13 @@ case $key in
 esac
 done
 
-if [[ $(uname) =~ "Linux" ]]; then
+if [[ $(uname -a) =~ "Ubuntu" ]]; then
     sudo apt update & > /dev/null
     sudo apt install -y gcc-10 g++-10
 fi
 
-python -m pip install --upgrade pip --user --verbose
-if [ -f requirements.txt ]; then pip install -r requirements.txt --user --verbose; fi
+python -m pip install --upgrade pip --user
+if [ -f requirements.txt ]; then pip install -r requirements.txt --user; fi
 
 export PATH="$PATH:$HOME/.local/bin"
 
