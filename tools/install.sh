@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# This script will install the system requirements for this project
+#
+
 usage() {
     cat << EOF
 Usage: $0

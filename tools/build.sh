@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# This script will build the target from the cmake project
+#
+
 build_type=Debug
 
 usage() {

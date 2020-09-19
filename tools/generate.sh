@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# This script will generate the cache for the cmake project
+#
+
 build_type=Debug
 arch=x64
 
@@ -43,9 +47,9 @@ done
 argument="-B build/$build_type -DCMAKE_BUILD_TYPE=$build_type"
 
 case "$(uname)" in
-"Linux" | "Darwin")
+"Linux")
   ;;
-*)
+*) # Windows
    argument="$argument -A $arch"
   ;;
 esac
