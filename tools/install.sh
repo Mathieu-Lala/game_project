@@ -35,7 +35,9 @@ if [ -f requirements.txt ]; then pip install -r requirements.txt --user --verbos
 
 export PATH="$PATH:$HOME/.local/bin"
 
+conan profile new game_project --detect
 if [[ $(uname) =~ "Linux" ]]; then
-    conan profile new game_project --detect
     conan profile update settings.compiler.libcxx=libstdc++11 game_project
+    conan profile update settings.compiler=gcc game_project
+    conan profile update settings.compiler.version=10 game_project
 fi

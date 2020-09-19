@@ -1,6 +1,6 @@
 # game_project
 
-![CMake](https://github.com/Pierre-Genest/game_project/workflows/C++%20CMake%20Build/badge.svg)
+![Build](https://github.com/Pierre-Genest/game_project/workflows/C++%20CMake%20Build/badge.svg)
 
 KMU fall's semester game project
 
@@ -16,7 +16,7 @@ $> ./tools/generate.sh
 $> ./tools/build.sh
 
 # Run the executable
-$> ./build/src/Application/app
+$> ./build/(Debug|RelWithDebInfo|Release|MinSizeRel)/src/Application/app
 ```
 
 ## Acknowledgement

@@ -50,12 +50,12 @@ case "$(uname)" in
   ;;
 esac
 
-if [[ $(uname) =~ "Linux" ]]; then
-  export PATH="$PATH:$HOME/.local/bin"
+if [[ $(uname) =~ "Ubuntu" ]]; then
   export CC="gcc-10"
   export CXX="g++-10"
 fi
 
+export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
 
 cmake $argument .
