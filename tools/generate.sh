@@ -62,4 +62,6 @@ fi
 export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
 
+pkg-config --cflags --libs gl
+
 cmake $argument -DWARNINGS_AS_ERRORS=OFF .
