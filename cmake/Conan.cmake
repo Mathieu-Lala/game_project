@@ -15,7 +15,7 @@ macro(run_conan)
     CMAKE_TARGETS
     SKIP_STD
 
-    PROFILE default
+    PROFILE game_project
     CONANFILE conanfile.txt
     BUILD missing
     INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
