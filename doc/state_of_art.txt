@@ -1,8 +1,6 @@
 Target Platform:
-    Fedora32
     Ubuntu
     Windows10
-    MacOS
 
 Languages:
     Engine: C++20
@@ -28,11 +26,13 @@ Libaries:
 
     Maths: GLM (https://glm.g-truc.net/0.9.9/api/index.html)
 
+    # Not needed => game in 2D
     3D assets manager: ? Assimp ? (https://github.com/assimp/assimp)
 
+    # Not needed => not in network
     Network: ? boost ?
 
-    Audio: ? portaudio ?
+    Audio: ? portaudio ? irrlang ?
 
     Utility:
         enum: magic_enum (https://github.com/Neargye/magic_enum)

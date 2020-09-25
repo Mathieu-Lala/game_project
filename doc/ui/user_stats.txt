@@ -1,0 +1,16 @@
+Pour chaque joueur dans un coin de l ecran
+
+kkkkkkk==========------ 379
+kkkkkkkxxxxx........... 302
+kkkkkkk *** ### """ ooo
+kkkkkkk *** ### """ ooo
+kkkkkkk *** ### """ ooo
+
+k = icon de champ
+= = hp
+- = hp manquant
+*#"o = spell
+379 = hp numeric
+302 = point de competence dispo
+x = xp
+. = xp manquant
