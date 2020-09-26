@@ -47,14 +47,6 @@ float VERTICES[] = {
      0.0f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f   // top
 };
 
-struct Joysticks {
-
-    int id;
-//    float *axes;
-//    unsigned char *buttons;
-
-};
-
 namespace engine {
 
 class Core {
@@ -132,7 +124,7 @@ public:
     {
         std::ifstream ifs(filepath);
         const auto j = nlohmann::json::parse(ifs);
-        setPendingEvents(j.get<std::vector<engine::Event>>());
+        setPendingEvents(j.get<std::vector<Event>>());
     }
 
     auto getElapsedTime()
@@ -149,22 +141,20 @@ public:
         switch (m_eventMode) {
         case RECORD: {
 
-// TODO : not working (with Pierre's controller)
-            for (auto &joy : m_joysticks) {
-                int count;
-                auto axes = glfwGetJoystickAxes(joy.id, &count);
-                for (auto i = 0; i != count; i++)
-                    spdlog::warn("{} => axes[{}] = {}", joy.id, i, axes[i]);
-                auto buttons = glfwGetJoystickHats(joy.id, &count);
-                for (auto i = 0; i != count; i++)
-                    if (buttons[i])
-                        spdlog::warn("{} => buttons[{}] = {}", joy.id, i, buttons[i]);
+            updateJoysticks();
+
+            // 1. poll the core event
+            if (!m_events.empty()) {
+                const auto event = m_events.front();
+                m_events.erase(m_events.begin());
+                return event;
             }
 
+            // 2. poll the window event
             const auto event = m_window->getNextEvent();
-            if (event)
-                return *event;
+            if (event) return *event;
 
+            // 3. send elapsed time
             return TimeElapsed{ getElapsedTime() };
 
         } break;
@@ -204,7 +194,7 @@ public:
         if (ac == 2) setPendingEventsFromFile(av[1]);
         spdlog::warn("Engine::Window is in {} mode", ac == 2 ? "playback" : "record");
 
-        std::vector<Event> eventsProcessed{ engine::TimeElapsed{} };
+        std::vector<Event> eventsProcessed{ TimeElapsed{} };
 
 
         Shader shader{ VERTEX_SHADER, FRAGMENT_SHADER };
@@ -232,12 +222,9 @@ public:
         while (m_window->isOpen()) {
 
             const auto event = getNextEvent();
-            // note : first frame of draw is 'skipped' because of the sleep in record mode
 
-            // todo : update joysticks here
-
-            std::visit(engine::overloaded{
-                [](engine::TimeElapsed &prev, const engine::TimeElapsed &next) { prev.elapsed += next.elapsed; },
+            std::visit(overloaded{
+                [](TimeElapsed &prev, const TimeElapsed &next) { prev.elapsed += next.elapsed; },
                 [&](const auto &, const std::monostate &) {},
                 // event in playback mode will be saved twice = bad !
                 [&](const auto &, const auto &next) { eventsProcessed.push_back(next); } },
@@ -249,17 +236,25 @@ public:
             bool keyPressed = false;
 
             // note : user defined function ? or engine related ?
-            std::visit(engine::overloaded{
-                [&](const engine::OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
-                [&](const engine::CloseWindow &) { m_window->close(); },
-                [&](const engine::ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); },
-                [&](const engine::TimeElapsed &) { timeElapsed = true; },
-                [&](const engine::Pressed<engine::Key> &) { keyPressed = true; },
+            std::visit(overloaded{
+                [&](const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
+                [&](const CloseWindow &) { m_window->close(); },
+                [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); },
+                [&](const TimeElapsed &) { timeElapsed = true; },
+                [&](const Pressed<Key> &) { keyPressed = true; },
+                [&](const Connected<Joysticks> &j) { m_joysticks.push_back(j.source); },
+                [&](const Disconnected<Joysticks> &j) {
+                    if (auto it = std::find_if(m_joysticks.begin(), m_joysticks.end(),
+                        [id = j.source.id](auto &i){ return i.id == id; }); it != m_joysticks.end()) {
+
+                        m_joysticks.erase(it);
+                    }
+                },
                 [ ](const auto &) {} },
                 event);
 
             if (keyPressed) {
-                const auto keyEvent = std::get<engine::Pressed<engine::Key>>(event);
+                const auto keyEvent = std::get<Pressed<Key>>(event);
                 if (keyEvent.source.key == GLFW_KEY_ESCAPE) // todo : abstract glfw keyboard
                     m_window->close();
             }
@@ -323,6 +318,26 @@ private:
 
     std::vector<Joysticks> m_joysticks;
 
+    auto updateJoysticks() -> void
+    {
+        for (auto &joy : m_joysticks) {
+            int count;
+            auto axes = glfwGetJoystickAxes(joy.id, &count);
+            for (auto i = 0; i != count; i++)
+                spdlog::warn("{} => axes[{}] = {}", joy.id, i, axes[i]);
+
+//            auto hats = glfwGetJoystickHats(joy.id, &count);
+//            for (auto i = 0; i != count; i++)
+//                if (hats[i])
+//                    spdlog::warn("{} => hats[{}] = {}", joy.id, i, hats[i]);
+
+            auto buttons = glfwGetJoystickButtons(joy.id, &count);
+            for (auto i = 0; i != count; i++)
+                if (buttons[i])
+                    spdlog::warn("{} => buttons[{}] = {}", joy.id, i, buttons[i]);
+        }
+    }
+
 //
 // Event Handling
 //
@@ -332,6 +347,7 @@ private:
     EventMode m_eventMode{ RECORD };
 
     std::vector<Event> m_eventsPlayback;
+    std::vector<Event> m_events;
 
 //
 // Event Callbacks
@@ -341,20 +357,10 @@ private:
     auto callback_eventJoystickConnectionDisconnection(int id, int event) -> void
     {
         if (s_instance->m_eventMode == RECORD) {
-            spdlog::warn("controller id = {}, event: {}", id, event);
-            switch (event) {
-            case GLFW_CONNECTED: s_instance->m_joysticks.emplace_back(id); break;
-            case GLFW_DISCONNECTED:
-                if (auto it = std::find_if(
-                    s_instance->m_joysticks.begin(),
-                    s_instance->m_joysticks.end(),
-                    [&id](auto &i){ return i.id == id; });
-                    it != s_instance->m_joysticks.end()) {
-
-                    s_instance->m_joysticks.erase(it);
-                } break;
-            default: std::abort();  break;
-            }
+            if (event == GLFW_CONNECTED)
+                s_instance->m_events.push_back(Connected<Joysticks>{ { id } });
+            else
+                s_instance->m_events.push_back(Disconnected<Joysticks>{ { id } });
         }
     }
 

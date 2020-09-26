@@ -32,6 +32,20 @@ struct Moved {
     Source source;
 };
 
+template<typename Source>
+struct Connected {
+    constexpr static std::string_view name{ "Connected" };
+    constexpr static std::array elements{ std::string_view{ "source" } };
+    Source source;
+};
+
+template<typename Source>
+struct Disconnected {
+    constexpr static std::string_view name{ "Disconnected" };
+    constexpr static std::array elements{ std::string_view{ "source" } };
+    Source source;
+};
+
 // Event Type
 
 /// Window Related
@@ -98,23 +112,42 @@ struct MouseButton {
     Mouse mouse;
 };
 
+struct Joysticks {
+    constexpr static std::string_view name{ "Joysticks" };
+    constexpr static auto elements = std::to_array<std::string_view>({ "id" });
+    int id;
+//    float *axes;
+//    unsigned char *buttons;
+
+};
+
 // EventType
 
 using Event = std::variant<
     std::monostate,
+
     OpenWindow,
     CloseWindow,
     ResizeWindow,
     MoveWindow,
+
     TimeElapsed,
+
     Pressed<Key>,
     Released<Key>,
+
+    Moved<Mouse>,
+    Pressed<MouseButton>,
+    Released<MouseButton>,
+
+    Connected<Joysticks>,
+    Disconnected<Joysticks>
+
+// todo :
 //    Pressed<JoystickButton>,
 //    Released<JoystickButton>,
 //    Moved<JoystickAxis>,
-    Moved<Mouse>,
-    Pressed<MouseButton>,
-    Released<MouseButton>
+
 >;
 
 } // namespace engine
