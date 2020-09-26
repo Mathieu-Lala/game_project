@@ -1,23 +1,61 @@
 # game_project
 
-![Build](https://github.com/Pierre-Genest/game_project/workflows/C++%20CMake%20Build/badge.svg)
-
 KMU fall's semester game project
+
+## Installing
+
+```sh
+# Cloning the repository
+$> git clone git@github.com:Pierre-Genest/game_project.git
+
+# Installing the required environment (partial)
+$> ./tools/install.sh
+```
+
+### Requirements
+
+* Unix systems
+
+    * g++>=10
+    * libstdc++11
+    * cmake>=3.9.0
+    * python>=3.8
+    * conan>=1.29
+
+* Windows
+
+    * Visual Studio 2019>=16.7
+    * conan>=1.29
+
+The build require an internet connection (for the download of dependencies)
+
+### Recommended environment
+
+* Unix systems
+
+    * [ccache](https://ccache.dev/)
+    * [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
+
+* Windows
+
+    * [VS conan extension](https://blog.conan.io/2019/06/17/Conan-extension-for-Visual-Studio.html)
 
 ## Build and Run
 
-```sh
-# Unix command
+![Build](https://github.com/Pierre-Genest/game_project/workflows/C++%20CMake%20Build/badge.svg)
 
-# Generate the cmake project
-$> ./tools/generate.sh
+* Unix systems
 
-# Build all the target
-$> ./tools/build.sh
+    ```sh
+    # Generate the cmake project
+    $> ./tools/generate.sh
 
-# Run the executable
-$> ./build/(Debug|RelWithDebInfo|Release|MinSizeRel)/src/Application/app
-```
+    # Build all the target
+    $> ./tools/build.sh
+
+    # Run the executable
+    $> ./build/(Debug|RelWithDebInfo|Release|MinSizeRel)/src/Application/app
+    ```
 
 ## Acknowledgement
 

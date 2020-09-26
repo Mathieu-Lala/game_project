@@ -1,9 +1,10 @@
-#pragma once
+// note : black box :
+//  engine::Event -> Json
+//  Json -> engine::Event
 
-// note : black box : engine::Event -> Json and Json -> engine::Event
-// do not include this file by yourself
-
+#include <nlohmann/json.hpp>
 #include "Engine/Utility.hpp" // for overloaded
+#include "Engine/Event.hpp"
 
 namespace nlohmann {
 
@@ -191,11 +192,13 @@ void choose_variant(const nlohmann::json &j, std::variant<std::monostate, T...> 
     (try_variant.template operator()<T>(), ...);
 }
 
+inline
 void from_json(const nlohmann::json &j, Event &event)
 {
     choose_variant(j, event);
 }
 
+inline
 void to_json(nlohmann::json &j, const Event &event)
 {
     std::visit(overloaded{

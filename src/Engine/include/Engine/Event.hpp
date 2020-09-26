@@ -68,7 +68,7 @@ struct TimeElapsed {
     std::chrono::steady_clock::duration elapsed;
 };
 
-/// Input Related
+/// Device Related
 
 struct Key {
     constexpr static std::string_view name{ "Key" };
@@ -98,7 +98,7 @@ struct MouseButton {
     Mouse mouse;
 };
 
-//
+// EventType
 
 using Event = std::variant<
     std::monostate,
@@ -119,4 +119,4 @@ using Event = std::variant<
 
 } // namespace engine
 
-#include "Engine/toJson.hpp"
+#include "Engine/EventJson.hpp"
