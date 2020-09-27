@@ -39,4 +39,4 @@ done
 
 export PATH="$PATH:$HOME/.local/bin"
 
-cmake --build build/$build_type --config $build_type
+cmake --build build/$build_type --config $build_type -j $(nproc)

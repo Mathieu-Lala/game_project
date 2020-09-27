@@ -20,6 +20,9 @@ nlohmann_json/3.9.0
 # Logging libary, spdlog use {fmt} so we can use CONAN_PKG::fmt
 spdlog/1.6.0
 
+# ECS
+entt/3.5.2
+
 [options]
 fmt:header_only=True
 spdlog:header_only=True

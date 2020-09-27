@@ -152,4 +152,4 @@ using Event = std::variant<
 
 } // namespace engine
 
-#include "Engine/EventJson.hpp"
+#include "Engine/details/EventJson.hpp"

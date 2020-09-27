@@ -3,49 +3,13 @@
 #include <memory>
 #include <fstream>
 
-#include "Engine/Graphics.hpp"
-
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
+#include <entt/entt.hpp>
 
 #include "Engine/Window.hpp"
-#include "Engine/Shader.hpp"
-#include "Engine/Utility.hpp" // for overloaded
-
-
-constexpr auto VERTEX_SHADER =
-R"GLSL(#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
-
-out vec3 ourColor;
-
-void main()
-{
-    gl_Position = vec4(aPos, 1.0);
-    ourColor = aColor;
-}
-)GLSL";
-
-constexpr auto FRAGMENT_SHADER =
-R"GLSL(#version 330 core
-out vec4 FragColor;
-
-in vec3 ourColor;
-
-void main()
-{
-    FragColor = vec4(ourColor, 1.0f);
-}
-)GLSL";
-
-constexpr
-float VERTICES[] = {
-    // positions          // colors
-     0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,  // bottom left
-     0.0f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f   // top
-};
+#include "Engine/details/overloaded.hpp"
+#include "Engine/Game.hpp"
 
 namespace engine {
 
@@ -62,15 +26,17 @@ public:
 
     };
 
-    Core(hidden_type &&)
+    explicit
+    Core([[maybe_unused]] hidden_type &&)
     {
         ::glfwSetErrorCallback([](int code, const char *message) {
             spdlog::error("Engine::Core GLFW An error occured '{}' 'code={}'\n", message, code);
         });
 
         spdlog::info("Engine::Core instanciated");
-        if (::glfwInit() == GLFW_FALSE)
+        if (::glfwInit() == GLFW_FALSE) {
             throw std::logic_error(fmt::format("Engine::Core initialization failed"));
+        }
 
         ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         ::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -96,16 +62,38 @@ public:
         spdlog::info("Engine::Core destroyed");
     }
 
+    Core(const Core &) = delete;
+    Core(Core &&) = delete;
+
+    Core &operator=(const Core &) = delete;
+    Core &operator=(Core &&) = delete;
+
+
     template<typename ...Args>
     auto window(Args &&...args) -> std::unique_ptr<Window> &
     {
-        if (m_window) return m_window;
+        if (m_window != nullptr) { return m_window; }
 
         m_window = std::make_unique<Window>(std::forward<Args>(args)...);
         loadOpenGL();
 
         return m_window;
     }
+
+    // note : UserDefinedGame should be a concept
+    template<typename UserDefinedGame, typename ...Args>
+    auto game(Args &&...args) -> std::unique_ptr<Game> &
+    {
+        if (m_game != nullptr) { return m_game; }
+
+        m_game = std::make_unique<UserDefinedGame>(std::forward<Args>(args)...);
+        m_game->onCreate(m_world);
+
+        return m_game;
+    }
+
+    auto getWorld() -> entt::registry & { return m_world; }
+
 
     enum EventMode {
         RECORD,
@@ -127,13 +115,6 @@ public:
         setPendingEvents(j.get<std::vector<Event>>());
     }
 
-    auto getElapsedTime()
-    {
-        const auto nextTick = std::chrono::steady_clock::now();
-        const auto timeElapsed = nextTick - m_lastTick;
-        m_lastTick = nextTick;
-        return timeElapsed;
-    }
 
     auto getNextEvent() -> Event
     {
@@ -152,7 +133,7 @@ public:
 
             // 2. poll the window event
             const auto event = m_window->getNextEvent();
-            if (event) return *event;
+            if (event) { return *event; }
 
             // 3. send elapsed time
             return TimeElapsed{ getElapsedTime() };
@@ -188,34 +169,11 @@ public:
 
     auto main(int ac, char **av) -> int
     {
-        if (!m_window)
-            return 1;
-
-        if (ac == 2) setPendingEventsFromFile(av[1]);
-        spdlog::warn("Engine::Window is in {} mode", ac == 2 ? "playback" : "record");
+        if (m_window == nullptr || m_game == nullptr) { return 1; }
+        if (ac == 2) { setPendingEventsFromFile(av[1]); }
+        spdlog::info("Engine::Window is in {} mode", ac == 2 ? "playback" : "record");
 
         std::vector<Event> eventsProcessed{ TimeElapsed{} };
-
-
-        Shader shader{ VERTEX_SHADER, FRAGMENT_SHADER };
-
-        unsigned int VBO;
-        unsigned int VAO;
-        ::glGenVertexArrays(1, &VAO);
-        ::glGenBuffers(1, &VBO);
-
-        ::glBindVertexArray(VAO);
-
-        ::glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        ::glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES), VERTICES, GL_STATIC_DRAW);
-
-        // position attribute
-        ::glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), static_cast<void *>(0));
-        ::glEnableVertexAttribArray(0);
-        // color attribute
-        ::glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
-        ::glEnableVertexAttribArray(1);
-
 
 
         bool show_demo_window = true;
@@ -225,9 +183,9 @@ public:
 
             std::visit(overloaded{
                 [](TimeElapsed &prev, const TimeElapsed &next) { prev.elapsed += next.elapsed; },
-                [&](const auto &, const std::monostate &) {},
+                [&]([[maybe_unused]] const auto &, [[maybe_unused]] const std::monostate &) {},
                 // event in playback mode will be saved twice = bad !
-                [&](const auto &, const auto &next) { eventsProcessed.push_back(next); } },
+                [&]([[maybe_unused]] const auto &, const auto &next) { eventsProcessed.push_back(next); } },
                 eventsProcessed.back(),
                 event);
 
@@ -235,13 +193,13 @@ public:
             bool timeElapsed = false;
             bool keyPressed = false;
 
-            // note : user defined function ? or engine related ?
+            // note : user defined function ? or engine  /*unused*/related ?
             std::visit(overloaded{
-                [&](const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
-                [&](const CloseWindow &) { m_window->close(); },
+                [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
+                [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); },
                 [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); },
-                [&](const TimeElapsed &) { timeElapsed = true; },
-                [&](const Pressed<Key> &) { keyPressed = true; },
+                [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
+                [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
                 [&](const Connected<Joysticks> &j) { m_joysticks.push_back(j.source); },
                 [&](const Disconnected<Joysticks> &j) {
                     if (auto it = std::find_if(m_joysticks.begin(), m_joysticks.end(),
@@ -250,7 +208,7 @@ public:
                         m_joysticks.erase(it);
                     }
                 },
-                [ ](const auto &) {} },
+                [ ]([[maybe_unused]] const auto &) {} },
                 event);
 
             if (keyPressed) {
@@ -264,29 +222,27 @@ public:
 
             m_window->draw([&] {
 
-                if (show_demo_window)
-                    ImGui::ShowDemoWindow(&show_demo_window);
+                if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
                 ImGui::Render();
 
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT);
 
-                shader.use();
-                ::glBindVertexArray(VAO);
-                ::glDrawArrays(GL_TRIANGLES, 0, 3);
+                m_game->onUpdate(m_world);
 
             });
 
         }
 
-
-        ::glDeleteVertexArrays(1, &VAO);
-        ::glDeleteBuffers(1, &VBO);
+        m_game->onDestroy(m_world);
 
         nlohmann::json serialized(eventsProcessed);
         std::ofstream f{ "recorded_events.json" };
         f << serialized;
+
+        // otherwise the singleton will be destroy after the main -> dead signal
+        s_instance.reset(nullptr);
 
         return 0;
     }
@@ -294,7 +250,7 @@ public:
 private:
 
     static
-    auto get() -> std::unique_ptr<Core> &
+    auto get() noexcept -> std::unique_ptr<Core> &
     {
         static auto instance = std::make_unique<Core>(hidden_type{});
         return instance;
@@ -302,15 +258,25 @@ private:
 
     static std::unique_ptr<Core> &s_instance;
 
-    auto loadOpenGL()
+    static
+    auto loadOpenGL() -> void
     {
-        if (const auto err = ::glewInit(); err != GLEW_OK)
+        if (const auto err = ::glewInit(); err != GLEW_OK) {
             throw std::logic_error(fmt::format(
                 "Engine::Core GLEW An error occured '{}' 'code={}'", ::glewGetErrorString(err), err));
+        }
     }
 
     // note : for now the engine support only one window
     std::unique_ptr<Window> m_window{ nullptr };
+
+//
+// World
+//
+
+    std::unique_ptr<Game> m_game{ nullptr };
+
+    entt::registry m_world;
 
 //
 // Devices
@@ -321,20 +287,23 @@ private:
     auto updateJoysticks() -> void
     {
         for (auto &joy : m_joysticks) {
-            int count;
-            auto axes = glfwGetJoystickAxes(joy.id, &count);
-            for (auto i = 0; i != count; i++)
+            int count = 0;
+            const auto *axes = glfwGetJoystickAxes(joy.id, &count);
+            for (auto i = 0; i != count; i++) {
                 spdlog::warn("{} => axes[{}] = {}", joy.id, i, axes[i]);
+            }
 
-//            auto hats = glfwGetJoystickHats(joy.id, &count);
+//            auto hats = glfwGetJoystickHats(joy.id,const auto *nt);
 //            for (auto i = 0; i != count; i++)
 //                if (hats[i])
-//                    spdlog::warn("{} => hats[{}] = {}", joy.id, i, hats[i]);
+//          { {           spdlog::warn("{} =>  != 0uh { {ats[{}] = {}", joy.id, i, hats[i]);
 
-            auto buttons = glfwGetJoystickButtons(joy.id, &count);
-            for (auto i = 0; i != count; i++)
-                if (buttons[i])
+            const auto *buttons = glfwGetJoystickButtons(joy.id, &count);
+            for (auto i = 0; i != count; i++) {
+                if (buttons[i] != 0u) {
                     spdlog::warn("{} => buttons[{}] = {}", joy.id, i, buttons[i]);
+                }
+            }
         }
     }
 
@@ -342,12 +311,21 @@ private:
 // Event Handling
 //
 
-    std::chrono::steady_clock::time_point m_lastTick;
-
     EventMode m_eventMode{ RECORD };
 
     std::vector<Event> m_eventsPlayback;
     std::vector<Event> m_events;
+
+
+    std::chrono::steady_clock::time_point m_lastTick;
+
+    auto getElapsedTime() -> std::chrono::nanoseconds
+    {
+        const auto nextTick = std::chrono::steady_clock::now();
+        const auto timeElapsed = nextTick - m_lastTick;
+        m_lastTick = nextTick;
+        return timeElapsed;
+    }
 
 //
 // Event Callbacks
@@ -357,10 +335,11 @@ private:
     auto callback_eventJoystickConnectionDisconnection(int id, int event) -> void
     {
         if (s_instance->m_eventMode == RECORD) {
-            if (event == GLFW_CONNECTED)
-                s_instance->m_events.push_back(Connected<Joysticks>{ { id } });
-            else
-                s_instance->m_events.push_back(Disconnected<Joysticks>{ { id } });
+            if (event == GLFW_CONNECTED) {
+                s_instance->m_events.emplace_back(Connected<Joysticks>{ { id } });
+            } else {
+                s_instance->m_events.emplace_back(Disconnected<Joysticks>{ { id } });
+            }
         }
     }
 

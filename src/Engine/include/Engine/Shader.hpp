@@ -1,17 +1,18 @@
 #pragma once
 
-#include "Engine/Graphics.hpp"
+#include <string_view>
+#include "Engine/details/Graphics.hpp"
 
 namespace engine {
 
 class Shader {
 public:
 
-    Shader(const char *vertexCode, const char *fragmentCode) :
+    Shader(const std::string_view vertexCode, const std::string_view fragmentCode) :
         ID  { ::glCreateProgram() }
     {
-        shader_<GL_VERTEX_SHADER> vertex{ vertexCode };
-        shader_<GL_FRAGMENT_SHADER> fragment{ fragmentCode };
+        shader_<GL_VERTEX_SHADER> vertex{ vertexCode.data() };
+        shader_<GL_FRAGMENT_SHADER> fragment{ fragmentCode.data() };
 
         ::glAttachShader(ID, vertex.ID);
         ::glAttachShader(ID, fragment.ID);

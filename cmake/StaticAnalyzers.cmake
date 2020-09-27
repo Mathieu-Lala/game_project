@@ -22,8 +22,10 @@ endif()
 if(ENABLE_CLANG_TIDY)
   find_program(CLANGTIDY clang-tidy)
   if(CLANGTIDY)
-    set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY}
-                             -extra-arg=-Wno-unknown-warning-option)
+    set(CMAKE_CXX_CLANG_TIDY
+        ${CLANGTIDY} -extra-arg=-Wno-unknown-warning-option
+        -p=${CMAKE_BINARY_DIR}
+        -line-filter=[{"name":"${CMAKE_BINARY_DIR}/download/"}])
   else()
     message(SEND_ERROR "clang-tidy requested but executable not found")
   endif()

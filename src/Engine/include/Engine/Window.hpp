@@ -3,7 +3,7 @@
 #include <optional>
 #include <glm/vec2.hpp>
 
-#include "Engine/Graphics.hpp"
+#include "Engine/details/Graphics.hpp"
 
 #include "Engine/Event.hpp"
 
@@ -13,11 +13,11 @@ class Window {
 public:
 
     Window(glm::ivec2 &&size, const char *title);
-    ~Window();
+    ~Window() noexcept(true);
 
-    auto isOpen() const -> bool { return !::glfwWindowShouldClose(m_handle); }
+    [[nodiscard]] auto isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
 
-    auto close() { ::glfwSetWindowShouldClose(m_handle, true); }
+    auto close() { ::glfwSetWindowShouldClose(m_handle, GLFW_TRUE); }
 
     auto render() { ::glfwSwapBuffers(m_handle); }
 
@@ -30,7 +30,7 @@ public:
     auto setCursorPosition(glm::dvec2 &&pos) { ::glfwSetCursorPos(m_handle, pos.x, pos.y); }
 
     template<typename EventType>
-    auto applyEvent(const EventType &) -> void { }
+    auto applyEvent([[maybe_unused]] const EventType &) -> void { }
 
     // just an utility function : may not stay
     auto draw(const std::function<void()> &drawer)
@@ -75,7 +75,7 @@ private:
     auto callback_eventKeyBoard(GLFWwindow *window, int key, int scancode, int action, int mods) -> void;
 
     static
-    auto callback_eventMousePressed(GLFWwindow *window, int button, int action, int) -> void;
+    auto callback_eventMousePressed(GLFWwindow *window, int button, int action, int mods) -> void;
 
     static
     auto callback_eventMouseMoved(GLFWwindow *window, double x, double y) -> void;

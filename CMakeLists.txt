@@ -31,10 +31,10 @@ include(cmake/Sanitizers.cmake)
 enable_sanitizers(project_options)
 
 # Compile time optimizer
-option(ENABLE_PCH "Enable Precompiled Headers" ON)
+option(ENABLE_PCH "Enable Precompiled Headers" OFF)
 if(ENABLE_PCH)
   target_precompile_headers(project_options INTERFACE
-    <vector> <string> <utility> )#<GL/glew.h> <GLFW/glfw3.h>)
+    <vector> <string> <utility> <GL/glew.h> <GLFW/glfw3.h>)
 endif()
 
 

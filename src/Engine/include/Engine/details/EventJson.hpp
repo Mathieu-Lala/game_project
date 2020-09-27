@@ -3,7 +3,7 @@
 //  Json -> engine::Event
 
 #include <nlohmann/json.hpp>
-#include "Engine/Utility.hpp" // for overloaded
+#include "Engine/details/overloaded.hpp"
 #include "Engine/Event.hpp"
 
 namespace nlohmann {
@@ -52,8 +52,9 @@ void deserialize(const nlohmann::json &j, Param &... param)
     // annoying conversion to string necessary for key lookup with .at?
     const auto &top = j.at(std::string{EventType::name});
 
-    if (top.size() != sizeof...(Param))
+    if (top.size() != sizeof...(Param)) {
         throw std::logic_error("Deserialization size mismatch");
+    }
 
     std::size_t cur_elem = 0;
     (top.at(std::string{EventType::elements[cur_elem++]}).get_to(param), ...);
@@ -62,7 +63,7 @@ void deserialize(const nlohmann::json &j, Param &... param)
 
 
 template<typename EventType>
-void to_json(nlohmann::json &j, const EventType &)
+void to_json(nlohmann::json &j, [[maybe_unused]] const EventType &)
     requires(EventType::elements.empty())
 {
     serialize<EventType>(j);
@@ -117,8 +118,8 @@ void to_json(nlohmann::json &j, const EventType &event)
 }
 
 template<typename EventType>
-void from_json(const nlohmann::json &j, EventType &)
-    requires(EventType::elements.size() == 0)
+void from_json(const nlohmann::json &j, [[maybe_unused]] const EventType &)
+    requires(EventType::elements.empty())
 {
     deserialize<EventType>(j);
 }
@@ -172,7 +173,6 @@ void from_json(const nlohmann::json &j, EventType &event)
 }
 
 
-
 template<typename ... T>
 void choose_variant(const nlohmann::json &j, std::variant<std::monostate, T...> &variant)
 {
@@ -181,7 +181,7 @@ void choose_variant(const nlohmann::json &j, std::variant<std::monostate, T...> 
     auto try_variant = [&]<typename Variant>(){
         if (!matched) {
             try {
-                Variant obj;
+                Variant obj{};
                 from_json(j, obj);
                 variant = obj;
                 matched = true;
@@ -202,7 +202,7 @@ inline
 void to_json(nlohmann::json &j, const Event &event)
 {
     std::visit(overloaded{
-        [](const std::monostate &) {},
+        []([[maybe_unused]] const std::monostate &) {},
         [&j](const auto &e) { to_json(j, e); } },
         event);
 }
