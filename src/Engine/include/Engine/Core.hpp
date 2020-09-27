@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <entt/entt.hpp>
+#include <magic_enum.hpp>
 
 #include "Engine/Window.hpp"
 #include "Engine/details/overloaded.hpp"
@@ -201,13 +202,7 @@ public:
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
                 [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
                 [&](const Connected<Joysticks> &j) { m_joysticks.push_back(j.source); },
-                [&](const Disconnected<Joysticks> &j) {
-                    if (auto it = std::find_if(m_joysticks.begin(), m_joysticks.end(),
-                        [id = j.source.id](auto &i){ return i.id == id; }); it != m_joysticks.end()) {
-
-                        m_joysticks.erase(it);
-                    }
-                },
+                [&](const Disconnected<Joysticks> &j) { removeJoysticks(j.source); },
                 [ ]([[maybe_unused]] const auto &) {} },
                 event);
 
@@ -223,6 +218,17 @@ public:
             m_window->draw([&] {
 
                 if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
+
+                ImGui::Begin("Joysticks");
+                for (const auto &joy : m_joysticks) {
+                    ImGui::BeginChild("Scrolling");
+                    for (std::uint32_t n = 0; n < Joysticks::BUTTONS_MAX; n++) {
+                        ImGui::Text("%s = %i", magic_enum::enum_name(
+                            magic_enum::enum_cast<Joysticks::Buttons>(n).value()).data(), joy.buttons[n]);
+                    }
+                    ImGui::EndChild();
+                }
+                ImGui::End();
 
                 ImGui::Render();
 
@@ -288,9 +294,9 @@ private:
     {
         for (auto &joy : m_joysticks) {
             int count = 0;
-            const auto *axes = glfwGetJoystickAxes(joy.id, &count);
-            for (auto i = 0; i != count; i++) {
-                spdlog::warn("{} => axes[{}] = {}", joy.id, i, axes[i]);
+            const auto axes = ::glfwGetJoystickAxes(joy.id, &count);
+            for (std::uint32_t i = 0; i != static_cast<std::uint32_t>(count); i++) {
+                joy.axes[i] = axes[i];
             }
 
 //            auto hats = glfwGetJoystickHats(joy.id,const auto *nt);
@@ -298,12 +304,19 @@ private:
 //                if (hats[i])
 //          { {           spdlog::warn("{} =>  != 0uh { {ats[{}] = {}", joy.id, i, hats[i]);
 
-            const auto *buttons = glfwGetJoystickButtons(joy.id, &count);
-            for (auto i = 0; i != count; i++) {
-                if (buttons[i] != 0u) {
-                    spdlog::warn("{} => buttons[{}] = {}", joy.id, i, buttons[i]);
-                }
+            const auto buttons = ::glfwGetJoystickButtons(joy.id, &count);
+            for (std::uint32_t i = 0; i != static_cast<std::uint32_t>(count); i++) {
+                joy.buttons[i] = buttons[i];
             }
+        }
+    }
+
+    auto removeJoysticks(const Joysticks &j) -> void
+    {
+        if (auto it = std::find_if(m_joysticks.begin(), m_joysticks.end(),
+            [id = j.id](auto &i){ return i.id == id; }); it != m_joysticks.end()) {
+
+            m_joysticks.erase(it);
         }
     }
 

@@ -23,6 +23,9 @@ spdlog/1.6.0
 # ECS
 entt/3.5.2
 
+# Enum print helper
+magic_enum/0.6.6
+
 [options]
 fmt:header_only=True
 spdlog:header_only=True

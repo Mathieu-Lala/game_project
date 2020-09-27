@@ -114,10 +114,50 @@ struct MouseButton {
 
 struct Joysticks {
     constexpr static std::string_view name{ "Joysticks" };
-    constexpr static auto elements = std::to_array<std::string_view>({ "id" });
+    constexpr static auto elements = std::to_array<std::string_view>({ "id", "axes", "buttons" });
+
+    enum Axis {
+        LSX, // left stick X
+        LSY, // left stick Y
+        LST, // left shoulder trigger
+
+        RSX, // right stick X
+        RSY, // right stick Y
+        RST, // right shoulder trigger
+
+        AXES_MAX = 6,
+    };
+
+    enum Buttons {
+
+        ACTION_BOTTOM, // A
+        ACTION_RIGHT, // B
+        ACTION_LEFT, // X
+        ACTION_TOP, // Y
+
+        LS, // left shoulder button
+        RS, // right shoulder button
+
+        CENTER1, // Back
+        CENTER2, // Start
+        CENTER3, // Center (xbox home)
+
+        LSB, // left stick button
+        RSB, // right stick button
+
+        UP, // d-pad top
+        RIGHT, // d-pad right
+        DOWN, // d-pad down
+        LEFT, // d-pad left
+
+        NOT_MAPPED, // not used
+
+        BUTTONS_MAX = 16,
+    };
+
     int id;
-//    float *axes;
-//    unsigned char *buttons;
+    std::array<float, AXES_MAX> axes{};
+    std::array<std::uint8_t, BUTTONS_MAX> buttons{};
 
 };
 
