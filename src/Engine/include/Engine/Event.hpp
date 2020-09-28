@@ -140,8 +140,10 @@ struct Joysticks {
 
         CENTER1, // Back
         CENTER2, // Start
-        CENTER3, // Center (xbox home)
 
+#ifndef WIN32 // Windows override the buttons so we can't use it on Windows
+        CENTER3, // Center (xbox home)
+#endif
         LSB, // left stick button
         RSB, // right stick button
 
@@ -152,7 +154,7 @@ struct Joysticks {
 
         NOT_MAPPED, // not used
 
-        BUTTONS_MAX = 16,
+        BUTTONS_MAX,
     };
 
     int id;
