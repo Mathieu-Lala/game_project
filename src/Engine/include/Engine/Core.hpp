@@ -227,6 +227,12 @@ public:
                             magic_enum::enum_cast<Joysticks::Buttons>(n).value()).data(), joy.buttons[n]);
                     }
                     ImGui::EndChild();
+                    ImGui::BeginChild("Scrolling");
+                    for (std::uint32_t n = 0; n < Joysticks::AXES_MAX; n++) {
+                        ImGui::Text("%s = %f", magic_enum::enum_name(
+                            magic_enum::enum_cast<Joysticks::Axis>(n).value()).data(), double{ joy.axes[n] });
+                    }
+                    ImGui::EndChild();
                 }
                 ImGui::End();
 
@@ -290,6 +296,7 @@ private:
 
     std::vector<Joysticks> m_joysticks;
 
+    // todo : emplace a joystick event instead
     auto updateJoysticks() -> void
     {
         for (auto &joy : m_joysticks) {

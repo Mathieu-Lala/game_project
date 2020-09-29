@@ -34,4 +34,5 @@ target_link_libraries(
          CONAN_PKG::spdlog
          CONAN_PKG::nlohmann_json
          CONAN_PKG::entt
-         CONAN_PKG::magic_enum)
+         CONAN_PKG::magic_enum
+         CONAN_PKG::stb)
