@@ -1,0 +1,66 @@
+name: C++ CMake Build
+
+on: [push]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          ubuntu-latest,
+#          macos-latest,
+          windows-latest
+        ]
+        build_type: [
+#          "MinSizeRel",
+          "Debug"
+        ]
+        arch: [
+#          "x32",
+          "x64"
+        ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+# https://github.com/marketplace/actions/setup-python
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+          architecture: ${{ matrix.arch }}
+
+      - name: Installing Dependencies
+        shell: bash
+        run: ./tools/install.sh
+
+## https://github.com/marketplace/actions/cache
+#      - name: Cache Build
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.conan
+#          key: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v3-${{ hashFiles('**/conanfile.txt') }}
+#          restore-keys: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v3
+
+      - name: Generate
+        shell: bash
+        run: ./tools/generate.sh \
+          --build_type ${{ matrix.build_type }} \
+          --arch ${{ matrix.arch }}
+
+      - name: Build
+        shell: bash
+        run: ./tools/build.sh \
+          --build_type ${{ matrix.build_type }} \
+
+      # TODO :
+        # add steps 'launch' : start the application during one frame
+        # add steps 'unit-tests'
+        # add steps 'benchmark'
+        # ..
