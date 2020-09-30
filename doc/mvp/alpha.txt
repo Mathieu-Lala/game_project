@@ -18,14 +18,15 @@
         Generation
             -> salles
             -> couloir
-            -> porte
+            -> escalier
             -> zone de spawn (joueur & enemies)
 
-    Ennemies :
-        1 types d Ennemies
+    Enemies :
+        1 types d Enemies
             -> system de vision / agro
             -> system de pathfinding
-        1 boss
+            -> system d xp
+        1 boss (drop a key)
 
     Interface :
         hp joueur
@@ -34,6 +35,8 @@
             -> icones
         points de competence dispo
         xp
+        menu level up / menu competence
+        audio
 
 [Delivery]
     Gameplay :
@@ -41,3 +44,22 @@
             -> pre-game menu
             -> menu (leave / options) (in-game)
             -> Camera zoom
+            -> resurection
+
+    Classes :
+        Implementer toutes les classes
+            -> tous les sorts
+            -> animations / particules
+
+    Level :
+        Textures
+        (brouillard de guerre)
+
+    Enemies :
+        all the enemies
+
+    Interface :
+        Score / HighScore
+        Transition / animations
+        Stats (temps / kills ...)
+        menu (all clean)
