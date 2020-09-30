@@ -1,3 +1,5 @@
+#pragma once
+
 // note : black box :
 //  engine::Event -> Json
 //  Json -> engine::Event
@@ -34,7 +36,7 @@ void serialize(nlohmann::json &j, const Param &...param)
 {
     auto make_inner = [&] {
         nlohmann::json innerObj;
-        std::size_t index = 0;
+        [[maybe_unused]] std::size_t index = 0;
 
         (innerObj.emplace(EventType::elements[index++], param), ...);
 
@@ -63,7 +65,7 @@ void deserialize(const nlohmann::json &j, Param &... param)
 
 
 template<typename EventType>
-void to_json(nlohmann::json &j, [[maybe_unused]] const EventType &)
+void to_json(nlohmann::json &j, [[maybe_unused]] const EventType &event)
     requires(EventType::elements.empty())
 {
     serialize<EventType>(j);

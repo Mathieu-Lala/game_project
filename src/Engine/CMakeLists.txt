@@ -14,14 +14,15 @@ download_imgui(imgui_impl_opengl3.cpp)
 download_imgui(imgui_impl_opengl3.h)
 
 add_library(
-  glfw_imgui_impl SHARED
+  glfw_imgui_impl STATIC
   ${CMAKE_BINARY_DIR}/download/imgui/imgui_impl_glfw.cpp
   ${CMAKE_BINARY_DIR}/download/imgui/imgui_impl_opengl3.cpp)
 target_link_libraries(glfw_imgui_impl PUBLIC project_options CONAN_PKG::glew
                                              CONAN_PKG::glfw CONAN_PKG::imgui)
 target_compile_definitions(glfw_imgui_impl PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
+#target_compile_definitions(glfw_imgui_impl PRIVATE /NODEFAULTLIB:library)
 
-add_library(engine src/Engine/Core.cpp src/Engine/Window.cpp)
+add_library(engine STATIC src/Engine/Core.cpp src/Engine/Window.cpp)
 target_include_directories(engine PUBLIC include
                                          ${CMAKE_BINARY_DIR}/download/imgui)
 target_link_libraries(
@@ -34,5 +35,9 @@ target_link_libraries(
          CONAN_PKG::spdlog
          CONAN_PKG::nlohmann_json
          CONAN_PKG::entt
-         CONAN_PKG::magic_enum
-         CONAN_PKG::stb)
+         CONAN_PKG::stb
+         CONAN_PKG::magic_enum)
+
+if(MSVC)
+    target_compile_definitions(engine PUBLIC NOMINMAX)
+endif()
