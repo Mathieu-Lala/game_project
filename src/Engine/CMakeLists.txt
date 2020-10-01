@@ -20,9 +20,10 @@ add_library(
 target_link_libraries(glfw_imgui_impl PUBLIC project_options CONAN_PKG::glew
                                              CONAN_PKG::glfw CONAN_PKG::imgui)
 target_compile_definitions(glfw_imgui_impl PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
-#target_compile_definitions(glfw_imgui_impl PRIVATE /NODEFAULTLIB:library)
+# target_compile_definitions(glfw_imgui_impl PRIVATE /NODEFAULTLIB:library)
 
-add_library(engine STATIC src/Engine/Core.cpp src/Engine/Window.cpp)
+add_library(engine STATIC src/Engine/Core.cpp src/Engine/Window.cpp
+                          src/Engine/JoystickManager.cpp)
 target_include_directories(engine PUBLIC include
                                          ${CMAKE_BINARY_DIR}/download/imgui)
 target_link_libraries(
@@ -39,5 +40,5 @@ target_link_libraries(
          CONAN_PKG::magic_enum)
 
 if(MSVC)
-    target_compile_definitions(engine PUBLIC NOMINMAX)
+  target_compile_definitions(engine PUBLIC NOMINMAX)
 endif()
