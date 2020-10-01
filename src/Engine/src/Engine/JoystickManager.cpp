@@ -31,7 +31,7 @@ auto engine::JoystickManager::get(int id) -> std::optional<Joystick *const>
 {
     if (const auto it = std::find_if(m_joysticks.begin(), m_joysticks.end(), [id](auto &i) { return i.id == id; });
         it != m_joysticks.end()) {
-        return it.base();
+        return &(*it);
     }
     return {};
 }
