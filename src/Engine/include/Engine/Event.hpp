@@ -110,8 +110,8 @@ struct MouseButton {
     Mouse mouse;
 };
 
-struct Joysticks {
-    constexpr static std::string_view name{ "Joysticks" };
+struct Joystick {
+    constexpr static std::string_view name{ "Joystick" };
     constexpr static auto elements = std::to_array<std::string_view>({ "id", "axes", "buttons" });
 
     enum Axis {
@@ -157,9 +157,27 @@ struct Joysticks {
 
     int id;
     std::array<float, AXES_MAX> axes{};
-    std::array<std::uint8_t, BUTTONS_MAX> buttons{};
+    std::array<bool, BUTTONS_MAX> buttons{};
 
 };
+
+struct JoystickAxis {
+    constexpr static std::string_view name{ "JoystickAxis" };
+    constexpr static auto elements = std::to_array<std::string_view>({ "id", "axis", "value" });
+
+    int id;
+    Joystick::Axis axis;
+    float value;
+};
+
+struct JoystickButton {
+    constexpr static std::string_view name{ "JoystickButton" };
+    constexpr static auto elements = std::to_array<std::string_view>({ "id", "button" });
+
+    int id;
+    Joystick::Buttons button;
+};
+
 
 // EventType
 
@@ -180,13 +198,12 @@ using Event = std::variant<
     Pressed<MouseButton>,
     Released<MouseButton>,
 
-    Connected<Joysticks>,
-    Disconnected<Joysticks>
+    Connected<Joystick>,
+    Disconnected<Joystick>,
 
-// todo :
-//    Pressed<JoystickButton>,
-//    Released<JoystickButton>,
-//    Moved<JoystickAxis>,
+    Pressed<JoystickButton>,
+    Released<JoystickButton>,
+    Moved<JoystickAxis>
 
 >;
 

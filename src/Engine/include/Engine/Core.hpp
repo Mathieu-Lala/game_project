@@ -11,6 +11,7 @@
 #include "Engine/Window.hpp"
 #include "Engine/details/overloaded.hpp"
 #include "Engine/Game.hpp"
+#include "Engine/JoystickManager.hpp"
 
 namespace engine {
 
@@ -50,7 +51,7 @@ public:
 
         IMGUI_CHECKVERSION();
 
-        ::glfwSetJoystickCallback(callback_eventJoystickConnectionDisconnection);
+        m_joystickManager = std::make_unique<JoystickManager>();
     }
 
     ~Core()
@@ -120,52 +121,55 @@ public:
     auto getNextEvent() -> Event
     {
         ::glfwPollEvents();
+
         switch (m_eventMode) {
         case RECORD: {
 
-            updateJoysticks();
+            m_joystickManager->poll();
 
             // 1. poll the core event
             if (!m_events.empty()) {
-                const auto event = m_events.front();
+                const auto coreEvent = m_events.front();
                 m_events.erase(m_events.begin());
-                return event;
+                return coreEvent;
             }
 
             // 2. poll the window event
-            const auto event = m_window->getNextEvent();
-            if (event) { return *event; }
+            const auto windowEvent = m_window->getNextEvent();
+            if (windowEvent) { return *windowEvent; }
 
-            // 3. send elapsed time
-            return TimeElapsed{ getElapsedTime() };
+            const auto joystickEvent = m_joystickManager->getNextEvent();
+            if (joystickEvent) { return *joystickEvent; }
+
+            break;
 
         } break;
         case PLAYBACK: {
-            if (!m_eventsPlayback.empty()) {
-                auto event = m_eventsPlayback.front();
-                m_eventsPlayback.erase(m_eventsPlayback.begin());
-
-                // apply the event to the engine
-                std::visit(overloaded{
-                    [&](const ResizeWindow &e) { m_window->setSize({ e.width, e.height }); },
-                    [&](const MoveWindow &e) { m_window->setPosition({ e.x, e.y }); },
-                    [ ](const TimeElapsed &dt) { std::this_thread::sleep_for(dt.elapsed); },
-                    [&](const Moved<Mouse> &m) { m_window->setCursorPosition({ m.source.x, m.source.y }); },
-                    [&](const auto &e) { m_window->applyEvent(e); }
-                    },
-                    event);
-                return event;
-
-            } else {
+            if (m_eventsPlayback.empty()) {
                 spdlog::warn("Engine::Window switching to record mode");
                 m_eventMode = RECORD;
-
-                return TimeElapsed{ getElapsedTime() };
+                break;
             }
+            auto event = m_eventsPlayback.front();
+            m_eventsPlayback.erase(m_eventsPlayback.begin());
+
+            // apply the event to the engine
+            std::visit(overloaded{
+                [&](const ResizeWindow &e) { m_window->setSize({ e.width, e.height }); },
+                [&](const MoveWindow &e) { m_window->setPosition({ e.x, e.y }); },
+                [ ](const TimeElapsed &dt) { std::this_thread::sleep_for(dt.elapsed); },
+                [&](const Moved<Mouse> &m) { m_window->setCursorPosition({ m.source.x, m.source.y }); },
+                [&](const auto &e) { m_window->applyEvent(e); },
+                },
+                event);
+            return event;
 
         } break;
         default: std::abort();
         }
+
+        // 3. send elapsed time
+        return TimeElapsed{ getElapsedTime() };
     }
 
     auto main(int ac, char **av) -> int
@@ -194,15 +198,18 @@ public:
             bool timeElapsed = false;
             bool keyPressed = false;
 
-            // note : user defined function ? or engine  /*unused*/related ?
+            // note : or engine related
             std::visit(overloaded{
                 [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
                 [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); },
                 [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); },
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
                 [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
-                [&](const Connected<Joysticks> &j) { m_joysticks.push_back(j.source); },
-                [&](const Disconnected<Joysticks> &j) { removeJoysticks(j.source); },
+                [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
+                [&](const Disconnected<Joystick> &j) { m_joystickManager->remove(j.source); },
+                [&](const Moved<JoystickAxis> &j) { m_joystickManager->update(j); },
+                [&](const Pressed<JoystickButton> &j) { m_joystickManager->update(j); },
+                [&](const Released<JoystickButton> &j ){ m_joystickManager->update(j); },
                 [ ]([[maybe_unused]] const auto &) {} },
                 event);
 
@@ -219,21 +226,22 @@ public:
 
                 if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
-                ImGui::Begin("Joysticks");
-                for (const auto &joy : m_joysticks) {
+                ImGui::Begin("Joystick");
+                m_joystickManager->each([](const Joystick &joy) {
                     ImGui::BeginChild("Scrolling");
-                    for (std::uint32_t n = 0; n < Joysticks::BUTTONS_MAX; n++) {
+                    for (std::uint32_t n = 0; n < Joystick::BUTTONS_MAX; n++) {
                         ImGui::Text("%s = %i", magic_enum::enum_name(
-                            magic_enum::enum_cast<Joysticks::Buttons>(n).value()).data(), joy.buttons[n]);
+                            magic_enum::enum_cast<Joystick::Buttons>(n).value()).data(), joy.buttons[n]);
                     }
                     ImGui::EndChild();
                     ImGui::BeginChild("Scrolling");
-                    for (std::uint32_t n = 0; n < Joysticks::AXES_MAX; n++) {
+                    for (std::uint32_t n = 0; n < Joystick::AXES_MAX; n++) {
                         ImGui::Text("%s = %f", magic_enum::enum_name(
-                            magic_enum::enum_cast<Joysticks::Axis>(n).value()).data(), double{ joy.axes[n] });
+                            magic_enum::enum_cast<Joystick::Axis>(n).value()).data(), double{ joy.axes[n] });
                     }
                     ImGui::EndChild();
-                }
+                });
+
                 ImGui::End();
 
                 ImGui::Render();
@@ -291,43 +299,6 @@ private:
     entt::registry m_world;
 
 //
-// Devices
-//
-
-    std::vector<Joysticks> m_joysticks;
-
-    // todo : emplace a joystick event instead
-    auto updateJoysticks() -> void
-    {
-        for (auto &joy : m_joysticks) {
-            int count = 0;
-            const auto axes = ::glfwGetJoystickAxes(joy.id, &count);
-            for (std::uint32_t i = 0; i != static_cast<std::uint32_t>(count); i++) {
-                joy.axes[i] = axes[i];
-            }
-
-//            auto hats = glfwGetJoystickHats(joy.id,const auto *nt);
-//            for (auto i = 0; i != count; i++)
-//                if (hats[i])
-//          { {           spdlog::warn("{} =>  != 0uh { {ats[{}] = {}", joy.id, i, hats[i]);
-
-            const auto buttons = ::glfwGetJoystickButtons(joy.id, &count);
-            for (std::uint32_t i = 0; i != static_cast<std::uint32_t>(count); i++) {
-                joy.buttons[i] = buttons[i];
-            }
-        }
-    }
-
-    auto removeJoysticks(const Joysticks &j) -> void
-    {
-        if (auto it = std::find_if(m_joysticks.begin(), m_joysticks.end(),
-            [id = j.id](auto &i){ return i.id == id; }); it != m_joysticks.end()) {
-
-            m_joysticks.erase(it);
-        }
-    }
-
-//
 // Event Handling
 //
 
@@ -347,21 +318,8 @@ private:
         return timeElapsed;
     }
 
-//
-// Event Callbacks
-//
 
-    static
-    auto callback_eventJoystickConnectionDisconnection(int id, int event) -> void
-    {
-        if (s_instance->m_eventMode == RECORD) {
-            if (event == GLFW_CONNECTED) {
-                s_instance->m_events.emplace_back(Connected<Joysticks>{ { id } });
-            } else {
-                s_instance->m_events.emplace_back(Disconnected<Joysticks>{ { id } });
-            }
-        }
-    }
+    std::unique_ptr<JoystickManager> m_joystickManager;
 
 };
 

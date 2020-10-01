@@ -5,8 +5,8 @@
 //  Json -> engine::Event
 
 #include <nlohmann/json.hpp>
+#include <magic_enum.hpp>
 #include "Engine/details/overloaded.hpp"
-#include "Engine/Event.hpp"
 
 namespace nlohmann {
 
@@ -24,6 +24,40 @@ struct adl_serializer<std::chrono::steady_clock::duration> {
     {
         std::uint64_t value = j.at("nanoseconds");
         duration = std::chrono::nanoseconds{value};
+    }
+};
+
+template<>
+struct adl_serializer<engine::Joystick::Axis> {
+
+    static
+    void to_json(nlohmann::json &j, const engine::Joystick::Axis &axis)
+    {
+        j = nlohmann::json{{ "axis", magic_enum::enum_name(axis) }};
+    }
+
+    static
+    void from_json(const nlohmann::json &j, engine::Joystick::Axis &axis)
+    {
+        std::string value = j.at("axis");
+        axis = magic_enum::enum_cast<engine::Joystick::Axis>(value).value_or(engine::Joystick::AXES_MAX);
+    }
+};
+
+template<>
+struct adl_serializer<engine::Joystick::Buttons> {
+
+    static
+    void to_json(nlohmann::json &j, const engine::Joystick::Buttons &axis)
+    {
+        j = nlohmann::json{{ "button", magic_enum::enum_name(axis) }};
+    }
+
+    static
+    void from_json(const nlohmann::json &j, engine::Joystick::Buttons &button)
+    {
+        std::string value = j.at("button");
+        button = magic_enum::enum_cast<engine::Joystick::Buttons>(value).value_or(engine::Joystick::BUTTONS_MAX);
     }
 };
 
