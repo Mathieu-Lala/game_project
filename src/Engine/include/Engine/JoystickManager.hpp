@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "Engine/details/Graphics.hpp"
 #include "Engine/Event.hpp"
 

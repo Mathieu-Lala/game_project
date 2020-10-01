@@ -7,7 +7,6 @@
 #include <nlohmann/json.hpp>
 #include <magic_enum.hpp>
 #include "Engine/details/overloaded.hpp"
-#include "Engine/Event.hpp"
 
 namespace nlohmann {
 
