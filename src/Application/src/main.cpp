@@ -1,14 +1,15 @@
 #include <fstream>
 #include <streambuf>
+#include <sstream>
+
+#include <stb_image.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include <Engine/Core.hpp>
-
 #include <Engine/Shader.hpp>
 
 #include <Engine/component/Drawable.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 auto get() -> engine::Drawable
 {
@@ -132,12 +133,52 @@ struct ThePurge : public engine::Game {
     engine::Shader m_shader;
 };
 
-int main(int ac, char **av)
-{
-    engine::Core::Holder holder;
+static constexpr auto VERSION =
+R"(ThePURGE 0.1.8)";
 
-    holder.instance->window(glm::ivec2{400, 400}, "The PURGE");
+static constexpr auto USAGE =
+R"(ThePURGE v0.1.8
+    Usage:
+        app (-h | --help)
+        app --version
+        app [-f | --fullscreen] [--play path]
+
+    Options:
+        -h --help       Show this message.
+        --version       Show version.
+        -f|--fullscreen Launch in fullscreen mode.
+        --play <path>   Path of the events to playback.
+)";
+
+int main(int argc, char **argv)
+{
+    const auto args = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, VERSION);
+
+#ifndef NDEBUG
+    for (const auto &[flag, value] : args) {
+        std::stringstream ss;
+        ss << value;
+        spdlog::info("Application launched with args[{}] = {}", flag, ss.str());
+    }
+
+    spdlog::set_level(spdlog::level::level_enum::trace);
+#else
+
+#endif
+
+    // todo :
+    auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
+    logger->info("logger created");
+
+
+    auto holder = engine::Core::Holder::init();
+
+    std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
+    if (args.at("-f").asBool() || args.at("--fullscreen").asBool())
+        windowProperty |= engine::Window::Property::FULLSCREEN;
+
+    holder.instance->window(glm::ivec2{400, 400}, "The PURGE", windowProperty);
     holder.instance->game<ThePurge>();
 
-    return holder.instance->main(ac, av);
+    return holder.instance->main(args);
 }

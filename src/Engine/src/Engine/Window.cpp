@@ -5,13 +5,17 @@
 
 engine::Window *engine::Window::s_instance{nullptr};
 
-engine::Window::Window(glm::ivec2 &&size, const char *title) :
+engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uint16_t property) :
+    m_monitor{::glfwGetPrimaryMonitor()},
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    m_handle{::glfwCreateWindow(size.x, size.y, title, nullptr, nullptr)}, // todo : handle monitor
-    m_ui_context{ImGui::CreateContext()}
+    m_handle{::glfwCreateWindow(size.x, size.y, title.data(), nullptr, nullptr)}, m_ui_context{ImGui::CreateContext()}
 {
-    spdlog::info("Engine::Window instanciated");
     if (m_handle == nullptr) { throw std::logic_error("Engine::Window initialization failed"); }
+    spdlog::info("Engine::Window instanciated");
+
+    ::glfwGetWindowSize(m_handle, &m_size.x, &m_size.y);
+    ::glfwGetWindowPos(m_handle, &m_pos.x, &m_pos.y);
+
 
     setActive();
 
@@ -33,12 +37,17 @@ engine::Window::Window(glm::ivec2 &&size, const char *title) :
     ::glfwSetMouseButtonCallback(m_handle, callback_eventMousePressed);
     ::glfwSetCursorPosCallback(m_handle, callback_eventMouseMoved);
 
-    // todo : mouse wheel / fullscreen / request_focus ...
+    // todo : mouse wheel / request_focus ...
 
     m_events.emplace_back(OpenWindow{});
+
+    if (property & FULLSCREEN) {
+        spdlog::info("Engine::Window Fullscreen");
+        setFullscreen(true);
+    }
 }
 
-engine::Window::~Window() noexcept(true)
+engine::Window::~Window()
 {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
@@ -59,31 +68,44 @@ auto engine::Window::getNextEvent() -> std::optional<Event>
     return nextEvent;
 }
 
+auto engine::Window::isFullscreen() -> bool { return ::glfwGetWindowMonitor(m_handle) != nullptr; }
+
+// todo : trigger and engine::Event instead
+auto engine::Window::setFullscreen(bool fullscreen) -> void
+{
+    if (isFullscreen() == fullscreen) return;
+
+    if (fullscreen) {
+        ::glfwGetWindowPos(m_handle, &m_pos.x, &m_pos.y);
+        ::glfwGetWindowSize(m_handle, &m_size.x, &m_size.y);
+
+        const auto mode = ::glfwGetVideoMode(::glfwGetPrimaryMonitor());
+
+        ::glfwSetWindowMonitor(m_handle, m_monitor, 0, 0, mode->width, mode->height, 0);
+    } else {
+        ::glfwSetWindowMonitor(m_handle, nullptr, m_pos.x, m_pos.y, m_size.x, m_size.y, GLFW_DONT_CARE);
+    }
+}
+
 auto engine::Window::callback_eventClose([[maybe_unused]] GLFWwindow *window) -> void
 {
-    if (Core::Holder{}.instance->getEventMode() == Core::EventMode::RECORD) {
-        s_instance->m_events.emplace_back(CloseWindow{});
-    }
+    IF_RECORD(s_instance->m_events.emplace_back(CloseWindow{}));
 }
 
 auto engine::Window::callback_eventResized([[maybe_unused]] GLFWwindow *window, int w, int h) -> void
 {
-    if (Core::Holder{}.instance->getEventMode() == Core::EventMode::RECORD) {
-        s_instance->m_events.emplace_back(ResizeWindow{w, h});
-    }
+    IF_RECORD(s_instance->m_events.emplace_back(ResizeWindow{w, h}));
 }
 
 auto engine::Window::callback_eventMoved([[maybe_unused]] GLFWwindow *window, int x, int y) -> void
 {
-    if (Core::Holder{}.instance->getEventMode() == Core::EventMode::RECORD) {
-        s_instance->m_events.emplace_back(MoveWindow{x, y});
-    }
+    IF_RECORD(s_instance->m_events.emplace_back(MoveWindow{x, y}));
 }
 
 auto engine::Window::callback_eventKeyBoard([[maybe_unused]] GLFWwindow *window, int key, int scancode, int action, int mods)
     -> void
 {
-    if (Core::Holder{}.instance->getEventMode() == Core::EventMode::RECORD) {
+    IF_RECORD(
         // clang-format off
         Key k{
             .alt        = !!(mods & GLFW_MOD_ALT), // NOLINT
@@ -95,33 +117,29 @@ auto engine::Window::callback_eventKeyBoard([[maybe_unused]] GLFWwindow *window,
         };
         // clang-format on
         switch (action) {
-        case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<Key>{k}); break;
-        case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<Key>{k}); break;
-        // case GLFW_REPEAT: s_instance->m_events.emplace_back(???{ key }); break; // todo
-        default: std::abort(); break;
-        }
-    }
+            case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<Key>{k}); break;
+            case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<Key>{k}); break;
+            // case GLFW_REPEAT: s_instance->m_events.emplace_back(???{ key }); break; // todo
+            default: std::abort(); break;
+        });
 }
 
 auto engine::Window::callback_eventMousePressed(GLFWwindow *window, int button, int action, [[maybe_unused]] int mods) -> void
 {
-    if (Core::Holder{}.instance->getEventMode() == Core::EventMode::RECORD) {
-        double x = 0;
-        double y = 0;
-        ::glfwGetCursorPos(window, &x, &y);
-        switch (action) {
+    IF_RECORD(
+        // NOLINTNEXTLINE
+        double x = 0; double y = 0;
+        // NOLINTNEXTLINE
+        ::glfwGetCursorPos(window, &x, &y); switch (action) {
         case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<MouseButton>{button, {x, y}}); break;
         case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<MouseButton>{button, {x, y}}); break;
         default: std::abort(); break;
-        }
-    }
+    });
 }
 
 auto engine::Window::callback_eventMouseMoved([[maybe_unused]] GLFWwindow *window, double x, double y) -> void
 {
-    if (Core::Holder{}.instance->getEventMode() == Core::EventMode::RECORD) {
-        s_instance->m_events.emplace_back(Moved<Mouse>{x, y});
-    }
+    IF_RECORD(s_instance->m_events.emplace_back(Moved<Mouse>{x, y}));
 }
 
 using namespace engine; // just for the template specialization consistency

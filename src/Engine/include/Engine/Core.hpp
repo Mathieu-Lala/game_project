@@ -2,11 +2,13 @@
 
 #include <memory>
 #include <fstream>
+#include <functional>
 
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <entt/entt.hpp>
 #include <magic_enum.hpp>
+#include <docopt/docopt.h>
 
 #include "Engine/Window.hpp"
 #include "Engine/details/overloaded.hpp"
@@ -24,7 +26,14 @@ public:
 
     struct Holder {
 
-        std::unique_ptr<Core> &instance = Core::s_instance;
+        static
+        auto init() noexcept -> Holder
+        {
+            Core::s_instance = Core::get().get();
+            return {};
+        }
+
+        Core *instance = Core::s_instance;
 
     };
 
@@ -110,9 +119,13 @@ public:
         m_eventsPlayback = std::move(events);
     }
 
-    auto setPendingEventsFromFile(const char *filepath)
+    auto setPendingEventsFromFile(const std::string_view filepath)
     {
-        std::ifstream ifs(filepath);
+        std::ifstream ifs(filepath.data());
+        if (!ifs.is_open()) {
+            spdlog::warn("engine::Core setPendingEventsFromFile failed: {} could not be opened", filepath.data());
+            return;
+        }
         const auto j = nlohmann::json::parse(ifs);
         setPendingEvents(j.get<std::vector<Event>>());
     }
@@ -172,14 +185,16 @@ public:
         return TimeElapsed{ getElapsedTime() };
     }
 
-    auto main(int ac, char **av) -> int
+    auto main(const std::map<std::string, docopt::value> &args) -> int
     {
         if (m_window == nullptr || m_game == nullptr) { return 1; }
-        if (ac == 2) { setPendingEventsFromFile(av[1]); }
-        spdlog::info("Engine::Window is in {} mode", ac == 2 ? "playback" : "record");
 
+#ifndef NDEBUG
+        if (args.at("--play").isString())
+            setPendingEventsFromFile(args.at("--play").asString());
+
+#endif
         std::vector<Event> eventsProcessed{ TimeElapsed{} };
-
 
         bool show_demo_window = true;
         while (m_window->isOpen()) {
@@ -214,9 +229,12 @@ public:
                 event);
 
             if (keyPressed) {
+                // todo : abstract glfw keyboard
                 const auto keyEvent = std::get<Pressed<Key>>(event);
-                if (keyEvent.source.key == GLFW_KEY_ESCAPE) // todo : abstract glfw keyboard
+                if (keyEvent.source.key == GLFW_KEY_ESCAPE)
                     m_window->close();
+                if (keyEvent.source.key == GLFW_KEY_F11)
+                    m_window->setFullscreen(!m_window->isFullscreen());
             }
 
 // note : should note draw at every frame = heavy
@@ -257,12 +275,14 @@ public:
 
         m_game->onDestroy(m_world);
 
+#ifndef NDEBUG
         nlohmann::json serialized(eventsProcessed);
         std::ofstream f{ "recorded_events.json" };
         f << serialized;
+#endif
 
         // otherwise the singleton will be destroy after the main -> dead signal
-        s_instance.reset(nullptr);
+        get().reset(nullptr);
 
         return 0;
     }
@@ -276,7 +296,7 @@ private:
         return instance;
     }
 
-    static std::unique_ptr<Core> &s_instance;
+    static Core *s_instance;
 
     static
     auto loadOpenGL() -> void
@@ -324,3 +344,7 @@ private:
 };
 
 } // namespace engine
+
+#define IF_RECORD(...) \
+    do { if (engine::Core::Holder{}.instance->getEventMode() \
+        == engine::Core::EventMode::RECORD) { __VA_ARGS__; } } while(0)
