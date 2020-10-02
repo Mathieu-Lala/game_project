@@ -58,18 +58,17 @@ jobs:
         shell: bash
         run: ./tools/build.sh --build_type ${{ matrix.build_type }} --arch ${{ matrix.arch }}
 
-      # TODO :
-        # add steps 'launch' : start the application during one frame
-        # add steps 'unit-tests'
-        # add steps 'benchmark'
-        # ..
-
       - name: launch
         shell: bash
         if: ${{ matrix.os == 'windows-latest' }}
-        run: ./build/${{ matrix.build_type }}/${{ matrix.arch }}/out/${{ matrix.build_type }}/app.exe --version
+        run: ls -R ./build && ./build/${{ matrix.build_type }}/${{ matrix.arch }}/out/${{ matrix.build_type }}/app.exe --version
 
       - name: launch
         shell: bash
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: ./build/${{ matrix.build_type }}/${{ matrix.arch }}/out/app --version
+
+      # TODO :
+        # add steps 'unit-tests'
+        # add steps 'benchmark'
+        # ..
