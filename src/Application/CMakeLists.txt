@@ -1,6 +1,6 @@
 add_executable(app	src/main.cpp
 					src/level/LevelTilemapBuilder.cpp
-					src/level/TileFactory.cpp)
+					src/level/TileFactory.cpp "include/level/MapGenerator.hpp" "src/level/MapGenerator.cpp")
 
 target_link_libraries(app PRIVATE engine)
 

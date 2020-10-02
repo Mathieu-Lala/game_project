@@ -16,6 +16,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "level/LevelTilemapBuilder.hpp"
+#include "level/MapGenerator.hpp"
 
 auto get() -> engine::Drawable
 {
@@ -120,23 +121,10 @@ struct ThePurge : public engine::Game {
         // world.emplace<engine::Drawable>(world.create(), get());
 
 
-        getCamera().setViewport(0, 160, 0, 90);
+        getCamera().setViewport(0, 89, 0, 50);
         getCamera().setCenter({0, 0});
 
-        auto builder = TilemapBuilder();
-
-        int left = 10, right = 50, top = 60, bottom = 20;
-
-        for (int y = bottom + 1; y < top; ++y)
-            for (int x = left + 1; x < right; ++x)
-                builder.get(x, y) = TileEnum::FLOOR;
-
-        for (int x = left; x <= right; ++x) builder.get(x, top) = TileEnum::WALL;
-        for (int x = left; x <= right; ++x) builder.get(x, bottom) = TileEnum::WALL;
-        for (int y = bottom + 1; y < top; ++y) builder.get(left, y) = TileEnum::WALL;
-        for (int y = bottom + 1; y < top; ++y) builder.get(right, y) = TileEnum::WALL;
-
-        builder.build(world);
+        generateFloor(world, {}, ::time(nullptr));
     }
 
     auto onUpdate(entt::registry &world) -> void final
