@@ -37,6 +37,8 @@ case $key in
 esac
 done
 
+echo "BUILD TYPE IS $build_type"
+
 export PATH="$PATH:$HOME/.local/bin"
 
 cmake --build build/$build_type --config $build_type -j $(nproc)
