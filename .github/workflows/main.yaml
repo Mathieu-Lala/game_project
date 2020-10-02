@@ -66,3 +66,7 @@ jobs:
         # add steps 'unit-tests'
         # add steps 'benchmark'
         # ..
+
+      - name: launch
+        shell: bash
+        run: ./build/${{ matrix.build_type }}/out/app --version
