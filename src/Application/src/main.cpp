@@ -9,19 +9,27 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "Terrain/Floor.hpp"
+#include <Declaration.hpp>
+
+#include <glm/gtx/string_cast.hpp>
 
 auto get() -> engine::Drawable
 {
     float VERTICES[] = {
         // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
+        0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+        0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+        -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
     };
     unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
+        0,
+        1,
+        3, // first triangle
+        1,
+        2,
+        3 // second triangle
     };
     unsigned int VBO;
     unsigned int VAO;
@@ -40,13 +48,13 @@ auto get() -> engine::Drawable
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void*>(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void *>(0));
     glEnableVertexAttribArray(0);
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     unsigned int texture;
@@ -83,11 +91,11 @@ auto open(const std::string_view file)
 }
 
 struct ThePurge : public engine::Game {
-    ThePurge() : m_shader{open("./data/shaders/vertex.glsl"), open("./data/shaders/fragment.glsl")} {}
+    ThePurge() : m_shader{open(DATA_DIR "/shaders/vertex.glsl"), open(DATA_DIR "/shaders/fragment.glsl")} {}
 
     auto onCreate(entt::registry &world) -> void final
     {
-        //constexpr auto max = static_cast<float>(std::numeric_limits<int>::max());
+        // constexpr auto max = static_cast<float>(std::numeric_limits<int>::max());
 
         /*
         for (int i = 0; i != 10; i++) {
@@ -97,26 +105,33 @@ struct ThePurge : public engine::Game {
                 e, Triangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
         }
         */
-/*
-        for (int i = 0; i != 10; i++) {
-            auto e = world.create();
+        /*
+                for (int i = 0; i != 10; i++) {
+                    auto e = world.create();
 
-            world.emplace<engine::Drawable>(
-                e, Rectangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
-        }
-*/
+                    world.emplace<engine::Drawable>(
+                        e, Rectangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
+                }
+        */
 
-        world.emplace<engine::Drawable>(world.create(), get());
+        // world.emplace<engine::Drawable>(world.create(), get());
+
+
+        getCamera().setViewport(-0.8, 0.8, 0.45, -0.45); // simple 16:9 test viewport
+        getCamera().setCenter({0.05, 0.05}); // test tile center
+
+        _floor = std::make_unique<Floor>(world, glm::vec2{0, 0});
     }
 
     auto onUpdate(entt::registry &world) -> void final
-    {
+    {       
         world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
-            m_shader.use();
+            drawable.shader->uploadUniformMat4("u_ViewProjection", getCamera().getViewProjMatrix());
+            
+            drawable.shader->use();
 
             ::glBindVertexArray(drawable.VAO);
-            ::glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+            ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
         });
     }
 
@@ -130,6 +145,8 @@ struct ThePurge : public engine::Game {
     }
 
     engine::Shader m_shader;
+
+    std::unique_ptr<Floor> _floor;
 };
 
 int main(int ac, char **av)
