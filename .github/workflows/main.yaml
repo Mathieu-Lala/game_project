@@ -13,10 +13,10 @@ jobs:
           windows-latest
         ]
         build_type: [
+          "MinSizeRel",
+          "Release",
           "RelWithDebInfo",
-          "MinSizeRel"
-#          "Debug",
-#          "Release"
+          "Debug"
         ]
         arch: [
 #          "x32",

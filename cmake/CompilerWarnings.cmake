@@ -66,7 +66,10 @@ function(set_project_warnings project_name)
 
   if(MSVC)
     set(PROJECT_WARNINGS ${MSVC_WARNINGS})
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /GR /EHsc") # Because VS add /W3 and we already set /W4
+    # Because VS add /W3 and we already set /W4
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /GR /EHsc" CACHE STRING "" FORCE)
+    # set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1" CACHE STRING "" FORCE)
+    # set(CMAKE_CXX_FLAGS_RELEASE "/MT /Zi /Ob0 /Od /RTC1" CACHE STRING "" FORCE)
 
   elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(PROJECT_WARNINGS ${CLANG_WARNINGS})
