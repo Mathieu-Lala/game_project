@@ -5,14 +5,16 @@
 #
 
 build_type=Debug
+arch=x64
 
 usage() {
     cat << EOF
-Usage: $0 [-h|--help] [--build_type=Debug]
+Usage: $0 [-h|--help] [--build_type=Debug] [--arch=x64]
 
 Options:
     -h|--help       Display this message.
     --build_type    Set the build type of the CMake project.
+    --arch          Set the architecture for the CMake project.
 EOF
     exit 2
 }
@@ -31,6 +33,11 @@ case $key in
     shift
     shift
     ;;
+    --arch)
+    arch="$2"
+    shift
+    shift
+    ;;
     *)
     shift
     ;;
@@ -41,4 +48,4 @@ echo "BUILD TYPE IS $build_type"
 
 export PATH="$PATH:$HOME/.local/bin"
 
-cmake --build build/$build_type --config $build_type -j $(nproc)
+cmake --build build/$build_type/$arch --config $build_type -j $(nproc)
