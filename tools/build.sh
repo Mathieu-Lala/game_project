@@ -54,4 +54,4 @@ if [[ $(uname -a) =~ "Ubuntu" ]]; then
     build_folder="$build_folder/$arch"
 fi
 
-cmake --build $build_folder --config $build_type -j $(nproc)
+cmake --build $build_folder -j $(nproc)
