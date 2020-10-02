@@ -127,7 +127,11 @@ struct ThePurge : public engine::Game {
     {       
         world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
             drawable.shader->uploadUniformMat4("u_ViewProjection", getCamera().getViewProjMatrix());
-            drawable.draw();
+            
+            drawable.shader->use();
+
+            ::glBindVertexArray(drawable.VAO);
+            ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
         });
     }
 
