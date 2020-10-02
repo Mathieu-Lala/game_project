@@ -42,7 +42,7 @@ auto engine::Shader::uploadUniformMat4(const std::string &name, const ::glm::mat
         GLenum type; // type of the variable (float, vec3 or mat4, etc)
 
         const GLsizei bufSize = 16; // maximum name length
-        GLchar name[bufSize];       // variable name in GLSL
+        GLchar gl_name[bufSize];       // variable name in GLSL
         GLsizei length;             // name length
 
 
@@ -55,9 +55,9 @@ auto engine::Shader::uploadUniformMat4(const std::string &name, const ::glm::mat
         spdlog::warn("Active Uniforms: {}", count);
 
         for (i = 0; i < count; i++) {
-            glGetActiveUniform(ID, (GLuint) i, bufSize, &length, &size, &type, name);
+            glGetActiveUniform(ID, (GLuint) i, bufSize, &length, &size, &type, gl_name);
 
-            spdlog::warn("  Uniform {} Type: {} Name: {}", i, type, name);
+            spdlog::warn("  Uniform {} Type: {} Name: {}", i, type, gl_name);
         }
     }
 }

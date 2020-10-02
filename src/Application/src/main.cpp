@@ -1,27 +1,23 @@
 #include <fstream>
 #include <streambuf>
+#include <sstream>
 
-#include <Engine/Core.hpp>
-
-#include <Engine/Shader.hpp>
-
-#include <Engine/component/Drawable.hpp>
-
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <Declaration.hpp>
-
-#include <Declaration.hpp>
-
+#include <spdlog/sinks/basic_file_sink.h>
 #include <glm/gtx/string_cast.hpp>
 
+#include <Engine/Core.hpp>
+#include <Engine/Shader.hpp>
+#include <Engine/component/Drawable.hpp>
+
+#include "Declaration.hpp"
 #include "level/LevelTilemapBuilder.hpp"
 #include "level/MapGenerator.hpp"
-
+/*
 auto get() -> engine::Drawable
 {
     float VERTICES[] = {
-        // positions          // colors           // texture coords
+        // positions       // colors         // texture coords
         0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
         0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
         -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
@@ -76,7 +72,7 @@ auto get() -> engine::Drawable
     int width;
     int height;
     int nrChannels;
-    auto data = stbi_load("./data/textures/image.jpg", &width, &height, &nrChannels, 0);
+    auto data = stbi_load(DATA_DIR "/data/textures/image.jpg", &width, &height, &nrChannels, 0);
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -87,40 +83,17 @@ auto get() -> engine::Drawable
 
     return {VBO, VAO, EBO};
 }
-
-auto open(const std::string_view file)
-{
-    std::ifstream t(file.data());
-    return std::string(std::istreambuf_iterator<char>(t), std::istreambuf_iterator<char>());
-}
+*/
+//auto open(const std::string_view file)
+//{
+//    std::ifstream t(file.data());
+//    return std::string(std::istreambuf_iterator<char>(t), std::istreambuf_iterator<char>());
+//}
 
 struct ThePurge : public engine::Game {
-    ThePurge() : m_shader{open(DATA_DIR "/shaders/vertex.glsl"), open(DATA_DIR "/shaders/fragment.glsl")} {}
 
     auto onCreate(entt::registry &world) -> void final
     {
-        // constexpr auto max = static_cast<float>(std::numeric_limits<int>::max());
-
-        /*
-        for (int i = 0; i != 10; i++) {
-            auto e = world.create();
-
-            world.emplace<engine::Drawable>(
-                e, Triangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
-        }
-        */
-        /*
-                for (int i = 0; i != 10; i++) {
-                    auto e = world.create();
-
-                    world.emplace<engine::Drawable>(
-                        e, Rectangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
-                }
-        */
-
-        // world.emplace<engine::Drawable>(world.create(), get());
-
-
         getCamera().setViewport(0, 89, 0, 50);
         getCamera().setCenter({0, 0});
 
@@ -128,10 +101,10 @@ struct ThePurge : public engine::Game {
     }
 
     auto onUpdate(entt::registry &world) -> void final
-    {       
+    {
         world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
             drawable.shader->uploadUniformMat4("u_ViewProjection", getCamera().getViewProjMatrix());
-            
+
             drawable.shader->use();
 
             ::glBindVertexArray(drawable.VAO);
@@ -148,15 +121,66 @@ struct ThePurge : public engine::Game {
         });
     }
 
-    engine::Shader m_shader;
+    auto onEvent(const engine::Event &e) -> void final
+    {
+        std::visit(engine::overloaded{
+            [&](const engine::Pressed<engine::Key> &key) { spdlog::info("key pressed {}", key.source.key); },
+            [](auto) { },
+        }, e);
+    }
+
 };
 
-int main(int ac, char **av)
-{
-    engine::Core::Holder holder;
+static constexpr auto VERSION =
+R"(ThePURGE 0.1.8)";
 
-    holder.instance->window(glm::ivec2{400, 400}, "The PURGE");
+static constexpr auto USAGE =
+R"(ThePURGE v0.1.8
+    Usage:
+        app (-h | --help)
+        app --version
+        app [-f | --fullscreen] [--play path]
+
+    Options:
+        -h --help       Show this message.
+        --version       Show version.
+        -f|--fullscreen Launch in fullscreen mode.
+        --play <path>   Path of the events to playback.
+)";
+
+int main(int argc, char **argv) try
+{
+    const auto args = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, VERSION);
+
+#ifndef NDEBUG
+    for (const auto &[flag, value] : args) {
+        std::stringstream ss;
+        ss << value;
+        spdlog::info("Application launched with args[{}] = {}", flag, ss.str());
+    }
+
+    spdlog::set_level(spdlog::level::level_enum::trace);
+#else
+
+#endif
+
+    // todo :
+    auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
+    logger->info("logger created");
+
+
+    auto holder = engine::Core::Holder::init();
+
+    std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
+    if (args.at("-f").asBool() || args.at("--fullscreen").asBool())
+        windowProperty |= engine::Window::Property::FULLSCREEN;
+
+    holder.instance->window(glm::ivec2{400, 400}, "The PURGE", windowProperty);
     holder.instance->game<ThePurge>();
 
-    return holder.instance->main(ac, av);
+    return holder.instance->main(args);
+}
+catch (const std::exception &e)
+{
+    spdlog::error("Caught exception at main level: {}", e.what());
 }

@@ -2,11 +2,13 @@
 
 #include <memory>
 #include <fstream>
+#include <functional>
 
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <entt/entt.hpp>
 #include <magic_enum.hpp>
+#include <docopt/docopt.h>
 
 #include "Engine/Window.hpp"
 #include "Engine/details/overloaded.hpp"
@@ -24,7 +26,14 @@ public:
 
     struct Holder {
 
-        std::unique_ptr<Core> &instance = Core::s_instance;
+        static
+        auto init() noexcept -> Holder
+        {
+            Core::s_instance = Core::get().get();
+            return {};
+        }
+
+        Core *instance = Core::s_instance;
 
     };
 
@@ -109,9 +118,13 @@ public:
         m_eventsPlayback = std::move(events);
     }
 
-    auto setPendingEventsFromFile(const char *filepath)
+    auto setPendingEventsFromFile(const std::string_view filepath)
     {
-        std::ifstream ifs(filepath);
+        std::ifstream ifs(filepath.data());
+        if (!ifs.is_open()) {
+            spdlog::warn("engine::Core setPendingEventsFromFile failed: {} could not be opened", filepath.data());
+            return;
+        }
         const auto j = nlohmann::json::parse(ifs);
         setPendingEvents(j.get<std::vector<Event>>());
     }
@@ -126,28 +139,19 @@ public:
 
             m_joystickManager->poll();
 
-            // 1. poll the core event
-            if (!m_events.empty()) {
-                const auto coreEvent = m_events.front();
-                m_events.erase(m_events.begin());
-                return coreEvent;
-            }
-
-            // 2. poll the window event
-            const auto windowEvent = m_window->getNextEvent();
-            if (windowEvent) { return *windowEvent; }
-
-            const auto joystickEvent = m_joystickManager->getNextEvent();
-            if (joystickEvent) { return *joystickEvent; }
-
-            break;
+            // 1. poll the window event
+            return m_window->getNextEvent()
+                // 2. poll the joysticks event
+                .value_or(m_joystickManager->getNextEvent()
+                // 3. send elapsed time
+                .value_or(TimeElapsed{getElapsedTime()}));
 
         } break;
         case PLAYBACK: {
             if (m_eventsPlayback.empty()) {
                 spdlog::warn("Engine::Window switching to record mode");
                 m_eventMode = RECORD;
-                break;
+                return TimeElapsed{getElapsedTime()};
             }
             auto event = m_eventsPlayback.front();
             m_eventsPlayback.erase(m_eventsPlayback.begin());
@@ -159,6 +163,7 @@ public:
                 [ ](const TimeElapsed &dt) { std::this_thread::sleep_for(dt.elapsed); },
                 [&](const Moved<Mouse> &m) { m_window->setCursorPosition({ m.source.x, m.source.y }); },
                 [&](const auto &e) { m_window->applyEvent(e); },
+                // todo : add fullscreen
                 },
                 event);
             return event;
@@ -166,19 +171,18 @@ public:
         } break;
         default: std::abort();
         }
-
-        // 3. send elapsed time
-        return TimeElapsed{ getElapsedTime() };
     }
 
-    auto main(int ac, char **av) -> int
+    auto main([[maybe_unused]] const std::map<std::string, docopt::value> &args) -> int
     {
         if (m_window == nullptr || m_game == nullptr) { return 1; }
-        if (ac == 2) { setPendingEventsFromFile(av[1]); }
-        spdlog::info("Engine::Window is in {} mode", ac == 2 ? "playback" : "record");
 
+#ifndef NDEBUG
+        if (args.at("--play").isString())
+            setPendingEventsFromFile(args.at("--play").asString());
+
+#endif
         std::vector<Event> eventsProcessed{ TimeElapsed{} };
-
 
         bool show_demo_window = true;
         while (m_window->isOpen()) {
@@ -193,11 +197,11 @@ public:
                 eventsProcessed.back(),
                 event);
 
-            // todo : update event context with joystick/keyboard/mouse
+            // todo : remove me ?
             bool timeElapsed = false;
             bool keyPressed = false;
 
-            // note : or engine related
+            // note : engine related
             std::visit(overloaded{
                 [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
                 [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); },
@@ -213,12 +217,17 @@ public:
                 event);
 
             if (keyPressed) {
+                // todo : abstract glfw keyboard
                 const auto keyEvent = std::get<Pressed<Key>>(event);
-                if (keyEvent.source.key == GLFW_KEY_ESCAPE) // todo : abstract glfw keyboard
+                if (keyEvent.source.key == GLFW_KEY_ESCAPE)
                     m_window->close();
+                if (keyEvent.source.key == GLFW_KEY_F11)
+                    m_window->setFullscreen(!m_window->isFullscreen());
             }
 
-// note : should note draw at every frame = heavy
+            m_game->onEvent(event);
+
+            // note : should note draw at every frame = heavy
             if (!timeElapsed) continue;
 
             m_window->draw([&] {
@@ -256,12 +265,14 @@ public:
 
         m_game->onDestroy(m_world);
 
+#ifndef NDEBUG
         nlohmann::json serialized(eventsProcessed);
         std::ofstream f{ "recorded_events.json" };
         f << serialized;
+#endif
 
         // otherwise the singleton will be destroy after the main -> dead signal
-        s_instance.reset(nullptr);
+        get().reset(nullptr);
 
         return 0;
     }
@@ -275,7 +286,7 @@ private:
         return instance;
     }
 
-    static std::unique_ptr<Core> &s_instance;
+    static Core *s_instance;
 
     static
     auto loadOpenGL() -> void
@@ -304,7 +315,6 @@ private:
     EventMode m_eventMode{ RECORD };
 
     std::vector<Event> m_eventsPlayback;
-    std::vector<Event> m_events;
 
 
     std::chrono::steady_clock::time_point m_lastTick;
@@ -323,3 +333,7 @@ private:
 };
 
 } // namespace engine
+
+#define IF_RECORD(...) \
+    do { if (engine::Core::Holder{}.instance->getEventMode() \
+        == engine::Core::EventMode::RECORD) { __VA_ARGS__; } } while(0)

@@ -3,7 +3,7 @@
 # https://github.com/lefticus/cppbestpractices/blob/master/02-Use_the_Tools_Available.md
 
 function(set_project_warnings project_name)
-  option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+  option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
 
   set(MSVC_WARNINGS
       /W4 # Baseline reasonable warnings
@@ -66,10 +66,17 @@ function(set_project_warnings project_name)
 
   if(MSVC)
     set(PROJECT_WARNINGS ${MSVC_WARNINGS})
+    # Because VS add /W3 and we already set /W4
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /GR /EHsc" CACHE STRING "" FORCE)
+    # set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi /Ob0 /Od /RTC1" CACHE STRING "" FORCE)
+    # set(CMAKE_CXX_FLAGS_RELEASE "/MT /Zi /Ob0 /Od /RTC1" CACHE STRING "" FORCE)
+
   elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(PROJECT_WARNINGS ${CLANG_WARNINGS})
+
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(PROJECT_WARNINGS ${GCC_WARNINGS})
+
   else()
     message(AUTHOR_WARNING "No compiler warnings set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
   endif()
