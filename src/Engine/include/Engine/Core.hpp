@@ -11,6 +11,7 @@
 #include "Engine/Window.hpp"
 #include "Engine/details/overloaded.hpp"
 #include "Engine/Game.hpp"
+#include "Engine/Camera.hpp"
 
 namespace engine {
 
@@ -94,7 +95,6 @@ public:
     }
 
     auto getWorld() -> entt::registry & { return m_world; }
-
 
     enum EventMode {
         RECORD,
@@ -213,7 +213,7 @@ public:
             }
 
 // note : should note draw at every frame = heavy
-//            if (!timeElapsed) continue;
+            if (!timeElapsed) continue;
 
             m_window->draw([&] {
 
