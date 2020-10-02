@@ -35,8 +35,11 @@ docopt.cpp/0.6.2
 [options]
 fmt:header_only=True
 spdlog:header_only=True
+docopt.cpp:shared=False
 
 [generators]
 cmake
 
 [imports]
+bin, *.dll -> ../out/
+lib, *.dylib* -> ../out/

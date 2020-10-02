@@ -140,28 +140,19 @@ public:
 
             m_joystickManager->poll();
 
-            // 1. poll the core event
-            if (!m_events.empty()) {
-                const auto coreEvent = m_events.front();
-                m_events.erase(m_events.begin());
-                return coreEvent;
-            }
-
-            // 2. poll the window event
-            const auto windowEvent = m_window->getNextEvent();
-            if (windowEvent) { return *windowEvent; }
-
-            const auto joystickEvent = m_joystickManager->getNextEvent();
-            if (joystickEvent) { return *joystickEvent; }
-
-            break;
+            // 1. poll the window event
+            return m_window->getNextEvent()
+                // 2. poll the joysticks event
+                .value_or(m_joystickManager->getNextEvent()
+                // 3. send elapsed time
+                .value_or(TimeElapsed{getElapsedTime()}));
 
         } break;
         case PLAYBACK: {
             if (m_eventsPlayback.empty()) {
                 spdlog::warn("Engine::Window switching to record mode");
                 m_eventMode = RECORD;
-                break;
+                return TimeElapsed{getElapsedTime()};
             }
             auto event = m_eventsPlayback.front();
             m_eventsPlayback.erase(m_eventsPlayback.begin());
@@ -173,6 +164,7 @@ public:
                 [ ](const TimeElapsed &dt) { std::this_thread::sleep_for(dt.elapsed); },
                 [&](const Moved<Mouse> &m) { m_window->setCursorPosition({ m.source.x, m.source.y }); },
                 [&](const auto &e) { m_window->applyEvent(e); },
+                // todo : add fullscreen
                 },
                 event);
             return event;
@@ -180,9 +172,6 @@ public:
         } break;
         default: std::abort();
         }
-
-        // 3. send elapsed time
-        return TimeElapsed{ getElapsedTime() };
     }
 
     auto main(const std::map<std::string, docopt::value> &args) -> int
@@ -325,7 +314,6 @@ private:
     EventMode m_eventMode{ RECORD };
 
     std::vector<Event> m_eventsPlayback;
-    std::vector<Event> m_events;
 
 
     std::chrono::steady_clock::time_point m_lastTick;

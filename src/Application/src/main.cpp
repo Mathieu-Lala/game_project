@@ -150,7 +150,7 @@ R"(ThePURGE v0.1.8
         --play <path>   Path of the events to playback.
 )";
 
-int main(int argc, char **argv)
+int main(int argc, char **argv) try
 {
     const auto args = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, VERSION);
 
@@ -181,4 +181,8 @@ int main(int argc, char **argv)
     holder.instance->game<ThePurge>();
 
     return holder.instance->main(args);
+}
+catch (const std::exception &e)
+{
+    spdlog::error("Caught exception at main level: {}", e.what());
 }

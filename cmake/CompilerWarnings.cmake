@@ -66,10 +66,14 @@ function(set_project_warnings project_name)
 
   if(MSVC)
     set(PROJECT_WARNINGS ${MSVC_WARNINGS})
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /GR /EHsc") # Because VS add /W3 and we already set /W4
+
   elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(PROJECT_WARNINGS ${CLANG_WARNINGS})
+
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(PROJECT_WARNINGS ${GCC_WARNINGS})
+
   else()
     message(AUTHOR_WARNING "No compiler warnings set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
   endif()
