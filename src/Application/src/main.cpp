@@ -9,10 +9,14 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include "Terrain/Floor.hpp"
+#include <Declaration.hpp>
+
 #include <Declaration.hpp>
 
 #include <glm/gtx/string_cast.hpp>
+
+#include "level/LevelTilemapBuilder.hpp"
+#include "level/MapGenerator.hpp"
 
 auto get() -> engine::Drawable
 {
@@ -117,10 +121,10 @@ struct ThePurge : public engine::Game {
         // world.emplace<engine::Drawable>(world.create(), get());
 
 
-        getCamera().setViewport(-0.8, 0.8, 0.45, -0.45); // simple 16:9 test viewport
-        getCamera().setCenter({0.05, 0.05}); // test tile center
+        getCamera().setViewport(0, 89, 0, 50);
+        getCamera().setCenter({0, 0});
 
-        _floor = std::make_unique<Floor>(world, glm::vec2{0, 0});
+        generateFloor(world, {}, ::time(nullptr));
     }
 
     auto onUpdate(entt::registry &world) -> void final
@@ -145,8 +149,6 @@ struct ThePurge : public engine::Game {
     }
 
     engine::Shader m_shader;
-
-    std::unique_ptr<Floor> _floor;
 };
 
 int main(int ac, char **av)
