@@ -9,10 +9,13 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include "Terrain/Floor.hpp"
+#include <Declaration.hpp>
+
 #include <Declaration.hpp>
 
 #include <glm/gtx/string_cast.hpp>
+
+#include "level/LevelTilemapBuilder.hpp"
 
 auto get() -> engine::Drawable
 {
@@ -117,10 +120,23 @@ struct ThePurge : public engine::Game {
         // world.emplace<engine::Drawable>(world.create(), get());
 
 
-        getCamera().setViewport(-0.8, 0.8, 0.45, -0.45); // simple 16:9 test viewport
-        getCamera().setCenter({0.05, 0.05}); // test tile center
+        getCamera().setViewport(0, 160, 0, 90);
+        getCamera().setCenter({0, 0});
 
-        _floor = std::make_unique<Floor>(world, glm::vec2{0, 0});
+        auto builder = TilemapBuilder();
+
+        int left = 10, right = 50, top = 60, bottom = 20;
+
+        for (int y = bottom + 1; y < top; ++y)
+            for (int x = left + 1; x < right; ++x)
+                builder.get(x, y) = TileEnum::FLOOR;
+
+        for (int x = left; x <= right; ++x) builder.get(x, top) = TileEnum::WALL;
+        for (int x = left; x <= right; ++x) builder.get(x, bottom) = TileEnum::WALL;
+        for (int y = bottom + 1; y < top; ++y) builder.get(left, y) = TileEnum::WALL;
+        for (int y = bottom + 1; y < top; ++y) builder.get(right, y) = TileEnum::WALL;
+
+        builder.build(world);
     }
 
     auto onUpdate(entt::registry &world) -> void final
@@ -145,8 +161,6 @@ struct ThePurge : public engine::Game {
     }
 
     engine::Shader m_shader;
-
-    std::unique_ptr<Floor> _floor;
 };
 
 int main(int ac, char **av)
