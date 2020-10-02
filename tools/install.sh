@@ -40,7 +40,7 @@ if [ -f requirements.txt ]; then pip install -r requirements.txt --user; fi
 export PATH="$PATH:$HOME/.local/bin"
 
 conan profile new game_project --detect
-if [[ $(uname) =~ "Linux" ]]; then
+if [[ $(uname -a) =~ "Ubuntu" ]]; then
     conan profile update settings.compiler.libcxx=libstdc++11 game_project
     conan profile update settings.compiler=gcc game_project
     conan profile update settings.compiler.version=10 game_project
