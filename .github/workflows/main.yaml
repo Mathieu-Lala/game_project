@@ -61,7 +61,7 @@ jobs:
       - name: launch Windows
         shell: bash
         if: ${{ matrix.os == 'windows-latest' }}
-        run: ls -R ./build &&./build/${{ matrix.build_type }}/out/${{ matrix.build_type }}/app.exe --version
+        run: ./build/${{ matrix.build_type }}/out/${{ matrix.build_type }}/app.exe --version
 
       - name: launch Ubuntu
         shell: bash
