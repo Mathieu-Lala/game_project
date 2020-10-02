@@ -14,8 +14,8 @@ jobs:
         ]
         build_type: [
           "MinSizeRel",
-          "Release"
-#          "RelWithDebInfo",
+#          "Release"
+          "RelWithDebInfo"
 #          "Debug"
         ]
         arch: [
