@@ -68,5 +68,8 @@ jobs:
         shell: bash
         if: ${{ matrix.os == 'windows-latest' }}
         run: ./build/${{ matrix.build_type }}/${{ matrix.arch }}/out/app.exe --version
+
+      - name: launch
+        shell: bash
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: ./build/${{ matrix.build_type }}/${{ matrix.arch }}/out/app --version
