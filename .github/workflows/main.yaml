@@ -69,4 +69,4 @@ jobs:
 
       - name: launch
         shell: bash
-        run: ./build/${{ matrix.build_type }}/out/app --version
+        run: ls -R . && ./build/${{ matrix.build_type }}/out/app --version
