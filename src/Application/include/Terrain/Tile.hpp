@@ -15,6 +15,5 @@ private:
 
 
 private:
-    // TODO: singleton or something ?
     std::shared_ptr<engine::Shader> _simpleColorShader;
 };
