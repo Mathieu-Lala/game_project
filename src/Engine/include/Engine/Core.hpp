@@ -96,7 +96,6 @@ public:
 
     auto getWorld() -> entt::registry & { return m_world; }
 
-
     enum EventMode {
         RECORD,
         PLAYBACK,
@@ -220,7 +219,7 @@ public:
             }
 
 // note : should note draw at every frame = heavy
-//            if (!timeElapsed) continue;
+            if (!timeElapsed) continue;
 
             m_window->draw([&] {
 
