@@ -46,13 +46,14 @@ done
 
 echo "BUILD TYPE IS $build_type"
 
-argument="-B build/$build_type/$arch -DCMAKE_BUILD_TYPE=$build_type"
+argument="-DCMAKE_BUILD_TYPE=$build_type"
 
 case "$(uname)" in
 "Linux")
+  argument="$argument -B build/$build_type/$arch"
   ;;
 *) # Windows
-   argument="$argument -A $arch"
+  argument="$argument -B build/$build_type -A $arch"
   ;;
 esac
 
