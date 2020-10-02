@@ -5,7 +5,7 @@
 #include <fstream>
 
 
-auto getFileContent(const std::string_view &file)
+auto getFileContent(const std::string_view file)
 {
     std::ifstream t(file.data());
     if (!t) throw std::runtime_error(fmt::format("Could not open file '{}'", file));
