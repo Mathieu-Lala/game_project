@@ -13,7 +13,7 @@
 #include "Declaration.hpp"
 #include "level/LevelTilemapBuilder.hpp"
 #include "level/MapGenerator.hpp"
-
+/*
 auto get() -> engine::Drawable
 {
     float VERTICES[] = {
@@ -83,15 +83,14 @@ auto get() -> engine::Drawable
 
     return {VBO, VAO, EBO};
 }
-
-auto open(const std::string_view file)
-{
-    std::ifstream t(file.data());
-    return std::string(std::istreambuf_iterator<char>(t), std::istreambuf_iterator<char>());
-}
+*/
+//auto open(const std::string_view file)
+//{
+//    std::ifstream t(file.data());
+//    return std::string(std::istreambuf_iterator<char>(t), std::istreambuf_iterator<char>());
+//}
 
 struct ThePurge : public engine::Game {
-    ThePurge() : m_shader{open(DATA_DIR "/shaders/vertex.glsl"), open(DATA_DIR "/shaders/fragment.glsl")} {}
 
     auto onCreate(entt::registry &world) -> void final
     {
@@ -122,7 +121,14 @@ struct ThePurge : public engine::Game {
         });
     }
 
-    engine::Shader m_shader;
+    auto onEvent(const engine::Event &e) -> void final
+    {
+        std::visit(engine::overloaded{
+            [&](const engine::Pressed<engine::Key> &key) { spdlog::info("key pressed {}", key.source.key); },
+            [](auto) { },
+        }, e);
+    }
+
 };
 
 static constexpr auto VERSION =

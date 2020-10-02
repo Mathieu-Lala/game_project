@@ -48,7 +48,7 @@ export PATH="$PATH:$HOME/.local/bin"
 
 build_folder=build/$build_type
 
-if [[ $(uname -a) =~ "Ubuntu" ]]; then
+if [[ $(uname -a) =~ "Linux" ]]; then
     build_folder="$build_folder/$arch"
 fi
 

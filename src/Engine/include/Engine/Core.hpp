@@ -197,11 +197,11 @@ public:
                 eventsProcessed.back(),
                 event);
 
-            // todo : update event context with joystick/keyboard/mouse
+            // todo : remove me ?
             bool timeElapsed = false;
             bool keyPressed = false;
 
-            // note : or engine related
+            // note : engine related
             std::visit(overloaded{
                 [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
                 [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); },
@@ -225,7 +225,9 @@ public:
                     m_window->setFullscreen(!m_window->isFullscreen());
             }
 
-// note : should note draw at every frame = heavy
+            m_game->onEvent(event);
+
+            // note : should note draw at every frame = heavy
             if (!timeElapsed) continue;
 
             m_window->draw([&] {
