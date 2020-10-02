@@ -44,8 +44,6 @@ case $key in
 esac
 done
 
-echo "BUILD TYPE IS $build_type"
-
 argument="-DCMAKE_BUILD_TYPE=$build_type"
 
 case "$(uname)" in

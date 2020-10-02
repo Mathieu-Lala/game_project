@@ -44,8 +44,6 @@ case $key in
 esac
 done
 
-echo "BUILD TYPE IS $build_type"
-
 export PATH="$PATH:$HOME/.local/bin"
 
 build_folder=build/$build_type
@@ -54,4 +52,4 @@ if [[ $(uname -a) =~ "Ubuntu" ]]; then
     build_folder="$build_folder/$arch"
 fi
 
-cmake --build $build_folder -j $(nproc)
+cmake --build $build_folder --config $build_type-j $(nproc)
