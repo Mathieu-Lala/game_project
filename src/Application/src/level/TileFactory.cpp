@@ -9,7 +9,7 @@ void TileFactory::Floor(entt::registry &world, const glm::vec2 &pos, const glm::
 
     auto drawable = ::engine::DrawableFactory::rectange(pos, size, glm::vec3(1, 1, 1), getShader());
 
-
+    spdlog::info("Created floor at {}, {} of size {}, {}", pos.x, pos.y, size.x, size.y);
     world.emplace<engine::Drawable>(world.create(), drawable);
 }
 
@@ -19,7 +19,7 @@ void TileFactory::Wall(entt::registry &world, const glm::vec2 &pos, const glm::v
 
     auto drawable = ::engine::DrawableFactory::rectange(pos, size, glm::vec3(0, 0, 0), getShader());
 
-
+    spdlog::info("Created floor at {}, {} of size {}, {}", pos.x, pos.y, size.x, size.y);
     world.emplace<engine::Drawable>(world.create(), drawable);
     // TODO: hitbox
 }
