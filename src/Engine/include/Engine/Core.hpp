@@ -105,7 +105,6 @@ public:
 
     auto getWorld() -> entt::registry & { return m_world; }
 
-
     enum EventMode {
         RECORD,
         PLAYBACK,
@@ -174,7 +173,7 @@ public:
         }
     }
 
-    auto main(const std::map<std::string, docopt::value> &args) -> int
+    auto main([[maybe_unused]] const std::map<std::string, docopt::value> &args) -> int
     {
         if (m_window == nullptr || m_game == nullptr) { return 1; }
 
@@ -227,7 +226,7 @@ public:
             }
 
 // note : should note draw at every frame = heavy
-//            if (!timeElapsed) continue;
+            if (!timeElapsed) continue;
 
             m_window->draw([&] {
 

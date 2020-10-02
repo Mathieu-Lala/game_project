@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Engine/Shader.hpp"
+
 namespace engine {
 
 struct Drawable {
@@ -8,8 +10,8 @@ struct Drawable {
     unsigned int VAO{ 0 };
     unsigned int EBO{ 0 };
 
-//    int vertices_count;
-
+    int triangle_count;
+    engine::Shader *shader;
 };
 
 } // namespace engine

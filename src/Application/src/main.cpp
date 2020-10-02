@@ -4,25 +4,32 @@
 
 #include <stb_image.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <glm/gtx/string_cast.hpp>
 
 #include <Engine/Core.hpp>
 #include <Engine/Shader.hpp>
-
 #include <Engine/component/Drawable.hpp>
 
+#include "Declaration.hpp"
+#include "level/LevelTilemapBuilder.hpp"
+#include "level/MapGenerator.hpp"
 
 auto get() -> engine::Drawable
 {
     float VERTICES[] = {
-        // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
+        // positions       // colors         // texture coords
+        0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+        0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+        -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
     };
     unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
+        0,
+        1,
+        3, // first triangle
+        1,
+        2,
+        3 // second triangle
     };
     unsigned int VBO;
     unsigned int VAO;
@@ -41,13 +48,13 @@ auto get() -> engine::Drawable
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void*>(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void *>(0));
     glEnableVertexAttribArray(0);
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     unsigned int texture;
@@ -65,7 +72,7 @@ auto get() -> engine::Drawable
     int width;
     int height;
     int nrChannels;
-    auto data = stbi_load("./data/textures/image.jpg", &width, &height, &nrChannels, 0);
+    auto data = stbi_load(DATA_DIR "/data/textures/image.jpg", &width, &height, &nrChannels, 0);
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -84,40 +91,25 @@ auto open(const std::string_view file)
 }
 
 struct ThePurge : public engine::Game {
-    ThePurge() : m_shader{open("./data/shaders/vertex.glsl"), open("./data/shaders/fragment.glsl")} {}
+    ThePurge() : m_shader{open(DATA_DIR "/shaders/vertex.glsl"), open(DATA_DIR "/shaders/fragment.glsl")} {}
 
     auto onCreate(entt::registry &world) -> void final
     {
-        //constexpr auto max = static_cast<float>(std::numeric_limits<int>::max());
+        getCamera().setViewport(0, 89, 0, 50);
+        getCamera().setCenter({0, 0});
 
-        /*
-        for (int i = 0; i != 10; i++) {
-            auto e = world.create();
-
-            world.emplace<engine::Drawable>(
-                e, Triangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
-        }
-        */
-/*
-        for (int i = 0; i != 10; i++) {
-            auto e = world.create();
-
-            world.emplace<engine::Drawable>(
-                e, Rectangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
-        }
-*/
-
-        world.emplace<engine::Drawable>(world.create(), get());
+        generateFloor(world, {}, ::time(nullptr));
     }
 
     auto onUpdate(entt::registry &world) -> void final
     {
         world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
-            m_shader.use();
+            drawable.shader->uploadUniformMat4("u_ViewProjection", getCamera().getViewProjMatrix());
+
+            drawable.shader->use();
 
             ::glBindVertexArray(drawable.VAO);
-            ::glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+            ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
         });
     }
 

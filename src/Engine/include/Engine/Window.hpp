@@ -42,7 +42,6 @@ public:
     // just an utility function : may not stay
     auto draw(const std::function<void()> &drawer)
     {
-        setActive();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
