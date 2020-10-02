@@ -12,6 +12,9 @@ struct FloorGenParam {
 
     int maxDungeonWidth = 50;
     int maxDungeonheight = 50;
+
+    int minCorridorWidth = 2;
+    int maxCorridorWidth = 4;
 };
 
 void generateFloor(entt::registry &world, FloorGenParam params = {}, std::optional<unsigned int> seed = {});

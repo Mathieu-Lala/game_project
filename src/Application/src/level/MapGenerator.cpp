@@ -63,13 +63,23 @@ Room generateRoom(TilemapBuilder &builder, const FloorGenParam &params, std::def
     return r;
 }
 
+// If gap is even, center will be chosen randomly between the two center tiles
+int getOnePossibleCenterOf(int a, int b, std::default_random_engine &randomEngine)
+{
+    int result = (a + b) / 2;
+
+    if ((a - b) % 2 == 0) result -= randRange(0, 1, randomEngine);
+
+    return result;
+}
+
 // If room size is even, center will be chosen randomly between the two center tiles
 glm::vec<2, int> getOnePossibleCenterOf(const Room &r, std::default_random_engine &randomEngine)
 {
-    glm::vec<2, int> pos = glm::vec2(r.x, r.y) + (glm::vec2(r.w, r.h) / 2.f);
+    glm::vec<2, int> pos;
 
-    if (r.w % 2) pos.x -= randRange(0, 1, randomEngine);
-    if (r.h % 2) pos.x -= randRange(0, 1, randomEngine);
+    pos.x = getOnePossibleCenterOf(r.x, r.x + r.w, randomEngine);
+    pos.y = getOnePossibleCenterOf(r.y, r.y + r.h, randomEngine);
 
     return pos;
 }
@@ -80,9 +90,11 @@ void generatorCorridor(
     auto start = getOnePossibleCenterOf(r1, randomEngine);
     auto end = getOnePossibleCenterOf(r2, randomEngine);
 
-    auto vertical = [&](glm::vec2 pos) -> glm::vec2 {
+    auto vertical = [&](glm::vec<2, int> pos, int width) -> glm::vec<2, int> {
+        auto widthOffset = getOnePossibleCenterOf(0, width, randomEngine);
+
         while (pos.y != end.y) {
-            builder.get(pos.x, pos.y) = TileEnum::FLOOR;
+            for (int x = -widthOffset; x < width - widthOffset; ++x) builder.get(pos.x + x, pos.y) = TileEnum::FLOOR;
 
             if (pos.y < end.y)
                 ++pos.y;
@@ -93,9 +105,11 @@ void generatorCorridor(
         return pos;
     };
 
-    auto horizontal = [&](glm::vec2 pos) -> glm::vec2 {
+    auto horizontal = [&](glm::vec<2, int> pos, int width) -> glm::vec<2, int> {
+        auto widthOffset = getOnePossibleCenterOf(0, width, randomEngine);
+
         while (pos.x != end.x) {
-            builder.get(pos.x, pos.y) = TileEnum::FLOOR;
+            for (int y = -widthOffset; y < width - widthOffset; ++y) builder.get(pos.x, pos.y + y) = TileEnum::FLOOR;
 
             if (pos.x < end.x)
                 ++pos.x;
@@ -108,11 +122,19 @@ void generatorCorridor(
 
 
     if (randRange(0, 1, randomEngine)) {
-        auto pos = vertical(start);
-        horizontal(pos);
+        auto maxWidth = std::min(r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+        auto width = randRange(
+            std::min(maxWidth, params.minCorridorWidth), std::max(maxWidth, params.maxCorridorWidth), randomEngine);
+
+        auto pos = vertical(start, width);
+        horizontal(pos, width);
     } else {
-        auto pos = horizontal(start);
-        vertical(pos);
+        auto maxWidth = std::min(r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+        auto width = randRange(
+            std::min(maxWidth, params.minCorridorWidth), std::max(maxWidth, params.maxCorridorWidth), randomEngine);
+
+        auto pos = horizontal(start, width);
+        vertical(pos, width);
     }
 }
 
