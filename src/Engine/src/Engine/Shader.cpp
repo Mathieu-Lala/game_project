@@ -21,7 +21,7 @@ auto engine::Shader::uploadUniformMat4(const std::string &name, const ::glm::mat
     auto location = glGetUniformLocation(ID, name.c_str());
 
     if (location != -1)
-        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
+        ::glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
     else {
         spdlog::warn("Could not find uniform '{}' in ID : {}", name, ID);
 

@@ -182,11 +182,7 @@ auto engine::Core::main([[maybe_unused]] const std::map<std::string, docopt::val
             ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
             ::glClear(GL_COLOR_BUFFER_BIT);
 
-            m_world.view<engine::Drawable>().each([](engine::Drawable &drawable) {
-                drawable.shader->use();
-                ::glBindVertexArray(drawable.VAO);
-                ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-            });
+            m_world.view<Drawable>().each(Drawable::system);
         });
     }
 
