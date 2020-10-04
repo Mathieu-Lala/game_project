@@ -5,16 +5,17 @@
 
 auto TilemapBuilder::get(int x, int y) -> TileEnum &
 {
-    assert(x < m_maxWidth);
-    assert(y < m_maxHeight);
+    assert(x < m_size.x);
+    assert(y < m_size.y);
 
-    return m_tiles[y * m_maxWidth + x];
+    return m_tiles[static_cast<std::size_t>(y * m_size.x + x)];
 }
 
 void TilemapBuilder::build(entt::registry &world)
 {
-    for (int y = 0; y < m_maxHeight; ++y)
-        for (int x = 0; x < m_maxWidth; ++x) handleTileBuild(world, x, y);
+    for (int y = 0; y < m_size.y; ++y) {
+        for (int x = 0; x < m_size.x; ++x) { handleTileBuild(world, x, y); }
+    }
 }
 
 void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
@@ -24,9 +25,9 @@ void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
 
     auto size = getTileSize(x, y);
 
-    for (int clearY = y; clearY < y + size.y; ++clearY)
-        for (int clearX = x; clearX < x + size.x; ++clearX) get(clearX, clearY) = TileEnum::NONE;
-
+    for (int clearY = y; clearY < y + size.y; ++clearY) {
+        for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
+    }
 
     switch (tile) {
     case TileEnum::FLOOR: TileFactory::Floor(world, {x, y}, size); break;
@@ -36,16 +37,16 @@ void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     }
 }
 
-glm::vec2 TilemapBuilder::getTileSize(int x1, int y1)
+glm::ivec2 TilemapBuilder::getTileSize(int x1, int y1)
 {
     auto tile = get(x1, y1);
 
     int x2 = x1 + 1;
     int y2 = y1 + 1;
 
-    while (x2 < m_maxWidth && get(x2, y1) == tile) ++x2;
+    while (x2 < m_size.x && get(x2, y1) == tile) ++x2;
 
-    while (y2 < m_maxWidth) {
+    while (y2 < m_size.x) {
         bool isEntireLineSame = true;
 
         for (int x = x1; x < x2; ++x) {

@@ -1,13 +1,14 @@
-#include "level/TileFactory.hpp"
 #include <glm/vec3.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
-#include <Declaration.hpp>
+
+#include "level/TileFactory.hpp"
+#include "Declaration.hpp"
 
 void TileFactory::Floor(entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size)
 {
     auto e = world.create();
 
-    auto drawable = ::engine::DrawableFactory::rectange(pos, size, glm::vec3(1, 1, 1), getShader());
+    auto drawable = ::engine::DrawableFactory::rectangle(pos, size, glm::vec3(1, 1, 1), getShader());
 
     world.emplace<engine::Drawable>(e, drawable);
 }
@@ -16,7 +17,7 @@ void TileFactory::Wall(entt::registry &world, const glm::vec2 &pos, const glm::v
 {
     auto e = world.create();
 
-    auto drawable = ::engine::DrawableFactory::rectange(pos, size, glm::vec3(0, 0, 0), getShader());
+    auto drawable = ::engine::DrawableFactory::rectangle(pos, size, glm::vec3(0, 0, 0), getShader());
 
     world.emplace<engine::Drawable>(e, drawable);
     // TODO: hitbox
@@ -24,9 +25,8 @@ void TileFactory::Wall(entt::registry &world, const glm::vec2 &pos, const glm::v
 
 auto TileFactory::getShader() -> engine::Shader *
 {
-    static auto shaderInstance = engine::Shader::CreateFromFiles(
-        DATA_DIR "/shaders/simpleColor/simpleColorVertex.glsl",
-        DATA_DIR "/shaders/simpleColor/simpleColorFragment.glsl");
+    static auto shaderInstance = std::unique_ptr<engine::Shader>(new engine::Shader(engine::Shader::fromFile(
+        DATA_DIR "/shaders/simpleColor/simpleColorVertex.glsl", DATA_DIR "/shaders/simpleColor/simpleColorFragment.glsl")));
 
     return shaderInstance.get();
 }

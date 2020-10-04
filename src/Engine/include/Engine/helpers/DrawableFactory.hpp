@@ -6,6 +6,6 @@
 
 namespace engine::DrawableFactory {
 
-::engine::Drawable rectange(::glm::vec2 pos, ::glm::vec2 size, ::glm::vec3 color, ::engine::Shader *shader);
+engine::Drawable rectangle(glm::vec2 pos, glm::vec2 size, glm::vec3 color, engine::Shader *shader);
 
-}
+} // namespace engine::DrawableFactory

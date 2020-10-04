@@ -13,9 +13,10 @@ struct Room {
 };
 
 // Generate random int in the interval [min; max[
-auto randRange(int min, int max, std::default_random_engine &randomEngine)
+template<std::integral T>
+auto randRange(T min, T max, std::default_random_engine &randomEngine)
 {
-    return min + randomEngine() % (max - min);
+    return min + static_cast<T>(randomEngine()) % (max - min);
 }
 
 bool isRoomValid(TilemapBuilder &builder, const Room &r)
@@ -48,8 +49,8 @@ Room generateRoom(TilemapBuilder &builder, const FloorGenParam &params, std::def
         r.w = randRange(params.minRoomSize + 2, params.maxRoomSize + 2, randomEngine);
         r.h = randRange(params.minRoomSize + 2, params.maxRoomSize + 2, randomEngine);
 
-        r.x = randRange(0, builder.getMaxWidth() - r.w, randomEngine);
-        r.y = randRange(0, builder.getMaxHeight() - r.h, randomEngine);
+        r.x = randRange(0, builder.getSize().x - r.w, randomEngine);
+        r.y = randRange(0, builder.getSize().y - r.h, randomEngine);
 
 
     } while (!isRoomValid(builder, r));
@@ -153,15 +154,15 @@ void placeWalls(TilemapBuilder &builder)
 
     glm::vec<2, int> it;
 
-    for (it.y = 0; it.y < builder.getMaxHeight(); ++it.y)
-        for (it.x = 0; it.x < builder.getMaxWidth(); ++it.x) {
+    for (it.y = 0; it.y < builder.getSize().y; ++it.y)
+        for (it.x = 0; it.x < builder.getSize().x; ++it.x) {
             if (builder.get(it.x, it.y) != TileEnum::NONE) continue;
 
             for (auto n : neighbours) {
                 auto checkPos = it + n;
 
-                if (checkPos.x > 0 && checkPos.x < builder.getMaxWidth() && checkPos.y > 0
-                    && checkPos.y < builder.getMaxHeight() && builder.get(checkPos.x, checkPos.y) == TileEnum::FLOOR) {
+                if (checkPos.x > 0 && checkPos.x < builder.getSize().x && checkPos.y > 0
+                    && checkPos.y < builder.getSize().y && builder.get(checkPos.x, checkPos.y) == TileEnum::FLOOR) {
                     builder.get(it.x, it.y) = TileEnum::WALL;
                     break;
                 }
@@ -171,22 +172,20 @@ void placeWalls(TilemapBuilder &builder)
 
 void generateFloor(entt::registry &world, FloorGenParam params, std::optional<unsigned int> seed)
 {
-    TilemapBuilder builder(params.maxDungeonWidth, params.maxDungeonheight);
+    TilemapBuilder builder({ params.maxDungeonWidth, params.maxDungeonheight });
     std::default_random_engine randomEngine;
 
     if (seed) randomEngine.seed(seed.value());
 
-    std::vector<Room> rooms;
-
     auto roomCount = randRange(params.minRoomCount, params.maxRoomCount, randomEngine);
 
+    std::vector<Room> rooms;
     rooms.reserve(roomCount);
 
     rooms.emplace_back(generateRoom(builder, params, randomEngine));
-    for (int i = 0; i < roomCount - 1; ++i) {
+    for (std::size_t i = 0; i < roomCount - 1; ++i) {
         rooms.emplace_back(generateRoom(builder, params, randomEngine));
-        if (rooms[i + 1].w == 0 && rooms[i + 1].h == 0) // Failed to place room
-            break;
+        if (rooms[i + 1].w == 0 && rooms[i + 1].h == 0) break; // Failed to place room
         generatorCorridor(builder, params, randomEngine, rooms[i], rooms[i + 1]);
     }
 

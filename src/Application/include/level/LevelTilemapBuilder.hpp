@@ -11,25 +11,25 @@ enum class TileEnum : unsigned char {
 };
 
 class TilemapBuilder {
-
 public:
-    TilemapBuilder(int maxWidth = 100, int maxHeight = 100) :
-        m_maxWidth(maxWidth), m_maxHeight(maxHeight), m_tiles(m_maxWidth * m_maxHeight, TileEnum::NONE)
-    {}
+
+    TilemapBuilder(glm::ivec2 &&size = { 100, 100 }) :
+        m_size(size), m_tiles(static_cast<std::size_t>(m_size.x * m_size.y), TileEnum::NONE)
+    {
+    }
 
     auto get(int x, int y) -> TileEnum &;
 
-    void build(entt::registry & world);
+    void build(entt::registry &world);
 
-    auto getMaxWidth() const { return m_maxWidth; }
-    auto getMaxHeight() const { return m_maxHeight; }
+    auto getSize() const -> const glm::ivec2 & { return m_size; }
 
 private:
     void handleTileBuild(entt::registry &world, int x, int y);
-    glm::vec2 getTileSize(int x, int y);
+    glm::ivec2 getTileSize(int x, int y);
 
 private:
+
+    const glm::ivec2 m_size;
     std::vector<TileEnum> m_tiles;
-    int m_maxWidth;
-    int m_maxHeight;
 };
