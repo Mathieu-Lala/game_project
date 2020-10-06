@@ -22,6 +22,7 @@ public:
     Window(glm::ivec2 &&size, const std::string_view title, std::uint16_t property = DEFAULT);
     ~Window();
 
+
     [[nodiscard]] auto isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
 
     auto close() { ::glfwSetWindowShouldClose(m_handle, GLFW_TRUE); }
@@ -35,6 +36,7 @@ public:
     auto setPosition(glm::ivec2 &&pos) { ::glfwSetWindowPos(m_handle, pos.x, pos.y); }
 
     auto setCursorPosition(glm::dvec2 &&pos) { ::glfwSetCursorPos(m_handle, pos.x, pos.y); }
+
 
     template<typename EventType>
     auto applyEvent([[maybe_unused]] const EventType &) -> void { }

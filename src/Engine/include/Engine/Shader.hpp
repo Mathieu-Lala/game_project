@@ -1,19 +1,20 @@
 #pragma once
 
 #include <string_view>
-#include "Engine/details/Graphics.hpp"
-#include <glm/mat4x4.hpp>
 
+#include <glm/mat4x4.hpp>
 #include <spdlog/spdlog.h>
+
+#include "Engine/details/Graphics.hpp"
 
 namespace engine {
 
 class Shader {
 public:
-    Shader(const std::string_view vertexCode, const std::string_view fragmentCode) : ID{::glCreateProgram()}
+    Shader(const std::string_view vCode, const std::string_view fCode) : ID{::glCreateProgram()}
     {
-        shader_<GL_VERTEX_SHADER> vertex{vertexCode.data()};
-        shader_<GL_FRAGMENT_SHADER> fragment{fragmentCode.data()};
+        shader_<GL_VERTEX_SHADER> vertex{vCode.data()};
+        shader_<GL_FRAGMENT_SHADER> fragment{fCode.data()};
 
         ::glAttachShader(ID, vertex.ID);
         ::glAttachShader(ID, fragment.ID);
@@ -21,7 +22,7 @@ public:
 
         GLint success;
         ::glGetProgramiv(ID, GL_LINK_STATUS, &success);
-        if (auto err = glGetError() ; err != GL_NO_ERROR) {
+        if (const auto err = glGetError(); err != GL_NO_ERROR) {
             spdlog::error("Error {} : {}", err, glewGetErrorString(err));
             return;
         }
@@ -30,20 +31,23 @@ public:
             GLint maxLength = 0;
             ::glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &maxLength);
 
-            std::vector<GLchar> errorLog(maxLength);
-            ::glGetProgramInfoLog(ID, maxLength, &maxLength, &errorLog[0]);
+            std::vector<GLchar> errorLog(static_cast<std::size_t>(maxLength));
+            ::glGetProgramInfoLog(ID, maxLength, &maxLength, errorLog.data());
 
-            spdlog::error("(Failed to link shader program {}, \nError : {}\n",
-                ID,
-                errorLog.data());
+            spdlog::error("(Failed to link shader program {}, \nError : {}\n", ID, errorLog.data());
         } else {
             spdlog::info("Successfully created shader program {}", ID);
         }
     }
 
-    auto static CreateFromFiles(const std::string_view vertexFile, const std::string_view fragmentFile) -> std::shared_ptr<Shader>;
+    static
+    auto fromFile(const std::string_view vFile, const std::string_view fFile) -> Shader;
 
-    ~Shader() { ::glDeleteProgram(ID); spdlog::info("Destroyed shader program {}", ID); }
+    ~Shader()
+    {
+        ::glDeleteProgram(ID);
+        spdlog::info("Destroyed shader program {}", ID);
+    }
 
     auto use() -> void { ::glUseProgram(ID); }
 
@@ -68,12 +72,10 @@ private:
                 GLint maxLength = 0;
                 ::glGetShaderiv(ID, GL_INFO_LOG_LENGTH, &maxLength);
 
-                std::vector<GLchar> errorLog(maxLength);
-                ::glGetShaderInfoLog(ID, maxLength, &maxLength, &errorLog[0]);
+                std::vector<GLchar> errorLog(static_cast<std::size_t>(maxLength));
+                ::glGetShaderInfoLog(ID, maxLength, &maxLength, errorLog.data());
 
-                spdlog::error("(Failed to compile shader, \nError : {}\n\n{}\n)",
-                    errorLog.data(),
-                    source);
+                spdlog::error("(Failed to compile shader, \nError : {}\n\n{}\n)", errorLog.data(), source);
             }
         }
 

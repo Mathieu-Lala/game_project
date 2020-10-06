@@ -20,13 +20,13 @@ private:
     void update();
 
 private:
-    ::glm::mat4 _projMatrix;
-    ::glm::mat4 _viewMatrix;
+    glm::mat4 _projMatrix;
+    glm::mat4 _viewMatrix;
 
     // result cache
-    ::glm::mat4 _viewProjMatrix;
+    glm::mat4 _viewProjMatrix;
 
-    ::glm::vec3 _pos{0, 0, 0};
+    glm::vec3 _pos{0, 0, 0};
 };
 
 } // namespace engine

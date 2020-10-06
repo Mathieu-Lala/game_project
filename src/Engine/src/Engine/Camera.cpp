@@ -1,7 +1,7 @@
 #include "Engine/Camera.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
-engine::Camera::Camera() : _projMatrix(1.f) 
+engine::Camera::Camera() : _projMatrix(1.f)
 {
     update();
 }
@@ -17,8 +17,8 @@ auto engine::Camera::setCenter(::glm::vec2 point) -> void
 auto engine::Camera::setViewport(float left, float right, float bottom, float top) -> void
 {
     _projMatrix = glm::ortho(left, right, bottom, top, _pos.z, 99999.f);
-    _pos.x = (left + right) / 2;
-    _pos.y = (top + bottom) / 2;
+    _pos.x = (left + right) / 2.0f;
+    _pos.y = (top + bottom) / 2.0f;
 
     update();
 }

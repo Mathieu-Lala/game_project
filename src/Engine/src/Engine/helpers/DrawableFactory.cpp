@@ -1,6 +1,6 @@
 #include "Engine/helpers/DrawableFactory.hpp"
 
-::engine::Drawable engine::DrawableFactory::rectange(::glm::vec2 pos, ::glm::vec2 size, ::glm::vec3 c, ::engine::Shader *shader)
+engine::Drawable engine::DrawableFactory::rectangle(glm::vec2 pos, glm::vec2 size, glm::vec3 c, engine::Shader *shader)
 {
     float verticies[] = {
         // positions

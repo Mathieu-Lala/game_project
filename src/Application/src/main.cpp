@@ -1,10 +1,7 @@
-#include <fstream>
-#include <streambuf>
 #include <sstream>
 
 #include <stb_image.h>
 #include <spdlog/sinks/basic_file_sink.h>
-#include <glm/gtx/string_cast.hpp>
 
 #include <Engine/Core.hpp>
 #include <Engine/Shader.hpp>
@@ -12,121 +9,67 @@
 
 #include "Declaration.hpp"
 #include "level/LevelTilemapBuilder.hpp"
+#include "level/TileFactory.hpp"
 #include "level/MapGenerator.hpp"
-/*
-auto get() -> engine::Drawable
-{
-    float VERTICES[] = {
-        // positions       // colors         // texture coords
-        0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-        0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-        -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
-    };
-    unsigned int indices[] = {
-        0,
-        1,
-        3, // first triangle
-        1,
-        2,
-        3 // second triangle
-    };
-    unsigned int VBO;
-    unsigned int VAO;
-    unsigned int EBO;
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+class ThePurge : public engine::Game {
 
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES), VERTICES, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void *>(0));
-    glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_set_flip_vertically_on_load(true);
-
-    int width;
-    int height;
-    int nrChannels;
-    auto data = stbi_load(DATA_DIR "/data/textures/image.jpg", &width, &height, &nrChannels, 0);
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        spdlog::warn("Failed to load texture");
-    }
-    stbi_image_free(data);
-
-    return {VBO, VAO, EBO};
-}
-*/
-//auto open(const std::string_view file)
-//{
-//    std::ifstream t(file.data());
-//    return std::string(std::istreambuf_iterator<char>(t), std::istreambuf_iterator<char>());
-//}
-
-struct ThePurge : public engine::Game {
+    glm::vec4 screen_pos = { 0, 89, 0, 50 };
 
     auto onCreate(entt::registry &world) -> void final
     {
-        getCamera().setViewport(0, 89, 0, 50);
-        getCamera().setCenter({0, 0});
-
         generateFloor(world, {}, ::time(nullptr));
+
+        m_camera.setViewport(screen_pos.x, screen_pos.y, screen_pos.z, screen_pos.w);
+        m_camera.setCenter({0, 0});
+
+        TileFactory::getShader()->uploadUniformMat4("u_ViewProjection", m_camera.getViewProjMatrix());
     }
 
-    auto onUpdate(entt::registry &world) -> void final
+    auto onDestroy(entt::registry &) -> void final
+    {
+    }
+
+    auto onUpdate(entt::registry &world, const engine::Event &e) -> void final
+    {
+        std::visit(engine::overloaded{
+            [&](const engine::Pressed<engine::Key> &key) {
+                spdlog::info("key pressed {}", key.source.key);
+
+                // note : this does not work as expected ..
+                switch (key.source.key) {
+                case GLFW_KEY_UP: screen_pos += glm::vec4(-10, 10, 0, 0); break;
+                case GLFW_KEY_RIGHT: screen_pos += glm::vec4(10, -10, 0, 0); break;
+                case GLFW_KEY_DOWN: screen_pos += glm::vec4(0, 0, 10, -10); break;
+                case GLFW_KEY_LEFT: screen_pos += glm::vec4(0, 0, -10, 10); break;
+                default: break;
+                }
+                m_camera.setViewport(screen_pos.x, screen_pos.y, screen_pos.z, screen_pos.w);
+                TileFactory::getShader()->uploadUniformMat4("u_ViewProjection", m_camera.getViewProjMatrix());
+
+            },
+            [&](const engine::TimeElapsed &t) { onTick(world, t.elapsed); },
+            [](auto) { },
+        }, e);
+    }
+
+    bool show_demo_window = true;
+
+    auto drawUserInterface() -> void final
+    {
+        if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
+    }
+
+private:
+
+    engine::Camera m_camera;
+
+    auto onTick(entt::registry &world, const std::chrono::steady_clock::duration &) -> void
     {
         world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
-            drawable.shader->uploadUniformMat4("u_ViewProjection", getCamera().getViewProjMatrix());
-
-            drawable.shader->use();
-
             ::glBindVertexArray(drawable.VAO);
             ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
         });
-    }
-
-    auto onDestroy(entt::registry &world) -> void final
-    {
-        world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
-            ::glDeleteVertexArrays(1, &drawable.VAO);
-            ::glDeleteBuffers(1, &drawable.VBO);
-            ::glDeleteBuffers(1, &drawable.EBO);
-        });
-    }
-
-    auto onEvent(const engine::Event &e) -> void final
-    {
-        std::visit(engine::overloaded{
-            [&](const engine::Pressed<engine::Key> &key) { spdlog::info("key pressed {}", key.source.key); },
-            [](auto) { },
-        }, e);
     }
 
 };

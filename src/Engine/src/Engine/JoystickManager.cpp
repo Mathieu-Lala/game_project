@@ -1,3 +1,5 @@
+#include <spdlog/spdlog.h>
+
 #include "Engine/JoystickManager.hpp"
 #include "Engine/Core.hpp"
 
