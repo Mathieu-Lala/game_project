@@ -1,5 +1,7 @@
 #include <sstream>
 
+#include <CLI/CLI.hpp>
+
 #include <stb_image.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
@@ -64,48 +66,64 @@ private:
 
     engine::Camera m_camera;
 
-    auto onTick(entt::registry &world, const std::chrono::steady_clock::duration &) -> void
+    auto onTick(entt::registry &, const std::chrono::steady_clock::duration &) -> void
     {
-        world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
-            ::glBindVertexArray(drawable.VAO);
-            ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-        });
     }
 
 };
 
-static constexpr auto VERSION =
+static constexpr auto NAME =
 R"(ThePURGE 0.1.8)";
 
-static constexpr auto USAGE =
-R"(ThePURGE v0.1.8
-    Usage:
-        app (-h | --help)
-        app --version
-        app [-f | --fullscreen] [--play path]
+static constexpr auto VERSION =
+"ThePURGE 0.1.8"
+#ifndef NDEBUG
+    " - Debug build"
+#else
+    " - Release build"
+#endif
+;
 
-    Options:
-        -h --help       Show this message.
-        --version       Show version.
-        -f|--fullscreen Launch in fullscreen mode.
-        --play <path>   Path of the events to playback.
-)";
+struct Options {
+
+    enum Value {
+        FULLSCREEN,
+        REPLAY_PATH,
+        OPTION_MAX
+    };
+
+    CLI::App app;
+
+    std::array<CLI::Option *, OPTION_MAX> options;
+
+    bool fullscreen = true;
+
+    std::string replay_path;
+
+    Options(int argc, char **argv) :
+        app(NAME, argv[0])
+    {
+        app.add_flag("--version", [](auto) -> void {
+            std::cout << VERSION; exit(0); }, "Print the version number and exit.");
+
+        options[FULLSCREEN] = app.add_option("--fullscreen", fullscreen, "Launch the window in fullscreen mode.", true);
+        options[REPLAY_PATH] = app.add_option("--replay_path", replay_path, "Path of the events to replay.");
+
+        if (const auto res = [&]() -> std::optional<int> { CLI11_PARSE(app, argc, argv); return {}; }(); res.has_value()) { throw res.value_or(0); }
+    }
+
+    void dump() const
+    {
+        spdlog::warn("Working on file: {}, direct count: {}, opt count: {}",
+            fullscreen, app.count("--fullscreen"), options[FULLSCREEN]->count());
+    }
+};
 
 int main(int argc, char **argv) try
 {
-    const auto args = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, VERSION);
+    Options opt{argc, argv};
 
-#ifndef NDEBUG
-    for (const auto &[flag, value] : args) {
-        std::stringstream ss;
-        ss << value;
-        spdlog::info("Application launched with args[{}] = {}", flag, ss.str());
-    }
-
-    spdlog::set_level(spdlog::level::level_enum::trace);
-#else
-
-#endif
+    opt.dump();
 
     // todo :
     auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
@@ -115,15 +133,24 @@ int main(int argc, char **argv) try
     auto holder = engine::Core::Holder::init();
 
     std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
-    if (args.at("-f").asBool() || args.at("--fullscreen").asBool())
+    if (opt.fullscreen)
         windowProperty |= engine::Window::Property::FULLSCREEN;
 
-    holder.instance->window(glm::ivec2{400, 400}, "The PURGE", windowProperty);
+    holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
     holder.instance->game<ThePurge>();
 
-    return holder.instance->main(args);
+#ifndef NDEBUG
+    if (opt.options[Options::REPLAY_PATH]->count())
+        holder.instance->setPendingEventsFromFile(opt.replay_path);
+#endif
+
+    return holder.instance->main();
 }
 catch (const std::exception &e)
 {
     spdlog::error("Caught exception at main level: {}", e.what());
+}
+catch (int code)
+{
+    return code;
 }

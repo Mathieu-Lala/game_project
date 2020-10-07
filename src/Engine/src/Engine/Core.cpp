@@ -51,21 +51,27 @@ engine::Core::~Core()
     spdlog::info("Engine::Core destroyed");
 }
 
-auto engine::Core::setPendingEvents(std::vector<Event> &&events)
+auto engine::Core::setPendingEvents(std::vector<Event> &&events) -> void
 {
     m_eventMode = PLAYBACK;
     m_eventsPlayback = std::move(events);
 }
 
-auto engine::Core::setPendingEventsFromFile(const std::string_view filepath)
+auto engine::Core::setPendingEventsFromFile(const std::string_view filepath) -> bool try
 {
     std::ifstream ifs(filepath.data());
     if (!ifs.is_open()) {
         spdlog::warn("engine::Core setPendingEventsFromFile failed: {} could not be opened", filepath.data());
-        return;
+        return false;
     }
     const auto j = nlohmann::json::parse(ifs);
     setPendingEvents(j.get<std::vector<Event>>());
+    return true;
+}
+catch (...)
+{
+    spdlog::warn("engine::Core setPendingEventsFromFile failed: could not parse the file {}", filepath.data());
+    return false;
 }
 
 auto engine::Core::getNextEvent() -> Event
@@ -115,14 +121,10 @@ auto engine::Core::getNextEvent() -> Event
     }
 }
 
-auto engine::Core::main([[maybe_unused]] const std::map<std::string, docopt::value> &args) -> int
+auto engine::Core::main() -> int
 {
     if (m_window == nullptr || m_game == nullptr) { return 1; }
 
-#ifndef NDEBUG
-    if (args.at("--play").isString()) setPendingEventsFromFile(args.at("--play").asString());
-
-#endif
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 

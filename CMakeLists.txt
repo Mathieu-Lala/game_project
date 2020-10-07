@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.9[..3.18])
 # Get version from the file 'VERSION'
 file(STRINGS "VERSION" PROJECT_VERSION LIMIT_COUNT 1)
 
-project(proto
+project(GameProject
     LANGUAGES CXX
     VERSION ${PROJECT_VERSION}
     DESCRIPTION "KMU Fall Game Project"

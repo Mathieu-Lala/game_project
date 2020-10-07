@@ -50,7 +50,8 @@ target_link_libraries(
          CONAN_PKG::entt
          CONAN_PKG::stb
          CONAN_PKG::magic_enum
-         CONAN_PKG::docopt.cpp)
+#         CONAN_PKG::docopt.cpp
+         CONAN_PKG::CLI11)
 
 if(MSVC)
   target_compile_definitions(engine PUBLIC NOMINMAX)
