@@ -18,7 +18,7 @@ class ThePurge : public engine::Game {
 
     auto onCreate(entt::registry &world) -> void final
     {
-        generateFloor(world, {}, ::time(nullptr));
+        generateFloor(world, {}, static_cast<std::uint32_t>(::time(nullptr)));
 
         m_camera.setViewport(screen_pos.x, screen_pos.y, screen_pos.z, screen_pos.w);
         m_camera.setCenter({0, 0});
