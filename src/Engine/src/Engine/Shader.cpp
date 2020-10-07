@@ -46,7 +46,8 @@ auto engine::Shader::uploadUniformMat4(const std::string &name, const ::glm::mat
         for (int i = 0; i < count; i++) {
             GLint size;
             GLenum type;
-            ::glGetActiveUniform(ID, static_cast<GLuint>(i), gl_name.size(), &length, &size, &type, gl_name.data());
+            ::glGetActiveUniform(ID, static_cast<GLuint>(i), static_cast<GLsizei>(gl_name.size()),
+                &length, &size, &type, gl_name.data());
             spdlog::warn("  Uniform {} Type: {} Name: {}", i, type, gl_name.data());
         }
     }
