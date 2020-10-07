@@ -1,5 +1,11 @@
 #include <spdlog/spdlog.h>
+
+#include "Engine/details/Warnings.hpp"
+
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_NON_STD_EXTENSION
 #include <glm/gtc/type_ptr.hpp>
+DISABLE_WARNING_POP
 
 #include "Engine/Shader.hpp"
 #include "Engine/helpers/File.hpp"

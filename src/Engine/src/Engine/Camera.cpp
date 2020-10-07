@@ -1,5 +1,11 @@
-#include "Engine/Camera.hpp"
+#include "Engine/details/Warnings.hpp"
+
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_CONSTANT_CONDITIONAL
 #include <glm/gtc/matrix_transform.hpp>
+DISABLE_WARNING_POP
+
+#include "Engine/Camera.hpp"
 
 engine::Camera::Camera() : _projMatrix(1.f)
 {

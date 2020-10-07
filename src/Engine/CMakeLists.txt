@@ -4,7 +4,7 @@ macro(download_imgui file)
   if(NOT EXISTS "${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}/${file}")
     message(
       STATUS
-        "Downloading from https://github.com/ocornut/imgui/${imgui_version}/${file}"
+        "Downloading from https://github.com/ocornut/imgui/tree/v${imgui_version}/examples/${file}"
     )
     file(
       DOWNLOAD
