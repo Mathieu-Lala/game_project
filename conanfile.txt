@@ -1,6 +1,6 @@
 [requires]
-# UI/UX - API libary
-imgui/1.73@bincrafters/stable
+# UI API
+imgui/1.78
 
 opengl/system
 
@@ -9,7 +9,6 @@ glfw/3.3.2
 
 # OpenGL loader
 glew/2.1.0
-#glad/0.1.29@bincrafters/stable
 
 # Mathematics
 glm/0.9.9.5@g-truc/stable
@@ -23,13 +22,13 @@ spdlog/1.6.0
 # ECS
 entt/3.5.2
 
-# Enum print helper
+# C++ enum helper
 magic_enum/0.6.6
 
-# Image
+# Image processing libary
 stb/20190512@conan/stable
 
-# Argument parsing (ac, av)
+# Argument parser (ac, av)
 docopt.cpp/0.6.2
 
 [options]

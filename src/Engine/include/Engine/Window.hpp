@@ -101,15 +101,15 @@ private:
 // defined in Window.cpp
 
 template<>
-auto Window::applyEvent<Pressed<MouseButton>>(const Pressed<MouseButton> &) -> void;
+auto Window::applyEvent(const Pressed<MouseButton> &) -> void;
 
 template<>
-auto Window::applyEvent<Released<MouseButton>>(const Released<MouseButton> &) -> void;
+auto Window::applyEvent(const Released<MouseButton> &) -> void;
 
 template<>
-auto Window::applyEvent<Pressed<Key>>(const Pressed<Key> &) -> void;
+auto Window::applyEvent(const Pressed<Key> &) -> void;
 
 template<>
-auto Window::applyEvent<Released<Key>>(const Released<Key> &) -> void;
+auto Window::applyEvent(const Released<Key> &) -> void;
 
 } // namespace engine

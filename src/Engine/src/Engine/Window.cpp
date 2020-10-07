@@ -145,25 +145,25 @@ auto engine::Window::callback_eventMouseMoved([[maybe_unused]] GLFWwindow *windo
 using namespace engine; // just for the template specialization consistency
 
 template<>
-auto Window::applyEvent<Pressed<MouseButton>>(const Pressed<MouseButton> &m) -> void
+auto Window::applyEvent(const Pressed<MouseButton> &m) -> void
 {
     ImGui_ImplGlfw_MouseButtonCallback(m_handle, m.source.button, GLFW_PRESS, 0 /* todo */);
 }
 
 template<>
-auto Window::applyEvent<Released<MouseButton>>(const Released<MouseButton> &m) -> void
+auto Window::applyEvent(const Released<MouseButton> &m) -> void
 {
     ImGui_ImplGlfw_MouseButtonCallback(m_handle, m.source.button, GLFW_RELEASE, 0 /* todo */);
 }
 
 template<>
-auto Window::applyEvent<Pressed<Key>>(const Pressed<Key> &k) -> void
+auto Window::applyEvent(const Pressed<Key> &k) -> void
 {
     ImGui_ImplGlfw_KeyCallback(m_handle, k.source.key, k.source.scancode, GLFW_PRESS, 0 /* todo */);
 }
 
 template<>
-auto Window::applyEvent<Released<Key>>(const Released<Key> &k) -> void
+auto Window::applyEvent(const Released<Key> &k) -> void
 {
     ImGui_ImplGlfw_KeyCallback(m_handle, k.source.key, k.source.scancode, GLFW_RELEASE, 0 /* todo */);
 }

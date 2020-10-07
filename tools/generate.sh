@@ -63,4 +63,4 @@ fi
 export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
 
-cmake $argument -j $(nproc) -DWARNINGS_AS_ERRORS=OFF .
+cmake $argument -j $(nproc) .
