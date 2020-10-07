@@ -11,6 +11,8 @@ namespace engine {
 
 class Shader {
 public:
+    Shader() = default;
+
     Shader(const std::string_view vCode, const std::string_view fCode) : ID{::glCreateProgram()}
     {
         shader_<GL_VERTEX_SHADER> vertex{vCode.data()};

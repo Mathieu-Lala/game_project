@@ -41,6 +41,8 @@ public:
 
     auto getNextEvent() -> Event;
 
+    auto window() -> std::unique_ptr<Window> & { return m_window; }
+
     template<typename ...Args>
     auto window(Args &&...args) -> std::unique_ptr<Window> &
     {
