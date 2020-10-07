@@ -1,129 +1,115 @@
-#include <sstream>
-
-#include <stb_image.h>
+#include <CLI/CLI.hpp>
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include <Engine/Core.hpp>
-#include <Engine/Shader.hpp>
-#include <Engine/component/Drawable.hpp>
+#include <Engine/details/Version.hpp>
 
-#include "Declaration.hpp"
-#include "level/LevelTilemapBuilder.hpp"
-#include "level/TileFactory.hpp"
-#include "level/MapGenerator.hpp"
+#include "ThePurge.hpp"
 
-class ThePurge : public engine::Game {
+static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
-    glm::vec4 screen_pos = { 0, 89, 0, 50 };
+static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION
+#ifndef NDEBUG
+    " - Debug"
+#else
+    " - Release"
+#endif
+;
 
-    auto onCreate(entt::registry &world) -> void final
+struct Options {
+
+    static constexpr auto DEFAULT_CONFIG = "app.ini";
+
+    enum Value {
+        CONFIG_PATH,
+        FULLSCREEN,
+        REPLAY_PATH,
+        OPTION_MAX
+    };
+
+    std::array<CLI::Option *, OPTION_MAX> options;
+
+    Options(int argc, char **argv) :
+        app(NAME, argv[0])
     {
-        generateFloor(world, {}, ::time(nullptr));
+        app.add_flag("--version", [](auto v) -> void {
+            if (v == 1) { std::cout << VERSION; exit(0); } }, "Print the version number and exit.");
 
-        m_camera.setViewport(screen_pos.x, screen_pos.y, screen_pos.z, screen_pos.w);
-        m_camera.setCenter({0, 0});
+        options[CONFIG_PATH] = app.set_config("--config", DEFAULT_CONFIG);
+        options[FULLSCREEN] = app.add_option("--fullscreen", fullscreen, "Launch the window in fullscreen mode.", true);
+        options[REPLAY_PATH] = app.add_option("--replay_path", replay_path, "Path of the events to replay.");
 
-        TileFactory::getShader()->uploadUniformMat4("u_ViewProjection", m_camera.getViewProjMatrix());
+        if (const auto res = [&]() -> std::optional<int> { CLI11_PARSE(app, argc, argv); return {}; }(); res.has_value()) { throw res.value_or(0); }
     }
 
-    auto onDestroy(entt::registry &) -> void final
+    auto dump() const -> void
     {
+// todo :
+//        spdlog::warn("Working on file: {}, direct count: {}, opt count: {}",
+//            fullscreen, app.count("--fullscreen"), options[FULLSCREEN]->count());
     }
 
-    auto onUpdate(entt::registry &world, const engine::Event &e) -> void final
+    auto write_to_file(const std::string_view path) -> bool
     {
-        std::visit(engine::overloaded{
-            [&](const engine::Pressed<engine::Key> &key) {
-                spdlog::info("key pressed {}", key.source.key);
-
-                // note : this does not work as expected ..
-                switch (key.source.key) {
-                case GLFW_KEY_UP: screen_pos += glm::vec4(-10, 10, 0, 0); break;
-                case GLFW_KEY_RIGHT: screen_pos += glm::vec4(10, -10, 0, 0); break;
-                case GLFW_KEY_DOWN: screen_pos += glm::vec4(0, 0, 10, -10); break;
-                case GLFW_KEY_LEFT: screen_pos += glm::vec4(0, 0, -10, 10); break;
-                default: break;
-                }
-                m_camera.setViewport(screen_pos.x, screen_pos.y, screen_pos.z, screen_pos.w);
-                TileFactory::getShader()->uploadUniformMat4("u_ViewProjection", m_camera.getViewProjMatrix());
-
-            },
-            [&](const engine::TimeElapsed &t) { onTick(world, t.elapsed); },
-            [](auto) { },
-        }, e);
+        std::ofstream f(path.data());
+        if (!f.is_open()) { return false; }
+        f << app.config_to_str(true, true);
+        return true;
     }
 
-    bool show_demo_window = true;
+    CLI::App app;
 
-    auto drawUserInterface() -> void final
-    {
-        if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
-    }
-
-private:
-
-    engine::Camera m_camera;
-
-    auto onTick(entt::registry &world, const std::chrono::steady_clock::duration &) -> void
-    {
-        world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
-            ::glBindVertexArray(drawable.VAO);
-            ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-        });
-    }
+    bool fullscreen = true;
+    std::string replay_path;
 
 };
 
-static constexpr auto VERSION =
-R"(ThePURGE 0.1.8)";
-
-static constexpr auto USAGE =
-R"(ThePURGE v0.1.8
-    Usage:
-        app (-h | --help)
-        app --version
-        app [-f | --fullscreen] [--play path]
-
-    Options:
-        -h --help       Show this message.
-        --version       Show version.
-        -f|--fullscreen Launch in fullscreen mode.
-        --play <path>   Path of the events to playback.
-)";
-
 int main(int argc, char **argv) try
 {
-    const auto args = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, VERSION);
-
-#ifndef NDEBUG
-    for (const auto &[flag, value] : args) {
-        std::stringstream ss;
-        ss << value;
-        spdlog::info("Application launched with args[{}] = {}", flag, ss.str());
-    }
-
-    spdlog::set_level(spdlog::level::level_enum::trace);
-#else
-
-#endif
-
-    // todo :
+    // todo : setup properly logging
     auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
     logger->info("logger created");
 
 
+    // 1. Parse the program argument
+
+    Options opt{argc, argv};
+
+#ifndef NDEBUG
+    opt.dump();
+#endif
+
+    opt.write_to_file(!opt.options[Options::CONFIG_PATH]->empty()
+        ? opt.options[Options::CONFIG_PATH]->as<std::string>()
+        : Options::DEFAULT_CONFIG);
+
+
+    // 2. Initialize the Engine / Window / Game
+
     auto holder = engine::Core::Holder::init();
 
     std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
-    if (args.at("-f").asBool() || args.at("--fullscreen").asBool())
+    if (opt.fullscreen)
         windowProperty |= engine::Window::Property::FULLSCREEN;
 
-    holder.instance->window(glm::ivec2{400, 400}, "The PURGE", windowProperty);
+    holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
     holder.instance->game<ThePurge>();
 
-    return holder.instance->main(args);
+
+    // 3. Apply optional argument and run
+
+#ifndef NDEBUG
+    if (!opt.options[Options::REPLAY_PATH]->empty())
+        holder.instance->setPendingEventsFromFile(opt.replay_path);
+#endif
+
+    return holder.instance->main();
 }
 catch (const std::exception &e)
 {
     spdlog::error("Caught exception at main level: {}", e.what());
+}
+catch (int code)
+{
+    return code;
 }

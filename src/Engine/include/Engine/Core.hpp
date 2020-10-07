@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <entt/entt.hpp>
-#include <docopt/docopt.h>
 
 #include "Engine/Window.hpp"
 #include "Engine/Game.hpp"
@@ -38,7 +37,7 @@ public:
     Core &operator=(Core &&) = delete;
 
 
-    auto main(const std::map<std::string, docopt::value> &args) -> int;
+    auto main() -> int;
 
     auto getNextEvent() -> Event;
 
@@ -72,9 +71,9 @@ public:
 
     auto getEventMode() const { return m_eventMode; }
 
-    auto setPendingEvents(std::vector<Event> &&events);
+    auto setPendingEvents(std::vector<Event> &&events) -> void;
 
-    auto setPendingEventsFromFile(const std::string_view filepath);
+    auto setPendingEventsFromFile(const std::string_view filepath) -> bool;
 
 private:
 

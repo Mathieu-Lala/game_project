@@ -15,8 +15,8 @@ jobs:
         build_type: [
           "MinSizeRel",
 #          "Release"
-          "RelWithDebInfo"
-#          "Debug"
+#          "RelWithDebInfo",
+          "Debug"
         ]
         arch: [
 #          "x32",
@@ -71,4 +71,5 @@ jobs:
       # TODO :
         # add steps 'unit-tests'
         # add steps 'benchmark'
+        # add steps 'style & lint'
         # ..
