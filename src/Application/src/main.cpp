@@ -1,5 +1,7 @@
 #include <fstream>
 #include <streambuf>
+#include <entt/entt.hpp>
+#include <iostream>
 
 #include <Engine/Core.hpp>
 
@@ -11,6 +13,7 @@
 #include <stb_image.h>
 #include "Terrain/Floor.hpp"
 #include <Declaration.hpp>
+#include <Competences/FarmerCompetences.hpp>
 
 #include <glm/gtx/string_cast.hpp>
 
@@ -149,12 +152,96 @@ struct ThePurge : public engine::Game {
     std::unique_ptr<Floor> _floor;
 };
 
+void foo(int a, char b)
+{ std::cout << a << b << std::endl; }
+
+struct listener {
+    void bar(const int &a, char b)
+    { 
+        std::cout << a << b << std::endl;
+    }
+};
+
+class boop {
+public:
+    void printTest(const int &a, char b) { 
+        std::cout << a << " || " << b << std::endl;
+    }
+};
+
+class Controller {
+public:
+    void printA(const std::string &str) { std::cout << str << std::endl; };
+    void printB(const std::string &str) { std::cout << str << std::endl; };
+    void printX(const std::string &str) { std::cout << str << std::endl; };
+    void printY(const std::string &str) { std::cout << str << std::endl; };
+};
+
 int main(int ac, char **av)
 {
     engine::Core::Holder holder;
 
-    holder.instance->window(glm::ivec2{400, 400}, "The PURGE");
-    holder.instance->game<ThePurge>();
+    //holder.instance->window(glm::ivec2{400, 400}, "The PURGE");
+    //holder.instance->game<ThePurge>();
+
+    // ...
+    //entt::sigh<void(int, char)> signal;
+    //entt::sink sink{signal};
+    //listener instance;
+    //boop test;
+
+    //sink.connect<&foo>();
+    //sink.connect<&listener::bar>(instance);
+    //sink.connect<&boop::printTest>(test);
+
+    std::string buffer{};
+
+    Controller controller;
+    FarmerCompetences farmer;
+
+    entt::sigh<void(void)> actionBottom;
+    entt::sigh<void(void)> actionRight;
+    entt::sigh<void(const std::string &)> actionLeft;
+    entt::sigh<void(const std::string &)> actionTop;
+
+    entt::sink sinkB(actionBottom);
+    entt::sink sinkR(actionRight);
+    entt::sink sinkL(actionLeft);
+    entt::sink sinkT(actionTop);
+
+    sinkB.connect<&FarmerCompetences::activateSkill>(farmer);
+    sinkR.connect<&FarmerCompetences::displayInfos>(farmer);
+    sinkL.connect<&Controller::printX>(controller);
+    sinkT.connect<&Controller::printY>(controller);
+
+    std::cout;
+    while (std::getline(std::cin, buffer)) {
+        std::cout << "Input -> " << buffer << std::endl;
+        if (buffer == "A" || buffer == "ACTION_BOTTOM") {
+            actionBottom.publish();
+        } else if (buffer == "B" || buffer == "ACTION_RIGHT") {
+            actionRight.publish();
+        } else if (buffer == "X" || buffer == "ACTION_LEFT") {
+            actionLeft.publish("X is Pressed !");
+        } else if (buffer == "Y" || buffer == "ACTION_RIGHT") {
+            actionTop.publish("Y is Pressed !");
+        } else if (buffer == "exit") break;
+    }
+
+    //// ...
+    //signal.publish(42, 'c');
+
+    //// disconnects a free function
+    //sink.disconnect<&foo>();
+
+    //// disconnect a member function of an instance
+    //sink.disconnect<&listener::bar>(instance);
+
+    //// disconnect all member functions of an instance, if any
+    //sink.disconnect(instance);
+
+    //// discards all listeners at once
+    //sink.disconnect();
 
     return holder.instance->main(ac, av);
 }
