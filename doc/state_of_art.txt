@@ -1,0 +1,67 @@
+Target Platform:
+    Ubuntu
+    Windows10
+
+Languages:
+    Engine: C++20
+    Games:  C++20
+        ? ChaiScript ? Lua ?
+
+Compiler: (https://en.cppreference.com/w/cpp/compiler_support)
+    gcc>=10
+    clang>=11
+    MSVC 2019
+
+Package Manager:
+    Conan (https://docs.conan.io/en/latest/)
+
+Libaries:
+    Window (OpenGL Context / Event handler): GLFW (https://www.glfw.org/documentation.html)
+    OpenGL loader: GLEW (https://github.com/nigels-com/glew)
+    UI: ImGUI (https://github.com/ocornut/imgui)
+
+    Json: nlohmann_json (https://github.com/nlohmann/json)
+    Logging: spdlog (https://github.com/gabime/spdlog)
+    Parsing Argv: docopt (https://github.com/docopt/docopt.cpp)
+
+    Maths: GLM (https://glm.g-truc.net/0.9.9/api/index.html)
+
+    # Not needed => game in 2D
+    3D assets manager: ? Assimp ? (https://github.com/assimp/assimp)
+
+    # Not needed => not in network
+    Network: ? boost ?
+
+    Audio: ? portaudio ? irrlang ?
+
+    Utility:
+        enum: magic_enum (https://github.com/Neargye/magic_enum)
+        physics: ? units ? (https://github.com/mpusz/units)
+
+Build Tools:
+    Cross platform build: CMake (UNIX Makefile / Ninja)
+    Cache manager: ccmake / cmake-gui
+    Cache compiler: ccache
+    Other Options:
+        IPO / PCH
+
+Static Analyzer:
+    clang-tidy
+    cppcheck
+    include-what-you-use
+
+Debbuger:
+    Sanatizer
+
+Tests:
+    Test driver: CTest
+    CI: Pipeline Github (https://github.com/ainfosec/ci_helloworld)
+    Units tests: Catch2 (https://github.com/catchorg/Catch2)
+    Undefined Behaviour: Fuzz
+    Benchmark: google_benchmark
+    Style:
+        clang-format
+        cmake-format
+
+Documentation:
+    Doxygen

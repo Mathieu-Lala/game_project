@@ -44,13 +44,14 @@ case $key in
 esac
 done
 
-argument="-B build/$build_type -DCMAKE_BUILD_TYPE=$build_type"
+argument="-DCMAKE_BUILD_TYPE=$build_type"
 
 case "$(uname)" in
 "Linux")
+  argument="$argument -B build/$build_type/$arch"
   ;;
 *) # Windows
-   argument="$argument -A $arch"
+  argument="$argument -B build/$build_type -A $arch"
   ;;
 esac
 
@@ -62,4 +63,4 @@ fi
 export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
 
-cmake $argument -j $(nproc) .
+cmake $argument -j $(nproc) -DENABLE_CACHE=ON -DENABLE_PCH=ON .

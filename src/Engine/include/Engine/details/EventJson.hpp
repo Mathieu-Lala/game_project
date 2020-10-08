@@ -89,7 +89,7 @@ void deserialize(const nlohmann::json &j, Param &... param)
     const auto &top = j.at(std::string{EventType::name});
 
     if (top.size() != sizeof...(Param)) {
-        throw std::logic_error("Deserialization size mismatch");
+         std::logic_error("Deserialization size mismatch");
     }
 
     std::size_t cur_elem = 0;

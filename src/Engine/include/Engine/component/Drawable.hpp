@@ -12,6 +12,14 @@ struct Drawable {
 
     int triangle_count;
     engine::Shader *shader;
+
+    static
+    auto system(const Drawable &drawable) -> void
+    {
+        drawable.shader->use();
+        ::glBindVertexArray(drawable.VAO);
+        ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+    }
 };
 
 } // namespace engine

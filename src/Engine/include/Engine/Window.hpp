@@ -12,8 +12,16 @@ namespace engine {
 class Window {
 public:
 
-    Window(glm::ivec2 &&size, const char *title);
-    ~Window() noexcept(true);
+    enum Property {
+        DEFAULT,
+        FULLSCREEN,
+
+        PROPERTY_MAX
+    };
+
+    Window(glm::ivec2 &&size, const std::string_view title, std::uint16_t property = DEFAULT);
+    ~Window();
+
 
     [[nodiscard]] auto isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
 
@@ -28,6 +36,7 @@ public:
     auto setPosition(glm::ivec2 &&pos) { ::glfwSetWindowPos(m_handle, pos.x, pos.y); }
 
     auto setCursorPosition(glm::dvec2 &&pos) { ::glfwSetCursorPos(m_handle, pos.x, pos.y); }
+
 
     template<typename EventType>
     auto applyEvent([[maybe_unused]] const EventType &) -> void { }
@@ -48,10 +57,18 @@ public:
 
     auto getNextEvent() -> std::optional<Event>;
 
+    auto isFullscreen() -> bool;
+
+    auto setFullscreen(bool fullscreen) -> void;
+
 private:
 
     static Window *s_instance;
 
+    glm::ivec2 m_pos;
+    glm::ivec2 m_size;
+
+    ::GLFWmonitor *m_monitor{ nullptr };
     ::GLFWwindow *m_handle{ nullptr };
     ::ImGuiContext *m_ui_context{ nullptr };
 
@@ -84,15 +101,15 @@ private:
 // defined in Window.cpp
 
 template<>
-auto Window::applyEvent<Pressed<MouseButton>>(const Pressed<MouseButton> &) -> void;
+auto Window::applyEvent(const Pressed<MouseButton> &) -> void;
 
 template<>
-auto Window::applyEvent<Released<MouseButton>>(const Released<MouseButton> &) -> void;
+auto Window::applyEvent(const Released<MouseButton> &) -> void;
 
 template<>
-auto Window::applyEvent<Pressed<Key>>(const Pressed<Key> &) -> void;
+auto Window::applyEvent(const Pressed<Key> &) -> void;
 
 template<>
-auto Window::applyEvent<Released<Key>>(const Released<Key> &) -> void;
+auto Window::applyEvent(const Released<Key> &) -> void;
 
 } // namespace engine

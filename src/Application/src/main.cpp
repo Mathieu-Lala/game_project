@@ -2,155 +2,98 @@
 #include <streambuf>
 #include <entt/entt.hpp>
 #include <iostream>
+#include <CLI/CLI.hpp>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include <Engine/Core.hpp>
+#include <Engine/details/Version.hpp>
 
-#include <Engine/Shader.hpp>
+#include "ThePurge.hpp"
 
-#include <Engine/component/Drawable.hpp>
+static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "Terrain/Floor.hpp"
 #include <Declaration.hpp>
 #include <Competences/FarmerCompetences.hpp>
+static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION
+#ifndef NDEBUG
+    " - Debug"
+#else
+    " - Release"
+#endif
+;
 
-#include <glm/gtx/string_cast.hpp>
+struct Options {
 
-auto get() -> engine::Drawable
-{
-    float VERTICES[] = {
-        // positions          // colors           // texture coords
-        0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-        0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-        -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
+    static constexpr auto DEFAULT_CONFIG = "app.ini";
+
+    enum Value {
+        CONFIG_PATH,
+        FULLSCREEN,
+        REPLAY_PATH,
+        OPTION_MAX
     };
-    unsigned int indices[] = {
-        0,
-        1,
-        3, // first triangle
-        1,
-        2,
-        3 // second triangle
-    };
-    unsigned int VBO;
-    unsigned int VAO;
-    unsigned int EBO;
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    std::array<CLI::Option *, OPTION_MAX> options;
 
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES), VERTICES, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void *>(0));
-    glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_set_flip_vertically_on_load(true);
-
-    int width;
-    int height;
-    int nrChannels;
-    auto data = stbi_load("./data/textures/image.jpg", &width, &height, &nrChannels, 0);
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        spdlog::warn("Failed to load texture");
-    }
-    stbi_image_free(data);
-
-    return {VBO, VAO, EBO};
-}
-
-auto open(const std::string_view file)
-{
-    std::ifstream t(file.data());
-    return std::string(std::istreambuf_iterator<char>(t), std::istreambuf_iterator<char>());
-}
-
-struct ThePurge : public engine::Game {
-    ThePurge() : m_shader{open(DATA_DIR "/shaders/vertex.glsl"), open(DATA_DIR "/shaders/fragment.glsl")} {}
-
-    auto onCreate(entt::registry &world) -> void final
+    Options(int argc, char **argv) :
+        app(NAME, argv[0])
     {
-        // constexpr auto max = static_cast<float>(std::numeric_limits<int>::max());
+        app.add_flag("--version", [](auto v) -> void {
+            if (v == 1) { std::cout << VERSION; exit(0); } }, "Print the version number and exit.");
 
-        /*
-        for (int i = 0; i != 10; i++) {
-            auto e = world.create();
+        options[CONFIG_PATH] = app.set_config("--config", DEFAULT_CONFIG);
+        options[FULLSCREEN] = app.add_option("--fullscreen", fullscreen, "Launch the window in fullscreen mode.", true);
+        options[REPLAY_PATH] = app.add_option("--replay_path", replay_path, "Path of the events to replay.");
 
-            world.emplace<engine::Drawable>(
-                e, Triangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
-        }
-        */
-        /*
-                for (int i = 0; i != 10; i++) {
-                    auto e = world.create();
-
-                    world.emplace<engine::Drawable>(
-                        e, Rectangle::create(static_cast<float>(std::rand()) / max - 0.5f, static_cast<float>(std::rand()) / max - 0.5f));
-                }
-        */
-
-        // world.emplace<engine::Drawable>(world.create(), get());
-
-
-        getCamera().setViewport(-0.8, 0.8, 0.45, -0.45); // simple 16:9 test viewport
-        getCamera().setCenter({0.05, 0.05}); // test tile center
-
-        _floor = std::make_unique<Floor>(world, glm::vec2{0, 0});
+        if (const auto res = [&]() -> std::optional<int> { CLI11_PARSE(app, argc, argv); return {}; }(); res.has_value()) { throw res.value_or(0); }
     }
 
-    auto onUpdate(entt::registry &world) -> void final
-    {       
-        world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
-            drawable.shader->uploadUniformMat4("u_ViewProjection", getCamera().getViewProjMatrix());
-            
-            drawable.shader->use();
-
-            ::glBindVertexArray(drawable.VAO);
-            ::glDrawElements(GL_TRIANGLES, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-        });
-    }
-
-    auto onDestroy(entt::registry &world) -> void final
+    auto dump() const -> void
     {
-        world.view<engine::Drawable>().each([&](engine::Drawable &drawable) {
-            ::glDeleteVertexArrays(1, &drawable.VAO);
-            ::glDeleteBuffers(1, &drawable.VBO);
-            ::glDeleteBuffers(1, &drawable.EBO);
-        });
+// todo :
+//        spdlog::warn("Working on file: {}, direct count: {}, opt count: {}",
+//            fullscreen, app.count("--fullscreen"), options[FULLSCREEN]->count());
     }
 
-    engine::Shader m_shader;
+    auto write_to_file(const std::string_view path) -> bool
+    {
+        std::ofstream f(path.data());
+        if (!f.is_open()) { return false; }
+        f << app.config_to_str(true, true);
+        return true;
+    }
 
-    std::unique_ptr<Floor> _floor;
+    CLI::App app;
+
+    bool fullscreen = true;
+    std::string replay_path;
+
 };
+
+int main(int argc, char **argv) try
+{
+    // todo : setup properly logging
+    auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
+    logger->info("logger created");
+
+
+    // 1. Parse the program argument
+
+    Options opt{argc, argv};
+
+#ifndef NDEBUG
+    opt.dump();
+#endif
+
+    opt.write_to_file(!opt.options[Options::CONFIG_PATH]->empty()
+        ? opt.options[Options::CONFIG_PATH]->as<std::string>()
+        : Options::DEFAULT_CONFIG);
+
+
+    // 2. Initialize the Engine / Window / Game
 
 void foo(int a, char b)
 { std::cout << a << b << std::endl; }
@@ -242,6 +185,30 @@ int main(int ac, char **av)
 
     //// discards all listeners at once
     //sink.disconnect();
+    auto holder = engine::Core::Holder::init();
 
-    return holder.instance->main(ac, av);
+    std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
+    if (opt.fullscreen)
+        windowProperty |= engine::Window::Property::FULLSCREEN;
+
+    holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
+    holder.instance->game<ThePurge>();
+
+
+    // 3. Apply optional argument and run
+
+#ifndef NDEBUG
+    if (!opt.options[Options::REPLAY_PATH]->empty())
+        holder.instance->setPendingEventsFromFile(opt.replay_path);
+#endif
+
+    return holder.instance->main();
+}
+catch (const std::exception &e)
+{
+    spdlog::error("Caught exception at main level: {}", e.what());
+}
+catch (int code)
+{
+    return code;
 }

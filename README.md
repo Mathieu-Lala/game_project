@@ -54,8 +54,14 @@ The build require an internet connection (for the download of dependencies)
     $> ./tools/build.sh
 
     # Run the executable
-    $> ./build/(Debug|RelWithDebInfo|Release|MinSizeRel)/src/Application/app
+    $> ./build/${build_type}/${arch}/out/app
     ```
+
+### Package Manager
+
+[conan](https://conan.io/) - [documentation](https://docs.conan.io/en/latest/)
+
+## Testing
 
 ## Acknowledgement
 

@@ -117,10 +117,15 @@ struct Joystick {
     enum Axis {
         LSX, // left stick X
         LSY, // left stick Y
+#ifndef WIN32
         LST, // left shoulder trigger
-
+#endif
         RSX, // right stick X
         RSY, // right stick Y
+
+#ifdef WIN32
+        LST, // left shoulder trigger
+#endif
         RST, // right shoulder trigger
 
         AXES_MAX = 6,
