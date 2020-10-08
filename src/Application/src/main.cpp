@@ -9,14 +9,13 @@
 #include <Engine/details/Version.hpp>
 
 #include "ThePurge.hpp"
+#include <Declaration.hpp>
+#include <Competences/FarmerCompetences.hpp>
 
 static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#include "Terrain/Floor.hpp"
-#include <Declaration.hpp>
-#include <Competences/FarmerCompetences.hpp>
+
 static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION
 #ifndef NDEBUG
     " - Debug"
@@ -73,6 +72,14 @@ struct Options {
 
 };
 
+class Controller {
+public:
+    void printA(const std::string &str) { std::cout << str << std::endl; };
+    void printB(const std::string &str) { std::cout << str << std::endl; };
+    void printX(const std::string &str) { std::cout << str << std::endl; };
+    void printY(const std::string &str) { std::cout << str << std::endl; };
+};
+
 int main(int argc, char **argv) try
 {
     // todo : setup properly logging
@@ -84,58 +91,21 @@ int main(int argc, char **argv) try
 
     Options opt{argc, argv};
 
-#ifndef NDEBUG
-    opt.dump();
-#endif
-
-    opt.write_to_file(!opt.options[Options::CONFIG_PATH]->empty()
-        ? opt.options[Options::CONFIG_PATH]->as<std::string>()
-        : Options::DEFAULT_CONFIG);
-
-
-    // 2. Initialize the Engine / Window / Game
-
-void foo(int a, char b)
-{ std::cout << a << b << std::endl; }
-
-struct listener {
-    void bar(const int &a, char b)
-    { 
-        std::cout << a << b << std::endl;
-    }
-};
-
-class boop {
-public:
-    void printTest(const int &a, char b) { 
-        std::cout << a << " || " << b << std::endl;
-    }
-};
-
-class Controller {
-public:
-    void printA(const std::string &str) { std::cout << str << std::endl; };
-    void printB(const std::string &str) { std::cout << str << std::endl; };
-    void printX(const std::string &str) { std::cout << str << std::endl; };
-    void printY(const std::string &str) { std::cout << str << std::endl; };
-};
-
-int main(int ac, char **av)
-{
+    
     engine::Core::Holder holder;
 
-    //holder.instance->window(glm::ivec2{400, 400}, "The PURGE");
-    //holder.instance->game<ThePurge>();
+    // holder.instance->window(glm::ivec2{400, 400}, "The PURGE");
+    // holder.instance->game<ThePurge>();
 
     // ...
-    //entt::sigh<void(int, char)> signal;
-    //entt::sink sink{signal};
-    //listener instance;
-    //boop test;
+    // entt::sigh<void(int, char)> signal;
+    // entt::sink sink{signal};
+    // listener instance;
+    // boop test;
 
-    //sink.connect<&foo>();
-    //sink.connect<&listener::bar>(instance);
-    //sink.connect<&boop::printTest>(test);
+    // sink.connect<&foo>();
+    // sink.connect<&listener::bar>(instance);
+    // sink.connect<&boop::printTest>(test);
 
     std::string buffer{};
 
@@ -168,34 +138,44 @@ int main(int ac, char **av)
             actionLeft.publish("X is Pressed !");
         } else if (buffer == "Y" || buffer == "ACTION_RIGHT") {
             actionTop.publish("Y is Pressed !");
-        } else if (buffer == "exit") break;
+        } else if (buffer == "exit")
+            break;
     }
 
     //// ...
-    //signal.publish(42, 'c');
+    // signal.publish(42, 'c');
 
     //// disconnects a free function
-    //sink.disconnect<&foo>();
+    // sink.disconnect<&foo>();
 
     //// disconnect a member function of an instance
-    //sink.disconnect<&listener::bar>(instance);
+    // sink.disconnect<&listener::bar>(instance);
 
     //// disconnect all member functions of an instance, if any
-    //sink.disconnect(instance);
+    // sink.disconnect(instance);
 
     //// discards all listeners at once
-    //sink.disconnect();
-    auto holder = engine::Core::Holder::init();
+    // sink.disconnect();
 
     std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
-    if (opt.fullscreen)
-        windowProperty |= engine::Window::Property::FULLSCREEN;
+    if (opt.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
 
-    holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
-    holder.instance->game<ThePurge>();
+    //holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
+    //holder.instance->game<ThePurge>();
 
 
     // 3. Apply optional argument and run
+
+#ifndef NDEBUG
+    opt.dump();
+#endif
+
+    opt.write_to_file(!opt.options[Options::CONFIG_PATH]->empty()
+        ? opt.options[Options::CONFIG_PATH]->as<std::string>()
+        : Options::DEFAULT_CONFIG);
+
+
+    // 2. Initialize the Engine / Window / Game
 
 #ifndef NDEBUG
     if (!opt.options[Options::REPLAY_PATH]->empty())
