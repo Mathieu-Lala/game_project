@@ -10,7 +10,7 @@
 #include <Engine/component/Position.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 
-#include <Engine/Camera2.hpp>
+#include <Engine/Camera.hpp>
 
 #include "Declaration.hpp"
 #include "level/LevelTilemapBuilder.hpp"
@@ -54,13 +54,13 @@ class ThePurge : public engine::Game {
 
                     // not really working perfectly
                     switch (key.source.key) {
-                    case GLFW_KEY_W: m_camera.move(engine::exp::Camera_Movement::FORWARD, 0.1f); break;
+                    case GLFW_KEY_W: m_camera.move(engine::Camera_Movement::FORWARD, 0.1f); break;
                     case GLFW_KEY_A:
-                        m_camera.move(engine::exp::Camera_Movement::LEFT, 0.1f);
+                        m_camera.move(engine::Camera_Movement::LEFT, 0.1f);
                         ;
                         break;
-                    case GLFW_KEY_S: m_camera.move(engine::exp::Camera_Movement::BACKWARD, 0.1f); break;
-                    case GLFW_KEY_D: m_camera.move(engine::exp::Camera_Movement::RIGHT, 0.1f); break;
+                    case GLFW_KEY_S: m_camera.move(engine::Camera_Movement::BACKWARD, 0.1f); break;
+                    case GLFW_KEY_D: m_camera.move(engine::Camera_Movement::RIGHT, 0.1f); break;
                     case GLFW_KEY_UP: m_camera.turn(0, 1); break;
                     case GLFW_KEY_RIGHT: m_camera.turn(1, 0); break;
                     case GLFW_KEY_DOWN: m_camera.turn(0, -1); break;
@@ -97,12 +97,12 @@ class ThePurge : public engine::Game {
 
         // note : this is not working smoothly as expected
         if (ImGui::SliderFloat("Camera Z", &camera_zoom_level, 0.0f, 100.0f, "z = %.3f")) {
-            m_camera = engine::exp::Camera{glm::vec3(0.0f, 0.0f, camera_zoom_level)};
+            m_camera = engine::Camera{glm::vec3(0.0f, 0.0f, camera_zoom_level)};
         }
 
         ImGui::End();
     }
 
 private:
-    engine::exp::Camera m_camera{glm::vec3(0.0f, 0.0f, 100.0f)};
+    engine::Camera m_camera{glm::vec3(0.0f, 0.0f, 100.0f)};
 };
