@@ -7,7 +7,7 @@
 
 namespace engine {
 
-// short by fancy way
+// short but fancy way
 auto getFileContent(const std::string_view file) -> std::optional<std::string>
 {
     std::ifstream t(file.data());

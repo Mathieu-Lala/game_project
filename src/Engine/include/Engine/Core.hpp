@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <entt/entt.hpp>
+#include <concepts>
 
 #include "Engine/Window.hpp"
 #include "Engine/Game.hpp"
@@ -54,8 +55,7 @@ public:
         return m_window;
     }
 
-    // note : UserDefinedGame should be a concept
-    template<typename UserDefinedGame, typename ...Args>
+    template<std::derived_from<Game> UserDefinedGame, typename ...Args>
     auto game(Args &&...args) -> std::unique_ptr<Game> &
     {
         if (m_game != nullptr) { return m_game; }
@@ -104,7 +104,7 @@ private:
 
     EventMode m_eventMode{ RECORD };
 
-    // std::pmr::queue instead of vector ? try it with google benchmark
+    // todo : std::pmr::queue instead of vector ? try it with google benchmark
     std::vector<Event> m_eventsPlayback;
 
 
@@ -124,6 +124,11 @@ private:
 
 } // namespace engine
 
-#define IF_RECORD(...) \
+
+#ifndef NDEBUG
+# define IF_RECORD(...) \
     do { if (engine::Core::Holder{}.instance->getEventMode() \
         == engine::Core::EventMode::RECORD) { __VA_ARGS__; } } while(0)
+#else
+# define IF_RECORD(...) do { __VA_ARGS__; } while(0)
+#endif

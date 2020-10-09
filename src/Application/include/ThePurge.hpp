@@ -2,7 +2,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 #include <Engine/Game.hpp>
 #include <Engine/Shader.hpp>
@@ -23,11 +22,24 @@ class ThePurge : public engine::Game {
 
     auto onCreate([[maybe_unused]] entt::registry &world) -> void final
     {
-        generateFloor(world, &shader, {}, static_cast<std::uint32_t>(::time(nullptr)));
+        //        generateFloor(world, &shader, {}, static_cast<std::uint32_t>(::time(nullptr)));
 
         std::srand(static_cast<std::uint32_t>(std::time(nullptr)));
-
         static constexpr auto max = static_cast<double>(RAND_MAX);
+
+        for (auto y = -50; y != 50ul; y++)
+            for (auto x = -50; x != 50ul; x++) {
+                auto e = world.create();
+                world.emplace<engine::d2::Position>(e, x / 10.0, y / 10.0);
+                world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
+                engine::Drawable drawable;
+                drawable.shader = &shader;
+                auto color = ((x & 1) && (y & 1)) || (!(x & 1) && !(y & 1));
+                engine::DrawableFactory::rectangle({color, color, color}, drawable);
+                world.emplace<engine::Drawable>(e, drawable);
+            }
+
+        // todo : display none-terrain entity at level z=1 ?
 
         for (int i = 0; i != 10; i++) {
             auto e = world.create();
@@ -36,7 +48,7 @@ class ThePurge : public engine::Game {
             auto color = glm::vec3(std::rand() & 1, std::rand() & 1, std::rand() & 1);
 
             world.emplace<engine::d2::Position>(e, x, y);
-            world.emplace<engine::d2::Velocity>(e, 0.01 * (std::rand() & 1), 0.01 * (std::rand() & 1));
+            world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
             world.emplace<engine::d2::Scale>(e, 0.05, 0.05);
             engine::Drawable drawable;
             drawable.shader = &shader;
@@ -55,10 +67,7 @@ class ThePurge : public engine::Game {
                     // not really working perfectly
                     switch (key.source.key) {
                     case GLFW_KEY_W: m_camera.move(engine::Camera_Movement::FORWARD, 0.1f); break;
-                    case GLFW_KEY_A:
-                        m_camera.move(engine::Camera_Movement::LEFT, 0.1f);
-                        ;
-                        break;
+                    case GLFW_KEY_A: m_camera.move(engine::Camera_Movement::LEFT, 0.1f); break;
                     case GLFW_KEY_S: m_camera.move(engine::Camera_Movement::BACKWARD, 0.1f); break;
                     case GLFW_KEY_D: m_camera.move(engine::Camera_Movement::RIGHT, 0.1f); break;
                     case GLFW_KEY_UP: m_camera.turn(0, 1); break;
