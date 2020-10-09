@@ -104,6 +104,7 @@ private:
 
     EventMode m_eventMode{ RECORD };
 
+    // std::pmr::queue instead of vector ? try it with google benchmark
     std::vector<Event> m_eventsPlayback;
 
 

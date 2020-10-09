@@ -3,6 +3,8 @@
 #include <optional>
 #include <entt/entt.hpp>
 
+#include "Engine/Shader.hpp"
+
 struct FloorGenParam {
     int minRoomSize = 7; // exluding walls
     int maxRoomSize = 15; // exluding walls
@@ -17,4 +19,4 @@ struct FloorGenParam {
     int maxCorridorWidth = 4;
 };
 
-void generateFloor(entt::registry &world, FloorGenParam params = {}, std::optional<unsigned int> seed = {});
+void generateFloor(entt::registry &world, engine::Shader *, FloorGenParam params = {}, std::optional<unsigned int> seed = {});

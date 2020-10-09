@@ -5,8 +5,12 @@
 #include <nlohmann/json.hpp>
 #include <magic_enum.hpp>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "Engine/details/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
+#include "Engine/component/Position.hpp"
 
 #include "Engine/Core.hpp"
 
@@ -57,8 +61,8 @@ auto engine::Core::setPendingEvents(std::vector<Event> &&events) -> void
     m_eventsPlayback = std::move(events);
 }
 
-auto engine::Core::setPendingEventsFromFile(const std::string_view filepath) -> bool try
-{
+auto engine::Core::setPendingEventsFromFile(const std::string_view filepath) -> bool
+try {
     std::ifstream ifs(filepath.data());
     if (!ifs.is_open()) {
         spdlog::warn("engine::Core setPendingEventsFromFile failed: {} could not be opened", filepath.data());
@@ -67,9 +71,7 @@ auto engine::Core::setPendingEventsFromFile(const std::string_view filepath) -> 
     const auto j = nlohmann::json::parse(ifs);
     setPendingEvents(j.get<std::vector<Event>>());
     return true;
-}
-catch (...)
-{
+} catch (...) {
     spdlog::warn("engine::Core setPendingEventsFromFile failed: could not parse the file {}", filepath.data());
     return false;
 }
@@ -167,25 +169,86 @@ auto engine::Core::main() -> int
             if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
         }
 
-        m_game->onUpdate(m_world, event);
+        //// note : should note draw at every frame = heavy
+        if (timeElapsed) {
+            const auto t = std::get<TimeElapsed>(event);
 
-        // note : should note draw at every frame = heavy
-        if (!timeElapsed) continue;
+            m_world.view<d2::Position, d2::Velocity>().each(
+                [elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count()](auto &pos, auto &vel) {
+                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
+                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+                });
 
-        m_window->draw([&] {
-            m_game->drawUserInterface();
+            m_window->draw([&] {
+                m_game->drawUserInterface();
 
 #ifndef NDEBUG
-            debugDrawJoystick();
+                debugDrawJoystick();
 #endif
 
-            ImGui::Render();
+                enum DisplayMode {
+                    POINTS = GL_POINTS,
+                    LINE_STRIP = GL_LINE_STRIP,
+                    LINE_LOOP = GL_LINE_LOOP,
+                    LINES = GL_LINES,
+                    LINE_STRIP_ADJACENCY = GL_LINE_STRIP_ADJACENCY,
+                    LINES_ADJACENCY = GL_LINES_ADJACENCY,
+                    TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
+                    TRIANGLE_FAN = GL_TRIANGLE_FAN,
+                    TRIANGLES = GL_TRIANGLES,
+                    TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
+                    TRIANGLES_ADJACENCY = GL_TRIANGLES_ADJACENCY,
+                    PATCHES = GL_PATCHES,
+                };
 
-            ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-            ::glClear(GL_COLOR_BUFFER_BIT);
+                static constexpr auto display_mode = std::to_array({
+                    POINTS,
+                    LINE_STRIP,
+                    LINE_LOOP,
+                    LINES,
+                    LINE_STRIP_ADJACENCY,
+                    LINES_ADJACENCY,
+                    TRIANGLE_STRIP,
+                    TRIANGLE_FAN,
+                    TRIANGLES,
+                    TRIANGLE_STRIP_ADJACENCY,
+                    TRIANGLES_ADJACENCY,
+                    PATCHES,
+                });
 
-            m_world.view<Drawable>().each(Drawable::system);
-        });
+                static auto mode = GL_TRIANGLES;
+                ImGui::Begin("Display Options");
+                if (ImGui::BeginCombo("##combo", "Display Mode")) {
+                    for (auto n = 0ul; n < display_mode.size(); n++) {
+                        bool is_selected = (mode == display_mode.at(n));
+                        if (ImGui::Selectable(magic_enum::enum_name<DisplayMode>(display_mode.at(n)).data(), is_selected))
+                            mode = display_mode.at(n);
+                        if (is_selected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+                ImGui::End();
+
+                ImGui::Render();
+
+                ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+                ::glClear(GL_COLOR_BUFFER_BIT);
+
+                m_world.view<Drawable, d2::Position, d2::Scale>().each([](auto &drawable, auto &pos, auto &scale) {
+                    drawable.shader->use();
+                    auto model = glm::dmat4(1.0);
+                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 0.0});
+                    model = glm::translate(model, glm::dvec3{pos.x, pos.y, 0.0});
+                    //              model = glm::rotate(model, glm::radians(20.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+                    drawable.shader->uploadUniformMat4("model", model);
+
+                    ::glBindVertexArray(drawable.VAO);
+                    ::glDrawElements(static_cast<std::uint32_t>(mode), 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                });
+            });
+        }
+
+        m_game->onUpdate(m_world, event);
     }
 
     m_world.view<engine::Drawable>().each([](engine::Drawable &drawable) {

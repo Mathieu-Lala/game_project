@@ -12,7 +12,8 @@ DISABLE_WARNING_POP
 
 auto engine::Shader::fromFile(const std::string_view vertexFile, const std::string_view fragmentFile) -> Shader
 {
-    return {getFileContent(vertexFile).value_or(""), getFileContent(fragmentFile).value_or("")};
+    return {getFileContent(vertexFile).value_or(fmt::format("Cannot open file: {}", vertexFile)),
+        getFileContent(fragmentFile).value_or(fmt::format("Cannot open file: {}", fragmentFile))};
 }
 
 auto engine::Shader::uploadUniformMat4(const std::string &name, const ::glm::mat4 &mat) -> void

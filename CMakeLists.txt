@@ -30,11 +30,14 @@ set_project_warnings(project_warnings)
 include(cmake/Sanitizers.cmake)
 enable_sanitizers(project_options)
 
+
 # Compile time optimizer
+add_library(project_pch INTERFACE)
+
 option(ENABLE_PCH "Enable Precompiled Headers" OFF)
 if(ENABLE_PCH)
-  target_precompile_headers(project_options INTERFACE
-    <vector> <string> <utility> <functional>)
+  target_precompile_headers(project_pch INTERFACE
+    <vector> <string> <utility> <functional> <glm/glm.hpp>)
 endif()
 
 

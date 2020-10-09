@@ -42,6 +42,9 @@ public:
         }
     }
 
+    // note : could use this https://github.com/joboccara/NamedType
+    // but there is no conan package :(
+
     static
     auto fromFile(const std::string_view vFile, const std::string_view fFile) -> Shader;
 

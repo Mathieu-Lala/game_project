@@ -35,7 +35,7 @@ add_library(
   src/Engine/Window.cpp
   src/Engine/Image.cpp
   src/Engine/helpers/DrawableFactory.cpp
-  src/Engine/Camera.cpp
+#  src/Engine/Camera.cpp
   src/Engine/Shader.cpp
   src/Engine/JoystickManager.cpp)
 
@@ -46,6 +46,7 @@ target_link_libraries(
   engine
   PUBLIC project_options
          project_warnings
+         project_pch
          glfw_imgui_impl
          CONAN_PKG::glm
          CONAN_PKG::fmt
