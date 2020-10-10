@@ -172,7 +172,7 @@ void placeWalls(TilemapBuilder &builder)
 
 void generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::optional<unsigned int> seed)
 {
-    TilemapBuilder builder(shader, { params.maxDungeonWidth, params.maxDungeonheight });
+    TilemapBuilder builder(shader, { params.maxDungeonWidth, params.maxDungeonHeight });
     std::default_random_engine randomEngine;
 
     if (seed) randomEngine.seed(seed.value());

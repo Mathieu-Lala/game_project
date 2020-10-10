@@ -15,7 +15,7 @@ public:
 
     virtual auto onUpdate(entt::registry &, const Event &) -> void = 0;
 
-    virtual auto drawUserInterface() -> void = 0;
+    virtual auto drawUserInterface(entt::registry &) -> void = 0;
 
 };
 

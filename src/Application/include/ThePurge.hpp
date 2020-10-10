@@ -96,6 +96,38 @@ class ThePurge : public engine::Game {
 
         const auto view = m_camera.GetViewMatrix();
         shader.uploadUniformMat4("view", view);
+
+
+    }
+
+    auto mapGenerationOverlayTick(entt::registry &world) -> void
+    { 
+        static FloorGenParam params;
+
+        ImGui::Begin("MapGeneration");
+
+        if (ImGui::Button("Regenerate"))
+            generateFloor(world, &shader, params); // TODO: check how to handle seeding
+
+        ImGui::SliderInt("Min room size", &params.minRoomSize, 0, params.maxRoomSize);
+        ImGui::SliderInt("Max room size", &params.maxRoomSize, params.minRoomSize, 50);
+        ImGui::Separator();
+
+        // Assuming std::size_t is uint32_t
+        ImGui::InputScalar("Min room count", ImGuiDataType_U32, &params.minRoomCount);
+        ImGui::InputScalar("Max room count", ImGuiDataType_U32, &params.maxRoomCount);
+        ImGui::Text("note: actual room count may be smaller if there is not enough space");
+        ImGui::Separator();
+
+        ImGui::DragInt("Max dungeon width", &params.maxDungeonWidth, 0, 500);
+        ImGui::DragInt("Max dungeon height", &params.maxDungeonHeight, 0, 500);
+        ImGui::Separator();
+
+        ImGui::SliderInt("Min corridor width", &params.minCorridorWidth, 0, params.maxCorridorWidth);
+        ImGui::SliderInt("Max corridor width", &params.maxCorridorWidth, params.minCorridorWidth, 50);
+        ImGui::Separator();
+
+        ImGui::End();
     }
 
     auto onDestroy(entt::registry &) -> void final {}
@@ -103,7 +135,7 @@ class ThePurge : public engine::Game {
     float camera_zoom_level = 0;
 
     bool show_demo_window = true;
-    auto drawUserInterface() -> void final
+    auto drawUserInterface(entt::registry &world) -> void final
     {
         if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
@@ -118,6 +150,8 @@ class ThePurge : public engine::Game {
         }
 
         ImGui::End();
+
+        mapGenerationOverlayTick(world);
     }
 
 private:

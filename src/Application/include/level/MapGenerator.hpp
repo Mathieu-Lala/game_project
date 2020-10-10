@@ -13,7 +13,7 @@ struct FloorGenParam {
     std::size_t maxRoomCount = 10; // including boss room
 
     int maxDungeonWidth = 50;
-    int maxDungeonheight = 50;
+    int maxDungeonHeight = 50;
 
     int minCorridorWidth = 2;
     int maxCorridorWidth = 4;

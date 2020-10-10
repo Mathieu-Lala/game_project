@@ -182,7 +182,7 @@ auto engine::Core::main() -> int
                 });
 
             m_window->draw([&] {
-                m_game->drawUserInterface();
+                m_game->drawUserInterface(m_world);
 
 #ifndef NDEBUG
                 debugDrawJoystick();
