@@ -16,7 +16,10 @@ struct Room {
 template<std::integral T>
 auto randRange(T min, T max, std::default_random_engine &randomEngine)
 {
-    return min + static_cast<T>(randomEngine()) % (max - min);
+    auto randNum = randomEngine();
+    auto result = min + static_cast<T>(randNum % (max - min));
+
+    return result;
 }
 
 bool isRoomValid(TilemapBuilder &builder, const Room &r)

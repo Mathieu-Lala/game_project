@@ -59,6 +59,8 @@ class ThePurge : public engine::Game {
             engine::DrawableFactory::rectangle(std::move(color), drawable);
             world.emplace<engine::Drawable>(e, drawable);
         }
+
+        generateFloor(world, &shader, {}, time(nullptr));
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
