@@ -216,7 +216,7 @@ auto engine::Core::main() -> int
                     PATCHES,
                 });
 
-                static auto mode = GL_TRIANGLES;
+                static auto mode = DisplayMode::TRIANGLES;
                 ImGui::Begin("Display Options");
                 if (ImGui::BeginCombo("##combo", "Display Mode")) {
                     for (auto n = 0ul; n < display_mode.size(); n++) {

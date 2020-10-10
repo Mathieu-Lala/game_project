@@ -1,6 +1,6 @@
 #include "Engine/helpers/DrawableFactory.hpp"
 
-auto engine::DrawableFactory::rectangle([[maybe_unused]] glm::vec3 &&c, Drawable &out) -> void
+auto engine::DrawableFactory::rectangle(glm::vec3 &&c, Drawable &out) -> void
 {
     const float vertices[] = {
         // positions        // color
@@ -9,14 +9,14 @@ auto engine::DrawableFactory::rectangle([[maybe_unused]] glm::vec3 &&c, Drawable
         -0.5f, +0.5f, 0.0f, c.r, c.g, c.b, // bottom left
         +0.5f, +0.5f, 0.0f, c.r, c.g, c.b, // bottom right
     };
-    static constexpr auto STRIDE_COUNT = 6.0f; // = x + y + z + r + g + b
+    static constexpr GLsizei STRIDE_COUNT = 6; // = x + y + z + r + g + b
 
-    unsigned int VBO;
-    unsigned int VAO;
-    unsigned int EBO;
+    std::uint32_t VBO;
+    std::uint32_t VAO;
+    std::uint32_t EBO;
 
     // static constexpr auto indices = std::to_array({ 0u, 1u, 2u, 1u, 2u, 3u });
-    unsigned int indices[] = {
+    std::uint32_t indices[] = {
         0, 1, 2, // first triangle
         1, 2, 3, // second triangle
     };

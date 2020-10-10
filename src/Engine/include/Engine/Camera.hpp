@@ -86,7 +86,7 @@ public:
 
         // make sure that when pitch is out of bounds, screen doesn't get flipped
         if (constrainPitch) {
-            std::clamp(Pitch, -89.0, 89.0);
+            Pitch = std::clamp(Pitch, -89.0, 89.0);
         }
 
         // update Front, Right and Up Vectors using the updated Euler angles
@@ -97,7 +97,7 @@ public:
     void zoom(double yoffset)
     {
         Zoom -= yoffset;
-        std::clamp(Zoom, 1.0, 45.0);
+        Zoom = std::clamp(Zoom, 1.0, 45.0);
     }
 
 private:
