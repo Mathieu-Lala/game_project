@@ -38,6 +38,9 @@ public:
     auto setCursorPosition(glm::dvec2 &&pos) { ::glfwSetCursorPos(m_handle, pos.x, pos.y); }
 
 
+    auto getAspectRatio() const -> double { return static_cast<double>(m_size.x) / static_cast<double>(m_size.y); }
+
+
     template<typename EventType>
     auto applyEvent([[maybe_unused]] const EventType &) -> void { }
 

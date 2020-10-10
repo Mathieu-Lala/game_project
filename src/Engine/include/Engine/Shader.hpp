@@ -11,6 +11,8 @@ namespace engine {
 
 class Shader {
 public:
+    Shader() = default;
+
     Shader(const std::string_view vCode, const std::string_view fCode) : ID{::glCreateProgram()}
     {
         shader_<GL_VERTEX_SHADER> vertex{vCode.data()};
@@ -39,6 +41,9 @@ public:
             spdlog::info("Successfully created shader program {}", ID);
         }
     }
+
+    // note : could use this https://github.com/joboccara/NamedType
+    // but there is no conan package :(
 
     static
     auto fromFile(const std::string_view vFile, const std::string_view fFile) -> Shader;

@@ -1,8 +1,17 @@
 #pragma once
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <Engine/Game.hpp>
 #include <Engine/Shader.hpp>
 #include <Engine/component/Drawable.hpp>
+#include <Engine/component/Position.hpp>
+#include <Engine/component/Scale.hpp>
+#include <Engine/component/Velocity.hpp>
+#include <Engine/helpers/DrawableFactory.hpp>
+
+#include <Engine/Camera.hpp>
 
 #include "Declaration.hpp"
 #include "level/LevelTilemapBuilder.hpp"
@@ -10,59 +19,105 @@
 #include "level/MapGenerator.hpp"
 
 class ThePurge : public engine::Game {
+    engine::Shader shader =
+        engine::Shader::fromFile(DATA_DIR "/shaders/camera2_vert.glsl", DATA_DIR "/shaders/camera2_frag.glsl");
 
-    glm::vec4 screen_pos = { 0, 89, 0, 50 };
-
-    auto onCreate(entt::registry &world) -> void final
+    auto onCreate([[maybe_unused]] entt::registry &world) -> void final
     {
-        generateFloor(world, {}, static_cast<std::uint32_t>(::time(nullptr)));
+        //        generateFloor(world, &shader, {}, static_cast<std::uint32_t>(::time(nullptr)));
 
-        m_camera.setViewport(screen_pos.x, screen_pos.y, screen_pos.z, screen_pos.w);
-        m_camera.setCenter({0, 0});
+        std::srand(static_cast<std::uint32_t>(std::time(nullptr)));
+        static constexpr auto max = static_cast<double>(RAND_MAX);
 
-        TileFactory::getShader()->uploadUniformMat4("u_ViewProjection", m_camera.getViewProjMatrix());
+        // note : tmp generate a grid black and white (to tests coordinates systems)
+        for (auto y = -50; y != 50ul; y++)
+            for (auto x = -50; x != 50ul; x++) {
+                auto e = world.create();
+                world.emplace<engine::d2::Position>(e, x / 10.0, y / 10.0);
+                world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
+                engine::Drawable drawable;
+                drawable.shader = &shader;
+                auto color = ((x & 1) && (y & 1)) || (!(x & 1) && !(y & 1));
+                engine::DrawableFactory::rectangle({color, color, color}, drawable);
+                world.emplace<engine::Drawable>(e, drawable);
+            }
+
+        // todo : display none-terrain entity at level z=1 ?
+
+        // note : tmp generate random entities moving on the screen (to tests velocity)
+        for (int i = 0; i != 10; i++) {
+            auto e = world.create();
+            const auto x = 10 * ((static_cast<double>(std::rand()) / max) - 0.5);
+            const auto y = 10 * ((static_cast<double>(std::rand()) / max) - 0.5);
+            auto color = glm::vec3(std::rand() & 1, std::rand() & 1, std::rand() & 1);
+
+            world.emplace<engine::d2::Position>(e, x, y);
+            world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
+            world.emplace<engine::d2::Scale>(e, 0.05, 0.05);
+            engine::Drawable drawable;
+            drawable.shader = &shader;
+            engine::DrawableFactory::rectangle(std::move(color), drawable);
+            world.emplace<engine::Drawable>(e, drawable);
+        }
     }
 
-    auto onDestroy(entt::registry &) -> void final
+    auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
     {
-    }
+        std::visit(
+            engine::overloaded{
+                [&](const engine::Pressed<engine::Key> &key) {
+                    spdlog::info("key pressed {}", key.source.key);
 
-    auto onUpdate(entt::registry &world, const engine::Event &e) -> void final
-    {
-        std::visit(engine::overloaded{
-            [&](const engine::Pressed<engine::Key> &key) {
-                spdlog::info("key pressed {}", key.source.key);
-
-                // note : this does not work as expected ..
-                switch (key.source.key) {
-                case GLFW_KEY_UP: screen_pos += glm::vec4(-10, 10, 0, 0); break;
-                case GLFW_KEY_RIGHT: screen_pos += glm::vec4(10, -10, 0, 0); break;
-                case GLFW_KEY_DOWN: screen_pos += glm::vec4(0, 0, 10, -10); break;
-                case GLFW_KEY_LEFT: screen_pos += glm::vec4(0, 0, -10, 10); break;
-                default: break;
-                }
-                m_camera.setViewport(screen_pos.x, screen_pos.y, screen_pos.z, screen_pos.w);
-                TileFactory::getShader()->uploadUniformMat4("u_ViewProjection", m_camera.getViewProjMatrix());
-
+                    // not really working perfectly
+                    switch (key.source.key) {
+                    case GLFW_KEY_W: m_camera.move(engine::Camera_Movement::FORWARD, 0.1f); break;
+                    case GLFW_KEY_A: m_camera.move(engine::Camera_Movement::LEFT, 0.1f); break;
+                    case GLFW_KEY_S: m_camera.move(engine::Camera_Movement::BACKWARD, 0.1f); break;
+                    case GLFW_KEY_D: m_camera.move(engine::Camera_Movement::RIGHT, 0.1f); break;
+                    case GLFW_KEY_UP: m_camera.turn(0, 1); break;
+                    case GLFW_KEY_RIGHT: m_camera.turn(1, 0); break;
+                    case GLFW_KEY_DOWN: m_camera.turn(0, -1); break;
+                    case GLFW_KEY_LEFT: m_camera.turn(-1, 0); break;
+                    default: return;
+                    }
+                },
+                [&](auto) {},
             },
-            [&](const engine::TimeElapsed &t) { onTick(world, t.elapsed); },
-            [](auto) { },
-        }, e);
+            e);
+
+        static engine::Core::Holder holder;
+
+        // todo : only send them to the shader if camera updated
+
+        const auto projection = glm::perspective(glm::radians(1.0), holder.instance->window()->getAspectRatio(), 0.1, 1000.0);
+        shader.uploadUniformMat4("projection", projection);
+
+        const auto view = m_camera.GetViewMatrix();
+        shader.uploadUniformMat4("view", view);
     }
+
+    auto onDestroy(entt::registry &) -> void final {}
+
+    float camera_zoom_level = 0;
 
     bool show_demo_window = true;
-
     auto drawUserInterface() -> void final
     {
         if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
+
+        ImGui::Begin("Camera");
+
+        ImGui::Text("Camera Position (%.3f, %.3f, %.3f)", m_camera.Position.x, m_camera.Position.y, m_camera.Position.z);
+        ImGui::Text("Camera Rotation (%.3f, %.3f, %.3f)", m_camera.Yaw, m_camera.Pitch, 0.0);
+
+        // note : this is not working smoothly as expected
+        if (ImGui::SliderFloat("Camera Z", &camera_zoom_level, 0.0f, 100.0f, "z = %.3f")) {
+            m_camera = engine::Camera{glm::vec3(0.0f, 0.0f, camera_zoom_level)};
+        }
+
+        ImGui::End();
     }
 
 private:
-
-    engine::Camera m_camera;
-
-    auto onTick(entt::registry &, const std::chrono::steady_clock::duration &) -> void
-    {
-    }
-
+    engine::Camera m_camera{glm::vec3(0.0f, 0.0f, 100.0f)};
 };
