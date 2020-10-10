@@ -12,27 +12,18 @@ DISABLE_WARNING_POP
 
 auto engine::Shader::fromFile(const std::string_view vertexFile, const std::string_view fragmentFile) -> Shader
 {
-    return {getFileContent(vertexFile).value_or(""), getFileContent(fragmentFile).value_or("")};
+    return {getFileContent(vertexFile).value_or(fmt::format("Cannot open file: {}", vertexFile)),
+        getFileContent(fragmentFile).value_or(fmt::format("Cannot open file: {}", fragmentFile))};
 }
 
 auto engine::Shader::uploadUniformMat4(const std::string &name, const ::glm::mat4 &mat) -> void
 {
-    use();
-
-    //
-    if (!glIsProgram(ID))
-        spdlog::error("{} IS NOT A PROGRAM. WTF", ID);
-    //
-
-    auto location = glGetUniformLocation(ID, name.c_str());
-
-    if (location != -1)
+    if (const auto location = glGetUniformLocation(ID, name.c_str()); location != -1)
         ::glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
     else {
         spdlog::warn("Could not find uniform '{}' in ID : {}", name, ID);
 
         GLint count;
-
         ::glGetProgramiv(ID, GL_ACTIVE_UNIFORMS, &count);
 
         if (auto err = glGetError(); err != GL_NO_ERROR) {

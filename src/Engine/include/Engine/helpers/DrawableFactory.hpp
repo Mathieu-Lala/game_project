@@ -1,11 +1,17 @@
 #pragma once
 
-#include "glm/vec2.hpp"
-#include "glm/vec3.hpp"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include "Engine/component/Drawable.hpp"
 
-namespace engine::DrawableFactory {
+namespace engine {
 
-engine::Drawable rectangle(glm::vec2 pos, glm::vec2 size, glm::vec3 color, engine::Shader *shader);
+struct DrawableFactory {
 
-} // namespace engine::DrawableFactory
+    // todo : isolate color in a component ?
+    static
+    auto rectangle(glm::vec3 &&color, Drawable &out) -> void;
+
+};
+
+} // namespace engine

@@ -120,7 +120,7 @@ auto engine::Window::callback_eventKeyBoard([[maybe_unused]] GLFWwindow *window,
             case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<Key>{k}); break;
             case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<Key>{k}); break;
             // case GLFW_REPEAT: s_instance->m_events.emplace_back(???{ key }); break; // todo
-            default: std::abort(); break;
+            //default: std::abort(); break;
         });
 }
 

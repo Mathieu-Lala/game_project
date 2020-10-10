@@ -30,8 +30,20 @@ void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     }
 
     switch (tile) {
-    case TileEnum::FLOOR: TileFactory::Floor(world, {x, y}, size); break;
-    case TileEnum::WALL: TileFactory::Wall(world, {x, y}, size); break;
+    case TileEnum::FLOOR:
+        TileFactory::Floor(
+            world,
+            m_shader,
+            {static_cast<float>(x) / 100.0f, static_cast<float>(y) / 100.0f},
+            {static_cast<float>(size.x) / 10.0f, static_cast<float>(size.y) / 10.0f});
+        break;
+    case TileEnum::WALL:
+        TileFactory::Wall(
+            world,
+            m_shader,
+            {static_cast<float>(x) / 100.0f, static_cast<float>(y) / 100.0f},
+            {static_cast<float>(size.x) / 10.0f, static_cast<float>(size.y) / 10.0f});
+        break;
 
     default: break;
     }

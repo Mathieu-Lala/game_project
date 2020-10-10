@@ -38,7 +38,7 @@
         menu level up / menu competence
         audio
 
-[Delivery]
+[Final Delivery]
     Gameplay :
         Multi-joueur
             -> pre-game menu

@@ -4,6 +4,9 @@
 #include <entt/entt.hpp>
 #include <glm/vec2.hpp>
 
+#include "Engine/Shader.hpp"
+
+// note : this should be a component ?
 enum class TileEnum : unsigned char {
     NONE = 0,
     WALL,
@@ -13,8 +16,8 @@ enum class TileEnum : unsigned char {
 class TilemapBuilder {
 public:
 
-    TilemapBuilder(glm::ivec2 &&size = { 100, 100 }) :
-        m_size(size), m_tiles(static_cast<std::size_t>(m_size.x * m_size.y), TileEnum::NONE)
+    TilemapBuilder(engine::Shader *shader, glm::ivec2 &&size = { 100, 100 }) :
+        m_shader(shader), m_size(size), m_tiles(static_cast<std::size_t>(m_size.x * m_size.y), TileEnum::NONE)
     {
     }
 
@@ -29,6 +32,8 @@ private:
     glm::ivec2 getTileSize(int x, int y);
 
 private:
+
+    engine::Shader *m_shader;
 
     const glm::ivec2 m_size;
     std::vector<TileEnum> m_tiles;
