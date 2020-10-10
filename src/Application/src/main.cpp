@@ -127,7 +127,6 @@ int main(int argc, char **argv) try
     sinkL.connect<&Controller::printX>(controller);
     sinkT.connect<&Controller::printY>(controller);
 
-    std::cout;
     while (std::getline(std::cin, buffer)) {
         std::cout << "Input -> " << buffer << std::endl;
         if (buffer == "A" || buffer == "ACTION_BOTTOM") {
