@@ -11,6 +11,8 @@
 #include "Engine/details/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
 #include "Engine/component/Position.hpp"
+#include "Engine/component/Scale.hpp"
+#include "Engine/component/Velocity.hpp"
 
 #include "Engine/Core.hpp"
 
@@ -231,6 +233,7 @@ auto engine::Core::main() -> int
 
                 ImGui::Render();
 
+                // todo : add Game::getBackgroundColor()
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT);
 
@@ -251,6 +254,7 @@ auto engine::Core::main() -> int
         m_game->onUpdate(m_world, event);
     }
 
+    // todo : use entt::on_destroy or something ..
     m_world.view<engine::Drawable>().each([](engine::Drawable &drawable) {
         ::glDeleteVertexArrays(1, &drawable.VAO);
         ::glDeleteBuffers(1, &drawable.VBO);

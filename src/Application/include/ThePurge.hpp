@@ -7,6 +7,8 @@
 #include <Engine/Shader.hpp>
 #include <Engine/component/Drawable.hpp>
 #include <Engine/component/Position.hpp>
+#include <Engine/component/Scale.hpp>
+#include <Engine/component/Velocity.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 
 #include <Engine/Camera.hpp>
@@ -27,6 +29,7 @@ class ThePurge : public engine::Game {
         std::srand(static_cast<std::uint32_t>(std::time(nullptr)));
         static constexpr auto max = static_cast<double>(RAND_MAX);
 
+        // note : tmp generate a grid black and white (to tests coordinates systems)
         for (auto y = -50; y != 50ul; y++)
             for (auto x = -50; x != 50ul; x++) {
                 auto e = world.create();
@@ -41,6 +44,7 @@ class ThePurge : public engine::Game {
 
         // todo : display none-terrain entity at level z=1 ?
 
+        // note : tmp generate random entities moving on the screen (to tests velocity)
         for (int i = 0; i != 10; i++) {
             auto e = world.create();
             const auto x = 10 * ((static_cast<double>(std::rand()) / max) - 0.5);
@@ -83,10 +87,12 @@ class ThePurge : public engine::Game {
 
         static engine::Core::Holder holder;
 
-        auto projection = glm::perspective(glm::radians(1.0), holder.instance->window()->getAspectRatio(), 0.1, 1000.0);
+        // todo : only send them to the shader if camera updated
+
+        const auto projection = glm::perspective(glm::radians(1.0), holder.instance->window()->getAspectRatio(), 0.1, 1000.0);
         shader.uploadUniformMat4("projection", projection);
 
-        auto view = m_camera.GetViewMatrix();
+        const auto view = m_camera.GetViewMatrix();
         shader.uploadUniformMat4("view", view);
     }
 

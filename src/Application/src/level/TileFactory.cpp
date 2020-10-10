@@ -5,6 +5,7 @@
 #include "Declaration.hpp"
 
 #include "Engine/component/Position.hpp"
+#include "Engine/component/Scale.hpp"
 
 void TileFactory::Floor(entt::registry &world, engine::Shader *shader, glm::vec2 &&pos, glm::vec2 &&size)
 {

@@ -7,14 +7,14 @@ namespace engine {
 namespace d2 {
 
 template<std::floating_point T> // note : any type of floating points
-struct PositionT {
+struct VelocityT {
 
     T x;
     T y;
 
 };
 
-using Position = PositionT<double>;
+using Velocity = VelocityT<double>;
 
 } // namespace d2
 
