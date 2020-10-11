@@ -8,7 +8,7 @@ auto TilemapBuilder::get(int x, int y) -> TileEnum &
     assert(x < m_size.x);
     assert(y < m_size.y);
 
-    return m_tiles[static_cast<std::size_t>(y) * static_cast<std::size_t>(m_size.x) + x];
+    return m_tiles[static_cast<std::size_t>(y) * static_cast<std::size_t>(m_size.x) + static_cast<std::size_t>(x)];
 }
 
 void TilemapBuilder::build(entt::registry &world)
