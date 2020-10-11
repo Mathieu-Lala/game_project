@@ -1,36 +1,16 @@
 #pragma once
 
-#include <iostream>
+#include <entt/entt.hpp>
+
+#include <Engine/component/Acceleration.hpp>
 
 namespace engine {
-    
-    enum Direction {
-        NORTH,
-        EAST,
-        SOUTH,
-        WEST,
-    };
-
     class Movement
     {
     public:
-        void moveAxis(/* &Player */ Direction direction)
+        void moveAxis([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel)
         { 
-            switch (direction) {
-            case engine::Direction::NORTH:
-                std::cout << "UP" << std::endl;
-                break;
-            case engine::Direction::EAST:
-                std::cout << "RIGHT" << std::endl;
-                break;
-            case engine::Direction::SOUTH:
-                std::cout << "DOWN" << std::endl;
-                break;
-            case engine::Direction::WEST:
-                std::cout << "LEFT" << std::endl;
-                break;
-            default: break;
-            }
+            world.get<engine::d2::Acceleration>(player) = accel;
 
             return;
         };

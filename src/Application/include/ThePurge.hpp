@@ -1,5 +1,7 @@
 #pragma once
 
+#include <entt/entt.hpp>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -13,6 +15,7 @@
 #include <Engine/component/Velocity.hpp>
 #include <Engine/component/Acceleration.hpp>
 #include <Engine/component/Hitbox.hpp>
+#include <Engine/Movement.hpp>
 
 #include "component/ViewRange.hpp"
 
@@ -29,6 +32,10 @@ class ThePurge : public engine::Game {
     engine::d2::Velocity *player_vel;
     engine::d2::Position *player_pos;
 
+    // Init movement signal
+    entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> movement;
+    entt::sink<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> sinkMovement{movement};
+
     auto onCreate([[maybe_unused]] entt::registry &world) -> void final
     {
         // generateFloor(world, &shader, {}, static_cast<std::uint32_t>(::time(nullptr)));
@@ -37,6 +44,9 @@ class ThePurge : public engine::Game {
         static constexpr auto max = static_cast<double>(RAND_MAX);
 
         // todo : display none-terrain entity at level z=1 ?
+
+        // Connect the movement signal to the corresponding system
+        sinkMovement.connect<&engine::Movement::moveAxis>(engine::Movement());
 
         // note : tmp generate random entities moving on the screen (to tests velocity)
         for (int i = 0; i != 3; i++) {
@@ -80,10 +90,10 @@ class ThePurge : public engine::Game {
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
                         break; // player stop
-                    case GLFW_KEY_I: world.get<engine::d2::Acceleration>(player) = {0.0, 0.1}; break; // go top
-                    case GLFW_KEY_J: world.get<engine::d2::Acceleration>(player) = {-0.1, 0.0}; break; // go left
-                    case GLFW_KEY_K: world.get<engine::d2::Acceleration>(player) = {0.0, -0.1}; break; // go bottom
-                    case GLFW_KEY_L: world.get<engine::d2::Acceleration>(player) = {0.1, 0.0}; break; // go right
+                    case GLFW_KEY_I: movement.publish(world, player, {0.0, 0.1});/*world.get<engine::d2::Acceleration>(player) = {0.0, 0.1}*/ break; // go top
+                    case GLFW_KEY_K: movement.publish(world, player, {0.0, -0.1});/*world.get<engine::d2::Acceleration>(player) = {0.0, -0.1}*/; break; // go bottom
+                    case GLFW_KEY_L: movement.publish(world, player, {0.1, 0.0});/*world.get<engine::d2::Acceleration>(player) = {0.1, 0.0}*/; break; // go right
+                    case GLFW_KEY_J: movement.publish(world, player, {-0.1, 0.0});/*world.get<engine::d2::Acceleration>(player) = {-0.1, 0.0}*/; break; // go left
                     default: return;
                     }
                 },
