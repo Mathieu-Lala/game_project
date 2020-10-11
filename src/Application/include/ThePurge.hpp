@@ -60,7 +60,7 @@ class ThePurge : public engine::Game {
             world.emplace<engine::Drawable>(e, drawable);
         }
 
-        generateFloor(world, &shader, {}, time(nullptr));
+        generateFloor(world, &shader, {}, static_cast<unsigned int>(time(nullptr)));
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
