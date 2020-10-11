@@ -15,6 +15,10 @@
 #include <Engine/component/Hitbox.hpp>
 
 #include "component/ViewRange.hpp"
+#include "component/AttackRange.hpp"
+#include "component/AttackDamage.hpp"
+#include "component/AttackCooldown.hpp"
+#include "component/Health.hpp"
 
 #include "Declaration.hpp"
 #include "level/LevelTilemapBuilder.hpp"
@@ -26,11 +30,11 @@ class ThePurge : public engine::Game {
         engine::Shader::fromFile(DATA_DIR "/shaders/camera.vert.glsl", DATA_DIR "/shaders/camera.frag.glsl");
 
     entt::entity player;
-    engine::d2::Velocity *player_vel;
-    engine::d2::Position *player_pos;
 
     auto onCreate([[maybe_unused]] entt::registry &world) -> void final
     {
+        using namespace std::chrono_literals; // ms ..
+
         // generateFloor(world, &shader, {}, static_cast<std::uint32_t>(::time(nullptr)));
 
         std::srand(static_cast<std::uint32_t>(std::time(nullptr)));
@@ -39,26 +43,30 @@ class ThePurge : public engine::Game {
         // todo : display none-terrain entity at level z=1 ?
 
         // note : tmp generate random entities moving on the screen (to tests velocity)
-        for (int i = 0; i != 3; i++) {
+        for (int i = 0; i != 20; i++) {
             auto e = world.create();
-            const auto x = 20 * ((static_cast<double>(std::rand()) / max) - 0.5);
-            const auto y = 20 * ((static_cast<double>(std::rand()) / max) - 0.5);
+            const auto x = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
+            const auto y = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
+            world.emplace<entt::tag<"enemy"_hs>>(e);
             world.emplace<engine::d2::Position>(e, x, y);
             world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
             world.emplace<engine::d2::Scale>(e, 0.05, 0.05);
-            world.emplace<entt::tag<"enemy"_hs>>(e);
-            world.emplace<game::ViewRange>(e, 8.0f);
             world.emplace<engine::d2::Hitbox>(e, 2.0, 2.0);
             world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
+            world.emplace<game::ViewRange>(e, 10.0f);
+            world.emplace<game::AttackRange>(e, 3.0f);
+            world.emplace<game::AttackCooldown>(e, false, 4000ms, 0ms);
+            world.emplace<game::AttackDamage>(e, 20.0f);
         }
 
         player = world.create();
-        player_pos = &world.emplace<engine::d2::Position>(player, 0.0, 0.0);
-        player_vel = &world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
+        world.emplace<engine::d2::Position>(player, 0.0, 0.0);
+        world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
         world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
         world.emplace<engine::d2::Scale>(player, 0.05, 0.05);
         world.emplace<engine::d2::Hitbox>(player, 2.0, 2.0);
         world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({1, 1, 1})).shader = &shader;
+        world.emplace<game::Health>(player, 100.0f, 100.0f);
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
@@ -87,21 +95,55 @@ class ThePurge : public engine::Game {
                     default: return;
                     }
                 },
-                [&](const engine::TimeElapsed &) {
-//                    spdlog::info("player {} {}", player_pos->x, player_pos->y);
+                [&](const engine::TimeElapsed &dt) {
+
                     world.view<entt::tag<"enemy"_hs>, engine::d2::Position, engine::d2::Velocity, game::ViewRange>()
                     .each([&](auto &, auto &pos, auto &vel, auto &view_range) {
-
-                        const glm::vec2 diff = { player_pos->x - pos.x, player_pos->y - pos.y };
+                        const auto player_pos = world.get<engine::d2::Position>(player);
+                        const glm::vec2 diff = { player_pos.x - pos.x, player_pos.y - pos.y };
 
                         // if the enemy is close enough
                         if (glm::length(diff) <= view_range.range) {
                             vel = { diff.x, diff.y };
-//                            spdlog::info("enemy {} {}", pos.x, pos.y);
                         } else {
                             vel = { 0, 0 };
                         }
+                    });
 
+                    world.view<game::AttackCooldown>().each([&](auto &attack_cooldown){
+                        if (!attack_cooldown.is_in_cooldown) return;
+
+                        if (dt.elapsed < attack_cooldown.remaining_cooldown) {
+                            attack_cooldown.remaining_cooldown -=
+                                std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
+                        } else {
+                            attack_cooldown.is_in_cooldown = false;
+                            spdlog::warn("attack is up !");
+                        }
+                    });
+
+                    auto &player_health = world.get<game::Health>(player);
+                    world.view<entt::tag<"enemy"_hs>, engine::d2::Position,
+                        game::AttackRange, game::AttackCooldown, game::AttackDamage>()
+                    .each([&](auto &, auto &pos, auto &attack_range, auto &attack_cooldown, auto &attack_damage){
+                        const auto player_pos = world.get<engine::d2::Position>(player);
+                        const glm::vec2 diff = { player_pos.x - pos.x, player_pos.y - pos.y };
+
+                        // if the enemy is close enough
+                        if (glm::length(diff) <= attack_range.range && !attack_cooldown.is_in_cooldown) {
+                            attack_cooldown.is_in_cooldown = true;
+                            attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
+
+                            player_health.current -= attack_damage.damage;
+                            spdlog::warn("player took damage");
+
+                            if (player_health.current <= 0.0f) {
+                                spdlog::warn("!! player is dead, reseting the game");
+                                player_health.current = player_health.max;
+
+                                // todo : send signal reset game or something ..
+                            }
+                        }
                     });
                 },
                 [&](auto) {},

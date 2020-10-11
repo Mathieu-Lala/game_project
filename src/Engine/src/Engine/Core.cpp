@@ -219,7 +219,7 @@ auto engine::Core::main() -> int
                     auto &others_hitbox = m_world.get<d2::Hitbox>(others);
 
                     if (d2::Hitbox::overlapped(moving_hitbox, new_pos, others_hitbox, others_pos)) {
-                        spdlog::warn("{} and {} are colliding !", moving, others);
+                        //spdlog::warn("{} and {} are colliding !", moving, others);
                         collide = true;
                         break;
                     }
