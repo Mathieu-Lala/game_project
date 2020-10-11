@@ -10,6 +10,7 @@
 
 #include "ThePurge.hpp"
 #include <Declaration.hpp>
+
 #include <Competences/FarmerCompetences.hpp>
 
 static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
@@ -72,14 +73,6 @@ struct Options {
 
 };
 
-class Controller {
-public:
-    void printA(const std::string &str) { std::cout << str << std::endl; };
-    void printB(const std::string &str) { std::cout << str << std::endl; };
-    void printX(const std::string &str) { std::cout << str << std::endl; };
-    void printY(const std::string &str) { std::cout << str << std::endl; };
-};
-
 int main(int argc, char **argv) try
 {
     // todo : setup properly logging
@@ -91,77 +84,46 @@ int main(int argc, char **argv) try
 
     Options opt{argc, argv};
 
-    
-    engine::Core::Holder holder;
+    //std::string buffer{};
 
-    // holder.instance->window(glm::ivec2{400, 400}, "The PURGE");
-    // holder.instance->game<ThePurge>();
+    //Controller controller;
+    //FarmerCompetences farmer;
 
-    // ...
-    // entt::sigh<void(int, char)> signal;
-    // entt::sink sink{signal};
-    // listener instance;
-    // boop test;
+    //entt::sigh<void(void)> actionBottom;
+    //entt::sigh<void(void)> actionRight;
+    //entt::sigh<void(const std::string &)> actionLeft;
+    //entt::sigh<void(const std::string &)> actionTop;
 
-    // sink.connect<&foo>();
-    // sink.connect<&listener::bar>(instance);
-    // sink.connect<&boop::printTest>(test);
+    //entt::sink sinkB(actionBottom);
+    //entt::sink sinkR(actionRight);
+    //entt::sink sinkL(actionLeft);
+    //entt::sink sinkT(actionTop);
 
-    std::string buffer{};
+    //sinkB.connect<&FarmerCompetences::activateSkill>(farmer);
+    //sinkR.connect<&FarmerCompetences::displayInfos>(farmer);
+    //sinkL.connect<&Controller::printX>(controller);
+    //sinkT.connect<&Controller::printY>(controller);
 
-    Controller controller;
-    FarmerCompetences farmer;
+    //while (std::getline(std::cin, buffer)) {
+    //    std::cout << "Input -> " << buffer << std::endl;
+    //    if (buffer == "A" || buffer == "ACTION_BOTTOM") {
+    //        actionBottom.publish();
+    //    } else if (buffer == "B" || buffer == "ACTION_RIGHT") {
+    //        actionRight.publish();
+    //    } else if (buffer == "X" || buffer == "ACTION_LEFT") {
+    //        actionLeft.publish("X is Pressed !");
+    //    } else if (buffer == "Y" || buffer == "ACTION_RIGHT") {
+    //        actionTop.publish("Y is Pressed !");
+    //    } else if (buffer == "exit")
+    //        break;
+    //}
 
-    entt::sigh<void(void)> actionBottom;
-    entt::sigh<void(void)> actionRight;
-    entt::sigh<void(const std::string &)> actionLeft;
-    entt::sigh<void(const std::string &)> actionTop;
-
-    entt::sink sinkB(actionBottom);
-    entt::sink sinkR(actionRight);
-    entt::sink sinkL(actionLeft);
-    entt::sink sinkT(actionTop);
-
-    sinkB.connect<&FarmerCompetences::activateSkill>(farmer);
-    sinkR.connect<&FarmerCompetences::displayInfos>(farmer);
-    sinkL.connect<&Controller::printX>(controller);
-    sinkT.connect<&Controller::printY>(controller);
-
-    while (std::getline(std::cin, buffer)) {
-        std::cout << "Input -> " << buffer << std::endl;
-        if (buffer == "A" || buffer == "ACTION_BOTTOM") {
-            actionBottom.publish();
-        } else if (buffer == "B" || buffer == "ACTION_RIGHT") {
-            actionRight.publish();
-        } else if (buffer == "X" || buffer == "ACTION_LEFT") {
-            actionLeft.publish("X is Pressed !");
-        } else if (buffer == "Y" || buffer == "ACTION_RIGHT") {
-            actionTop.publish("Y is Pressed !");
-        } else if (buffer == "exit")
-            break;
-    }
-
-    //// ...
-    // signal.publish(42, 'c');
-
-    //// disconnects a free function
-    // sink.disconnect<&foo>();
-
-    //// disconnect a member function of an instance
-    // sink.disconnect<&listener::bar>(instance);
-
-    //// disconnect all member functions of an instance, if any
-    // sink.disconnect(instance);
-
-    //// discards all listeners at once
-    // sink.disconnect();
+    auto holder = engine::Core::Holder::init();
 
     std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
-    if (opt.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
 
-    //holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
-    //holder.instance->game<ThePurge>();
-
+    holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
+    holder.instance->game<ThePurge>();
 
     // 3. Apply optional argument and run
 

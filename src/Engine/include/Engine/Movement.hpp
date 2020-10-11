@@ -3,11 +3,12 @@
 #include <iostream>
 
 namespace engine {
+    
     enum Direction {
-        UP,
-        RIGHT,
-        DOWN,
-        LEFT
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST,
     };
 
     class Movement
@@ -16,10 +17,18 @@ namespace engine {
         void moveAxis(/* &Player */ Direction direction)
         { 
             switch (direction) {
-            case Direction::UP: std::cout << "UP" << std::endl; break;
-            case Direction::RIGHT: std::cout << "RIGHT" << std::endl; break;
-            case Direction::DOWN: std::cout << "DOWN" << std::endl; break;
-            case Direction::LEFT: std::cout << "LEFT" << std::endl; break;
+            case engine::Direction::NORTH:
+                std::cout << "UP" << std::endl;
+                break;
+            case engine::Direction::EAST:
+                std::cout << "RIGHT" << std::endl;
+                break;
+            case engine::Direction::SOUTH:
+                std::cout << "DOWN" << std::endl;
+                break;
+            case engine::Direction::WEST:
+                std::cout << "LEFT" << std::endl;
+                break;
             default: break;
             }
 
