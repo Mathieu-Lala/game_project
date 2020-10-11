@@ -40,6 +40,8 @@ public:
 
     auto getAspectRatio() const -> double { return static_cast<double>(m_size.x) / static_cast<double>(m_size.y); }
 
+    auto getSize() const -> glm::dvec2 { return m_size; }
+
 
     template<typename EventType>
     auto applyEvent([[maybe_unused]] const EventType &) -> void { }
