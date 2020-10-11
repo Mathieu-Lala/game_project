@@ -13,6 +13,8 @@
 #include "Engine/component/Position.hpp"
 #include "Engine/component/Scale.hpp"
 #include "Engine/component/Velocity.hpp"
+#include "Engine/component/Acceleration.hpp"
+#include "Engine/component/Hitbox.hpp"
 
 #include "Engine/Core.hpp"
 
@@ -45,6 +47,11 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
     IMGUI_CHECKVERSION();
 
     m_joystickManager = std::make_unique<JoystickManager>();
+
+    // note : not working
+    // m_world.on_destroy<engine::Drawable>().connect<&engine::Drawable::dtor>();
+
+    //m_world.on_update<engine::d2::Position>() // require to use world.patch or world.replace
 }
 
 engine::Core::~Core()
@@ -151,9 +158,12 @@ auto engine::Core::main() -> int
         // note : engine related
         std::visit(
             overloaded{
-                [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
+                [&]([[maybe_unused]] const OpenWindow &) {
+                    m_lastTick = std::chrono::steady_clock::now();
+                    ::glViewport(0, 0, static_cast<int>(m_window->getSize().x), static_cast<int>(m_window->getSize().y));
+                },
                 [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); },
-                [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); },
+                [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); }, // todo : move this in camera ? or window ?
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
                 [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
                 [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
@@ -174,62 +184,61 @@ auto engine::Core::main() -> int
         //// note : should note draw at every frame = heavy
         if (timeElapsed) {
             const auto t = std::get<TimeElapsed>(event);
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
-            m_world.view<d2::Position, d2::Velocity>().each(
-                [elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count()](auto &pos, auto &vel) {
-                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
-                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+            m_world.view<d2::Velocity, d2::Acceleration>().each(
+                [](auto &vel, auto &acc) {
+                    vel.x += acc.x;
+                    vel.y += acc.y;
                 });
+
+
+            // todo : exclude the d2::Hitbox on this system
+//            m_world.view<d2::Position, d2::Velocity>().each(
+//                [&elapsed](auto &pos, auto &vel) {
+//                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
+//                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+//                });
+
+            for (auto &moving : m_world.view<d2::Position, d2::Velocity, d2::Hitbox>()) {
+                auto &moving_pos = m_world.get<d2::Position>(moving);
+                auto &moving_vel = m_world.get<d2::Velocity>(moving);
+                auto &moving_hitbox = m_world.get<d2::Hitbox>(moving);
+
+                const auto new_pos = d2::Position{
+                    moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                    moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0
+                };
+
+                bool collide = false;
+
+                for (auto &others : m_world.view<d2::Position, d2::Hitbox>()) {
+                    if (moving == others) continue;
+
+                    auto &others_pos = m_world.get<d2::Position>(others);
+                    auto &others_hitbox = m_world.get<d2::Hitbox>(others);
+
+                    if (d2::Hitbox::overlapped(moving_hitbox, new_pos, others_hitbox, others_pos)) {
+                        spdlog::warn("{} and {} are colliding !", moving, others);
+                        collide = true;
+                        break;
+                    }
+                }
+
+                if (!collide) {
+                    moving_pos = new_pos;
+                } else {
+                    moving_vel = { 0.0, 0.0 };
+                }
+            }
 
             m_window->draw([&] {
                 m_game->drawUserInterface();
 
 #ifndef NDEBUG
                 debugDrawJoystick();
+                debugDrawDisplayOptions();
 #endif
-
-                enum DisplayMode {
-                    POINTS = GL_POINTS,
-                    LINE_STRIP = GL_LINE_STRIP,
-                    LINE_LOOP = GL_LINE_LOOP,
-                    LINES = GL_LINES,
-                    LINE_STRIP_ADJACENCY = GL_LINE_STRIP_ADJACENCY,
-                    LINES_ADJACENCY = GL_LINES_ADJACENCY,
-                    TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
-                    TRIANGLE_FAN = GL_TRIANGLE_FAN,
-                    TRIANGLES = GL_TRIANGLES,
-                    TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
-                    TRIANGLES_ADJACENCY = GL_TRIANGLES_ADJACENCY,
-                    PATCHES = GL_PATCHES,
-                };
-
-                static constexpr auto display_mode = std::to_array({
-                    POINTS,
-                    LINE_STRIP,
-                    LINE_LOOP,
-                    LINES,
-                    LINE_STRIP_ADJACENCY,
-                    LINES_ADJACENCY,
-                    TRIANGLE_STRIP,
-                    TRIANGLE_FAN,
-                    TRIANGLES,
-                    TRIANGLE_STRIP_ADJACENCY,
-                    TRIANGLES_ADJACENCY,
-                    PATCHES,
-                });
-
-                static auto mode = DisplayMode::TRIANGLES;
-                ImGui::Begin("Display Options");
-                if (ImGui::BeginCombo("##combo", "Display Mode")) {
-                    for (auto n = 0ul; n < display_mode.size(); n++) {
-                        bool is_selected = (mode == display_mode.at(n));
-                        if (ImGui::Selectable(magic_enum::enum_name<DisplayMode>(display_mode.at(n)).data(), is_selected))
-                            mode = display_mode.at(n);
-                        if (is_selected) ImGui::SetItemDefaultFocus();
-                    }
-                    ImGui::EndCombo();
-                }
-                ImGui::End();
 
                 ImGui::Render();
 
@@ -237,14 +246,16 @@ auto engine::Core::main() -> int
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT);
 
-                m_world.view<Drawable, d2::Position, d2::Scale>().each([](auto &drawable, auto &pos, auto &scale) {
+                m_world.view<Drawable, d2::Position, d2::Scale>().each(
+                [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {
                     drawable.shader->use();
+
                     auto model = glm::dmat4(1.0);
-                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 0.0});
+                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                     model = glm::translate(model, glm::dvec3{pos.x, pos.y, 0.0});
-                    //              model = glm::rotate(model, glm::radians(20.0f), glm::vec3(1.0f, 0.3f, 0.5f));
                     drawable.shader->uploadUniformMat4("model", model);
 
+                    // note : mode could be defined in the drawable
                     ::glBindVertexArray(drawable.VAO);
                     ::glDrawElements(static_cast<std::uint32_t>(mode), 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                 });
@@ -298,6 +309,7 @@ auto engine::Core::getElapsedTime() -> std::chrono::nanoseconds
 }
 
 #ifndef NDEBUG
+
 // todo : what happen when more than 1 joystick ?
 auto engine::Core::debugDrawJoystick() -> void
 {
@@ -321,4 +333,37 @@ auto engine::Core::debugDrawJoystick() -> void
     });
     ImGui::End();
 }
+
+// todo : add this : https://learnopengl.com/Advanced-OpenGL/Face-culling
+
+auto engine::Core::debugDrawDisplayOptions() -> void
+{
+    static constexpr auto display_mode = std::to_array({
+        POINTS,
+        LINE_STRIP,
+        LINE_LOOP,
+        LINES,
+        LINE_STRIP_ADJACENCY,
+        LINES_ADJACENCY,
+        TRIANGLE_STRIP,
+        TRIANGLE_FAN,
+        TRIANGLES,
+        TRIANGLE_STRIP_ADJACENCY,
+        TRIANGLES_ADJACENCY,
+        PATCHES,
+    });
+
+    ImGui::Begin("Display Options");
+    if (ImGui::BeginCombo("##combo", "Display Mode")) {
+        for (auto n = 0ul; n < display_mode.size(); n++) {
+            bool is_selected = (m_displayMode == display_mode.at(n));
+            if (ImGui::Selectable(magic_enum::enum_name<DisplayMode>(display_mode.at(n)).data(), is_selected))
+                m_displayMode = display_mode.at(n);
+            if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::End();
+}
+
 #endif

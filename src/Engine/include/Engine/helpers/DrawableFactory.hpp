@@ -10,7 +10,7 @@ struct DrawableFactory {
 
     // todo : isolate color in a component ?
     static
-    auto rectangle(glm::vec3 &&color, Drawable &out) -> void;
+    auto rectangle(glm::vec3 &&color) -> Drawable;
 
 };
 
