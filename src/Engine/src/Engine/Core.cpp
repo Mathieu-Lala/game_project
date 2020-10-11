@@ -151,9 +151,12 @@ auto engine::Core::main() -> int
         // note : engine related
         std::visit(
             overloaded{
-                [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
+                [&]([[maybe_unused]] const OpenWindow &) {
+                    m_lastTick = std::chrono::steady_clock::now();
+                    ::glViewport(0, 0, static_cast<int>(m_window->getSize().x), static_cast<int>(m_window->getSize().y));
+                },
                 [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); },
-                [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); },
+                [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); }, // todo : move this in camera ? or window ?
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
                 [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
                 [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
@@ -186,50 +189,8 @@ auto engine::Core::main() -> int
 
 #ifndef NDEBUG
                 debugDrawJoystick();
+                debugDrawDisplayOptions();
 #endif
-
-                enum DisplayMode {
-                    POINTS = GL_POINTS,
-                    LINE_STRIP = GL_LINE_STRIP,
-                    LINE_LOOP = GL_LINE_LOOP,
-                    LINES = GL_LINES,
-                    LINE_STRIP_ADJACENCY = GL_LINE_STRIP_ADJACENCY,
-                    LINES_ADJACENCY = GL_LINES_ADJACENCY,
-                    TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
-                    TRIANGLE_FAN = GL_TRIANGLE_FAN,
-                    TRIANGLES = GL_TRIANGLES,
-                    TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
-                    TRIANGLES_ADJACENCY = GL_TRIANGLES_ADJACENCY,
-                    PATCHES = GL_PATCHES,
-                };
-
-                static constexpr auto display_mode = std::to_array({
-                    POINTS,
-                    LINE_STRIP,
-                    LINE_LOOP,
-                    LINES,
-                    LINE_STRIP_ADJACENCY,
-                    LINES_ADJACENCY,
-                    TRIANGLE_STRIP,
-                    TRIANGLE_FAN,
-                    TRIANGLES,
-                    TRIANGLE_STRIP_ADJACENCY,
-                    TRIANGLES_ADJACENCY,
-                    PATCHES,
-                });
-
-                static auto mode = DisplayMode::TRIANGLES;
-                ImGui::Begin("Display Options");
-                if (ImGui::BeginCombo("##combo", "Display Mode")) {
-                    for (auto n = 0ul; n < display_mode.size(); n++) {
-                        bool is_selected = (mode == display_mode.at(n));
-                        if (ImGui::Selectable(magic_enum::enum_name<DisplayMode>(display_mode.at(n)).data(), is_selected))
-                            mode = display_mode.at(n);
-                        if (is_selected) ImGui::SetItemDefaultFocus();
-                    }
-                    ImGui::EndCombo();
-                }
-                ImGui::End();
 
                 ImGui::Render();
 
@@ -237,14 +198,16 @@ auto engine::Core::main() -> int
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT);
 
-                m_world.view<Drawable, d2::Position, d2::Scale>().each([](auto &drawable, auto &pos, auto &scale) {
+                m_world.view<Drawable, d2::Position, d2::Scale>().each(
+                [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {
                     drawable.shader->use();
+
                     auto model = glm::dmat4(1.0);
-                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 0.0});
+                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                     model = glm::translate(model, glm::dvec3{pos.x, pos.y, 0.0});
-                    //              model = glm::rotate(model, glm::radians(20.0f), glm::vec3(1.0f, 0.3f, 0.5f));
                     drawable.shader->uploadUniformMat4("model", model);
 
+                    // note : mode could be defined in the drawable
                     ::glBindVertexArray(drawable.VAO);
                     ::glDrawElements(static_cast<std::uint32_t>(mode), 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                 });
@@ -298,6 +261,7 @@ auto engine::Core::getElapsedTime() -> std::chrono::nanoseconds
 }
 
 #ifndef NDEBUG
+
 // todo : what happen when more than 1 joystick ?
 auto engine::Core::debugDrawJoystick() -> void
 {
@@ -321,4 +285,37 @@ auto engine::Core::debugDrawJoystick() -> void
     });
     ImGui::End();
 }
+
+// todo : add this : https://learnopengl.com/Advanced-OpenGL/Face-culling
+
+auto engine::Core::debugDrawDisplayOptions() -> void
+{
+    static constexpr auto display_mode = std::to_array({
+        POINTS,
+        LINE_STRIP,
+        LINE_LOOP,
+        LINES,
+        LINE_STRIP_ADJACENCY,
+        LINES_ADJACENCY,
+        TRIANGLE_STRIP,
+        TRIANGLE_FAN,
+        TRIANGLES,
+        TRIANGLE_STRIP_ADJACENCY,
+        TRIANGLES_ADJACENCY,
+        PATCHES,
+    });
+
+    ImGui::Begin("Display Options");
+    if (ImGui::BeginCombo("##combo", "Display Mode")) {
+        for (auto n = 0ul; n < display_mode.size(); n++) {
+            bool is_selected = (m_displayMode == display_mode.at(n));
+            if (ImGui::Selectable(magic_enum::enum_name<DisplayMode>(display_mode.at(n)).data(), is_selected))
+                m_displayMode = display_mode.at(n);
+            if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::End();
+}
+
 #endif

@@ -4,10 +4,10 @@ auto engine::DrawableFactory::rectangle(glm::vec3 &&c, Drawable &out) -> void
 {
     const float vertices[] = {
         // positions        // color
-        -0.5f, -0.5f, 0.0f, c.r, c.g, c.b, // top left
-        +0.5f, -0.5f, 0.0f, c.r, c.g, c.b, // top right
-        -0.5f, +0.5f, 0.0f, c.r, c.g, c.b, // bottom left
-        +0.5f, +0.5f, 0.0f, c.r, c.g, c.b, // bottom right
+        -1.0f, -1.0f, 0.0f, c.r, c.g, c.b, // top left
+        +1.0f, -1.0f, 0.0f, c.r, c.g, c.b, // top right
+        -1.0f, +1.0f, 0.0f, c.r, c.g, c.b, // bottom left
+        +1.0f, +1.0f, 0.0f, c.r, c.g, c.b, // bottom right
     };
     static constexpr GLsizei STRIDE_COUNT = 6; // = x + y + z + r + g + b
 
@@ -16,7 +16,7 @@ auto engine::DrawableFactory::rectangle(glm::vec3 &&c, Drawable &out) -> void
     std::uint32_t EBO;
 
     // static constexpr auto indices = std::to_array({ 0u, 1u, 2u, 1u, 2u, 3u });
-    std::uint32_t indices[] = {
+    static constexpr std::uint32_t indices[] = {
         0, 1, 2, // first triangle
         1, 2, 3, // second triangle
     };
