@@ -13,6 +13,8 @@
 #include "Engine/component/Position.hpp"
 #include "Engine/component/Scale.hpp"
 #include "Engine/component/Velocity.hpp"
+#include "Engine/component/Acceleration.hpp"
+#include "Engine/component/Hitbox.hpp"
 
 #include "Engine/Core.hpp"
 
@@ -45,6 +47,11 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
     IMGUI_CHECKVERSION();
 
     m_joystickManager = std::make_unique<JoystickManager>();
+
+    // note : not working
+    // m_world.on_destroy<engine::Drawable>().connect<&engine::Drawable::dtor>();
+
+    //m_world.on_update<engine::d2::Position>() // require to use world.patch or world.replace
 }
 
 engine::Core::~Core()
@@ -177,12 +184,53 @@ auto engine::Core::main() -> int
         //// note : should note draw at every frame = heavy
         if (timeElapsed) {
             const auto t = std::get<TimeElapsed>(event);
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
-            m_world.view<d2::Position, d2::Velocity>().each(
-                [elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count()](auto &pos, auto &vel) {
-                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
-                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+            m_world.view<d2::Velocity, d2::Acceleration>().each(
+                [](auto &vel, auto &acc) {
+                    vel.x += acc.x;
+                    vel.y += acc.y;
                 });
+
+
+            // todo : exclude the d2::Hitbox on this system
+//            m_world.view<d2::Position, d2::Velocity>().each(
+//                [&elapsed](auto &pos, auto &vel) {
+//                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
+//                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+//                });
+
+            for (auto &moving : m_world.view<d2::Position, d2::Velocity, d2::Hitbox>()) {
+                auto &moving_pos = m_world.get<d2::Position>(moving);
+                auto &moving_vel = m_world.get<d2::Velocity>(moving);
+                auto &moving_hitbox = m_world.get<d2::Hitbox>(moving);
+
+                const auto new_pos = d2::Position{
+                    moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                    moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0
+                };
+
+                bool collide = false;
+
+                for (auto &others : m_world.view<d2::Position, d2::Hitbox>()) {
+                    if (moving == others) continue;
+
+                    auto &others_pos = m_world.get<d2::Position>(others);
+                    auto &others_hitbox = m_world.get<d2::Hitbox>(others);
+
+                    if (d2::Hitbox::overlapped(moving_hitbox, new_pos, others_hitbox, others_pos)) {
+                        spdlog::warn("{} and {} are colliding !", moving, others);
+                        collide = true;
+                        break;
+                    }
+                }
+
+                if (!collide) {
+                    moving_pos = new_pos;
+                } else {
+                    moving_vel = { 0.0, 0.0 };
+                }
+            }
 
             m_window->draw([&] {
                 m_game->drawUserInterface();

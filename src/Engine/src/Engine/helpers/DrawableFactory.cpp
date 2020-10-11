@@ -1,6 +1,6 @@
 #include "Engine/helpers/DrawableFactory.hpp"
 
-auto engine::DrawableFactory::rectangle(glm::vec3 &&c, Drawable &out) -> void
+auto engine::DrawableFactory::rectangle(glm::vec3 &&c) -> Drawable
 {
     const float vertices[] = {
         // positions        // color
@@ -41,8 +41,10 @@ auto engine::DrawableFactory::rectangle(glm::vec3 &&c, Drawable &out) -> void
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, STRIDE_COUNT * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    Drawable out;
     out.VAO = VAO;
     out.VBO = VBO;
     out.EBO = EBO;
     out.triangle_count = 2;
+    return out;
 }

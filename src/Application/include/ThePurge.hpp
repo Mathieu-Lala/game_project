@@ -11,6 +11,7 @@
 #include <Engine/component/Position.hpp>
 #include <Engine/component/Scale.hpp>
 #include <Engine/component/Velocity.hpp>
+#include <Engine/component/Acceleration.hpp>
 #include <Engine/component/Hitbox.hpp>
 
 #include "component/ViewRange.hpp"
@@ -35,19 +36,6 @@ class ThePurge : public engine::Game {
         std::srand(static_cast<std::uint32_t>(std::time(nullptr)));
         static constexpr auto max = static_cast<double>(RAND_MAX);
 
-//        // note : tmp generate a grid black and white (to tests coordinates systems)
-        for (auto y = -50; y != 50ul; y++)
-            for (auto x = -50; x != 50ul; x++) {
-                auto e = world.create();
-                world.emplace<engine::d2::Position>(e, x / 10.0, y / 10.0);
-                world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
-                engine::Drawable drawable;
-                drawable.shader = &shader;
-                auto color = ((x & 1) && (y & 1)) || (!(x & 1) && !(y & 1));
-                engine::DrawableFactory::rectangle({color, color, color}, drawable);
-                world.emplace<engine::Drawable>(e, drawable);
-            }
-
         // todo : display none-terrain entity at level z=1 ?
 
         // note : tmp generate random entities moving on the screen (to tests velocity)
@@ -59,23 +47,18 @@ class ThePurge : public engine::Game {
             world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
             world.emplace<engine::d2::Scale>(e, 0.05, 0.05);
             world.emplace<entt::tag<"enemy"_hs>>(e);
-            world.emplace<game::ViewRange>(e, 5.0f);
-//            world.emplace<engine::d2::Hitbox>(e, 0.05, 0.05);
-
-            engine::Drawable drawable;
-            drawable.shader = &shader;
-            engine::DrawableFactory::rectangle({1, 0, 0}, drawable);
-            world.emplace<engine::Drawable>(e, drawable);
+            world.emplace<game::ViewRange>(e, 8.0f);
+            world.emplace<engine::d2::Hitbox>(e, 2.0, 2.0);
+            world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
         }
 
         player = world.create();
-        player_pos = &world.emplace<engine::d2::Position>(player, 0, 0);
-        player_vel = &world.emplace<engine::d2::Velocity>(player, 0, 0);
-        world.emplace<engine::d2::Scale>(player, 0.07, 0.07);
-        engine::Drawable drawable;
-        drawable.shader = &shader;
-        engine::DrawableFactory::rectangle({1, 1, 1}, drawable);
-        world.emplace<engine::Drawable>(player, drawable);
+        player_pos = &world.emplace<engine::d2::Position>(player, 0.0, 0.0);
+        player_vel = &world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
+        world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
+        world.emplace<engine::d2::Scale>(player, 0.05, 0.05);
+        world.emplace<engine::d2::Hitbox>(player, 2.0, 2.0);
+        world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({1, 1, 1})).shader = &shader;
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
@@ -93,16 +76,19 @@ class ThePurge : public engine::Game {
                     case GLFW_KEY_RIGHT: m_camera.turn(1, 0); break;
                     case GLFW_KEY_DOWN: m_camera.turn(0, -1); break;
                     case GLFW_KEY_LEFT: m_camera.turn(-1, 0); break;
-                    case GLFW_KEY_O: *player_vel = {0, 0}; break; // player stop
-                    case GLFW_KEY_I: *player_vel = {0, 0.7}; break; // go top
-                    case GLFW_KEY_J: *player_vel = {-0.7, 0}; break; // go left
-                    case GLFW_KEY_K: *player_vel = {0, -0.7}; break; // go bottom
-                    case GLFW_KEY_L: *player_vel = {0.7, 0}; break; // go right
+                    case GLFW_KEY_O:
+                        world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
+                        world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
+                        break; // player stop
+                    case GLFW_KEY_I: world.get<engine::d2::Acceleration>(player) = {0.0, 0.1}; break; // go top
+                    case GLFW_KEY_J: world.get<engine::d2::Acceleration>(player) = {-0.1, 0.0}; break; // go left
+                    case GLFW_KEY_K: world.get<engine::d2::Acceleration>(player) = {0.0, -0.1}; break; // go bottom
+                    case GLFW_KEY_L: world.get<engine::d2::Acceleration>(player) = {0.1, 0.0}; break; // go right
                     default: return;
                     }
                 },
                 [&](const engine::TimeElapsed &) {
-                    spdlog::info("player {} {}", player_pos->x, player_pos->y);
+//                    spdlog::info("player {} {}", player_pos->x, player_pos->y);
                     world.view<entt::tag<"enemy"_hs>, engine::d2::Position, engine::d2::Velocity, game::ViewRange>()
                     .each([&](auto &, auto &pos, auto &vel, auto &view_range) {
 
@@ -111,7 +97,7 @@ class ThePurge : public engine::Game {
                         // if the enemy is close enough
                         if (glm::length(diff) <= view_range.range) {
                             vel = { diff.x, diff.y };
-                            spdlog::info("enemy {} {}", pos.x, pos.y);
+//                            spdlog::info("enemy {} {}", pos.x, pos.y);
                         } else {
                             vel = { 0, 0 };
                         }
