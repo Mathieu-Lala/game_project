@@ -1,3 +1,7 @@
+#include <fstream>
+#include <streambuf>
+#include <entt/entt.hpp>
+#include <iostream>
 #include <CLI/CLI.hpp>
 #include <spdlog/sinks/basic_file_sink.h>
 
@@ -5,6 +9,9 @@
 #include <Engine/details/Version.hpp>
 
 #include "ThePurge.hpp"
+#include <Declaration.hpp>
+
+#include <Competences/FarmerCompetences.hpp>
 
 static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
@@ -83,20 +90,14 @@ int main(int argc, char **argv) try
         ? opt.options[Options::CONFIG_PATH]->as<std::string>()
         : Options::DEFAULT_CONFIG);
 
-
     // 2. Initialize the Engine / Window / Game
 
     auto holder = engine::Core::Holder::init();
 
     std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
-    if (opt.fullscreen)
-        windowProperty |= engine::Window::Property::FULLSCREEN;
 
     holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
     holder.instance->game<ThePurge>();
-
-
-    // 3. Apply optional argument and run
 
 #ifndef NDEBUG
     if (!opt.options[Options::REPLAY_PATH]->empty())
