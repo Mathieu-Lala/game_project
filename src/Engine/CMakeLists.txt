@@ -35,7 +35,7 @@ add_library(
   src/Engine/Window.cpp
   src/Engine/Image.cpp
   src/Engine/helpers/DrawableFactory.cpp
-  # src/Engine/Camera.cpp
+  src/Engine/Camera2d.cpp
   src/Engine/Shader.cpp
   src/Engine/JoystickManager.cpp)
 

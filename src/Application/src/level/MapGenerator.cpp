@@ -50,8 +50,8 @@ Room generateRoom(TilemapBuilder &builder, const FloorGenParam &params, std::def
         if (tries++ > 10000) return {0, 0, 0, 0};
 
         // Width including walls (hence the +2)
-        r.w = randRange(params.minRoomSize + 2, params.maxRoomSize + 2, randomEngine);
-        r.h = randRange(params.minRoomSize + 2, params.maxRoomSize + 2, randomEngine);
+        r.w = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1, randomEngine);
+        r.h = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1, randomEngine);
 
         r.x = randRange(0, builder.getSize().x - r.w, randomEngine);
         r.y = randRange(0, builder.getSize().y - r.h, randomEngine);
@@ -79,9 +79,9 @@ int getOnePossibleCenterOf(int a, int b, std::default_random_engine &randomEngin
 }
 
 // If room size is even, center will be chosen randomly between the two center tiles
-glm::vec<2, int> getOnePossibleCenterOf(const Room &r, std::default_random_engine &randomEngine)
+glm::ivec2 getOnePossibleCenterOf(const Room &r, std::default_random_engine &randomEngine)
 {
-    glm::vec<2, int> pos;
+    glm::ivec2 pos;
 
     pos.x = getOnePossibleCenterOf(r.x, r.x + r.w, randomEngine);
     pos.y = getOnePossibleCenterOf(r.y, r.y + r.h, randomEngine);

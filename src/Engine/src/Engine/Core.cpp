@@ -192,9 +192,6 @@ auto engine::Core::main() -> int
                     vel.y += acc.y;
                 });
 
-            m_window->draw([&] {
-                m_game->drawUserInterface(m_world);
-
             // todo : exclude the d2::Hitbox on this system
 //            m_world.view<d2::Position, d2::Velocity>().each(
 //                [&elapsed](auto &pos, auto &vel) {
@@ -235,7 +232,7 @@ auto engine::Core::main() -> int
             }
 
             m_window->draw([&] {
-                m_game->drawUserInterface();
+                m_game->drawUserInterface(m_world);
 
 #ifndef NDEBUG
                 debugDrawJoystick();
@@ -253,8 +250,8 @@ auto engine::Core::main() -> int
                     drawable.shader->use();
 
                     auto model = glm::dmat4(1.0);
-                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                     model = glm::translate(model, glm::dvec3{pos.x, pos.y, 0.0});
+                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                     drawable.shader->uploadUniformMat4("model", model);
 
                     // note : mode could be defined in the drawable
