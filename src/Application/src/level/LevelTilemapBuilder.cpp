@@ -23,14 +23,14 @@ void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     auto tile = get(x, y);
     if (tile == TileEnum::NONE) return;
 
-    //glm::ivec2 size(1, 1);
+    glm::ivec2 size(1, 1);
 
-    // TODO: investigate why this doesn't work
-    auto size = getTileSize(x, y);
+    // TODO: investigate why this doesn't work. It used to work before, problem probably comes from camera (?)
+    //auto size = getTileSize(x, y);
 
-    for (int clearY = y; clearY < y + size.y; ++clearY) {
-        for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
-    }
+    //for (int clearY = y; clearY < y + size.y; ++clearY) {
+    //    for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
+    //}
 
 
     switch (tile) {
