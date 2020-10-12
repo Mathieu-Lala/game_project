@@ -8,13 +8,13 @@ auto TilemapBuilder::get(int x, int y) -> TileEnum &
     assert(x < m_size.x);
     assert(y < m_size.y);
 
-    return m_tiles[static_cast<std::size_t>(y * m_size.x + x)];
+    return m_tiles[static_cast<std::size_t>(y) * static_cast<std::size_t>(m_size.x) + static_cast<std::size_t>(x)];
 }
 
 void TilemapBuilder::build(entt::registry &world)
 {
-    for (int y = 0; y < m_size.y; ++y) {
-        for (int x = 0; x < m_size.x; ++x) { handleTileBuild(world, x, y); }
+    for (auto y = 0; y < m_size.y; ++y) {
+        for (auto x = 0; x < m_size.x; ++x) { handleTileBuild(world, x, y); }
     }
 }
 
@@ -61,7 +61,7 @@ glm::ivec2 TilemapBuilder::getTileSize(int x1, int y1)
     while (y2 < m_size.x) {
         bool isEntireLineSame = true;
 
-        for (int x = x1; x < x2; ++x) {
+        for (auto x = x1; x < x2; ++x) {
             if (get(x, y2) != tile) {
                 isEntireLineSame = false;
                 break;

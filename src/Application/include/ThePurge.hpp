@@ -67,6 +67,8 @@ class ThePurge : public engine::Game {
         world.emplace<engine::d2::Hitbox>(player, 2.0, 2.0);
         world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({1, 1, 1})).shader = &shader;
         world.emplace<game::Health>(player, 100.0f, 100.0f);
+
+        generateFloor(world, &shader, {}, static_cast<unsigned int>(time(nullptr)));
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
