@@ -65,8 +65,8 @@ class ThePurge : public engine::Game {
         world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
         world.emplace<engine::d2::Scale>(player, 1.0, 2.0);
         world.emplace<engine::d2::Hitbox>(player, 1.0, 2.0);
-        world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
         world.emplace<game::Health>(player, 100.0f, 100.0f);
+        world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
@@ -199,7 +199,7 @@ class ThePurge : public engine::Game {
 
         {
             auto cameraPos = m_camera.getCenter();
-            ImGui::Text("Camera Position (%.3f, %.3f)", cameraPos.x, cameraPos.y);
+            ImGui::Text("Camera Position (%.3f, %.3f)", static_cast<double>(cameraPos.x), static_cast<double>(cameraPos.y));
 
             bool dirty = false;
             dirty |= ImGui::DragFloat("Camera X", &cameraPos.x);
@@ -216,12 +216,12 @@ class ThePurge : public engine::Game {
             auto viewPortSize = m_camera.getViewportSize();
             auto pos = m_camera.getCenter();
 
-            ImGui::Text("Viewport size (%.3f, %.3f)", viewPortSize.x, viewPortSize.y);
+            ImGui::Text("Viewport size (%.3f, %.3f)", static_cast<double>(viewPortSize.x), static_cast<double>(viewPortSize.y));
             ImGui::Text("Viewport range :");
-            ImGui::Text("   left  : %.3f", pos.x - (viewPortSize.x / 2));
-            ImGui::Text("   right : %.3f", pos.x + (viewPortSize.x / 2));
-            ImGui::Text("   top   : %.3f", pos.y + (viewPortSize.y / 2));
-            ImGui::Text("   bottom: %.3f", pos.y - (viewPortSize.y / 2));
+            ImGui::Text("   left  : %.3f", static_cast<double>(pos.x - (viewPortSize.x / 2)));
+            ImGui::Text("   right : %.3f", static_cast<double>(pos.x + (viewPortSize.x / 2)));
+            ImGui::Text("   top   : %.3f", static_cast<double>(pos.y + (viewPortSize.y / 2)));
+            ImGui::Text("   bottom: %.3f", static_cast<double>(pos.y - (viewPortSize.y / 2)));
 
 
             bool dirty = false;
