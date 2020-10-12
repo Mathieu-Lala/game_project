@@ -120,56 +120,6 @@ class ThePurge : public engine::Game {
                     }
                 },
                 [&](const engine::TimeElapsed &dt) {
-
-                    //world.view<entt::tag<"enemy"_hs>, engine::d2::Position, engine::d2::Velocity, game::ViewRange>()
-                    //.each([&](auto &, auto &pos, auto &vel, auto &view_range) {
-                    //    const auto player_pos = world.get<engine::d2::Position>(player);
-                    //    const glm::vec2 diff = { player_pos.x - pos.x, player_pos.y - pos.y };
-
-                    //    // if the enemy is close enough
-                    //    if (glm::length(diff) <= view_range.range) {
-                    //        vel = { diff.x, diff.y };
-                    //    } else {
-                    //        vel = { 0, 0 };
-                    //    }
-                    //});
-
-                    //world.view<game::AttackCooldown>().each([&](auto &attack_cooldown){
-                    //    if (!attack_cooldown.is_in_cooldown) return;
-
-                    //    if (dt.elapsed < attack_cooldown.remaining_cooldown) {
-                    //        attack_cooldown.remaining_cooldown -=
-                    //            std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-                    //    } else {
-                    //        attack_cooldown.is_in_cooldown = false;
-                    //        spdlog::warn("attack is up !");
-                    //    }
-                    //});
-
-                    //auto &player_health = world.get<game::Health>(player);
-                    //world.view<entt::tag<"enemy"_hs>, engine::d2::Position,
-                    //    game::AttackRange, game::AttackCooldown, game::AttackDamage>()
-                    //.each([&](auto &, auto &pos, auto &attack_range, auto &attack_cooldown, auto &attack_damage){
-                    //    const auto player_pos = world.get<engine::d2::Position>(player);
-                    //    const glm::vec2 diff = { player_pos.x - pos.x, player_pos.y - pos.y };
-
-                    //    // if the enemy is close enough
-                    //    if (glm::length(diff) <= attack_range.range && !attack_cooldown.is_in_cooldown) {
-                    //        attack_cooldown.is_in_cooldown = true;
-                    //        attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
-
-                    //        player_health.current -= attack_damage.damage;
-                    //        spdlog::warn("player took damage");
-
-                    //        if (player_health.current <= 0.0f) {
-                    //            spdlog::warn("!! player is dead, reseting the game");
-                    //            player_health.current = player_health.max;
-
-                    //            // todo : send signal reset game or something ..
-                    //        }
-                    //    }
-                    //});
-
                     gameLogic.publish(world, player, dt);
                 },
                 [&](auto) {},

@@ -84,49 +84,6 @@ int main(int argc, char **argv) try
 
     Options opt{argc, argv};
 
-    //std::string buffer{};
-
-    //Controller controller;
-    //FarmerCompetences farmer;
-
-    //entt::sigh<void(void)> actionBottom;
-    //entt::sigh<void(void)> actionRight;
-    //entt::sigh<void(const std::string &)> actionLeft;
-    //entt::sigh<void(const std::string &)> actionTop;
-
-    //entt::sink sinkB(actionBottom);
-    //entt::sink sinkR(actionRight);
-    //entt::sink sinkL(actionLeft);
-    //entt::sink sinkT(actionTop);
-
-    //sinkB.connect<&FarmerCompetences::activateSkill>(farmer);
-    //sinkR.connect<&FarmerCompetences::displayInfos>(farmer);
-    //sinkL.connect<&Controller::printX>(controller);
-    //sinkT.connect<&Controller::printY>(controller);
-
-    //while (std::getline(std::cin, buffer)) {
-    //    std::cout << "Input -> " << buffer << std::endl;
-    //    if (buffer == "A" || buffer == "ACTION_BOTTOM") {
-    //        actionBottom.publish();
-    //    } else if (buffer == "B" || buffer == "ACTION_RIGHT") {
-    //        actionRight.publish();
-    //    } else if (buffer == "X" || buffer == "ACTION_LEFT") {
-    //        actionLeft.publish("X is Pressed !");
-    //    } else if (buffer == "Y" || buffer == "ACTION_RIGHT") {
-    //        actionTop.publish("Y is Pressed !");
-    //    } else if (buffer == "exit")
-    //        break;
-    //}
-
-    auto holder = engine::Core::Holder::init();
-
-    std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
-
-    holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
-    holder.instance->game<ThePurge>();
-
-    // 3. Apply optional argument and run
-
 #ifndef NDEBUG
     opt.dump();
 #endif
@@ -135,8 +92,14 @@ int main(int argc, char **argv) try
         ? opt.options[Options::CONFIG_PATH]->as<std::string>()
         : Options::DEFAULT_CONFIG);
 
-
     // 2. Initialize the Engine / Window / Game
+
+    auto holder = engine::Core::Holder::init();
+
+    std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
+
+    holder.instance->window(glm::ivec2{400, 400}, VERSION, windowProperty);
+    holder.instance->game<ThePurge>();
 
 #ifndef NDEBUG
     if (!opt.options[Options::REPLAY_PATH]->empty())
