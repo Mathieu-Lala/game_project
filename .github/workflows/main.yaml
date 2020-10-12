@@ -6,6 +6,9 @@ on:
       - 'doc/**'
       - 'tmp/**'
       - 'experimental/**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   build:
