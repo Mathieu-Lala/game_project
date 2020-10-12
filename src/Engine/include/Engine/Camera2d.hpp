@@ -20,7 +20,7 @@ public:
     auto getViewProjMatrix() const -> const glm::mat4 { return m_viewProjMatrix; }
     auto getCenter() -> glm::vec2 { return {m_pos.x, m_pos.y}; }
     auto getZ() { return m_pos.z; }
-    auto getViewportSize() -> const glm::vec2 & { return m_viewportSize; };
+    auto getViewportSize() -> glm::vec2 { return m_viewportSize; };
 
 private:
     void recomputeProj();

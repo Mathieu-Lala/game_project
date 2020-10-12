@@ -23,26 +23,28 @@ void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     auto tile = get(x, y);
     if (tile == TileEnum::NONE) return;
 
-    auto size = getTileSize(x, y);
+    glm::ivec2 size(2, 1);
+    //auto size = getTileSize(x, y);
 
-    for (int clearY = y; clearY < y + size.y; ++clearY) {
-        for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
-    }
+    //for (int clearY = y; clearY < y + size.y; ++clearY) {
+    //    for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
+    //}
+
 
     switch (tile) {
     case TileEnum::FLOOR:
         TileFactory::Floor(
             world,
             m_shader,
-            {static_cast<float>(x) / 100.0f, static_cast<float>(y) / 100.0f},
-            {static_cast<float>(size.x) / 10.0f, static_cast<float>(size.y) / 10.0f});
+            {static_cast<float>(x), static_cast<float>(y)},
+            {static_cast<float>(size.x), static_cast<float>(size.y)});
         break;
     case TileEnum::WALL:
         TileFactory::Wall(
             world,
             m_shader,
-            {static_cast<float>(x) / 100.0f, static_cast<float>(y) / 100.0f},
-            {static_cast<float>(size.x) / 10.0f, static_cast<float>(size.y) / 10.0f});
+            {static_cast<float>(x), static_cast<float>(y)},
+            {static_cast<float>(size.x), static_cast<float>(size.y)});
         break;
 
     default: break;

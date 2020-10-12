@@ -43,21 +43,21 @@ class ThePurge : public engine::Game {
         // todo : display none-terrain entity at level z=1 ?
 
         // note : tmp generate random entities moving on the screen (to tests velocity)
-        for (int i = 0; i != 20; i++) {
-            auto e = world.create();
-            const auto x = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
-            const auto y = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
-            world.emplace<entt::tag<"enemy"_hs>>(e);
-            world.emplace<engine::d2::Position>(e, x, y);
-            world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
-            world.emplace<engine::d2::Scale>(e, 1.0, 1.0);
-            world.emplace<engine::d2::Hitbox>(e, 1.0, 1.0);
-            world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
-            world.emplace<game::ViewRange>(e, 10.0f);
-            world.emplace<game::AttackRange>(e, 3.0f);
-            world.emplace<game::AttackCooldown>(e, false, 4000ms, 0ms);
-            world.emplace<game::AttackDamage>(e, 20.0f);
-        }
+        //for (int i = 0; i != 20; i++) {
+        //    auto e = world.create();
+        //    const auto x = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
+        //    const auto y = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
+        //    world.emplace<entt::tag<"enemy"_hs>>(e);
+        //    world.emplace<engine::d2::Position>(e, x, y);
+        //    world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
+        //    world.emplace<engine::d2::Scale>(e, 1.0, 1.0);
+        //    world.emplace<engine::d2::Hitbox>(e, 1.0, 1.0);
+        //    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
+        //    world.emplace<game::ViewRange>(e, 10.0f);
+        //    world.emplace<game::AttackRange>(e, 3.0f);
+        //    world.emplace<game::AttackCooldown>(e, false, 4000ms, 0ms);
+        //    world.emplace<game::AttackDamage>(e, 20.0f);
+        //}
 
         player = world.create();
         world.emplace<engine::d2::Position>(player, 0.0, 0.0);
@@ -67,8 +67,6 @@ class ThePurge : public engine::Game {
         world.emplace<engine::d2::Hitbox>(player, 1.0, 1.0);
         world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({1, 1, 1})).shader = &shader;
         world.emplace<game::Health>(player, 100.0f, 100.0f);
-
-        // generateFloor(world, &shader, {}, static_cast<unsigned int>(time(nullptr)));
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
@@ -162,10 +160,10 @@ class ThePurge : public engine::Game {
 
         ImGui::Begin("MapGeneration");
 
-        if (ImGui::Button("Generate")) generateFloor(world, &shader, params); // TODO: check how to handle seeding
-        if (ImGui::Button("Despawn")) {
+        if (ImGui::Button("Generate"))
+            generateFloor(world, &shader, params, static_cast<unsigned int>(std::time(nullptr))); // TODO: check how to handle seeding better
+        if (ImGui::Button("Despawn"))
             world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
-        }
 
         ImGui::SliderInt("Min room size", &params.minRoomSize, 0, params.maxRoomSize);
         ImGui::SliderInt("Max room size", &params.maxRoomSize, params.minRoomSize, 50);
@@ -204,15 +202,15 @@ class ThePurge : public engine::Game {
             ImGui::Text("Camera Position (%.3f, %.3f)", cameraPos.x, cameraPos.y);
 
             bool dirty = false;
-            dirty |= ImGui::SliderFloat("Camera X", &cameraPos.x, -5.0f, 5.0f, "x = %.3f");
-            dirty |= ImGui::SliderFloat("Camera Y", &cameraPos.y, -5.0f, 5.0f, "y = %.3f");
+            dirty |= ImGui::DragFloat("Camera X", &cameraPos.x);
+            dirty |= ImGui::DragFloat("Camera Y", &cameraPos.y);
 
             if (dirty) m_camera.setCenter(cameraPos);
         }
 
 
         auto cameraZ = m_camera.getZ();
-        if (ImGui::SliderFloat("Camera Z", &cameraZ, -5.0f, 5.0f, "z = %.3f")) m_camera.setZ(cameraZ);
+        if (ImGui::DragFloat("Camera Z", &cameraZ)) m_camera.setZ(cameraZ);
 
         {
             auto viewPortSize = m_camera.getViewportSize();
@@ -227,8 +225,9 @@ class ThePurge : public engine::Game {
 
 
             bool dirty = false;
-            dirty |= ImGui::SliderFloat("Viewport width", &viewPortSize.x, 0.1f, 50.0f);
-            dirty |= ImGui::SliderFloat("Viewport height", &viewPortSize.y, 0.1f, 50.0f);
+            dirty |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 0.1f);
+            dirty |= ImGui::DragFloat("Viewport height", &viewPortSize.y, 1.f, 0.1f);
+
 
             if (dirty) m_camera.setViewportSize(viewPortSize);
         }
