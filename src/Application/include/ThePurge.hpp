@@ -40,7 +40,7 @@ class ThePurge : public engine::Game {
         // generateFloor(world, &shader, {}, static_cast<std::uint32_t>(::time(nullptr)));
 
         std::srand(static_cast<std::uint32_t>(std::time(nullptr)));
-        static constexpr auto max = static_cast<double>(RAND_MAX);
+        // static constexpr auto max = static_cast<double>(RAND_MAX);
 
         // todo : display none-terrain entity at level z=1 ?
 
