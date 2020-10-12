@@ -8,7 +8,7 @@
 #include "Engine/component/Scale.hpp"
 
 
-void TileFactory::Floor(entt::registry &world, engine::Shader *shader, glm::vec2 &&pos, glm::vec2 &&size)
+void TileFactory::Floor(entt::registry &world, engine::Shader *shader, const glm::vec2 &pos, const glm::vec2 &size)
 {
     auto e = world.create();
     world.emplace<engine::d2::Position>(e, pos.x, pos.y);
@@ -18,7 +18,7 @@ void TileFactory::Floor(entt::registry &world, engine::Shader *shader, glm::vec2
      world.emplace<entt::tag<"terrain"_hs>>(e);
 }
 
-void TileFactory::Wall(entt::registry &world, engine::Shader *shader, glm::vec2 &&pos, glm::vec2 &&size)
+void TileFactory::Wall(entt::registry &world, engine::Shader *shader, const glm::vec2 &pos, const glm::vec2 &size)
 {
     auto e = world.create();
     world.emplace<engine::d2::Position>(e, pos.x, pos.y);

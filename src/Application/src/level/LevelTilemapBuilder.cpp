@@ -23,12 +23,14 @@ void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     auto tile = get(x, y);
     if (tile == TileEnum::NONE) return;
 
-    glm::ivec2 size(2, 1);
-    //auto size = getTileSize(x, y);
+    //glm::ivec2 size(1, 1);
 
-    //for (int clearY = y; clearY < y + size.y; ++clearY) {
-    //    for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
-    //}
+    // TODO: investigate why this doesn't work
+    auto size = getTileSize(x, y);
+
+    for (int clearY = y; clearY < y + size.y; ++clearY) {
+        for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
+    }
 
 
     switch (tile) {

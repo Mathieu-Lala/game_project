@@ -225,8 +225,8 @@ class ThePurge : public engine::Game {
 
 
             bool dirty = false;
-            dirty |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 0.1f);
-            dirty |= ImGui::DragFloat("Viewport height", &viewPortSize.y, 1.f, 0.1f);
+            dirty |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
+            dirty |= ImGui::DragFloat("Viewport height", &viewPortSize.y, 1.f, 2.f);
 
 
             if (dirty) m_camera.setViewportSize(viewPortSize);
