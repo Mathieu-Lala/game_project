@@ -31,7 +31,7 @@ auto engine::Camera2d::setViewport(float left, float right, float bottom, float 
     assert(right > left);
     assert(top > bottom);
 
-    m_projMatrix = glm::ortho(left, right, bottom, top, m_pos.z, 99999.f);
+    m_projMatrix = glm::ortho(left, right, bottom, top, m_pos.z, kMaxZView);
     m_pos.x = (left + right) / 2.0f;
     m_pos.y = (top + bottom) / 2.0f;
     m_viewportSize.x = right - left;
@@ -64,12 +64,12 @@ void engine::Camera2d::recomputeProj()
     auto halfVP = m_viewportSize / 2.f;
 
     m_projMatrix = glm::ortho(
-        m_pos.x - halfVP.x,   // left
-        m_pos.x + halfVP.x,   // right
-        m_pos.y - halfVP.y,   // bottom
-        m_pos.y + halfVP.y,   // top
+        m_pos.x - halfVP.x, // left
+        m_pos.x + halfVP.x, // right
+        m_pos.y - halfVP.y, // bottom
+        m_pos.y + halfVP.y, // top
         m_pos.z,
-        99999.f);
+        kMaxZView);
 }
 
 auto engine::Camera2d::recomputeViewProj() -> void

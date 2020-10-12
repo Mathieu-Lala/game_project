@@ -27,6 +27,9 @@ private:
     void recomputeViewProj();
 
 private:
+    // not working. not really needed anyway
+    static constexpr float kMaxZView = 999999;
+
     glm::mat4 m_projMatrix;
     glm::mat4 m_viewMatrix;
 

@@ -50,8 +50,8 @@ class ThePurge : public engine::Game {
             world.emplace<entt::tag<"enemy"_hs>>(e);
             world.emplace<engine::d2::Position>(e, x, y);
             world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
-            world.emplace<engine::d2::Scale>(e, 0.05, 0.05);
-            world.emplace<engine::d2::Hitbox>(e, 2.0, 2.0);
+            world.emplace<engine::d2::Scale>(e, 1.0, 1.0);
+            world.emplace<engine::d2::Hitbox>(e, 1.0, 1.0);
             world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
             world.emplace<game::ViewRange>(e, 10.0f);
             world.emplace<game::AttackRange>(e, 3.0f);
@@ -63,8 +63,8 @@ class ThePurge : public engine::Game {
         world.emplace<engine::d2::Position>(player, 0.0, 0.0);
         world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
         world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-        world.emplace<engine::d2::Scale>(player, 0.05, 0.05);
-        world.emplace<engine::d2::Hitbox>(player, 2.0, 2.0);
+        world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
+        world.emplace<engine::d2::Hitbox>(player, 1.0, 1.0);
         world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({1, 1, 1})).shader = &shader;
         world.emplace<game::Health>(player, 100.0f, 100.0f);
 
