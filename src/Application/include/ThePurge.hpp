@@ -65,7 +65,7 @@ class ThePurge : public engine::Game {
         world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
         world.emplace<engine::d2::Scale>(player, 1.0, 2.0);
         world.emplace<engine::d2::Hitbox>(player, 1.0, 2.0);
-        world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({1, 1, 1})).shader = &shader;
+        world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
         world.emplace<game::Health>(player, 100.0f, 100.0f);
     }
 
