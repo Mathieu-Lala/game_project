@@ -196,7 +196,7 @@ MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenPar
     result.spawn = *rooms.begin();
     result.boss = *rooms.rbegin();
 
-    for (int i = 1; i < rooms.size() - 1; ++i) result.regularRooms.push_back(rooms[i]);
+    for (auto i = 1ul; i < rooms.size() - 1; ++i) result.regularRooms.push_back(rooms[i]);
 
     // TODO: move that back to `generateFloor`. This is an ugly fix for the meeting tomorrow
     for (auto &r : result.regularRooms) spawnMobsIn(world, shader, params, randomEngine, r);
@@ -212,7 +212,7 @@ void spawnMobsIn(
 {
     for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
         for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
-            if (randRange(0, static_cast<int>(1.0 / params.mobDensity), randomEngine) == 0)
+            if (randRange(0, static_cast<int>(1.0f / params.mobDensity), randomEngine) == 0)
                 EnemyFactory::FirstEnemy(world, shader, glm::vec2{x, y});
 }
 
