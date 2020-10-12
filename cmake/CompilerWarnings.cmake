@@ -76,6 +76,10 @@ function(set_project_warnings project_name)
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(PROJECT_WARNINGS ${GCC_WARNINGS})
 
+    # Because O2 is used by default
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG" CACHE STRING
+        "Flags used by the CXX compiler during RELEASE builds." FORCE)
+
   else()
     message(AUTHOR_WARNING "No compiler warnings set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
   endif()
