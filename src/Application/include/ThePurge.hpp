@@ -15,7 +15,7 @@
 #include <Engine/component/Velocity.hpp>
 #include <Engine/component/Acceleration.hpp>
 #include <Engine/component/Hitbox.hpp>
-#include <Engine/Movement.hpp>
+#include <Engine/GameLogic.hpp>
 
 #include "component/ViewRange.hpp"
 #include "component/AttackRange.hpp"
@@ -34,10 +34,17 @@ class ThePurge : public engine::Game {
 
     entt::entity player;
 
-    // Init movement signal
+    // Init movement signal player
     entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> movement;
     entt::sink<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> sinkMovement{movement};
 
+    // entityLogic signal loop
+    entt::sigh<void(entt::registry &, entt::entity &, const engine::TimeElapsed &)> gameLogic;
+    entt::sink<void(entt::registry &, entt::entity &, const engine::TimeElapsed &)> sinkGameLogic{gameLogic};
+
+    entt::sigh<void(void)> castSpell;
+    entt::sink<void(void)> sinkCastSpell{castSpell};
+    
     auto onCreate([[maybe_unused]] entt::registry &world) -> void final
     {
         using namespace std::chrono_literals; // ms ..
@@ -50,7 +57,13 @@ class ThePurge : public engine::Game {
         // todo : display none-terrain entity at level z=1 ?
 
         // Connect the movement signal to the corresponding system
-        sinkMovement.connect<&engine::Movement::moveAxis>(engine::Movement());
+        sinkMovement.connect<&engine::GameLogic::move>(engine::GameLogic());
+
+        sinkGameLogic.connect<&engine::GameLogic::collision>(engine::GameLogic());
+        sinkGameLogic.connect<&engine::GameLogic::cooldown>(engine::GameLogic());
+        sinkGameLogic.connect<&engine::GameLogic::attack>(engine::GameLogic());
+
+        sinkCastSpell.connect<&engine::GameLogic::castSpell>(engine::GameLogic());
 
         // note : tmp generate random entities moving on the screen (to tests velocity)
         for (int i = 0; i != 20; i++) {
@@ -98,63 +111,66 @@ class ThePurge : public engine::Game {
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
                         break; // player stop
-                    case GLFW_KEY_I: movement.publish(world, player, {0.0, 0.1});/*world.get<engine::d2::Acceleration>(player) = {0.0, 0.1}*/ break; // go top
-                    case GLFW_KEY_K: movement.publish(world, player, {0.0, -0.1});/*world.get<engine::d2::Acceleration>(player) = {0.0, -0.1}*/; break; // go bottom
-                    case GLFW_KEY_L: movement.publish(world, player, {0.1, 0.0});/*world.get<engine::d2::Acceleration>(player) = {0.1, 0.0}*/; break; // go right
-                    case GLFW_KEY_J: movement.publish(world, player, {-0.1, 0.0});/*world.get<engine::d2::Acceleration>(player) = {-0.1, 0.0}*/; break; // go left
+                    case GLFW_KEY_I: movement.publish(world, player, {0.0, 0.1}); break; // go top
+                    case GLFW_KEY_K: movement.publish(world, player, {0.0, -0.1}); break; // go bottom
+                    case GLFW_KEY_L: movement.publish(world, player, {0.1, 0.0}); break; // go right
+                    case GLFW_KEY_J: movement.publish(world, player, {-0.1, 0.0}); break; // go left
+                    case GLFW_KEY_S: castSpell.publish(); break;
                     default: return;
                     }
                 },
                 [&](const engine::TimeElapsed &dt) {
 
-                    world.view<entt::tag<"enemy"_hs>, engine::d2::Position, engine::d2::Velocity, game::ViewRange>()
-                    .each([&](auto &, auto &pos, auto &vel, auto &view_range) {
-                        const auto player_pos = world.get<engine::d2::Position>(player);
-                        const glm::vec2 diff = { player_pos.x - pos.x, player_pos.y - pos.y };
+                    //world.view<entt::tag<"enemy"_hs>, engine::d2::Position, engine::d2::Velocity, game::ViewRange>()
+                    //.each([&](auto &, auto &pos, auto &vel, auto &view_range) {
+                    //    const auto player_pos = world.get<engine::d2::Position>(player);
+                    //    const glm::vec2 diff = { player_pos.x - pos.x, player_pos.y - pos.y };
 
-                        // if the enemy is close enough
-                        if (glm::length(diff) <= view_range.range) {
-                            vel = { diff.x, diff.y };
-                        } else {
-                            vel = { 0, 0 };
-                        }
-                    });
+                    //    // if the enemy is close enough
+                    //    if (glm::length(diff) <= view_range.range) {
+                    //        vel = { diff.x, diff.y };
+                    //    } else {
+                    //        vel = { 0, 0 };
+                    //    }
+                    //});
 
-                    world.view<game::AttackCooldown>().each([&](auto &attack_cooldown){
-                        if (!attack_cooldown.is_in_cooldown) return;
+                    //world.view<game::AttackCooldown>().each([&](auto &attack_cooldown){
+                    //    if (!attack_cooldown.is_in_cooldown) return;
 
-                        if (dt.elapsed < attack_cooldown.remaining_cooldown) {
-                            attack_cooldown.remaining_cooldown -=
-                                std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-                        } else {
-                            attack_cooldown.is_in_cooldown = false;
-                            spdlog::warn("attack is up !");
-                        }
-                    });
+                    //    if (dt.elapsed < attack_cooldown.remaining_cooldown) {
+                    //        attack_cooldown.remaining_cooldown -=
+                    //            std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
+                    //    } else {
+                    //        attack_cooldown.is_in_cooldown = false;
+                    //        spdlog::warn("attack is up !");
+                    //    }
+                    //});
 
-                    auto &player_health = world.get<game::Health>(player);
-                    world.view<entt::tag<"enemy"_hs>, engine::d2::Position,
-                        game::AttackRange, game::AttackCooldown, game::AttackDamage>()
-                    .each([&](auto &, auto &pos, auto &attack_range, auto &attack_cooldown, auto &attack_damage){
-                        const auto player_pos = world.get<engine::d2::Position>(player);
-                        const glm::vec2 diff = { player_pos.x - pos.x, player_pos.y - pos.y };
+                    //auto &player_health = world.get<game::Health>(player);
+                    //world.view<entt::tag<"enemy"_hs>, engine::d2::Position,
+                    //    game::AttackRange, game::AttackCooldown, game::AttackDamage>()
+                    //.each([&](auto &, auto &pos, auto &attack_range, auto &attack_cooldown, auto &attack_damage){
+                    //    const auto player_pos = world.get<engine::d2::Position>(player);
+                    //    const glm::vec2 diff = { player_pos.x - pos.x, player_pos.y - pos.y };
 
-                        // if the enemy is close enough
-                        if (glm::length(diff) <= attack_range.range && !attack_cooldown.is_in_cooldown) {
-                            attack_cooldown.is_in_cooldown = true;
-                            attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
+                    //    // if the enemy is close enough
+                    //    if (glm::length(diff) <= attack_range.range && !attack_cooldown.is_in_cooldown) {
+                    //        attack_cooldown.is_in_cooldown = true;
+                    //        attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
 
-                            player_health.current -= attack_damage.damage;
-                            spdlog::warn("player took damage");
+                    //        player_health.current -= attack_damage.damage;
+                    //        spdlog::warn("player took damage");
 
-                            if (player_health.current <= 0.0f) {
-                                spdlog::warn("!! player is dead, reseting the game");
-                                player_health.current = player_health.max;
+                    //        if (player_health.current <= 0.0f) {
+                    //            spdlog::warn("!! player is dead, reseting the game");
+                    //            player_health.current = player_health.max;
 
-                                // todo : send signal reset game or something ..
-                            }
-                        }
-                    });
+                    //            // todo : send signal reset game or something ..
+                    //        }
+                    //    }
+                    //});
+
+                    gameLogic.publish(world, player, dt);
                 },
                 [&](auto) {},
             },
