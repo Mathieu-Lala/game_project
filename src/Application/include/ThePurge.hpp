@@ -162,7 +162,10 @@ class ThePurge : public engine::Game {
 
         ImGui::Begin("MapGeneration");
 
-        if (ImGui::Button("Regenerate")) generateFloor(world, &shader, params); // TODO: check how to handle seeding
+        if (ImGui::Button("Generate")) generateFloor(world, &shader, params); // TODO: check how to handle seeding
+        if (ImGui::Button("Despawn")) {
+            world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+        }
 
         ImGui::SliderInt("Min room size", &params.minRoomSize, 0, params.maxRoomSize);
         ImGui::SliderInt("Max room size", &params.maxRoomSize, params.minRoomSize, 50);
@@ -194,8 +197,7 @@ class ThePurge : public engine::Game {
 
         ImGui::Begin("Camera");
 
-        if (ImGui::Button("Reset"))
-            m_camera = engine::Camera2d();
+        if (ImGui::Button("Reset")) m_camera = engine::Camera2d();
 
         {
             auto cameraPos = m_camera.getCenter();
@@ -205,19 +207,17 @@ class ThePurge : public engine::Game {
             dirty |= ImGui::SliderFloat("Camera X", &cameraPos.x, -5.0f, 5.0f, "x = %.3f");
             dirty |= ImGui::SliderFloat("Camera Y", &cameraPos.y, -5.0f, 5.0f, "y = %.3f");
 
-            if (dirty)
-                m_camera.setCenter(cameraPos);
+            if (dirty) m_camera.setCenter(cameraPos);
         }
 
 
         auto cameraZ = m_camera.getZ();
-        if (ImGui::SliderFloat("Camera Z", &cameraZ, -5.0f, 5.0f, "z = %.3f"))
-            m_camera.setZ(cameraZ);
+        if (ImGui::SliderFloat("Camera Z", &cameraZ, -5.0f, 5.0f, "z = %.3f")) m_camera.setZ(cameraZ);
 
         {
             auto viewPortSize = m_camera.getViewportSize();
             auto pos = m_camera.getCenter();
-            
+
             ImGui::Text("Viewport size (%.3f, %.3f)", viewPortSize.x, viewPortSize.y);
             ImGui::Text("Viewport range :");
             ImGui::Text("   left  : %.3f", pos.x - (viewPortSize.x / 2));
@@ -230,8 +230,7 @@ class ThePurge : public engine::Game {
             dirty |= ImGui::SliderFloat("Viewport width", &viewPortSize.x, 0.1f, 50.0f);
             dirty |= ImGui::SliderFloat("Viewport height", &viewPortSize.y, 0.1f, 50.0f);
 
-            if (dirty)
-                m_camera.setViewportSize(viewPortSize);
+            if (dirty) m_camera.setViewportSize(viewPortSize);
         }
 
 
