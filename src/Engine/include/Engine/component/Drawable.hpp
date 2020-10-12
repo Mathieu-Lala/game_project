@@ -12,6 +12,7 @@ struct Drawable {
 
     int triangle_count;
     engine::Shader *shader;
+
 };
 
 } // namespace engine

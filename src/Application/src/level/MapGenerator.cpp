@@ -1,6 +1,7 @@
 #include "level/MapGenerator.hpp"
 #include <vector>
 #include <random>
+#include <cassert>
 #include "level/LevelTilemapBuilder.hpp"
 
 /**
@@ -16,7 +17,10 @@ struct Room {
 template<std::integral T>
 auto randRange(T min, T max, std::default_random_engine &randomEngine)
 {
-    return min + static_cast<T>(randomEngine() % (max - min));
+    assert(max > min);
+
+    auto r = randomEngine();
+    return min + static_cast<T>(r % static_cast<decltype(r)>(max - min));
 }
 
 bool isRoomValid(TilemapBuilder &builder, const Room &r)

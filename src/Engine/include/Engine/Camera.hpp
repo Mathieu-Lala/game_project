@@ -94,10 +94,9 @@ public:
     }
 
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-    void zoom(double yoffset)
+    void setZoom(double zoom)
     {
-        Zoom -= yoffset;
-        Zoom = std::clamp(Zoom, 1.0, 45.0);
+        Zoom = std::clamp(zoom, 1.0, 45.0);
     }
 
 private:
