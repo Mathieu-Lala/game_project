@@ -15,8 +15,6 @@
 
 static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
-#define STB_IMAGE_IMPLEMENTATION
-
 static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION
 #ifndef NDEBUG
     " - Debug"
