@@ -1,7 +1,7 @@
 #include "level/LevelTilemapBuilder.hpp"
 #include <cassert>
 
-#include "level/TileFactory.hpp"
+#include "entity/TileFactory.hpp"
 
 auto TilemapBuilder::get(int x, int y) -> TileEnum &
 {

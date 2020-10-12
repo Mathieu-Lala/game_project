@@ -1,7 +1,7 @@
 #include <glm/vec3.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 
-#include "level/TileFactory.hpp"
+#include "entity/TileFactory.hpp"
 #include "Declaration.hpp"
 
 #include "Engine/component/Position.hpp"

@@ -3,15 +3,8 @@
 #include <random>
 #include <cassert>
 #include "level/LevelTilemapBuilder.hpp"
-
-/**
-    In the range [x;x+w[ and [y;y+h[
-    include walls
-*/
-struct Room {
-    int x, y;
-    int w, h;
-};
+#include "entity/EnemyFactory.hpp"
+#include "level/MapData.hpp"
 
 // Generate random int in the interval [min; max[
 template<std::integral T>
@@ -174,12 +167,9 @@ void placeWalls(TilemapBuilder &builder)
         }
 }
 
-void generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::optional<unsigned int> seed)
+MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine)
 {
-    TilemapBuilder builder(shader, { params.maxDungeonWidth, params.maxDungeonHeight });
-    std::default_random_engine randomEngine;
-
-    if (seed) randomEngine.seed(seed.value());
+    TilemapBuilder builder(shader, {params.maxDungeonWidth, params.maxDungeonHeight});
 
     auto roomCount = randRange(params.minRoomCount, params.maxRoomCount, randomEngine);
 
@@ -196,4 +186,36 @@ void generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam 
     placeWalls(builder);
 
     builder.build(world);
+
+    
+    MapData result;
+    result.spawn = *rooms.begin();
+    result.boss = *rooms.rbegin();
+    
+    for (int i = 1; i < rooms.size() - 1; ++i)
+        result.regularRooms.push_back(rooms[i]);
+
+    return result;
+}
+
+void spawnMobsIn(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine, const Room &r)
+{
+    for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
+        for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
+            if (randRange(0, static_cast<int>(1.0/params.mobDensity), randomEngine) == 0)
+                EnemyFactory::FirstEnemy(world, shader, glm::vec2{x + .5, y + .5});
+}
+
+MapData generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::optional<unsigned int> seed)
+{
+    std::default_random_engine randomEngine;
+
+    if (seed) randomEngine.seed(seed.value());
+
+    auto data = generateLevel(world, shader, params, randomEngine);
+
+    for (auto &r : data.regularRooms)
+        spawnMobsIn(world, shader, params, randomEngine, r);
+
+    return data;
 }

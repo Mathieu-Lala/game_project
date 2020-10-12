@@ -4,6 +4,7 @@
 #include <entt/entt.hpp>
 
 #include "Engine/Shader.hpp"
+#include "level/MapData.hpp"
 
 struct FloorGenParam {
     int minRoomSize = 7; // exluding walls
@@ -17,6 +18,9 @@ struct FloorGenParam {
 
     int minCorridorWidth = 2;
     int maxCorridorWidth = 4;
+
+
+    float mobDensity = 0.1f; // Average mob per tile
 };
 
-void generateFloor(entt::registry &world, engine::Shader *, FloorGenParam params = {}, std::optional<unsigned int> seed = {});
+MapData generateFloor(entt::registry &world, engine::Shader *, FloorGenParam params = {}, std::optional<unsigned int> seed = {});

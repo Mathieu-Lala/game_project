@@ -22,8 +22,8 @@
 
 #include "Declaration.hpp"
 #include "level/LevelTilemapBuilder.hpp"
-#include "level/TileFactory.hpp"
 #include "level/MapGenerator.hpp"
+#include "entity/TileFactory.hpp"
 
 class ThePurge : public engine::Game {
     engine::Shader shader =
@@ -43,21 +43,21 @@ class ThePurge : public engine::Game {
         // todo : display none-terrain entity at level z=1 ?
 
         // note : tmp generate random entities moving on the screen (to tests velocity)
-        for (int i = 0; i != 20; i++) {
-            auto e = world.create();
-            const auto x = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
-            const auto y = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
-            world.emplace<entt::tag<"enemy"_hs>>(e);
-            world.emplace<engine::d2::Position>(e, x, y);
-            world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
-            world.emplace<engine::d2::Scale>(e, 2.0, 1.0);
-            world.emplace<engine::d2::Hitbox>(e, 2.0, 1.0);
-            world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
-            world.emplace<game::ViewRange>(e, 10.0f);
-            world.emplace<game::AttackRange>(e, 3.0f);
-            world.emplace<game::AttackCooldown>(e, false, 4000ms, 0ms);
-            world.emplace<game::AttackDamage>(e, 20.0f);
-        }
+        //for (int i = 0; i != 20; i++) {
+        //    auto e = world.create();
+        //    const auto x = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
+        //    const auto y = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
+        //    world.emplace<entt::tag<"enemy"_hs>>(e);
+        //    world.emplace<engine::d2::Position>(e, x, y);
+        //    world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
+        //    world.emplace<engine::d2::Scale>(e, 2.0, 1.0);
+        //    world.emplace<engine::d2::Hitbox>(e, 2.0, 1.0);
+        //    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
+        //    world.emplace<game::ViewRange>(e, 10.0f);
+        //    world.emplace<game::AttackRange>(e, 3.0f);
+        //    world.emplace<game::AttackCooldown>(e, false, 4000ms, 0ms);
+        //    world.emplace<game::AttackDamage>(e, 20.0f);
+        //}
 
         player = world.create();
         world.emplace<engine::d2::Position>(player, 0.0, 0.0);
@@ -162,8 +162,10 @@ class ThePurge : public engine::Game {
 
         if (ImGui::Button("Generate"))
             generateFloor(world, &shader, params, static_cast<unsigned int>(std::time(nullptr))); // TODO: check how to handle seeding better
-        if (ImGui::Button("Despawn"))
+        if (ImGui::Button("Despawn")) {
             world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+            world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+        }
 
         ImGui::SliderInt("Min room size", &params.minRoomSize, 0, params.maxRoomSize);
         ImGui::SliderInt("Max room size", &params.maxRoomSize, params.minRoomSize, 50);
