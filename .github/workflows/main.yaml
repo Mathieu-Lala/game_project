@@ -1,6 +1,11 @@
 name: C++ CMake Build
 
-on: [push]
+on:
+  push:
+    branches-ignore:
+      - 'doc/**'
+      - 'tmp/**'
+      - 'experimental/**'
 
 jobs:
   build:

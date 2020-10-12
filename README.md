@@ -2,26 +2,17 @@
 
 Keimyung University - Mobile Game Development - 2020 Fall Semester
 
-This project is a video game for PC. See the [GDD](doc/GDD_ten_page.pdf) for more details.
+This project is a video game for PC. See the [Game Design Document](doc/GDD_ten_page.pdf) for more details.
 
 This repository contains the source code of the game and his engine.
 
 ## Installing
-
-```sh
-# Cloning the repository
-$> git clone git@github.com:Pierre-Genest/game_project.git
-
-# Installing the required environment (partial)
-$> ./tools/install.sh
-```
 
 ### Requirements
 
 * Unix systems
 
     * g++>=10
-    * libstdc++11
     * cmake>=3.9.0
     * python>=3.8
 
@@ -32,6 +23,14 @@ $> ./tools/install.sh
     * python>=3.8
 
 The build **require** an internet connection (download of dependencies if missing).
+
+```sh
+# Cloning the repository
+$> git clone git@github.com:Mathieu-Lala/game_project.git
+
+# Installing the required environment (partial)
+$> ./tools/install.sh
+```
 
 ### Recommended environment
 
@@ -46,7 +45,8 @@ The build **require** an internet connection (download of dependencies if missin
 
 ## Build and Run
 
-![Build Status](https://github.com/Pierre-Genest/game_project/workflows/C++%20CMake%20Build/badge.svg)
+![Master Github Build Status](https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg)
+![Develop Github Build Status](https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop)
 
 * Unix systems
 
