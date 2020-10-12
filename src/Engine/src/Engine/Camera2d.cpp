@@ -5,18 +5,12 @@ DISABLE_WARNING_CONSTANT_CONDITIONAL
 #include <glm/gtc/matrix_transform.hpp>
 DISABLE_WARNING_POP
 
+#include <spdlog/spdlog.h>
 #include "Engine/Camera2d.hpp"
 
 // Default viewport ranges from -1 to +1
 engine::Camera2d::Camera2d() { setViewportSize(glm::ivec2{2, 2}); }
 
-
-auto engine::Camera2d::setZ(float z) -> void
-{
-    m_pos.z = z;
-    recomputeProj();
-    recomputeViewProj();
-}
 
 auto engine::Camera2d::setCenter(::glm::vec2 point) -> void
 {
@@ -69,13 +63,13 @@ void engine::Camera2d::recomputeProj()
         + halfVP.x, // right
         - halfVP.y, // bottom
         + halfVP.y, // top
-        m_pos.z,
-        kMaxZView);
+        99999999.f,
+        -99999999.f);
 }
 
 auto engine::Camera2d::recomputeViewProj() -> void
 {
-    auto transform = glm::translate(glm::mat4(1.f), m_pos);
+    auto transform = glm::translate(glm::mat4(1.f), glm::vec3(m_pos.x, m_pos.y, 0));
 
     m_viewMatrix = glm::inverse(transform);
 

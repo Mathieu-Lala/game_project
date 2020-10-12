@@ -4,10 +4,10 @@ auto engine::DrawableFactory::rectangle(glm::vec3 &&c) -> Drawable
 {
     const float vertices[] = {
         // positions        // color
-        -0.5f, -0.5f, 0.0f, c.r, c.g, c.b, // top left
-        +0.5f, -0.5f, 0.0f, c.r, c.g, c.b, // top right
-        -0.5f, +0.5f, 0.0f, c.r, c.g, c.b, // bottom left
-        +0.5f, +0.5f, 0.0f, c.r, c.g, c.b, // bottom right
+        -0.5f, -0.5f, 1.0f, c.r, c.g, c.b, // top left
+        +0.5f, -0.5f, 1.0f, c.r, c.g, c.b, // top right
+        -0.5f, +0.5f, 1.0f, c.r, c.g, c.b, // bottom left
+        +0.5f, +0.5f, 1.0f, c.r, c.g, c.b, // bottom right
     };
     static constexpr GLsizei STRIDE_COUNT = 6; // = x + y + z + r + g + b
 

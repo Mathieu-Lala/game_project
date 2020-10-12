@@ -13,7 +13,7 @@ struct Room {
 
 
 struct MapData {
-    Room spawn;
+    Room spawn {};
     std::vector<Room> regularRooms;
-    Room boss;
+    Room boss {};
 };

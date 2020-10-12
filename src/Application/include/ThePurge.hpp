@@ -25,6 +25,8 @@
 #include "level/MapGenerator.hpp"
 #include "entity/TileFactory.hpp"
 
+#include "EntityDepth.hpp"
+
 class ThePurge : public engine::Game {
     engine::Shader shader =
         engine::Shader::fromFile(DATA_DIR "/shaders/camera.vert.glsl", DATA_DIR "/shaders/camera.frag.glsl");
@@ -60,13 +62,14 @@ class ThePurge : public engine::Game {
         //}
 
         player = world.create();
-        world.emplace<engine::d2::Position>(player, 0.0, 0.0);
+        world.emplace<engine::d2::Position>(player, 0.0, 0.0, static_cast<double>(EntityDepth::PLAYER));
         world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
         world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-        world.emplace<engine::d2::Scale>(player, 1.0, 2.0);
-        world.emplace<engine::d2::Hitbox>(player, 1.0, 2.0);
+        world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
+        world.emplace<engine::d2::Hitbox>(player, 1.0, 1.0);
         world.emplace<game::Health>(player, 100.0f, 100.0f);
         world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
+        world.emplace<entt::tag<"player"_hs>>(player);
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
@@ -160,8 +163,13 @@ class ThePurge : public engine::Game {
 
         ImGui::Begin("MapGeneration");
 
-        if (ImGui::Button("Generate"))
-            generateFloor(world, &shader, params, static_cast<unsigned int>(std::time(nullptr))); // TODO: check how to handle seeding better
+        if (ImGui::Button("Generate")) {
+            auto data = generateFloor(world, &shader, params, static_cast<unsigned int>(std::time(nullptr))); // TODO: check how to handle seeding better
+            world.view<entt::tag<"player"_hs>, engine::d2::Position>().each([&](auto &, auto &p) { 
+                p.x = data.spawn.x + data.spawn.w * 0.5;
+                p.y = data.spawn.y + data.spawn.h * 0.5;
+            });
+        }
         if (ImGui::Button("Despawn")) {
             world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
             world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
@@ -209,10 +217,6 @@ class ThePurge : public engine::Game {
 
             if (dirty) m_camera.setCenter(cameraPos);
         }
-
-
-        auto cameraZ = m_camera.getZ();
-        if (ImGui::DragFloat("Camera Z", &cameraZ)) m_camera.setZ(cameraZ);
 
         {
             auto viewPortSize = m_camera.getViewportSize();

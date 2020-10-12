@@ -120,14 +120,16 @@ void generatorCorridor(
 
 
     if (randRange(0, 1, randomEngine)) {
-        auto maxWidth = std::min(r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+        auto maxWidth = std::min(
+            r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
         auto width = randRange(
             std::min(maxWidth, params.minCorridorWidth), std::max(maxWidth, params.maxCorridorWidth), randomEngine);
 
         auto pos = vertical(start, width);
         horizontal(pos, width);
     } else {
-        auto maxWidth = std::min(r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+        auto maxWidth = std::min(
+            r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
         auto width = randRange(
             std::min(maxWidth, params.minCorridorWidth), std::max(maxWidth, params.maxCorridorWidth), randomEngine);
 
@@ -167,6 +169,10 @@ void placeWalls(TilemapBuilder &builder)
         }
 }
 
+// TODO: remove that declaration
+void spawnMobsIn(
+    entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine, const Room &r);
+
 MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine)
 {
     TilemapBuilder builder(shader, {params.maxDungeonWidth, params.maxDungeonHeight});
@@ -185,25 +191,29 @@ MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenPar
 
     placeWalls(builder);
 
-    builder.build(world);
 
-    
     MapData result;
     result.spawn = *rooms.begin();
     result.boss = *rooms.rbegin();
-    
-    for (int i = 1; i < rooms.size() - 1; ++i)
-        result.regularRooms.push_back(rooms[i]);
+
+    for (int i = 1; i < rooms.size() - 1; ++i) result.regularRooms.push_back(rooms[i]);
+
+    // TODO: move that back to `generateFloor`. This is an ugly fix for the meeting tomorrow
+    for (auto &r : result.regularRooms) spawnMobsIn(world, shader, params, randomEngine, r);
+
+    builder.build(world);
+
 
     return result;
 }
 
-void spawnMobsIn(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine, const Room &r)
+void spawnMobsIn(
+    entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine, const Room &r)
 {
     for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
         for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
-            if (randRange(0, static_cast<int>(1.0/params.mobDensity), randomEngine) == 0)
-                EnemyFactory::FirstEnemy(world, shader, glm::vec2{x + .5, y + .5});
+            if (randRange(0, static_cast<int>(1.0 / params.mobDensity), randomEngine) == 0)
+                EnemyFactory::FirstEnemy(world, shader, glm::vec2{x, y});
 }
 
 MapData generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::optional<unsigned int> seed)
@@ -214,8 +224,8 @@ MapData generateFloor(entt::registry &world, engine::Shader *shader, FloorGenPar
 
     auto data = generateLevel(world, shader, params, randomEngine);
 
-    for (auto &r : data.regularRooms)
-        spawnMobsIn(world, shader, params, randomEngine, r);
+    // for (auto &r : data.regularRooms)
+    //    spawnMobsIn(world, shader, params, randomEngine, r);
 
     return data;
 }

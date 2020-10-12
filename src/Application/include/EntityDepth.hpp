@@ -1,0 +1,10 @@
+#pragma once
+
+// NOTE : WIP
+//		DOES NOT WORK YET. CURRENTLY, FIRST ENTITIES ADDED ARE ALWAYS ON TOP
+
+enum EntityDepth {
+	TERRAIN,
+	ENEMIES,
+	PLAYER,
+};

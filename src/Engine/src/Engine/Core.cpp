@@ -206,7 +206,8 @@ auto engine::Core::main() -> int
 
                 const auto new_pos = d2::Position{
                     moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                    moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0
+                    moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                    moving_pos.z
                 };
 
                 bool collide = false;
@@ -240,17 +241,18 @@ auto engine::Core::main() -> int
 #endif
 
                 ImGui::Render();
+                //glEnable(GL_DEPTH_TEST);
 
                 // todo : add Game::getBackgroundColor()
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-                ::glClear(GL_COLOR_BUFFER_BIT);
+                ::glClear(GL_COLOR_BUFFER_BIT);// | GL_DEPTH_BUFFER_BIT);
 
                 m_world.view<Drawable, d2::Position, d2::Scale>().each(
                 [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {
                     drawable.shader->use();
 
                     auto model = glm::dmat4(1.0);
-                    model = glm::translate(model, glm::dvec3{pos.x, pos.y, 0.0});
+                    model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z}); 
                     model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                     drawable.shader->uploadUniformMat4("model", model);
 

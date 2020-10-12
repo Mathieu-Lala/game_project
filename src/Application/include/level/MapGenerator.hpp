@@ -20,7 +20,7 @@ struct FloorGenParam {
     int maxCorridorWidth = 4;
 
 
-    float mobDensity = 0.1f; // Average mob per tile
+    float mobDensity = 0.05f; // Average mob per tile
 };
 
 MapData generateFloor(entt::registry &world, engine::Shader *, FloorGenParam params = {}, std::optional<unsigned int> seed = {});

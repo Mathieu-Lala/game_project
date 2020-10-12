@@ -13,6 +13,7 @@
 #include "component/AttackCooldown.hpp"
 #include "component/Health.hpp"
 
+#include "EntityDepth.hpp"
 
 using namespace std::chrono_literals; // ms ..
 
@@ -22,10 +23,10 @@ void EnemyFactory::FirstEnemy(entt::registry &world, engine::Shader *shader, con
     auto e = world.create();
 
     world.emplace<entt::tag<"enemy"_hs>>(e);
-    world.emplace<engine::d2::Position>(e, pos.x, pos.y);
+    world.emplace<engine::d2::Position>(e, pos.x, pos.y, static_cast<double>(EntityDepth::ENEMIES));
     world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
-    world.emplace<engine::d2::Scale>(e, 2.0, 1.0);
-    world.emplace<engine::d2::Hitbox>(e, 2.0, 1.0);
+    world.emplace<engine::d2::Scale>(e, 1.0, 1.0);
+    world.emplace<engine::d2::Hitbox>(e, 1.0, 1.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = shader;
     world.emplace<game::ViewRange>(e, 10.0f);
     world.emplace<game::AttackRange>(e, 3.0f);
