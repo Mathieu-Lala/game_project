@@ -7,7 +7,7 @@ project(GameProject
     LANGUAGES CXX
     VERSION ${PROJECT_VERSION}
     DESCRIPTION "KMU Fall Game Project"
-    HOMEPAGE_URL "https://github.com/Pierre-Genest/game_project")
+    HOMEPAGE_URL "https://github.com/Mathieu-Lala/game_project")
 
 include(cmake/PreventInSourceBuilds.cmake)
 include(cmake/StandardProjectSettings.cmake)
