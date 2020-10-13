@@ -48,6 +48,8 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
     m_joystickManager = std::make_unique<JoystickManager>();
 
+    
+
     // note : not working
     // m_world.on_destroy<engine::Drawable>().connect<&engine::Drawable::dtor>();
 
@@ -241,11 +243,10 @@ auto engine::Core::main() -> int
 #endif
 
                 ImGui::Render();
-                //glEnable(GL_DEPTH_TEST);
 
                 // todo : add Game::getBackgroundColor()
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-                ::glClear(GL_COLOR_BUFFER_BIT);// | GL_DEPTH_BUFFER_BIT);
+                ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 m_world.view<Drawable, d2::Position, d2::Scale>().each(
                 [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {

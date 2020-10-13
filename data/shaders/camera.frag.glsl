@@ -12,7 +12,4 @@ void main()
         FragColor = vec4(OutColor, 1.0f);
     else
         FragColor = vec4(0, 0, 0, 1.0f);
-
-    //FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
-    //gl_FragDepth = Position.z;
 }

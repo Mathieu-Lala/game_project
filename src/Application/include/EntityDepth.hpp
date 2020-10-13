@@ -1,10 +1,11 @@
 #pragma once
 
-// NOTE : WIP
-//		DOES NOT WORK YET. CURRENTLY, FIRST ENTITIES ADDED ARE ALWAYS ON TOP
+#define Z_COMPONENT_OF(e) (static_cast<double>(e))
 
 enum EntityDepth {
-	TERRAIN,
-	ENEMIES,
 	PLAYER,
+	ENEMIES,
+	TERRAIN,
+
+	MAX_VAL
 };

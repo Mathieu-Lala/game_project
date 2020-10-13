@@ -23,7 +23,7 @@ void EnemyFactory::FirstEnemy(entt::registry &world, engine::Shader *shader, con
     auto e = world.create();
 
     world.emplace<entt::tag<"enemy"_hs>>(e);
-    world.emplace<engine::d2::Position>(e, pos.x, pos.y, static_cast<double>(EntityDepth::ENEMIES));
+    world.emplace<engine::d2::Position>(e, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::ENEMIES));
     world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
     world.emplace<engine::d2::Scale>(e, 1.0, 1.0);
     world.emplace<engine::d2::Hitbox>(e, 1.0, 1.0);

@@ -63,8 +63,9 @@ void engine::Camera2d::recomputeProj()
         + halfVP.x, // right
         - halfVP.y, // bottom
         + halfVP.y, // top
-        99999999.f,
-        -99999999.f);
+        10.f,       // zNear
+        -10.f);     //zFar
+    // The zNear and ZFar behavior is weird and cause bug with other values, be careful. Ask Yanis for any questions
 }
 
 auto engine::Camera2d::recomputeViewProj() -> void

@@ -46,7 +46,7 @@ class ThePurge : public engine::Game {
 
     entt::sigh<void(void)> castSpell;
     entt::sink<void(void)> sinkCastSpell{castSpell};
-    
+
     auto onCreate([[maybe_unused]] entt::registry &world) -> void final
     {
         using namespace std::chrono_literals; // ms ..
@@ -67,31 +67,20 @@ class ThePurge : public engine::Game {
 
         sinkCastSpell.connect<&engine::GameLogic::castSpell>(engine::GameLogic());
 
-        // note : tmp generate random entities moving on the screen (to tests velocity)
-        //for (int i = 0; i != 20; i++) {
-        //    auto e = world.create();
-        //    const auto x = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
-        //    const auto y = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
-        //    world.emplace<entt::tag<"enemy"_hs>>(e);
-        //    world.emplace<engine::d2::Position>(e, x, y);
-        //    world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
-        //    world.emplace<engine::d2::Scale>(e, 2.0, 1.0);
-        //    world.emplace<engine::d2::Hitbox>(e, 2.0, 1.0);
-        //    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
-        //    world.emplace<game::ViewRange>(e, 10.0f);
-        //    world.emplace<game::AttackRange>(e, 3.0f);
-        //    world.emplace<game::AttackCooldown>(e, false, 4000ms, 0ms);
-        //    world.emplace<game::AttackDamage>(e, 20.0f);
-        //}
 
         player = world.create();
-        world.emplace<engine::d2::Position>(player, 0.0, 0.0, static_cast<double>(EntityDepth::PLAYER));
+        world.emplace<engine::d2::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
         world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
         world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
         world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
         world.emplace<engine::d2::Hitbox>(player, 1.0, 1.0);
         world.emplace<game::Health>(player, 100.0f, 100.0f);
         world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
+
+
+        // default camera value to see the generated terrain properly
+        m_camera.setCenter(glm::vec2(13, 22));
+        m_camera.setViewportSize(glm::vec2(109, 64));
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final

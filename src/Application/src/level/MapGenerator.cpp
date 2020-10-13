@@ -169,10 +169,6 @@ void placeWalls(TilemapBuilder &builder)
         }
 }
 
-// TODO: remove that declaration
-void spawnMobsIn(
-    entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine, const Room &r);
-
 MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine)
 {
     TilemapBuilder builder(shader, {params.maxDungeonWidth, params.maxDungeonHeight});
@@ -191,18 +187,14 @@ MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenPar
 
     placeWalls(builder);
 
+    builder.build(world);
+
 
     MapData result;
     result.spawn = *rooms.begin();
     result.boss = *rooms.rbegin();
 
     for (auto i = 1ul; i < rooms.size() - 1; ++i) result.regularRooms.push_back(rooms[i]);
-
-    // TODO: move that back to `generateFloor`. This is an ugly fix for the meeting tomorrow
-    for (auto &r : result.regularRooms) spawnMobsIn(world, shader, params, randomEngine, r);
-
-    builder.build(world);
-
 
     return result;
 }
@@ -224,8 +216,8 @@ MapData generateFloor(entt::registry &world, engine::Shader *shader, FloorGenPar
 
     auto data = generateLevel(world, shader, params, randomEngine);
 
-    // for (auto &r : data.regularRooms)
-    //    spawnMobsIn(world, shader, params, randomEngine, r);
+     for (auto &r : data.regularRooms)
+        spawnMobsIn(world, shader, params, randomEngine, r);
 
     return data;
 }
