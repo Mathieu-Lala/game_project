@@ -1,7 +1,6 @@
 #version 330 core
 
 in vec3 OutColor;
-in vec3 Position;
 
 out vec4 FragColor;
 
