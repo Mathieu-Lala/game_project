@@ -7,7 +7,7 @@
 
 #include <Engine/Game.hpp>
 #include <Engine/Shader.hpp>
-#include <Engine/Camera.hpp>
+#include <Engine/Camera2d.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/component/Drawable.hpp>
 #include <Engine/component/Position.hpp>
@@ -25,8 +25,10 @@
 
 #include "Declaration.hpp"
 #include "level/LevelTilemapBuilder.hpp"
-#include "level/TileFactory.hpp"
 #include "level/MapGenerator.hpp"
+#include "entity/TileFactory.hpp"
+
+#include "EntityDepth.hpp"
 
 class ThePurge : public engine::Game {
     engine::Shader shader =
@@ -44,7 +46,7 @@ class ThePurge : public engine::Game {
 
     entt::sigh<void(void)> castSpell;
     entt::sink<void(void)> sinkCastSpell{castSpell};
-    
+
     auto onCreate([[maybe_unused]] entt::registry &world) -> void final
     {
         using namespace std::chrono_literals; // ms ..
@@ -52,7 +54,7 @@ class ThePurge : public engine::Game {
         // generateFloor(world, &shader, {}, static_cast<std::uint32_t>(::time(nullptr)));
 
         std::srand(static_cast<std::uint32_t>(std::time(nullptr)));
-        static constexpr auto max = static_cast<double>(RAND_MAX);
+        // static constexpr auto max = static_cast<double>(RAND_MAX);
 
         // todo : display none-terrain entity at level z=1 ?
 
@@ -65,33 +67,20 @@ class ThePurge : public engine::Game {
 
         sinkCastSpell.connect<&engine::GameLogic::castSpell>(engine::GameLogic());
 
-        // note : tmp generate random entities moving on the screen (to tests velocity)
-        for (int i = 0; i != 20; i++) {
-            auto e = world.create();
-            const auto x = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
-            const auto y = 50 * ((static_cast<double>(std::rand()) / max) - 0.5);
-            world.emplace<entt::tag<"enemy"_hs>>(e);
-            world.emplace<engine::d2::Position>(e, x, y);
-            world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
-            world.emplace<engine::d2::Scale>(e, 0.05, 0.05);
-            world.emplace<engine::d2::Hitbox>(e, 2.0, 2.0);
-            world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = &shader;
-            world.emplace<game::ViewRange>(e, 10.0f);
-            world.emplace<game::AttackRange>(e, 3.0f);
-            world.emplace<game::AttackCooldown>(e, false, 4000ms, 0ms);
-            world.emplace<game::AttackDamage>(e, 20.0f);
-        }
 
         player = world.create();
-        world.emplace<engine::d2::Position>(player, 0.0, 0.0);
+        world.emplace<engine::d2::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
         world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
         world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-        world.emplace<engine::d2::Scale>(player, 0.05, 0.05);
-        world.emplace<engine::d2::Hitbox>(player, 2.0, 2.0);
-        world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({1, 1, 1})).shader = &shader;
+        world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
+        world.emplace<engine::d2::Hitbox>(player, 1.0, 1.0);
         world.emplace<game::Health>(player, 100.0f, 100.0f);
+        world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
 
-        generateFloor(world, &shader, {}, static_cast<unsigned int>(time(nullptr)));
+
+        // default camera value to see the generated terrain properly
+        m_camera.setCenter(glm::vec2(13, 22));
+        m_camera.setViewportSize(glm::vec2(109, 64));
     }
 
     auto onUpdate([[maybe_unused]] entt::registry &world, const engine::Event &e) -> void final
@@ -105,10 +94,10 @@ class ThePurge : public engine::Game {
 
                     // not really working perfectly
                     switch (key.source.key) {
-                    case GLFW_KEY_UP: m_camera.turn(0, 1); break;
-                    case GLFW_KEY_RIGHT: m_camera.turn(1, 0); break;
-                    case GLFW_KEY_DOWN: m_camera.turn(0, -1); break;
-                    case GLFW_KEY_LEFT: m_camera.turn(-1, 0); break;
+                    case GLFW_KEY_UP: m_camera.move({0, 1}); break;
+                    case GLFW_KEY_RIGHT: m_camera.move({1, 0}); break;
+                    case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
+                    case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
                     case GLFW_KEY_O:
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
@@ -129,59 +118,97 @@ class ThePurge : public engine::Game {
             e);
 
 
-        // todo : only send them to the shader if camera updated
-        const auto projection = glm::perspective(glm::radians(m_camera.Zoom),
-            holder.instance->window()->getAspectRatio(), 0.1, 1000.0);
+        const auto viewProj = m_camera.getViewProjMatrix();
+        shader.uploadUniformMat4("viewProj", viewProj);
+    }
 
-//        const auto projection = glm::ortho(0.0, holder.instance->window()->getSize().x,
-//            0.0, holder.instance->window()->getSize().y, 0.1, 1000.0);
+    auto mapGenerationOverlayTick(entt::registry &world) -> void
+    {
+        static FloorGenParam params;
 
-        shader.uploadUniformMat4("projection", projection);
+        ImGui::Begin("MapGeneration");
 
-        const auto view = m_camera.GetViewMatrix();
-        shader.uploadUniformMat4("view", view);
+        if (ImGui::Button("Generate")) {
+            auto data = generateFloor(world, &shader, params, static_cast<unsigned int>(std::time(nullptr))); // TODO: check how to handle seeding better
+            auto &pos = world.get<engine::d2::Position>(player);
+
+            pos.x = data.spawn.x + data.spawn.w * 0.5;
+            pos.y = data.spawn.y + data.spawn.h * 0.5;
+        }
+        if (ImGui::Button("Despawn")) {
+            world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+            world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+        }
+
+        ImGui::SliderInt("Min room size", &params.minRoomSize, 0, params.maxRoomSize);
+        ImGui::SliderInt("Max room size", &params.maxRoomSize, params.minRoomSize, 50);
+        ImGui::Separator();
+
+        // Assuming std::size_t is uint32_t
+        ImGui::InputScalar("Min room count", ImGuiDataType_U32, &params.minRoomCount);
+        ImGui::InputScalar("Max room count", ImGuiDataType_U32, &params.maxRoomCount);
+        ImGui::Text("note: actual room count may be smaller if there is not enough space");
+        ImGui::Separator();
+
+        ImGui::DragInt("Max dungeon width", &params.maxDungeonWidth, 0, 500);
+        ImGui::DragInt("Max dungeon height", &params.maxDungeonHeight, 0, 500);
+        ImGui::Separator();
+
+        ImGui::SliderInt("Min corridor width", &params.minCorridorWidth, 0, params.maxCorridorWidth);
+        ImGui::SliderInt("Max corridor width", &params.maxCorridorWidth, params.minCorridorWidth, 50);
+        ImGui::Separator();
+
+        ImGui::End();
     }
 
     auto onDestroy(entt::registry &) -> void final {}
 
     bool show_demo_window = true;
-    auto drawUserInterface() -> void final
+    auto drawUserInterface(entt::registry &world) -> void final
     {
         if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
         ImGui::Begin("Camera");
 
-        ImGui::Text("Camera Position (%.3f, %.3f, %.3f)", m_camera.Position.x, m_camera.Position.y, m_camera.Position.z);
+        if (ImGui::Button("Reset")) m_camera = engine::Camera2d();
 
-        // ugly af
+        {
+            auto cameraPos = m_camera.getCenter();
+            ImGui::Text("Camera Position (%.3f, %.3f)", static_cast<double>(cameraPos.x), static_cast<double>(cameraPos.y));
 
-        static float camera_x = static_cast<float>(m_camera.Position.x);
-        static float camera_y = static_cast<float>(m_camera.Position.y);
-        static float camera_z = static_cast<float>(m_camera.Position.z);
+            bool dirty = false;
+            dirty |= ImGui::DragFloat("Camera X", &cameraPos.x);
+            dirty |= ImGui::DragFloat("Camera Y", &cameraPos.y);
 
-        // todo : move the camera instead of creating a new object
-        if (ImGui::SliderFloat("Camera X", &camera_x, -5.0f, 5.0f, "x = %.3f")) {
-            m_camera = engine::Camera{glm::vec3(camera_x, camera_y, camera_z)};
-        }
-        if (ImGui::SliderFloat("Camera Y", &camera_y, -5.0f, 5.0f, "y = %.3f")) {
-            m_camera = engine::Camera{glm::vec3(camera_x, camera_y, camera_z)};
-        }
-        if (ImGui::SliderFloat("Camera Z", &camera_z, -5.0f, 5.0f, "z = %.3f")) {
-            m_camera = engine::Camera{glm::vec3(camera_x, camera_y, camera_z)};
+            if (dirty) m_camera.setCenter(cameraPos);
         }
 
-        ImGui::Text("Camera Rotation (%.3f, %.3f, %.3f)", m_camera.Yaw, m_camera.Pitch, 0.0);
+        {
+            auto viewPortSize = m_camera.getViewportSize();
+            auto pos = m_camera.getCenter();
 
-        static float fov = 1.0f;
+            ImGui::Text("Viewport size (%.3f, %.3f)", static_cast<double>(viewPortSize.x), static_cast<double>(viewPortSize.y));
+            ImGui::Text("Viewport range :");
+            ImGui::Text("   left  : %.3f", static_cast<double>(pos.x - (viewPortSize.x / 2)));
+            ImGui::Text("   right : %.3f", static_cast<double>(pos.x + (viewPortSize.x / 2)));
+            ImGui::Text("   top   : %.3f", static_cast<double>(pos.y + (viewPortSize.y / 2)));
+            ImGui::Text("   bottom: %.3f", static_cast<double>(pos.y - (viewPortSize.y / 2)));
 
-        ImGui::Text("Camera Zoom (%.3f)", m_camera.Zoom);
-        if (ImGui::SliderFloat("Camera Zoom", &fov, 1.0f, 45.0f, "fov = %.3f")) {
-            m_camera.setZoom(fov);
+
+            bool dirty = false;
+            dirty |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
+            dirty |= ImGui::DragFloat("Viewport height", &viewPortSize.y, 1.f, 2.f);
+
+
+            if (dirty) m_camera.setViewportSize(viewPortSize);
         }
+
 
         ImGui::End();
+
+        mapGenerationOverlayTick(world);
     }
 
 private:
-    engine::Camera m_camera{glm::vec3(0.0f, 0.0f, 3.0f)};
+    engine::Camera2d m_camera;
 };

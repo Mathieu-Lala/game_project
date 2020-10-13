@@ -48,6 +48,8 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
     m_joystickManager = std::make_unique<JoystickManager>();
 
+    
+
     // note : not working
     // m_world.on_destroy<engine::Drawable>().connect<&engine::Drawable::dtor>();
 
@@ -192,7 +194,6 @@ auto engine::Core::main() -> int
                     vel.y += acc.y;
                 });
 
-
             // todo : exclude the d2::Hitbox on this system
 //            m_world.view<d2::Position, d2::Velocity>().each(
 //                [&elapsed](auto &pos, auto &vel) {
@@ -207,7 +208,8 @@ auto engine::Core::main() -> int
 
                 const auto new_pos = d2::Position{
                     moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                    moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0
+                    moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                    moving_pos.z
                 };
 
                 bool collide = false;
@@ -233,7 +235,7 @@ auto engine::Core::main() -> int
             }
 
             m_window->draw([&] {
-                m_game->drawUserInterface();
+                m_game->drawUserInterface(m_world);
 
 #ifndef NDEBUG
                 debugDrawJoystick();
@@ -244,15 +246,15 @@ auto engine::Core::main() -> int
 
                 // todo : add Game::getBackgroundColor()
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-                ::glClear(GL_COLOR_BUFFER_BIT);
+                ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 m_world.view<Drawable, d2::Position, d2::Scale>().each(
                 [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {
                     drawable.shader->use();
 
                     auto model = glm::dmat4(1.0);
+                    model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z}); 
                     model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
-                    model = glm::translate(model, glm::dvec3{pos.x, pos.y, 0.0});
                     drawable.shader->uploadUniformMat4("model", model);
 
                     // note : mode could be defined in the drawable

@@ -3,15 +3,8 @@
 #include <random>
 #include <cassert>
 #include "level/LevelTilemapBuilder.hpp"
-
-/**
-    In the range [x;x+w[ and [y;y+h[
-    include walls
-*/
-struct Room {
-    int x, y;
-    int w, h;
-};
+#include "entity/EnemyFactory.hpp"
+#include "level/MapData.hpp"
 
 // Generate random int in the interval [min; max[
 template<std::integral T>
@@ -50,8 +43,8 @@ Room generateRoom(TilemapBuilder &builder, const FloorGenParam &params, std::def
         if (tries++ > 10000) return {0, 0, 0, 0};
 
         // Width including walls (hence the +2)
-        r.w = randRange(params.minRoomSize + 2, params.maxRoomSize + 2, randomEngine);
-        r.h = randRange(params.minRoomSize + 2, params.maxRoomSize + 2, randomEngine);
+        r.w = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1, randomEngine);
+        r.h = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1, randomEngine);
 
         r.x = randRange(0, builder.getSize().x - r.w, randomEngine);
         r.y = randRange(0, builder.getSize().y - r.h, randomEngine);
@@ -79,9 +72,9 @@ int getOnePossibleCenterOf(int a, int b, std::default_random_engine &randomEngin
 }
 
 // If room size is even, center will be chosen randomly between the two center tiles
-glm::vec<2, int> getOnePossibleCenterOf(const Room &r, std::default_random_engine &randomEngine)
+glm::ivec2 getOnePossibleCenterOf(const Room &r, std::default_random_engine &randomEngine)
 {
-    glm::vec<2, int> pos;
+    glm::ivec2 pos;
 
     pos.x = getOnePossibleCenterOf(r.x, r.x + r.w, randomEngine);
     pos.y = getOnePossibleCenterOf(r.y, r.y + r.h, randomEngine);
@@ -127,14 +120,16 @@ void generatorCorridor(
 
 
     if (randRange(0, 1, randomEngine)) {
-        auto maxWidth = std::min(r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+        auto maxWidth = std::min(
+            r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
         auto width = randRange(
             std::min(maxWidth, params.minCorridorWidth), std::max(maxWidth, params.maxCorridorWidth), randomEngine);
 
         auto pos = vertical(start, width);
         horizontal(pos, width);
     } else {
-        auto maxWidth = std::min(r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+        auto maxWidth = std::min(
+            r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
         auto width = randRange(
             std::min(maxWidth, params.minCorridorWidth), std::max(maxWidth, params.maxCorridorWidth), randomEngine);
 
@@ -174,12 +169,9 @@ void placeWalls(TilemapBuilder &builder)
         }
 }
 
-void generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::optional<unsigned int> seed)
+MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine)
 {
-    TilemapBuilder builder(shader, { params.maxDungeonWidth, params.maxDungeonheight });
-    std::default_random_engine randomEngine;
-
-    if (seed) randomEngine.seed(seed.value());
+    TilemapBuilder builder(shader, {params.maxDungeonWidth, params.maxDungeonHeight});
 
     auto roomCount = randRange(params.minRoomCount, params.maxRoomCount, randomEngine);
 
@@ -196,4 +188,36 @@ void generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam 
     placeWalls(builder);
 
     builder.build(world);
+
+
+    MapData result;
+    result.spawn = *rooms.begin();
+    result.boss = *rooms.rbegin();
+
+    for (auto i = 1ul; i < rooms.size() - 1; ++i) result.regularRooms.push_back(rooms[i]);
+
+    return result;
+}
+
+void spawnMobsIn(
+    entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine, const Room &r)
+{
+    for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
+        for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
+            if (randRange(0, static_cast<int>(1.0f / params.mobDensity), randomEngine) == 0)
+                EnemyFactory::FirstEnemy(world, shader, glm::vec2{x, y});
+}
+
+MapData generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::optional<unsigned int> seed)
+{
+    std::default_random_engine randomEngine;
+
+    if (seed) randomEngine.seed(seed.value());
+
+    auto data = generateLevel(world, shader, params, randomEngine);
+
+     for (auto &r : data.regularRooms)
+        spawnMobsIn(world, shader, params, randomEngine, r);
+
+    return data;
 }

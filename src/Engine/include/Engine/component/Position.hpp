@@ -11,6 +11,7 @@ struct PositionT {
 
     T x;
     T y;
+    T z;
 
 };
 

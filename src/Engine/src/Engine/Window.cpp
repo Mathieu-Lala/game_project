@@ -27,6 +27,7 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
 
     // Vsync
     ::glfwSwapInterval(1);
+    ::glEnable(GL_DEPTH_TEST);
 
     s_instance = this;
 
