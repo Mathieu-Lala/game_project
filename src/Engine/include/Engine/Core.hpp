@@ -1,0 +1,152 @@
+#pragma once
+
+#include <memory>
+#include <entt/entt.hpp>
+#include <concepts>
+
+#include "Engine/Window.hpp"
+#include "Engine/Game.hpp"
+#include "Engine/JoystickManager.hpp"
+
+namespace engine {
+
+class Core {
+private:
+
+    struct hidden_type{};
+
+public:
+
+    struct Holder {
+
+        static
+        auto init() noexcept -> Holder;
+
+        Core *instance = Core::s_instance;
+
+    };
+
+    explicit
+    Core(hidden_type &&);
+
+    ~Core();
+
+    Core(const Core &) = delete;
+    Core(Core &&) = delete;
+
+    Core &operator=(const Core &) = delete;
+    Core &operator=(Core &&) = delete;
+
+
+    auto main() -> int;
+
+    auto getNextEvent() -> Event;
+
+    auto window() -> std::unique_ptr<Window> & { return m_window; }
+
+    template<typename ...Args>
+    auto window(Args &&...args) -> std::unique_ptr<Window> &
+    {
+        if (m_window != nullptr) { return m_window; }
+
+        m_window = std::make_unique<Window>(std::forward<Args>(args)...);
+        loadOpenGL();
+
+        return m_window;
+    }
+
+    template<std::derived_from<Game> UserDefinedGame, typename ...Args>
+    auto game(Args &&...args) -> std::unique_ptr<Game> &
+    {
+        if (m_game != nullptr) { return m_game; }
+
+        m_game = std::make_unique<UserDefinedGame>(std::forward<Args>(args)...);
+        m_game->onCreate(m_world);
+
+        return m_game;
+    }
+
+    enum EventMode {
+        RECORD,
+        PLAYBACK,
+    };
+
+    auto getEventMode() const { return m_eventMode; }
+
+    auto setPendingEvents(std::vector<Event> &&events) -> void;
+
+    auto setPendingEventsFromFile(const std::string_view filepath) -> bool;
+
+private:
+
+    static
+    auto get() noexcept -> std::unique_ptr<Core> &;
+
+    static Core *s_instance;
+
+    static
+    auto loadOpenGL() -> void;
+
+    // note : for now the engine support only one window
+    std::unique_ptr<Window> m_window{ nullptr };
+
+//
+// World
+//
+
+    std::unique_ptr<Game> m_game{ nullptr };
+
+    entt::registry m_world;
+
+//
+// Event Handling
+//
+
+    EventMode m_eventMode{ RECORD };
+
+    // todo : std::pmr::queue instead of vector ? try it with google benchmark
+    std::vector<Event> m_eventsPlayback;
+
+
+    std::chrono::steady_clock::time_point m_lastTick;
+
+    auto getElapsedTime() -> std::chrono::nanoseconds;
+
+
+    std::unique_ptr<JoystickManager> m_joystickManager;
+
+
+#ifndef NDEBUG
+    auto debugDrawJoystick() -> void;
+    auto debugDrawDisplayOptions() -> void;
+#endif
+
+    enum DisplayMode {
+        POINTS = GL_POINTS,
+        LINE_STRIP = GL_LINE_STRIP,
+        LINE_LOOP = GL_LINE_LOOP,
+        LINES = GL_LINES,
+        LINE_STRIP_ADJACENCY = GL_LINE_STRIP_ADJACENCY,
+        LINES_ADJACENCY = GL_LINES_ADJACENCY,
+        TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
+        TRIANGLE_FAN = GL_TRIANGLE_FAN,
+        TRIANGLES = GL_TRIANGLES,
+        TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
+        TRIANGLES_ADJACENCY = GL_TRIANGLES_ADJACENCY,
+        PATCHES = GL_PATCHES,
+    };
+
+    DisplayMode m_displayMode = TRIANGLES;
+
+};
+
+} // namespace engine
+
+
+#ifndef NDEBUG
+# define IF_RECORD(...) \
+    do { if (engine::Core::Holder{}.instance->getEventMode() \
+        == engine::Core::EventMode::RECORD) { __VA_ARGS__; } } while(0)
+#else
+# define IF_RECORD(...) do { __VA_ARGS__; } while(0)
+#endif

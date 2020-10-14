@@ -1,0 +1,30 @@
+Languages:
+    Engine: C++20
+    Games:  C++20
+        ? ChaiScript ? Lua ?
+
+Libaries:
+    Utility:
+        physics: ? units ? (https://github.com/mpusz/units)
+
+    # Not needed => game in 2D
+    3D assets manager: ? Assimp ? (https://github.com/assimp/assimp)
+    # Not needed => not in network
+    Network: ? boost ?
+    Audio: ? portaudio ? irrlang ?
+
+Static Analyzer:
+    clang-tidy
+    cppcheck
+    include-what-you-use
+
+Tests:
+    Test driver: CTest
+    Units tests: Catch2 (https://github.com/catchorg/Catch2)
+    Undefined Behaviour: Fuzz
+    Benchmark: google_benchmark
+    Style:
+        cmake-format
+
+Documentation:
+    Doxygen

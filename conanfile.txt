@@ -1,0 +1,44 @@
+[requires]
+# UI API
+imgui/1.78
+
+opengl/system
+
+# Window / Cursor / Event libary
+glfw/3.3.2
+
+# OpenGL loader
+glew/2.1.0
+
+# Mathematics
+glm/0.9.9.5@g-truc/stable
+
+# Json libary
+nlohmann_json/3.9.0
+
+# Logging libary, spdlog use {fmt} so we can use CONAN_PKG::fmt
+spdlog/1.6.0
+
+# ECS
+entt/3.5.2
+
+# C++ enum helper
+magic_enum/0.6.6
+
+# Image processing libary
+stb/20190512@conan/stable
+
+# Argument parser (ac, av)
+CLI11/1.9.1@cliutils/stable
+
+[options]
+fmt:header_only=True
+spdlog:header_only=True
+docopt.cpp:shared=False
+
+[generators]
+cmake
+
+[imports]
+bin, *.dll -> ../out/
+lib, *.dylib* -> ../out/
