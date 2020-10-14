@@ -5,6 +5,7 @@
 #define GLFW_INCLUDE_NONE
 #ifdef _WIN32
 # define GLFW_EXPOSE_NATIVE_WIN32
+# include <windows.h>
 #endif
 
 #include <imgui.h>
