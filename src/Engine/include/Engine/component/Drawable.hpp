@@ -11,6 +11,9 @@ struct Drawable {
 
     int triangle_count;
     Shader *shader;
+
+    static auto dtor(const Drawable &drawable) -> void;
+
 };
 
 } // namespace engine

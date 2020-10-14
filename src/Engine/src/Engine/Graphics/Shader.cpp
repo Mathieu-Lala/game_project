@@ -11,7 +11,6 @@ DISABLE_WARNING_POP
 #include "Engine/Graphics/Shader.hpp"
 #include "Engine/helpers/File.hpp"
 
-// helper class for consitancy
 template<std::size_t type>
 struct shader_ {
     shader_(const char *source) : ID{::glCreateShader(type)}

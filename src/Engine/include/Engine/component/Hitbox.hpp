@@ -22,19 +22,19 @@ namespace d2 {
  *
  */
 
-template<std::floating_point T> // note : any type of floating points
+template<std::floating_point T>
 struct HitboxT {
     T width;
     T height;
 
     enum WithEdgeInHitbox {
         WITHOUT_EDGE = 0,
-        WITH_EDGE = 0,
+        WITH_EDGE = 1,
     };
 
     template<WithEdgeInHitbox v = WITHOUT_EDGE>
     [[nodiscard("use this return value")]] static constexpr auto
-        overlapped(const HitboxT &self, const PositionT<T> &self_pos, const HitboxT &other, const PositionT<T> &other_pos) noexcept
+        overlapped(const HitboxT &self, const d3::PositionT<T> &self_pos, const HitboxT &other, const d3::PositionT<T> &other_pos) noexcept
         -> bool
     {
         const auto ax = self_pos.x - self.width / 2.0;

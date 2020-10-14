@@ -187,7 +187,7 @@ auto engine::Core::main() -> int
             if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
         }
 
-        //// note : should note draw at every frame = heavy
+        // note : should note draw at every frame = heavy
         if (timeElapsed) {
             const auto t = std::get<TimeElapsed>(event);
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
@@ -269,12 +269,7 @@ auto engine::Core::main() -> int
         m_game->onUpdate(m_world, event);
     }
 
-    // todo : use entt::on_destroy or something ..
-    m_world.view<engine::Drawable>().each([](engine::Drawable &drawable) {
-        ::glDeleteVertexArrays(1, &drawable.VAO);
-        ::glDeleteBuffers(1, &drawable.VBO);
-        ::glDeleteBuffers(1, &drawable.EBO);
-    });
+    m_world.view<engine::Drawable>().each(engine::Drawable::dtor);
 
     m_game->onDestroy(m_world);
 

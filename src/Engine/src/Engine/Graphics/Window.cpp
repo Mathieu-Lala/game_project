@@ -181,7 +181,7 @@ auto engine::Window::callback_eventMouseMoved([[maybe_unused]] GLFWwindow *windo
     IF_RECORD(s_instance->m_events.emplace_back(Moved<Mouse>{x, y}));
 }
 
-using namespace engine; // just for the template specialization consistency
+using namespace engine;
 
 template<>
 auto Window::applyEvent(const Pressed<MouseButton> &m) -> void

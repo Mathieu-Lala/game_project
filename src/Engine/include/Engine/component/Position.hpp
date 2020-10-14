@@ -6,7 +6,7 @@ namespace engine {
 
 namespace d3 {
 
-template<std::floating_point T> // note : any type of floating points
+template<std::floating_point T>
 struct PositionT {
     T x;
     T y;

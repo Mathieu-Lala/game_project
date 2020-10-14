@@ -2,7 +2,6 @@
 
 #include <vector>
 
-//#include "Engine/details/Graphics.hpp"
 #include "Engine/Event/Event.hpp"
 
 namespace engine {

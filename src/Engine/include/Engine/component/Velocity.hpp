@@ -6,7 +6,7 @@ namespace engine {
 
 namespace d2 {
 
-template<std::floating_point T> // note : any type of floating points
+template<std::floating_point T>
 struct VelocityT {
     using type = T;
 
