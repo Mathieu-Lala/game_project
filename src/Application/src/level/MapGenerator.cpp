@@ -12,33 +12,34 @@ auto randRange(T min, T max, std::default_random_engine &randomEngine)
 {
     assert(max > min);
 
-    auto r = randomEngine();
+    const auto r = randomEngine();
     return min + static_cast<T>(r % static_cast<decltype(r)>(max - min));
 }
 
-bool isRoomValid(TilemapBuilder &builder, const Room &r)
+bool isRoomValid(game::TilemapBuilder &builder, const game::Room &r)
 {
     int x2 = r.x + r.w;
     int y2 = r.y + r.h;
 
     for (int x = r.x; x <= x2; ++x)
-        if (builder.get(x, y2) != TileEnum::NONE) return false;
+        if (builder.get(x, y2) != game::TileEnum::NONE) return false;
     for (int x = r.x; x <= x2; ++x)
-        if (builder.get(x, r.y) != TileEnum::NONE) return false;
+        if (builder.get(x, r.y) != game::TileEnum::NONE) return false;
 
     for (int y = r.y + 1; y < y2; ++y)
-        if (builder.get(r.x, y) != TileEnum::NONE) return false;
+        if (builder.get(r.x, y) != game::TileEnum::NONE) return false;
     for (int y = r.y + 1; y < y2; ++y)
-        if (builder.get(x2, y) != TileEnum::NONE) return false;
+        if (builder.get(x2, y) != game::TileEnum::NONE) return false;
 
     return true;
 }
 
-Room generateRoom(TilemapBuilder &builder, const FloorGenParam &params, std::default_random_engine &randomEngine)
+game::Room
+    generateRoom(game::TilemapBuilder &builder, const game::FloorGenParam &params, std::default_random_engine &randomEngine)
 {
-    Room r;
+    game::Room r;
 
-    unsigned int tries = 0;
+    std::uint32_t tries = 0;
     do {
         if (tries++ > 10000) return {0, 0, 0, 0};
 
@@ -56,7 +57,7 @@ Room generateRoom(TilemapBuilder &builder, const FloorGenParam &params, std::def
     int y2 = r.y + r.h;
 
     for (int y = r.y + 1; y < y2 - 1; ++y)
-        for (int x = r.x + 1; x < x2 - 1; ++x) builder.get(x, y) = TileEnum::FLOOR;
+        for (int x = r.x + 1; x < x2 - 1; ++x) builder.get(x, y) = game::TileEnum::FLOOR;
 
     return r;
 }
@@ -72,7 +73,7 @@ int getOnePossibleCenterOf(int a, int b, std::default_random_engine &randomEngin
 }
 
 // If room size is even, center will be chosen randomly between the two center tiles
-glm::ivec2 getOnePossibleCenterOf(const Room &r, std::default_random_engine &randomEngine)
+glm::ivec2 getOnePossibleCenterOf(const game::Room &r, std::default_random_engine &randomEngine)
 {
     glm::ivec2 pos;
 
@@ -83,7 +84,11 @@ glm::ivec2 getOnePossibleCenterOf(const Room &r, std::default_random_engine &ran
 }
 
 void generatorCorridor(
-    TilemapBuilder &builder, const FloorGenParam &params, std::default_random_engine &randomEngine, const Room &r1, const Room &r2)
+    game::TilemapBuilder &builder,
+    const game::FloorGenParam &params,
+    std::default_random_engine &randomEngine,
+    const game::Room &r1,
+    const game::Room &r2)
 {
     auto start = getOnePossibleCenterOf(r1, randomEngine);
     auto end = getOnePossibleCenterOf(r2, randomEngine);
@@ -92,7 +97,8 @@ void generatorCorridor(
         auto widthOffset = getOnePossibleCenterOf(0, width, randomEngine);
 
         while (pos.y != end.y) {
-            for (int x = -widthOffset; x < width - widthOffset; ++x) builder.get(pos.x + x, pos.y) = TileEnum::FLOOR;
+            for (int x = -widthOffset; x < width - widthOffset; ++x)
+                builder.get(pos.x + x, pos.y) = game::TileEnum::FLOOR;
 
             if (pos.y < end.y)
                 ++pos.y;
@@ -107,7 +113,8 @@ void generatorCorridor(
         auto widthOffset = getOnePossibleCenterOf(0, width, randomEngine);
 
         while (pos.x != end.x) {
-            for (int y = -widthOffset; y < width - widthOffset; ++y) builder.get(pos.x, pos.y + y) = TileEnum::FLOOR;
+            for (int y = -widthOffset; y < width - widthOffset; ++y)
+                builder.get(pos.x, pos.y + y) = game::TileEnum::FLOOR;
 
             if (pos.x < end.x)
                 ++pos.x;
@@ -138,7 +145,7 @@ void generatorCorridor(
     }
 }
 
-void placeWalls(TilemapBuilder &builder)
+void placeWalls(game::TilemapBuilder &builder)
 {
     // For each empty tile, if one it's neighbour is a floor, make it a wall
     std::array<glm::vec<2, int>, 8> neighbours = {
@@ -155,27 +162,28 @@ void placeWalls(TilemapBuilder &builder)
 
     for (it.y = 0; it.y < builder.getSize().y; ++it.y)
         for (it.x = 0; it.x < builder.getSize().x; ++it.x) {
-            if (builder.get(it.x, it.y) != TileEnum::NONE) continue;
+            if (builder.get(it.x, it.y) != game::TileEnum::NONE) continue;
 
             for (auto n : neighbours) {
                 auto checkPos = it + n;
 
                 if (checkPos.x > 0 && checkPos.x < builder.getSize().x && checkPos.y > 0
-                    && checkPos.y < builder.getSize().y && builder.get(checkPos.x, checkPos.y) == TileEnum::FLOOR) {
-                    builder.get(it.x, it.y) = TileEnum::WALL;
+                    && checkPos.y < builder.getSize().y && builder.get(checkPos.x, checkPos.y) == game::TileEnum::FLOOR) {
+                    builder.get(it.x, it.y) = game::TileEnum::WALL;
                     break;
                 }
             }
         }
 }
 
-MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine)
+game::MapData
+    generateLevel(entt::registry &world, engine::Shader *shader, game::FloorGenParam params, std::default_random_engine &randomEngine)
 {
-    TilemapBuilder builder(shader, {params.maxDungeonWidth, params.maxDungeonHeight});
+    game::TilemapBuilder builder(shader, {params.maxDungeonWidth, params.maxDungeonHeight});
 
     auto roomCount = randRange(params.minRoomCount, params.maxRoomCount, randomEngine);
 
-    std::vector<Room> rooms;
+    std::vector<game::Room> rooms;
     rooms.reserve(roomCount);
 
     rooms.emplace_back(generateRoom(builder, params, randomEngine));
@@ -190,7 +198,7 @@ MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenPar
     builder.build(world);
 
 
-    MapData result;
+    game::MapData result;
     result.spawn = *rooms.begin();
     result.boss = *rooms.rbegin();
 
@@ -200,15 +208,20 @@ MapData generateLevel(entt::registry &world, engine::Shader *shader, FloorGenPar
 }
 
 void spawnMobsIn(
-    entt::registry &world, engine::Shader *shader, FloorGenParam params, std::default_random_engine &randomEngine, const Room &r)
+    entt::registry &world,
+    engine::Shader *shader,
+    game::FloorGenParam params,
+    std::default_random_engine &randomEngine,
+    const game::Room &r)
 {
     for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
         for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
             if (randRange(0, static_cast<int>(1.0f / params.mobDensity), randomEngine) == 0)
-                EnemyFactory::FirstEnemy(world, shader, glm::vec2{x, y});
+                game::EnemyFactory::FirstEnemy(world, shader, glm::vec2{x, y});
 }
 
-MapData generateFloor(entt::registry &world, engine::Shader *shader, FloorGenParam params, std::optional<unsigned int> seed)
+auto game::generateFloor(
+    entt::registry &world, engine::Shader *shader, game::FloorGenParam params, std::optional<std::uint32_t> seed) -> MapData
 {
     std::default_random_engine randomEngine;
 
@@ -216,8 +229,7 @@ MapData generateFloor(entt::registry &world, engine::Shader *shader, FloorGenPar
 
     auto data = generateLevel(world, shader, params, randomEngine);
 
-     for (auto &r : data.regularRooms)
-        spawnMobsIn(world, shader, params, randomEngine, r);
+    for (auto &r : data.regularRooms) spawnMobsIn(world, shader, params, randomEngine, r);
 
     return data;
 }

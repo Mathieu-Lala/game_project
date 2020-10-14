@@ -2,12 +2,11 @@
 
 #include <iostream>
 
-class FarmerCompetences
-{
+class FarmerCompetences {
 public:
     FarmerCompetences(){};
 
-    // TODO -> Transform function calls in signals 
+    // TODO -> Transform function calls in signals
 
     void activateSkill(/*Add player if some of it stats are used*/)
     {
@@ -15,7 +14,7 @@ public:
     };
 
     void displayInfos()
-    { 
+    {
         std::cout << "Name: " << s_name << std::endl;
         std::cout << "Description: " << s_description << std::endl;
         std::cout << "Cooldown: " << s_cooldown.count() << std::endl;
@@ -31,6 +30,5 @@ public:
     static constexpr std::uint32_t s_range{2};
 
 private:
-
     // Add animation spritesheet
 };

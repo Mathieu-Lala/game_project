@@ -1,3 +1,6 @@
+#include "Engine/Graphics/third_party.hpp"
+#include "Engine/Graphics/Shader.hpp"
+#include "Engine/component/Drawable.hpp"
 #include "Engine/helpers/DrawableFactory.hpp"
 
 auto engine::DrawableFactory::rectangle(glm::vec3 &&c) -> Drawable
@@ -17,8 +20,12 @@ auto engine::DrawableFactory::rectangle(glm::vec3 &&c) -> Drawable
 
     // static constexpr auto indices = std::to_array({ 0u, 1u, 2u, 1u, 2u, 3u });
     static constexpr std::uint32_t indices[] = {
-        0, 1, 2, // first triangle
-        1, 2, 3, // second triangle
+        0,
+        1,
+        2, // first triangle
+        1,
+        2,
+        3, // second triangle
     };
 
     glGenVertexArrays(1, &VAO);
@@ -38,7 +45,8 @@ auto engine::DrawableFactory::rectangle(glm::vec3 &&c) -> Drawable
     glEnableVertexAttribArray(0);
 
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, STRIDE_COUNT * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
+    glVertexAttribPointer(
+        1, 3, GL_FLOAT, GL_FALSE, STRIDE_COUNT * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     Drawable out;

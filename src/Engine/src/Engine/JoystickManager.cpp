@@ -1,6 +1,7 @@
 #include <spdlog/spdlog.h>
 
-#include "Engine/JoystickManager.hpp"
+#include "Engine/Graphics/third_party.hpp"
+#include "Engine/Event/JoystickManager.hpp"
 #include "Engine/Core.hpp"
 
 engine::JoystickManager *engine::JoystickManager::s_instance{nullptr};

@@ -2,8 +2,7 @@
 
 #include <vector>
 
-#include "Engine/details/Graphics.hpp"
-#include "Engine/Event.hpp"
+#include "Engine/Event/Event.hpp"
 
 namespace engine {
 
@@ -11,7 +10,6 @@ class Core;
 
 class JoystickManager {
 public:
-
     JoystickManager();
 
     auto add(const Joystick &j) -> void;
@@ -28,19 +26,16 @@ public:
     auto update(const Released<JoystickButton> &j) -> void;
 
 private:
-
     std::vector<Joystick> m_joysticks;
 
     std::vector<Event> m_events;
 
     static JoystickManager *s_instance;
 
-    static
-    auto callback_eventJoystickDetection(int id, int event) -> void;
+    static auto callback_eventJoystickDetection(int id, int event) -> void;
 
     auto pollAxis() -> void;
     auto pollButtons() -> void;
-
 };
 
 } // namespace engine

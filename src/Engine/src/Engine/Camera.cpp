@@ -1,4 +1,4 @@
-#include "Engine/details/Warnings.hpp"
+#include "Engine/helpers/Warnings.hpp"
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_CONSTANT_CONDITIONAL
@@ -6,13 +6,13 @@ DISABLE_WARNING_CONSTANT_CONDITIONAL
 DISABLE_WARNING_POP
 
 #include <spdlog/spdlog.h>
-#include "Engine/Camera2d.hpp"
+#include "Engine/Camera.hpp"
 
 // Default viewport ranges from -1 to +1
-engine::Camera2d::Camera2d() { setViewportSize(glm::ivec2{2, 2}); }
+engine::Camera::Camera() { setViewportSize(glm::ivec2{2, 2}); }
 
 
-auto engine::Camera2d::setCenter(::glm::vec2 point) -> void
+auto engine::Camera::setCenter(::glm::vec2 point) -> void
 {
     m_pos.x = point.x;
     m_pos.y = point.y;
@@ -20,7 +20,7 @@ auto engine::Camera2d::setCenter(::glm::vec2 point) -> void
     recomputeViewProj();
 }
 
-auto engine::Camera2d::setViewport(float left, float right, float bottom, float top) -> void
+auto engine::Camera::setViewport(float left, float right, float bottom, float top) -> void
 {
     assert(right > left);
     assert(top > bottom);
@@ -34,7 +34,7 @@ auto engine::Camera2d::setViewport(float left, float right, float bottom, float 
     recomputeViewProj();
 }
 
-auto engine::Camera2d::setViewportSize(glm::vec2 size) -> void
+auto engine::Camera::setViewportSize(glm::vec2 size) -> void
 {
     assert(size.x > 0);
     assert(size.y > 0);
@@ -46,7 +46,7 @@ auto engine::Camera2d::setViewportSize(glm::vec2 size) -> void
 }
 
 
-auto engine::Camera2d::move(const glm::vec2 &offset) -> void
+auto engine::Camera::move(const glm::vec2 &offset) -> void
 {
     m_pos.x += offset.x;
     m_pos.y += offset.y;
@@ -54,21 +54,21 @@ auto engine::Camera2d::move(const glm::vec2 &offset) -> void
     recomputeViewProj();
 }
 
-void engine::Camera2d::recomputeProj()
+void engine::Camera::recomputeProj()
 {
     auto halfVP = m_viewportSize / 2.f;
 
     m_projMatrix = glm::ortho(
-        - halfVP.x, // left
-        + halfVP.x, // right
-        - halfVP.y, // bottom
-        + halfVP.y, // top
-        10.f,       // zNear
-        -10.f);     //zFar
+        -halfVP.x, // left
+        +halfVP.x, // right
+        -halfVP.y, // bottom
+        +halfVP.y, // top
+        10.f,      // zNear
+        -10.f);    // zFar
     // The zNear and ZFar behavior is weird and cause bug with other values, be careful. Ask Yanis for any questions
 }
 
-auto engine::Camera2d::recomputeViewProj() -> void
+auto engine::Camera::recomputeViewProj() -> void
 {
     auto transform = glm::translate(glm::mat4(1.f), glm::vec3(m_pos.x, m_pos.y, 0));
 

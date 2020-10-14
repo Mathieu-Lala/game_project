@@ -32,11 +32,12 @@ configure_file(include/Engine/details/Version.hpp.in
 add_library(
   engine STATIC
   src/Engine/Core.cpp
-  src/Engine/Window.cpp
-  src/Engine/Image.cpp
+  src/Engine/Graphics/Window.cpp
+  src/Engine/Graphics/Image.cpp
+  src/Engine/Graphics/Shader.cpp
   src/Engine/helpers/DrawableFactory.cpp
-  src/Engine/Camera2d.cpp
-  src/Engine/Shader.cpp
+  src/Engine/Camera.cpp
+  src/Engine/Component.cpp
   src/Engine/JoystickManager.cpp)
 
 target_include_directories(
