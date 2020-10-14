@@ -1,5 +1,8 @@
 # Game Project - The PURGE
 
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/Mathieu-Lala/game_project/graphs/commit-activity)
+[![GitHub release](https://img.shields.io/github/v/release/Mathieu-Lala/game_project)](https://github.com/Mathieu-Lala/game_project/releases/)
+
 Keimyung University - Mobile Game Development - 2020 Fall Semester
 
 This project is a video game for PC. See the [Game Design Document](doc/GDD_ten_page.pdf) for more details.
@@ -45,8 +48,30 @@ $> ./tools/install.sh
 
 ## Build and Run
 
-![Master Github Build Status](https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg)
-![Develop Github Build Status](https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop)
+<table>
+    <tr>
+        <td>master branch</td>
+        <td>
+            <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Amaster">
+                <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=master"
+                    alt="Build status not found"
+                >
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            develop branch
+        </td>
+        <td>
+            <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Adevelop">
+                <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop"
+                    alt="Build status not found"
+                >
+            </a>
+        </td>
+    </tr>
+</table>
 
 * Unix systems
 
@@ -68,6 +93,8 @@ $> ./tools/install.sh
 ![Dependencies](doc/conan_dependencies.png)
 
 ## Testing
+
+Not deployed yet.
 
 ## Acknowledgement
 
