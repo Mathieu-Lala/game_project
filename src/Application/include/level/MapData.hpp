@@ -2,6 +2,8 @@
 
 #include <vector>
 
+namespace game {
+
 /**
     In the range [x;x+w[ and [y;y+h[
     include walls
@@ -13,7 +15,9 @@ struct Room {
 
 
 struct MapData {
-    Room spawn {};
+    Room spawn{};
     std::vector<Room> regularRooms;
-    Room boss {};
+    Room boss{};
 };
+
+} // namespace game

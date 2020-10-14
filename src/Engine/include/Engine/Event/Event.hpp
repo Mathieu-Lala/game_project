@@ -11,36 +11,36 @@ namespace engine {
 
 template<typename Source>
 struct Pressed {
-    constexpr static std::string_view name{ "Pressed" };
-    constexpr static std::array elements{ std::string_view{ "source" } };
+    constexpr static std::string_view name{"Pressed"};
+    constexpr static std::array elements{std::string_view{"source"}};
     Source source;
 };
 
 template<typename Source>
 struct Released {
-    constexpr static std::string_view name{ "Released" };
-    constexpr static std::array elements{ std::string_view{ "source" } };
+    constexpr static std::string_view name{"Released"};
+    constexpr static std::array elements{std::string_view{"source"}};
     Source source;
 };
 
 template<typename Source>
 struct Moved {
-    constexpr static std::string_view name{ "Moved" };
-    constexpr static std::array elements{ std::string_view{ "source" } };
+    constexpr static std::string_view name{"Moved"};
+    constexpr static std::array elements{std::string_view{"source"}};
     Source source;
 };
 
 template<typename Source>
 struct Connected {
-    constexpr static std::string_view name{ "Connected" };
-    constexpr static std::array elements{ std::string_view{ "source" } };
+    constexpr static std::string_view name{"Connected"};
+    constexpr static std::array elements{std::string_view{"source"}};
     Source source;
 };
 
 template<typename Source>
 struct Disconnected {
-    constexpr static std::string_view name{ "Disconnected" };
-    constexpr static std::array elements{ std::string_view{ "source" } };
+    constexpr static std::string_view name{"Disconnected"};
+    constexpr static std::array elements{std::string_view{"source"}};
     Source source;
 };
 
@@ -49,70 +49,68 @@ struct Disconnected {
 /// Window Related
 
 struct CloseWindow {
-    constexpr static std::string_view name{ "CloseWindow" };
+    constexpr static std::string_view name{"CloseWindow"};
     constexpr static std::array<std::string_view, 0> elements{};
 };
 
 struct OpenWindow {
-    constexpr static std::string_view name{ "OpenWindow" };
+    constexpr static std::string_view name{"OpenWindow"};
     constexpr static std::array<std::string_view, 0> elements{};
 };
 
 struct ResizeWindow {
-    constexpr static std::string_view name{ "ResizeWindow" };
-    constexpr static auto elements =
-        std::to_array<std::string_view>({ "width", "height" });
+    constexpr static std::string_view name{"ResizeWindow"};
+    constexpr static auto elements = std::to_array<std::string_view>({"width", "height"});
     int width;
     int height;
 };
 
 struct MoveWindow { // note : could use Moved<Window> ?
-    constexpr static std::string_view name{ "MoveWindow" };
-    constexpr static auto elements =
-        std::to_array<std::string_view>({ "x", "y" });
+    constexpr static std::string_view name{"MoveWindow"};
+    constexpr static auto elements = std::to_array<std::string_view>({"x", "y"});
     int x;
     int y;
 };
 
 struct TimeElapsed {
-    constexpr static std::string_view name{ "TimeElapsed" };
-    constexpr static std::array elements{ std::string_view{ "elapsed" } };
+    constexpr static std::string_view name{"TimeElapsed"};
+    constexpr static std::array elements{std::string_view{"elapsed"}};
     std::chrono::steady_clock::duration elapsed;
 };
 
 /// Device Related
 
 struct Key {
-    constexpr static std::string_view name{ "Key" };
-    constexpr static auto elements = std::to_array<std::string_view>({
-        "alt", "control", "system", "shift", "scancode", "key" });
+    constexpr static std::string_view name{"Key"};
+    constexpr static auto elements =
+        std::to_array<std::string_view>({"alt", "control", "system", "shift", "scancode", "key"});
     bool alt;
     bool control;
     bool system;
     bool shift;
 
-// todo : normalize this
+    // todo : normalize this
     int scancode;
     int key;
 };
 
 struct Mouse {
-    constexpr static std::string_view name{ "Mouse" };
-    constexpr static auto elements = std::to_array<std::string_view>({ "x", "y" });
+    constexpr static std::string_view name{"Mouse"};
+    constexpr static auto elements = std::to_array<std::string_view>({"x", "y"});
     double x;
     double y;
 };
 
 struct MouseButton {
-    constexpr static std::string_view name{ "MouseButton" };
-    constexpr static auto elements = std::to_array<std::string_view>({ "button", "mouse" });
+    constexpr static std::string_view name{"MouseButton"};
+    constexpr static auto elements = std::to_array<std::string_view>({"button", "mouse"});
     int button;
     Mouse mouse;
 };
 
 struct Joystick {
-    constexpr static std::string_view name{ "Joystick" };
-    constexpr static auto elements = std::to_array<std::string_view>({ "id", "axes", "buttons" });
+    constexpr static std::string_view name{"Joystick"};
+    constexpr static auto elements = std::to_array<std::string_view>({"id", "axes", "buttons"});
 
     enum Axis {
         LSX, // left stick X
@@ -134,9 +132,9 @@ struct Joystick {
     enum Buttons {
 
         ACTION_BOTTOM, // A
-        ACTION_RIGHT, // B
-        ACTION_LEFT, // X
-        ACTION_TOP, // Y
+        ACTION_RIGHT,  // B
+        ACTION_LEFT,   // X
+        ACTION_TOP,    // Y
 
         LS, // left shoulder button
         RS, // right shoulder button
@@ -144,16 +142,16 @@ struct Joystick {
         CENTER1, // Back
         CENTER2, // Start
 
-#ifndef WIN32 // Windows override the buttons so we can't use it on Windows
+#ifndef WIN32    // Windows override the buttons so we can't use it on Windows
         CENTER3, // Center (xbox home)
 #endif
         LSB, // left stick button
         RSB, // right stick button
 
-        UP, // d-pad top
+        UP,    // d-pad top
         RIGHT, // d-pad right
-        DOWN, // d-pad down
-        LEFT, // d-pad left
+        DOWN,  // d-pad down
+        LEFT,  // d-pad left
 
         NOT_MAPPED, // not used
 
@@ -163,12 +161,11 @@ struct Joystick {
     int id;
     std::array<float, AXES_MAX> axes{};
     std::array<bool, BUTTONS_MAX> buttons{};
-
 };
 
 struct JoystickAxis {
-    constexpr static std::string_view name{ "JoystickAxis" };
-    constexpr static auto elements = std::to_array<std::string_view>({ "id", "axis", "value" });
+    constexpr static std::string_view name{"JoystickAxis"};
+    constexpr static auto elements = std::to_array<std::string_view>({"id", "axis", "value"});
 
     int id;
     Joystick::Axis axis;
@@ -176,8 +173,8 @@ struct JoystickAxis {
 };
 
 struct JoystickButton {
-    constexpr static std::string_view name{ "JoystickButton" };
-    constexpr static auto elements = std::to_array<std::string_view>({ "id", "button" });
+    constexpr static std::string_view name{"JoystickButton"};
+    constexpr static auto elements = std::to_array<std::string_view>({"id", "button"});
 
     int id;
     Joystick::Buttons button;
@@ -210,8 +207,8 @@ using Event = std::variant<
     Released<JoystickButton>,
     Moved<JoystickAxis>
 
->;
+    >;
 
 } // namespace engine
 
-#include "Engine/details/EventJson.hpp"
+#include "Engine/Event/EventJson.hpp"

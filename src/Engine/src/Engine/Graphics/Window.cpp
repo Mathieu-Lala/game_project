@@ -1,6 +1,11 @@
 #include <spdlog/spdlog.h>
 
-#include "Engine/Window.hpp"
+#include "Engine/Graphics/third_party.hpp"
+
+#include "Engine/Event/Event.hpp"
+#include "Engine/Graphics/Shader.hpp"
+#include "Engine/Graphics/Window.hpp"
+#include "Engine/Event/JoystickManager.hpp"
 #include "Engine/Core.hpp"
 
 engine::Window *engine::Window::s_instance{nullptr};
@@ -60,6 +65,18 @@ engine::Window::~Window()
     spdlog::info("Engine::Window destroyed");
 }
 
+auto engine::Window::draw(const std::function<void()> &drawer) -> void
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    drawer();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    render();
+}
+
 auto engine::Window::getNextEvent() -> std::optional<Event>
 {
     if (m_events.empty()) { return {}; }
@@ -87,6 +104,22 @@ auto engine::Window::setFullscreen(bool fullscreen) -> void
         ::glfwSetWindowMonitor(m_handle, nullptr, m_pos.x, m_pos.y, m_size.x, m_size.y, GLFW_DONT_CARE);
     }
 }
+
+
+auto engine::Window::isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
+
+auto engine::Window::close() -> void { ::glfwSetWindowShouldClose(m_handle, GLFW_TRUE); }
+
+auto engine::Window::render() -> void { ::glfwSwapBuffers(m_handle); }
+
+auto engine::Window::setActive() -> void { ::glfwMakeContextCurrent(m_handle); }
+
+auto engine::Window::setSize(glm::ivec2 &&size) -> void { ::glfwSetWindowSize(m_handle, size.x, size.y); }
+
+auto engine::Window::setPosition(glm::ivec2 &&pos) -> void { ::glfwSetWindowPos(m_handle, pos.x, pos.y); }
+
+auto engine::Window::setCursorPosition(glm::dvec2 &&pos) -> void { ::glfwSetCursorPos(m_handle, pos.x, pos.y); }
+
 
 auto engine::Window::callback_eventClose([[maybe_unused]] GLFWwindow *window) -> void
 {
@@ -119,9 +152,11 @@ auto engine::Window::callback_eventKeyBoard([[maybe_unused]] GLFWwindow *window,
         // clang-format on
         switch (action) {
             case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<Key>{k}); break;
-            case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<Key>{k}); break;
-            // case GLFW_REPEAT: s_instance->m_events.emplace_back(???{ key }); break; // todo
-            //default: std::abort(); break;
+            case GLFW_RELEASE:
+                s_instance->m_events.emplace_back(Released<Key>{k});
+                break;
+                // case GLFW_REPEAT: s_instance->m_events.emplace_back(???{ key }); break; // todo
+                // default: std::abort(); break;
         });
 }
 
@@ -131,11 +166,14 @@ auto engine::Window::callback_eventMousePressed(GLFWwindow *window, int button, 
         // NOLINTNEXTLINE
         double x = 0; double y = 0;
         // NOLINTNEXTLINE
-        ::glfwGetCursorPos(window, &x, &y); switch (action) {
-        case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<MouseButton>{button, {x, y}}); break;
-        case GLFW_RELEASE: s_instance->m_events.emplace_back(Released<MouseButton>{button, {x, y}}); break;
-        default: std::abort(); break;
-    });
+        ::glfwGetCursorPos(window, &x, &y);
+        switch (action) {
+            case GLFW_PRESS: s_instance->m_events.emplace_back(Pressed<MouseButton>{button, {x, y}}); break;
+            case GLFW_RELEASE:
+                s_instance->m_events.emplace_back(Released<MouseButton>{button, {x, y}});
+                break;
+                // default: std::abort(); break;
+        });
 }
 
 auto engine::Window::callback_eventMouseMoved([[maybe_unused]] GLFWwindow *window, double x, double y) -> void

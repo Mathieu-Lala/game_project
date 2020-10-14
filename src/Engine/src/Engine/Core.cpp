@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Engine/details/overloaded.hpp"
+#include "Engine/helpers/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
 #include "Engine/component/Position.hpp"
 #include "Engine/component/Scale.hpp"
@@ -16,7 +16,13 @@
 #include "Engine/component/Acceleration.hpp"
 #include "Engine/component/Hitbox.hpp"
 
+#include "Engine/Event/Event.hpp"
+#include "Engine/Graphics/Shader.hpp"
+#include "Engine/Graphics/Window.hpp"
+#include "Engine/Event/JoystickManager.hpp"
 #include "Engine/Core.hpp"
+
+#include "Engine/Graphics/third_party.hpp" // note : only for DisplayMode
 
 engine::Core *engine::Core::s_instance{nullptr};
 
@@ -48,12 +54,10 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
     m_joystickManager = std::make_unique<JoystickManager>();
 
-    
-
     // note : not working
     // m_world.on_destroy<engine::Drawable>().connect<&engine::Drawable::dtor>();
 
-    //m_world.on_update<engine::d2::Position>() // require to use world.patch or world.replace
+    // m_world.on_update<engine::d3::Position>() // require to use world.patch or world.replace
 }
 
 engine::Core::~Core()
@@ -188,40 +192,38 @@ auto engine::Core::main() -> int
             const auto t = std::get<TimeElapsed>(event);
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
-            m_world.view<d2::Velocity, d2::Acceleration>().each(
-                [](auto &vel, auto &acc) {
-                    vel.x += acc.x;
-                    vel.y += acc.y;
-                });
+            m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
+                vel.x += acc.x;
+                vel.y += acc.y;
+            });
 
             // todo : exclude the d2::Hitbox on this system
-//            m_world.view<d2::Position, d2::Velocity>().each(
-//                [&elapsed](auto &pos, auto &vel) {
-//                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
-//                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
-//                });
+            //            m_world.view<d3::Position, d2::Velocity>().each(
+            //                [&elapsed](auto &pos, auto &vel) {
+            //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
+            //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+            //                });
 
-            for (auto &moving : m_world.view<d2::Position, d2::Velocity, d2::Hitbox>()) {
-                auto &moving_pos = m_world.get<d2::Position>(moving);
+            for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::Hitbox>()) {
+                auto &moving_pos = m_world.get<d3::Position>(moving);
                 auto &moving_vel = m_world.get<d2::Velocity>(moving);
                 auto &moving_hitbox = m_world.get<d2::Hitbox>(moving);
 
-                const auto new_pos = d2::Position{
+                const auto new_pos = d3::Position{
                     moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
                     moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                    moving_pos.z
-                };
+                    moving_pos.z};
 
                 bool collide = false;
 
-                for (auto &others : m_world.view<d2::Position, d2::Hitbox>()) {
+                for (auto &others : m_world.view<d3::Position, d2::Hitbox>()) {
                     if (moving == others) continue;
 
-                    auto &others_pos = m_world.get<d2::Position>(others);
+                    auto &others_pos = m_world.get<d3::Position>(others);
                     auto &others_hitbox = m_world.get<d2::Hitbox>(others);
 
                     if (d2::Hitbox::overlapped(moving_hitbox, new_pos, others_hitbox, others_pos)) {
-                        //spdlog::warn("{} and {} are colliding !", moving, others);
+                        // spdlog::warn("{} and {} are colliding !", moving, others);
                         collide = true;
                         break;
                     }
@@ -230,7 +232,7 @@ auto engine::Core::main() -> int
                 if (!collide) {
                     moving_pos = new_pos;
                 } else {
-                    moving_vel = { 0.0, 0.0 };
+                    moving_vel = {0.0, 0.0};
                 }
             }
 
@@ -248,19 +250,19 @@ auto engine::Core::main() -> int
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                m_world.view<Drawable, d2::Position, d2::Scale>().each(
-                [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {
-                    drawable.shader->use();
+                m_world.view<Drawable, d3::Position, d2::Scale>().each(
+                    [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {
+                        drawable.shader->use();
 
-                    auto model = glm::dmat4(1.0);
-                    model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z}); 
-                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
-                    drawable.shader->uploadUniformMat4("model", model);
+                        auto model = glm::dmat4(1.0);
+                        model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
+                        model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
+                        drawable.shader->uploadUniformMat4("model", model);
 
-                    // note : mode could be defined in the drawable
-                    ::glBindVertexArray(drawable.VAO);
-                    ::glDrawElements(static_cast<std::uint32_t>(mode), 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-                });
+                        // note : mode could be defined in the drawable
+                        ::glBindVertexArray(drawable.VAO);
+                        ::glDrawElements(mode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                    });
             });
         }
 
@@ -340,6 +342,21 @@ auto engine::Core::debugDrawJoystick() -> void
 
 auto engine::Core::debugDrawDisplayOptions() -> void
 {
+    enum DisplayMode {
+        POINTS = GL_POINTS,
+        LINE_STRIP = GL_LINE_STRIP,
+        LINE_LOOP = GL_LINE_LOOP,
+        LINES = GL_LINES,
+        LINE_STRIP_ADJACENCY = GL_LINE_STRIP_ADJACENCY,
+        LINES_ADJACENCY = GL_LINES_ADJACENCY,
+        TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
+        TRIANGLE_FAN = GL_TRIANGLE_FAN,
+        TRIANGLES = GL_TRIANGLES,
+        TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
+        TRIANGLES_ADJACENCY = GL_TRIANGLES_ADJACENCY,
+        PATCHES = GL_PATCHES,
+    };
+
     static constexpr auto display_mode = std::to_array({
         POINTS,
         LINE_STRIP,

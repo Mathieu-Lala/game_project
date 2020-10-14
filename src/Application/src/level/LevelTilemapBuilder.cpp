@@ -1,9 +1,9 @@
-#include "level/LevelTilemapBuilder.hpp"
 #include <cassert>
 
+#include "level/LevelTilemapBuilder.hpp"
 #include "entity/TileFactory.hpp"
 
-auto TilemapBuilder::get(int x, int y) -> TileEnum &
+auto game::TilemapBuilder::get(int x, int y) -> TileEnum &
 {
     assert(x < m_size.x);
     assert(y < m_size.y);
@@ -11,14 +11,14 @@ auto TilemapBuilder::get(int x, int y) -> TileEnum &
     return m_tiles[static_cast<std::size_t>(y) * static_cast<std::size_t>(m_size.x) + static_cast<std::size_t>(x)];
 }
 
-void TilemapBuilder::build(entt::registry &world)
+void game::TilemapBuilder::build(entt::registry &world)
 {
     for (auto y = 0; y < m_size.y; ++y) {
         for (auto x = 0; x < m_size.x; ++x) { handleTileBuild(world, x, y); }
     }
 }
 
-void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
+void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
 {
     auto tile = get(x, y);
     if (tile == TileEnum::NONE) return;
@@ -26,9 +26,9 @@ void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     glm::ivec2 size(1, 1);
 
     // TODO: investigate why this doesn't work. It used to work before, problem probably comes from camera (?)
-    //auto size = getTileSize(x, y);
+    // auto size = getTileSize(x, y);
 
-    //for (int clearY = y; clearY < y + size.y; ++clearY) {
+    // for (int clearY = y; clearY < y + size.y; ++clearY) {
     //    for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
     //}
 
@@ -53,7 +53,7 @@ void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     }
 }
 
-glm::ivec2 TilemapBuilder::getTileSize(int x1, int y1)
+glm::ivec2 game::TilemapBuilder::getTileSize(int x1, int y1)
 {
     auto tile = get(x1, y1);
 

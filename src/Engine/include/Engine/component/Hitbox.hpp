@@ -9,7 +9,7 @@ namespace engine {
 namespace d2 {
 
 /**
- * The hitbox of a 2d object is centred on his d2::Position like so :
+ * The hitbox of a 2d object is centred on his d3::Position like so :
  *
  *
  * (pos.x - width / 2, pos.y + height / 2)               (pos.x + width / 2, pos.y + height / 2)
@@ -33,8 +33,8 @@ struct HitboxT {
     };
 
     template<WithEdgeInHitbox v = WITHOUT_EDGE>
-    [[nodiscard("use this return value")]]
-    static constexpr auto overlapped(const HitboxT &self, const PositionT<T> &self_pos, const HitboxT &other, const PositionT<T> &other_pos) noexcept
+    [[nodiscard("use this return value")]] static constexpr auto
+        overlapped(const HitboxT &self, const PositionT<T> &self_pos, const HitboxT &other, const PositionT<T> &other_pos) noexcept
         -> bool
     {
         const auto ax = self_pos.x - self.width / 2.0;
@@ -47,7 +47,7 @@ struct HitboxT {
         const auto by = other_pos.y - other.height / 2.0;
         const auto bh = other_pos.y + other.height / 2.0;
 
-        if constexpr(v == WITH_EDGE)
+        if constexpr (v == WITH_EDGE)
             return aw >= bx && ax <= bw && ah >= by && ay <= bh;
         else
             return aw > bx && ax < bw && ah > by && ay < bh;
