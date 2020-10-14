@@ -37,6 +37,7 @@ glew:shared=False
 glfw:shared=False
 imgui:shared=False
 spdlog:header_only=True
+fmt:header_only=True
 
 [generators]
 cmake
