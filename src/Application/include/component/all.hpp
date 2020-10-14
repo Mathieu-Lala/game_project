@@ -12,3 +12,4 @@
 #include "component/AttackDamage.hpp"
 #include "component/AttackCooldown.hpp"
 #include "component/Health.hpp"
+#include "component/Lifetime.hpp"

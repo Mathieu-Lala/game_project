@@ -9,71 +9,44 @@
 
 #include "component/all.hpp"
 
+using namespace std::chrono_literals; // ms ..
+
 namespace game {
+
+class ThePurge;
 
 class GameLogic {
 public:
-    auto move([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
-    {
-        world.get<engine::d2::Acceleration>(player) = accel;
-    };
+    ThePurge &m_game;
 
-    auto collision(entt::registry &world, entt::entity &player, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
-    {
-        world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>().each(
-            [&](auto &, auto &pos, auto &vel, auto &view_range) {
-                const auto player_pos = world.get<engine::d3::Position>(player);
-                const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+    GameLogic(ThePurge &game);
 
-                // if the enemy is close enough
-                if (glm::length(diff) <= view_range.range) {
-                    vel = {diff.x, diff.y};
-                } else {
-                    vel = {0, 0};
-                }
-            });
-    }
+    // Init movement signal player
+    entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> movement;
+    entt::sink<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> sinkMovement{movement};
 
-    auto cooldown(entt::registry &world, [[maybe_unused]] entt::entity &player, const engine::TimeElapsed &dt) -> void
-    {
-        world.view<game::AttackCooldown>().each([&](auto &attack_cooldown) {
-            if (!attack_cooldown.is_in_cooldown) return;
+    // entityLogic signal loop
+    entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
+    entt::sink<void(entt::registry &, const engine::TimeElapsed &)> sinkGameUpdated{gameUpdated};
 
-            if (dt.elapsed < attack_cooldown.remaining_cooldown) {
-                attack_cooldown.remaining_cooldown -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-            } else {
-                attack_cooldown.is_in_cooldown = false;
-                spdlog::warn("attack is up !");
-            }
-        });
-    }
+    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &)> castSpell;
+    entt::sink<void(entt::registry &, entt::entity, const glm::dvec2 &)> sinkCastSpell{castSpell};
 
-    auto attack(entt::registry &world, entt::entity &player, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
-    {
-        auto &player_health = world.get<game::Health>(player);
-        world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange, AttackCooldown, AttackDamage>().each(
-            [&](auto &, auto &pos, auto &attack_range, auto &attack_cooldown, auto &attack_damage) {
-                const auto player_pos = world.get<engine::d3::Position>(player);
-                const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+    entt::sigh<void(entt::registry &, entt::entity)> playerKilled;
+    entt::sink<void(entt::registry &, entt::entity)> sinkGetKilled{playerKilled};
 
-                // if the enemy is close enough
-                if (glm::length(diff) <= attack_range.range && !attack_cooldown.is_in_cooldown) {
-                    attack_cooldown.is_in_cooldown = true;
-                    attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
+    auto move(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void;
 
-                    player_health.current -= attack_damage.damage;
-                    spdlog::warn("player took damage");
+    auto ai_pursue(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+    auto update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+    auto cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+    auto enemies_try_attack(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+    auto check_collision(entt::registry &world, const engine::TimeElapsed &dt) -> void;
 
-                    if (player_health.current <= 0.0f) {
-                        spdlog::warn("!! player is dead, reseting the game");
-                        player_health.current = player_health.max;
+    auto player_killed(entt::registry &, entt::entity entity) -> void;
 
-                        // todo : send signal reset game or something ..
-                    }
-                }
-            });
-    }
+    auto cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void;
 
-    auto castSpell() -> void { std::cout << "A spell have been casted !" << std::endl; }
 };
+
 } // namespace game
