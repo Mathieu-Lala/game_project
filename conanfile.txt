@@ -32,9 +32,10 @@ stb/20190512@conan/stable
 CLI11/1.9.1@cliutils/stable
 
 [options]
-glew:shared=True
-glfw:shared=True
-imgui:shared=True
+# lib shared required to set the path of the .dll for app.exe
+glew:shared=False
+glfw:shared=False
+imgui:shared=False
 spdlog:header_only=True
 
 [generators]
