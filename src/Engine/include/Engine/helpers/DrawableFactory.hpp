@@ -4,7 +4,7 @@
 
 namespace engine {
 
-class Drawable;
+struct Drawable;
 
 struct DrawableFactory {
     // todo : isolate color in a component ?

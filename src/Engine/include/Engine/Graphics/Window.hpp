@@ -5,9 +5,9 @@
 
 #include "Engine/Event/Event.hpp"
 
-class GLFWmonitor;
-class GLFWwindow;
-class ImGuiContext;
+struct GLFWmonitor;
+struct GLFWwindow;
+struct ImGuiContext;
 
 namespace engine {
 
