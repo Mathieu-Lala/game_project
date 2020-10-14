@@ -337,7 +337,7 @@ auto engine::Core::debugDrawJoystick() -> void
 
 auto engine::Core::debugDrawDisplayOptions() -> void
 {
-    enum DisplayMode {
+    enum DisplayMode : std::uint32_t {
         POINTS = GL_POINTS,
         LINE_STRIP = GL_LINE_STRIP,
         LINE_LOOP = GL_LINE_LOOP,
@@ -370,9 +370,9 @@ auto engine::Core::debugDrawDisplayOptions() -> void
     ImGui::Begin("Display Options");
     if (ImGui::BeginCombo("##combo", "Display Mode")) {
         for (auto n = 0ul; n < display_mode.size(); n++) {
-            bool is_selected = (m_displayMode == display_mode.at(n));
+            bool is_selected = (m_displayMode == static_cast<std::uint32_t>(display_mode.at(n)));
             if (ImGui::Selectable(magic_enum::enum_name<DisplayMode>(display_mode.at(n)).data(), is_selected))
-                m_displayMode = display_mode.at(n);
+                m_displayMode = static_cast<std::uint32_t>(display_mode.at(n));
             if (is_selected) ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
