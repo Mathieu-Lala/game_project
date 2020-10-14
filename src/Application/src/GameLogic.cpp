@@ -2,6 +2,9 @@
 
 #include <Engine/helpers/DrawableFactory.hpp>
 
+#include <Engine/Event/Event.hpp>
+#include <Engine/Core.hpp>
+
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
@@ -17,7 +20,7 @@ game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
-    sinkGetKilled.connect<&GameLogic::player_killed>(*this);
+    sinkGetKilled.connect<&GameLogic::entity_killed>(*this);
 }
 
 auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
@@ -76,30 +79,40 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
 
 auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    auto &player_pos = world.get<engine::d3::Position>(m_game.player);
-    auto &player_hitbox = world.get<engine::d2::Hitbox>(m_game.player);
+    const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source){
+        auto &entity_pos = world.get<engine::d3::Position>(entity);
+        auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
 
-    auto &player_health = world.get<game::Health>(m_game.player);
+        if (engine::d2::overlapped(entity_hitbox, entity_pos, spell_hitbox, spell_pos)) {
+            auto &entity_health = world.get<Health>(entity);
+            auto &spell_damage = world.get<AttackDamage>(spell);
 
-    for (auto &spell : world.view<entt::tag<"spell"_hs>, engine::d2::Hitbox, engine::d3::Position>()) {
-
-        auto &spell_pos = world.get<engine::d3::Position>(spell);
-        auto &spell_hitbox = world.get<engine::d2::Hitbox>(spell);
-
-        if (engine::d2::Hitbox::overlapped(player_hitbox, player_pos, spell_hitbox, spell_pos)) {
             // todo : publish player_took_damage instead
-
-            player_health.current -= 10.0f;//attack_damage.damage;
+            entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
 
-            if (player_health.current <= 0.0f) {
-                playerKilled.publish(world, m_game.player);
-//                player_health.current = player_health.max;
-
-                // todo : send signal reset game or something ..
+            world.destroy(spell);
+            if (entity_health.current <= 0.0f) {
+                playerKilled.publish(world, entity, source);
             }
 
-            break;
+        }
+    };
+
+    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
+        auto &spell_pos = world.get<engine::d3::Position>(spell);
+        auto &spell_hitbox = world.get<engine::d2::HitboxFloat>(spell);
+
+        const auto source = world.get<engine::Source>(spell).source;
+
+        if (world.has<entt::tag<"player"_hs>>(source)) {
+            for (auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
+                apply_damage(enemy, spell, spell_hitbox, spell_pos, source);
+            }
+        } else {
+            for (auto &player : world.view<entt::tag<"player"_hs>>()) {
+                apply_damage(player, spell, spell_hitbox, spell_pos, source);
+            }
         }
 
     }
@@ -118,10 +131,27 @@ auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeE
     }
 }
 
-auto game::GameLogic::player_killed(entt::registry &world, entt::entity player) -> void
+auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
-    world.destroy(player);
-    spdlog::warn("!! player is dead !!! the application will now crash :)");
+    if (world.has<entt::tag<"player"_hs>>(killed)) {
+        world.destroy(killed);
+        spdlog::warn("!! player is dead !!");
+
+        // note : may create segfault // assert fail
+
+        engine::Core::Holder{}.instance->close();
+    } else {
+        spdlog::warn("!! entity killed : dropping xp !!");
+        world.destroy(killed);
+
+        // todo : send signal instead
+        auto &level = world.get<Level>(killer);
+        level.current_xp += 1;
+        if (level.current_xp >= level.xp_require) {
+            level.current_level++;
+            level.current_xp = 0;
+        }
+    }
 }
 
 // todo : normalize direction
@@ -131,7 +161,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     // todo : switch attack depending of entity type
 
     auto &attack_cooldown = world.get<AttackCooldown>(entity);
-    //auto &attack_damage = world.get<AttackDamage>(entity);
+    auto &attack_damage = world.get<AttackDamage>(entity);
     auto &enemy_pos = world.get<engine::d3::Position>(entity);
 
     if (attack_cooldown.is_in_cooldown)
@@ -140,11 +170,15 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     attack_cooldown.is_in_cooldown = true;
     attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
 
+    auto color = world.has<entt::tag<"enemy"_hs>>(entity) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 0};
+
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
     world.emplace<Lifetime>(spell, 600ms);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle({0, 1, 0})).shader = &m_game.shader;
+    world.emplace<AttackDamage>(spell, attack_damage.damage);
+    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle(std::move(color))).shader = &m_game.shader;
     world.emplace<engine::d3::Position>(spell, enemy_pos.x + direction.x / 2.0, enemy_pos.y + direction.y / 2.0, -1);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
-    world.emplace<engine::d2::Hitbox>(spell, 0.7, 0.7);
+    world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
+    world.emplace<engine::Source>(spell, entity);
 }

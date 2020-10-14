@@ -32,8 +32,8 @@ public:
     entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &)> castSpell;
     entt::sink<void(entt::registry &, entt::entity, const glm::dvec2 &)> sinkCastSpell{castSpell};
 
-    entt::sigh<void(entt::registry &, entt::entity)> playerKilled;
-    entt::sink<void(entt::registry &, entt::entity)> sinkGetKilled{playerKilled};
+    entt::sigh<void(entt::registry &, entt::entity killed, entt::entity killer)> playerKilled;
+    entt::sink<void(entt::registry &, entt::entity killed, entt::entity killer)> sinkGetKilled{playerKilled};
 
     auto move(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void;
 
@@ -43,7 +43,7 @@ public:
     auto enemies_try_attack(entt::registry &world, const engine::TimeElapsed &dt) -> void;
     auto check_collision(entt::registry &world, const engine::TimeElapsed &dt) -> void;
 
-    auto player_killed(entt::registry &, entt::entity entity) -> void;
+    auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
     auto cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void;
 
