@@ -13,6 +13,8 @@
 
 #include "ThePURGE.hpp"
 
+#include <Windows.h>
+
 //#include "Competences/FarmerCompetences.hpp"
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
@@ -24,7 +26,7 @@ auto game::ThePurge::onCreate(entt::registry &world) -> void
     sinkGameLogic.connect<&GameLogic::collision>(GameLogic());
     sinkGameLogic.connect<&GameLogic::cooldown>(GameLogic());
     sinkGameLogic.connect<&GameLogic::attack>(GameLogic());
-
+    sinkGameLogic.connect<&GameLogic::effect>(GameLogic());
     sinkCastSpell.connect<&GameLogic::castSpell>(GameLogic());
 
 
@@ -35,6 +37,7 @@ auto game::ThePurge::onCreate(entt::registry &world) -> void
     world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
     world.emplace<engine::d2::Hitbox>(player, 1.0, 1.0);
     world.emplace<game::Health>(player, 100.0f, 100.0f);
+    world.emplace<game::Effect>(player, true, true, "bleed", 2000ms, 2000ms, 5000ms, 5000ms);
     world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
 
 
@@ -162,5 +165,15 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
     ImGui::End();
 
+    auto infoHealth = world.get<game::Health>(player);
+    auto HP = infoHealth.current / infoHealth.max;
+
+    ImGui::Begin("Info Player");
+    char buf[32];
+    sprintf_s(buf, "%d/%d", (int) (infoHealth.current), (int) (infoHealth.max));
+    ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), buf);
+    ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+    ImGui::Text("HP");
+    ImGui::End();
     mapGenerationOverlayTick(world);
 }

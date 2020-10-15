@@ -8,6 +8,8 @@
 #include <Engine/Event/Event.hpp>
 
 #include "component/all.hpp"
+using namespace std::chrono_literals;
+
 
 namespace game {
 
@@ -34,6 +36,25 @@ public:
             });
     }
 
+    // a recup avant le merge
+    auto effect(entt::registry &world, [[maybe_unused]] entt::entity &player, const engine::TimeElapsed &dt) -> void
+    {
+        auto &player_health = world.get<game::Health>(player);
+
+        world.view<game::Effect>().each([&](auto &effect) {
+            if (!effect.is_in_effect) return;
+
+            if (dt.elapsed < effect.remaining_time_effect) {
+                effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
+                if (effect.effect_name == "stun") spdlog::warn('stun');
+                if (effect.effect_name == "bleed") player_health.current -= 0.1f;
+
+            } else {
+                effect.is_in_effect = false;
+            }
+        });
+    }
+
     auto cooldown(entt::registry &world, [[maybe_unused]] entt::entity &player, const engine::TimeElapsed &dt) -> void
     {
         world.view<game::AttackCooldown>().each([&](auto &attack_cooldown) {
@@ -51,6 +72,7 @@ public:
     auto attack(entt::registry &world, entt::entity &player, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
     {
         auto &player_health = world.get<game::Health>(player);
+
         world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange, AttackCooldown, AttackDamage>().each(
             [&](auto &, auto &pos, auto &attack_range, auto &attack_cooldown, auto &attack_damage) {
                 const auto player_pos = world.get<engine::d3::Position>(player);
@@ -61,6 +83,31 @@ public:
                     attack_cooldown.is_in_cooldown = true;
                     attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
 
+                    player_health.current -= attack_damage.damage;
+                    spdlog::warn("player took damage");
+
+                    if (player_health.current <= 0.0f) {
+                        spdlog::warn("!! player is dead, reseting the game");
+                        player_health.current = player_health.max;
+
+                        // todo : send signal reset game or something ..
+                    }
+                }
+            });
+        world.view<entt::tag<"boss"_hs>, engine::d3::Position, AttackRange, AttackCooldown, AttackDamage, Effect>().each(
+            [&](auto &, auto &pos, auto &attack_range, auto &attack_cooldown, auto &attack_damage, auto &effect) {
+                const auto player_pos = world.get<engine::d3::Position>(player);
+                const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+
+                // if the enemy is close enough
+                if (glm::length(diff) <= attack_range.range && !attack_cooldown.is_in_cooldown) {
+                    attack_cooldown.is_in_cooldown = true;
+                    attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
+                    effect.is_in_cooldown = true;
+                    effect.is_in_effect = true;
+                    effect.remaining_cooldown = effect.cooldown;
+                    effect.remaining_time_effect = effect.time_effect;
+                    
                     player_health.current -= attack_damage.damage;
                     spdlog::warn("player took damage");
 
