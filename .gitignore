@@ -59,7 +59,7 @@ tmp
 temp
 
 # Generated files
-imgui.ini
+## imgui.ini
 app.ini
 recorded_events.json
 logs

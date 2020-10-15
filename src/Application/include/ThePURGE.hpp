@@ -19,6 +19,12 @@ class ThePurge : public engine::Game {
 public:
     ThePurge();
 
+    enum State {
+        LOADING, // pre-game
+        IN_GAME,
+        GAME_OVER
+    };
+
     auto onCreate(entt::registry &world) -> void final;
 
     auto onUpdate(entt::registry &world, const engine::Event &e) -> void final;
@@ -33,9 +39,13 @@ public:
     engine::Shader shader =
         engine::Shader::fromFile(DATA_DIR "/shaders/camera.vert.glsl", DATA_DIR "/shaders/camera.frag.glsl");
 
+    auto setState(State new_state) noexcept { m_state = new_state; }
+
 private:
 
     auto mapGenerationOverlayTick(entt::registry &world) -> void;
+
+    State m_state{ LOADING };
 
     FloorGenParam m_map_generation_params;
 

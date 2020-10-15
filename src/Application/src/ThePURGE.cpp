@@ -21,67 +21,45 @@ game::ThePurge::ThePurge() : m_logics{*this} {}
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
-auto game::ThePurge::onCreate(entt::registry &world) -> void
-{
-    auto data = generateFloor(world, &shader, m_map_generation_params, static_cast<std::uint32_t>(std::time(nullptr)));
-
-    player = world.create();
-    world.emplace<entt::tag<"player"_hs>>(player);
-    world.emplace<engine::d3::Position>(
-        player, data.spawn.x + data.spawn.w * 0.5, data.spawn.y + data.spawn.h * 0.5, Z_COMPONENT_OF(EntityDepth::PLAYER));
-    world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
-    world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-    world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
-    world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
-    world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
-    world.emplace<Health>(player, 100.0f, 100.0f);
-    world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
-    world.emplace<AttackDamage>(player, 50.0f);
-    world.emplace<Level>(player, 0u, 0u, 10u);
-
-    // default camera value to see the generated terrain properly
-    m_camera.setCenter(glm::vec2(13, 22));
-    m_camera.setViewportSize(glm::vec2(109, 64));
-}
+auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void { setState(LOADING); }
 
 auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
-    std::visit(
-        engine::overloaded{
-            [&](const engine::Pressed<engine::Key> &key) {
-                // spdlog::info("key pressed {}", key.source.key);
-
-                // not really working perfectly
-                switch (key.source.key) {
-                case GLFW_KEY_UP: m_camera.move({0, 1}); break;
-                case GLFW_KEY_RIGHT: m_camera.move({1, 0}); break;
-                case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
-                case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
-                case GLFW_KEY_O:
-                    world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
-                    world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
-                    break;                                                                     // player stop
-                case GLFW_KEY_I: m_logics.movement.publish(world, player, {0.0, 0.1}); break;  // go top
-                case GLFW_KEY_K: m_logics.movement.publish(world, player, {0.0, -0.1}); break; // go bottom
-                case GLFW_KEY_L: m_logics.movement.publish(world, player, {0.1, 0.0}); break;  // go right
-                case GLFW_KEY_J:
-                    m_logics.movement.publish(world, player, {-0.1, 0.0});
-                    break; // go left
-                case GLFW_KEY_U: {
-                    auto &vel = world.get<engine::d2::Velocity>(player);
-                    m_logics.castSpell.publish(world, player, {vel.x, vel.y}); break;
-                }
-                default: return;
-                }
+    if (m_state == IN_GAME) {
+        std::visit(
+            engine::overloaded{
+                [&](const engine::Pressed<engine::Key> &key) {
+                    // not really working perfectly
+                    switch (key.source.key) {
+                    case GLFW_KEY_UP: m_camera.move({0, 1}); break;
+                    case GLFW_KEY_RIGHT: m_camera.move({1, 0}); break;
+                    case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
+                    case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
+                    case GLFW_KEY_O:
+                        world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
+                        world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
+                        break;                                                                     // player stop
+                    case GLFW_KEY_I: m_logics.movement.publish(world, player, {0.0, 0.1}); break;  // go top
+                    case GLFW_KEY_K: m_logics.movement.publish(world, player, {0.0, -0.1}); break; // go bottom
+                    case GLFW_KEY_L: m_logics.movement.publish(world, player, {0.1, 0.0}); break;  // go right
+                    case GLFW_KEY_J: m_logics.movement.publish(world, player, {-0.1, 0.0}); break; // go left
+                    case GLFW_KEY_U: {
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics.castSpell.publish(world, player, {vel.x, vel.y});
+                        break;
+                    }
+                    default: return;
+                    }
+                },
+                [&](const engine::TimeElapsed &dt) { m_logics.gameUpdated.publish(world, dt); },
+                [&](auto) {},
             },
-            [&](const engine::TimeElapsed &dt) { m_logics.gameUpdated.publish(world, dt); },
-            [&](auto) {},
-        },
-        e);
+            e);
 
-    // todo : update me only if camera updated
-    const auto viewProj = m_camera.getViewProjMatrix();
-    shader.uploadUniformMat4("viewProj", viewProj);
+        // todo : update me only if camera updated
+        const auto viewProj = m_camera.getViewProjMatrix();
+        shader.uploadUniformMat4("viewProj", viewProj);
+    }
 }
 
 auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
@@ -124,61 +102,111 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
     ImGui::End();
 }
 
-static bool show_demo_window = true;
+// static bool show_demo_window = true;
 
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
-    if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
+    //    if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
-    ImGui::Begin("Camera");
+    if (m_state == LOADING) {
+        // todo : style because this is not a debug window
+        ImGui::Begin("Menu loading", nullptr, ImGuiWindowFlags_NoDecoration);
 
-    if (ImGui::Button("Reset")) m_camera = engine::Camera();
+        if (ImGui::Button("Start the game")) {
+            // note : this block could be launch in a future
+            auto data =
+                generateFloor(world, &shader, m_map_generation_params, static_cast<std::uint32_t>(std::time(nullptr)));
 
-    {
-        auto cameraPos = m_camera.getCenter();
-        ImGui::Text("Camera Position (%.3f, %.3f)", static_cast<double>(cameraPos.x), static_cast<double>(cameraPos.y));
+            player = world.create();
+            world.emplace<entt::tag<"player"_hs>>(player);
+            world.emplace<engine::d3::Position>(
+                player,
+                data.spawn.x + data.spawn.w * 0.5,
+                data.spawn.y + data.spawn.h * 0.5,
+                Z_COMPONENT_OF(EntityDepth::PLAYER));
+            world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
+            world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
+            world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
+            world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
+            world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
+            world.emplace<Health>(player, 100.0f, 100.0f);
+            world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
+            world.emplace<AttackDamage>(player, 50.0f);
+            world.emplace<Level>(player, 0u, 0u, 10u);
 
-        bool updated = false;
-        updated |= ImGui::DragFloat("Camera X", &cameraPos.x);
-        updated |= ImGui::DragFloat("Camera Y", &cameraPos.y);
+            // default camera value to see the generated terrain properly
+            m_camera.setCenter(glm::vec2(13, 22));
+            m_camera.setViewportSize(glm::vec2(109, 64));
 
-        if (updated) m_camera.setCenter(cameraPos);
+
+            setState(IN_GAME);
+        }
+
+        ImGui::End();
+    } else if (m_state == IN_GAME) {
+        {
+            ImGui::Begin("Camera");
+            if (ImGui::Button("Reset")) m_camera = engine::Camera();
+
+            auto cameraPos = m_camera.getCenter();
+            ImGui::Text("Camera Position (%.3f, %.3f)", static_cast<double>(cameraPos.x), static_cast<double>(cameraPos.y));
+
+            bool pos_updated = false;
+            pos_updated |= ImGui::DragFloat("Camera X", &cameraPos.x);
+            pos_updated |= ImGui::DragFloat("Camera Y", &cameraPos.y);
+
+            if (pos_updated) m_camera.setCenter(cameraPos);
+
+            auto viewPortSize = m_camera.getViewportSize();
+            const auto pos = m_camera.getCenter();
+
+            ImGui::Text(
+                "Viewport size (%.3f, %.3f)", static_cast<double>(viewPortSize.x), static_cast<double>(viewPortSize.y));
+            ImGui::Text("Viewport range :");
+            ImGui::Text("   left  : %.3f", static_cast<double>(pos.x - (viewPortSize.x / 2)));
+            ImGui::Text("   right : %.3f", static_cast<double>(pos.x + (viewPortSize.x / 2)));
+            ImGui::Text("   top   : %.3f", static_cast<double>(pos.y + (viewPortSize.y / 2)));
+            ImGui::Text("   bottom: %.3f", static_cast<double>(pos.y - (viewPortSize.y / 2)));
+
+            bool updated = false;
+            updated |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
+            updated |= ImGui::DragFloat("Viewport height", &viewPortSize.y, 1.f, 2.f);
+
+            if (updated) m_camera.setViewportSize(viewPortSize);
+            ImGui::End();
+        }
+        {
+            const auto infoHealth = world.get<Health>(player);
+            const auto HP = infoHealth.current / infoHealth.max;
+
+            const auto level = world.get<Level>(player);
+            const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
+
+            // todo : style because this is not a debug window
+            ImGui::Begin("Info Player");
+            ImGui::ProgressBar(HP, ImVec2(0.0f, 0.0f));
+            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::Text("HP");
+            ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
+            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::Text("XP - Level %d", level.current_level);
+            ImGui::End();
+
+            mapGenerationOverlayTick(world);
+        }
+    } else if (m_state == GAME_OVER) {
+        // todo : style because this is not a debug window
+        ImGui::Begin("Menu Game Over", nullptr, ImGuiWindowFlags_NoDecoration);
+
+        if (ImGui::Button("Your are dead !")) {
+            for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
+            for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
+            for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); }
+            for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
+
+            setState(LOADING);
+        }
+
+        ImGui::End();
     }
-
-    {
-        auto viewPortSize = m_camera.getViewportSize();
-        const auto pos = m_camera.getCenter();
-
-        ImGui::Text("Viewport size (%.3f, %.3f)", static_cast<double>(viewPortSize.x), static_cast<double>(viewPortSize.y));
-        ImGui::Text("Viewport range :");
-        ImGui::Text("   left  : %.3f", static_cast<double>(pos.x - (viewPortSize.x / 2)));
-        ImGui::Text("   right : %.3f", static_cast<double>(pos.x + (viewPortSize.x / 2)));
-        ImGui::Text("   top   : %.3f", static_cast<double>(pos.y + (viewPortSize.y / 2)));
-        ImGui::Text("   bottom: %.3f", static_cast<double>(pos.y - (viewPortSize.y / 2)));
-
-
-        bool updated = false;
-        updated |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
-        updated |= ImGui::DragFloat("Viewport height", &viewPortSize.y, 1.f, 2.f);
-
-        if (updated) m_camera.setViewportSize(viewPortSize);
-    }
-    ImGui::End();
-
-    auto infoHealth = world.get<Health>(player);
-    auto HP = infoHealth.current / infoHealth.max;
-
-    auto level = world.get<Level>(player);
-    auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
-
-    ImGui::Begin("Info Player");
-    ImGui::ProgressBar(HP, ImVec2(0.0f, 0.0f));
-    ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-    ImGui::Text("HP");
-    ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
-    ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-    ImGui::Text("XP - Level %d", level.current_level);
-    ImGui::End();
-
-    mapGenerationOverlayTick(world);
 }
