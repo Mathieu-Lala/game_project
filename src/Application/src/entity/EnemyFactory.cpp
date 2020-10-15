@@ -19,5 +19,5 @@ auto game::EnemyFactory::FirstEnemy(entt::registry &world, engine::Shader *shade
     world.emplace<AttackRange>(e, 3.0f);
     world.emplace<AttackCooldown>(e, false, 4000ms, 0ms);
     world.emplace<AttackDamage>(e, 20.0f);
-    world.emplace<Health>(e, 50, 50);
+    world.emplace<Health>(e, 50.0f, 50.0f);
 }

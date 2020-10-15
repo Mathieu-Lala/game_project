@@ -177,7 +177,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     world.emplace<Lifetime>(spell, 600ms);
     world.emplace<AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle(std::move(color))).shader = &m_game.shader;
-    world.emplace<engine::d3::Position>(spell, enemy_pos.x + direction.x / 2.0, enemy_pos.y + direction.y / 2.0, -1);
+    world.emplace<engine::d3::Position>(spell, enemy_pos.x + direction.x / 2.0, enemy_pos.y + direction.y / 2.0, -1.0);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
     world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
     world.emplace<engine::Source>(spell, entity);

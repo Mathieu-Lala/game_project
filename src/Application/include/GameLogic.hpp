@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include <glm/vec2.hpp>
+
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
 

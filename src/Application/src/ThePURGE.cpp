@@ -36,8 +36,8 @@ auto game::ThePurge::onCreate(entt::registry &world) -> void
     world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
     world.emplace<Health>(player, 100.0f, 100.0f);
     world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
-    world.emplace<AttackDamage>(player, 50);
-    world.emplace<Level>(player, 0, 0, 10);
+    world.emplace<AttackDamage>(player, 50.0f);
+    world.emplace<Level>(player, 0u, 0u, 10u);
 
     // default camera value to see the generated terrain properly
     m_camera.setCenter(glm::vec2(13, 22));
