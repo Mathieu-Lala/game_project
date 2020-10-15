@@ -12,7 +12,10 @@
 
 #include "EntityDepth.hpp"
 
-auto game::TileFactory::Floor(entt::registry &world, engine::Shader *shader, const glm::vec2 &pos, const glm::vec2 &size)
+#include <spdlog/spdlog.h>
+
+auto game::TileFactory::FloorNormalRoom(
+    entt::registry &world, engine::Shader *shader, const glm::vec2 &pos, const glm::vec2 &size)
     -> void
 {
     const auto e = world.create();
@@ -21,6 +24,41 @@ auto game::TileFactory::Floor(entt::registry &world, engine::Shader *shader, con
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle(glm::vec3(1, 1, 1))).shader = shader;
     world.emplace<entt::tag<"terrain"_hs>>(e);
 }
+
+auto game::TileFactory::FloorSpawnRoom(
+    entt::registry &world, engine::Shader *shader, const glm::vec2 &pos, const glm::vec2 &size) -> void
+{
+    const auto e = world.create();
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::TERRAIN));
+    world.emplace<engine::d2::Scale>(e, size.x, size.y);
+    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle(glm::vec3(0.5, 1, 0.5))).shader = shader;
+    world.emplace<entt::tag<"terrain"_hs>>(e);
+}
+
+auto game::TileFactory::FloorBossRoom(entt::registry &world, engine::Shader *shader, const glm::vec2 &pos, const glm::vec2 &size)
+    -> void
+{
+    spdlog::info("FloorBossRoom");
+
+    const auto e = world.create();
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::TERRAIN));
+    world.emplace<engine::d2::Scale>(e, size.x, size.y);
+    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle(glm::vec3(1, 0.5, 0.5))).shader = shader;
+    world.emplace<entt::tag<"terrain"_hs>>(e);
+}
+
+auto game::TileFactory::FloorCorridor(entt::registry &world, engine::Shader *shader, const glm::vec2 &pos, const glm::vec2 &size)
+    -> void
+{
+    const auto e = world.create();
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::TERRAIN));
+    world.emplace<engine::d2::Scale>(e, size.x, size.y);
+    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle(glm::vec3(0.5, 0.5, 0.5))).shader = shader;
+    world.emplace<entt::tag<"terrain"_hs>>(e);
+}
+
+
+
 
 auto game::TileFactory::Wall(entt::registry &world, engine::Shader *shader, const glm::vec2 &pos, const glm::vec2 &size)
     -> void

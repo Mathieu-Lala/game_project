@@ -21,15 +21,9 @@ bool isRoomValid(game::TilemapBuilder &builder, const game::Room &r)
     int x2 = r.x + r.w;
     int y2 = r.y + r.h;
 
-    for (int x = r.x; x <= x2; ++x)
-        if (builder.get(x, y2) != game::TileEnum::NONE) return false;
-    for (int x = r.x; x <= x2; ++x)
-        if (builder.get(x, r.y) != game::TileEnum::NONE) return false;
-
-    for (int y = r.y + 1; y < y2; ++y)
-        if (builder.get(r.x, y) != game::TileEnum::NONE) return false;
-    for (int y = r.y + 1; y < y2; ++y)
-        if (builder.get(x2, y) != game::TileEnum::NONE) return false;
+    for (int x = r.x; x < x2; ++x)
+        for (int y = r.y; y < y2; ++y)
+            if (builder.get(x, y) != game::TileEnum::NONE) return false;
 
     return true;
 }
@@ -47,19 +41,20 @@ game::Room
         r.w = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1, randomEngine);
         r.h = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1, randomEngine);
 
-        r.x = randRange(0, builder.getSize().x - r.w, randomEngine);
-        r.y = randRange(0, builder.getSize().y - r.h, randomEngine);
-
-
+        r.x = randRange(0, params.maxDungeonWidth - r.w, randomEngine);
+        r.y = randRange(0, params.maxDungeonHeight - r.h, randomEngine);
     } while (!isRoomValid(builder, r));
 
+    return r;
+}
+
+void placeRoomFloor(game::TilemapBuilder &builder, const game::Room &r, game::TileEnum floorTile)
+{
     int x2 = r.x + r.w;
     int y2 = r.y + r.h;
 
     for (int y = r.y + 1; y < y2 - 1; ++y)
-        for (int x = r.x + 1; x < x2 - 1; ++x) builder.get(x, y) = game::TileEnum::FLOOR;
-
-    return r;
+        for (int x = r.x + 1; x < x2 - 1; ++x) builder.get(x, y) = floorTile;
 }
 
 // If gap is even, center will be chosen randomly between the two center tiles
@@ -96,9 +91,13 @@ void generatorCorridor(
     auto vertical = [&](glm::vec<2, int> pos, int width) -> glm::vec<2, int> {
         auto widthOffset = getOnePossibleCenterOf(0, width, randomEngine);
 
+        auto minX = pos.x - widthOffset;
+        auto maxX = pos.x + (width - widthOffset);
+
         while (pos.y != end.y) {
-            for (int x = -widthOffset; x < width - widthOffset; ++x)
-                builder.get(pos.x + x, pos.y) = game::TileEnum::FLOOR;
+            for (int x = minX; x < maxX; ++x)
+                if (builder.get(x, pos.y) == game::TileEnum::NONE)
+                    builder.get(x, pos.y) = game::TileEnum::FLOOR_CORRIDOR;
 
             if (pos.y < end.y)
                 ++pos.y;
@@ -112,9 +111,13 @@ void generatorCorridor(
     auto horizontal = [&](glm::vec<2, int> pos, int width) -> glm::vec<2, int> {
         auto widthOffset = getOnePossibleCenterOf(0, width, randomEngine);
 
+        auto minY = pos.y - widthOffset;
+        auto maxY = pos.y + (width - widthOffset);
+
         while (pos.x != end.x) {
-            for (int y = -widthOffset; y < width - widthOffset; ++y)
-                builder.get(pos.x, pos.y + y) = game::TileEnum::FLOOR;
+            for (int y = minY; y < maxY; ++y)
+                if (builder.get(pos.x, y) == game::TileEnum::NONE)
+                    builder.get(pos.x, y) = game::TileEnum::FLOOR_CORRIDOR;
 
             if (pos.x < end.x)
                 ++pos.x;
@@ -168,7 +171,7 @@ void placeWalls(game::TilemapBuilder &builder)
                 auto checkPos = it + n;
 
                 if (checkPos.x > 0 && checkPos.x < builder.getSize().x && checkPos.y > 0
-                    && checkPos.y < builder.getSize().y && builder.get(checkPos.x, checkPos.y) == game::TileEnum::FLOOR) {
+                    && checkPos.y < builder.getSize().y && IS_FLOOR(builder.get(checkPos.x, checkPos.y))) {
                     builder.get(it.x, it.y) = game::TileEnum::WALL;
                     break;
                 }
@@ -187,22 +190,30 @@ game::MapData
     rooms.reserve(roomCount);
 
     rooms.emplace_back(generateRoom(builder, params, randomEngine));
+
     for (std::size_t i = 0; i < roomCount - 1; ++i) {
-        rooms.emplace_back(generateRoom(builder, params, randomEngine));
-        if (rooms[i + 1].w == 0 && rooms[i + 1].h == 0) break; // Failed to place room
+        auto room = generateRoom(builder, params, randomEngine);
+        if (room.w == 0 && room.h == 0) break; // Failed to place room
+
+        placeRoomFloor(builder, room, game::TileEnum::RESERVED); // Reserve the space, so multiple rooms don't spawn at the same place
+        rooms.emplace_back(room);
+
         generatorCorridor(builder, params, randomEngine, rooms[i], rooms[i + 1]);
     }
-
-    placeWalls(builder);
-
-    builder.build(world);
-
 
     game::MapData result;
     result.spawn = *rooms.begin();
     result.boss = *rooms.rbegin();
 
     for (auto i = 1ul; i < rooms.size() - 1; ++i) result.regularRooms.push_back(rooms[i]);
+
+    placeRoomFloor(builder, result.spawn, game::TileEnum::FLOOR_SPAWN);
+    for (const auto &r : result.regularRooms) placeRoomFloor(builder, r, game::TileEnum::FLOOR_NORMAL_ROOM);
+    placeRoomFloor(builder, result.boss, game::TileEnum::FLOOR_BOSS_ROOM);
+
+    placeWalls(builder);
+
+    builder.build(world);
 
     return result;
 }
