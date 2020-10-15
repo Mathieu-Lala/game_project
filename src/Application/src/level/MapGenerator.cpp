@@ -190,6 +190,7 @@ game::MapData
     rooms.reserve(roomCount);
 
     rooms.emplace_back(generateRoom(builder, params, randomEngine));
+    placeRoomFloor(builder, rooms[0], game::TileEnum::RESERVED);
 
     for (std::size_t i = 0; i < roomCount - 1; ++i) {
         auto room = generateRoom(builder, params, randomEngine);
