@@ -5,6 +5,7 @@
 #include <Engine/Graphics/Window.hpp>
 #include <Engine/Core.hpp>
 
+#include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 #include "Options.hpp"
 
@@ -32,6 +33,7 @@ try {
     auto holder = engine::Core::Holder::init();
 
     std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
+    if (opt.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
 
     holder.instance->window(glm::ivec2{400, 400}, game::VERSION, windowProperty);
     holder.instance->game<game::ThePurge>();

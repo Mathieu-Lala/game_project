@@ -74,12 +74,18 @@ public:
 
     auto setPendingEventsFromFile(const std::string_view filepath) -> bool;
 
+    [[nodiscard]] auto isRunning() const noexcept -> bool { return m_is_running; }
+
+    auto close() noexcept -> void { m_is_running = false; }
+
 private:
     static auto get() noexcept -> std::unique_ptr<Core> &;
 
     static Core *s_instance;
 
     static auto loadOpenGL() -> void;
+
+    bool m_is_running{ true };
 
     // note : for now the engine support only one window
     std::unique_ptr<Window> m_window{nullptr};

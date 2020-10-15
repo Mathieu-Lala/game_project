@@ -67,6 +67,6 @@ auto game::TileFactory::Wall(entt::registry &world, engine::Shader *shader, cons
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::TERRAIN));
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle(glm::vec3(0, 0, 0))).shader = shader;
-    world.emplace<engine::d2::Hitbox>(e, size.x, size.y);
+    world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
     world.emplace<entt::tag<"terrain"_hs>>(e);
 }
