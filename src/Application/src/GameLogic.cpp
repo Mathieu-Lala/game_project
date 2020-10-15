@@ -134,12 +134,8 @@ auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeE
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
     if (world.has<entt::tag<"player"_hs>>(killed)) {
-        world.destroy(killed);
-        spdlog::warn("!! player is dead !!");
-
         // note : may create segfault // assert fail
-
-        engine::Core::Holder{}.instance->close();
+        m_game.setState(ThePurge::GAME_OVER);
     } else {
         spdlog::warn("!! entity killed : dropping xp !!");
         world.destroy(killed);
