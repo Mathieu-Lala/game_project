@@ -4,39 +4,40 @@
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Graphics/third_party.hpp>
 
-#include "GameLogic.hpp"
 #include "level/LevelTilemapBuilder.hpp"
 #include "level/MapGenerator.hpp"
 #include "entity/TileFactory.hpp"
 
 #include "EntityDepth.hpp"
 
+#include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
 //#include "Competences/FarmerCompetences.hpp"
+
+using namespace std::chrono_literals;
+
+game::ThePurge::ThePurge() : m_logics{*this} {}
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
 auto game::ThePurge::onCreate(entt::registry &world) -> void
 {
-    sinkMovement.connect<&GameLogic::move>(GameLogic());
-
-    sinkGameLogic.connect<&GameLogic::collision>(GameLogic());
-    sinkGameLogic.connect<&GameLogic::cooldown>(GameLogic());
-    sinkGameLogic.connect<&GameLogic::attack>(GameLogic());
-
-    sinkCastSpell.connect<&GameLogic::castSpell>(GameLogic());
-
+    auto data = generateFloor(world, &shader, m_map_generation_params, static_cast<std::uint32_t>(std::time(nullptr)));
 
     player = world.create();
-    world.emplace<engine::d3::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
+    world.emplace<entt::tag<"player"_hs>>(player);
+    world.emplace<engine::d3::Position>(
+        player, data.spawn.x + data.spawn.w * 0.5, data.spawn.y + data.spawn.h * 0.5, Z_COMPONENT_OF(EntityDepth::PLAYER));
     world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
     world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
     world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
-    world.emplace<engine::d2::Hitbox>(player, 1.0, 1.0);
-    world.emplace<game::Health>(player, 100.0f, 100.0f);
+    world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
     world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
-
+    world.emplace<Health>(player, 100.0f, 100.0f);
+    world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
+    world.emplace<AttackDamage>(player, 50.0f);
+    world.emplace<Level>(player, 0u, 0u, 10u);
 
     // default camera value to see the generated terrain properly
     m_camera.setCenter(glm::vec2(13, 22));
@@ -59,20 +60,24 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 case GLFW_KEY_O:
                     world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                     world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
-                    break;                                                            // player stop
-                case GLFW_KEY_I: movement.publish(world, player, {0.0, 0.1}); break;  // go top
-                case GLFW_KEY_K: movement.publish(world, player, {0.0, -0.1}); break; // go bottom
-                case GLFW_KEY_L: movement.publish(world, player, {0.1, 0.0}); break;  // go right
-                case GLFW_KEY_J: movement.publish(world, player, {-0.1, 0.0}); break; // go left
-                case GLFW_KEY_S: castSpell.publish(); break;
+                    break;                                                                     // player stop
+                case GLFW_KEY_I: m_logics.movement.publish(world, player, {0.0, 0.1}); break;  // go top
+                case GLFW_KEY_K: m_logics.movement.publish(world, player, {0.0, -0.1}); break; // go bottom
+                case GLFW_KEY_L: m_logics.movement.publish(world, player, {0.1, 0.0}); break;  // go right
+                case GLFW_KEY_J:
+                    m_logics.movement.publish(world, player, {-0.1, 0.0});
+                    break; // go left
+                case GLFW_KEY_U: {
+                    auto &vel = world.get<engine::d2::Velocity>(player);
+                    m_logics.castSpell.publish(world, player, {vel.x, vel.y}); break;
+                }
                 default: return;
                 }
             },
-            [&](const engine::TimeElapsed &dt) { gameLogic.publish(world, player, dt); },
+            [&](const engine::TimeElapsed &dt) { m_logics.gameUpdated.publish(world, dt); },
             [&](auto) {},
         },
         e);
-
 
     // todo : update me only if camera updated
     const auto viewProj = m_camera.getViewProjMatrix();
@@ -81,13 +86,11 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
 auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 {
-    static FloorGenParam params;
-
     ImGui::Begin("MapGeneration");
 
     if (ImGui::Button("Generate")) {
         // TODO: check how to handle seeding better
-        auto data = generateFloor(world, &shader, params, static_cast<std::uint32_t>(std::time(nullptr)));
+        auto data = generateFloor(world, &shader, m_map_generation_params, static_cast<std::uint32_t>(std::time(nullptr)));
         auto &pos = world.get<engine::d3::Position>(player);
 
         pos.x = data.spawn.x + data.spawn.w * 0.5;
@@ -98,22 +101,24 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
         world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
     }
 
-    ImGui::SliderInt("Min room size", &params.minRoomSize, 0, params.maxRoomSize);
-    ImGui::SliderInt("Max room size", &params.maxRoomSize, params.minRoomSize, 50);
+    ImGui::SliderInt("Min room size", &m_map_generation_params.minRoomSize, 0, m_map_generation_params.maxRoomSize);
+    ImGui::SliderInt("Max room size", &m_map_generation_params.maxRoomSize, m_map_generation_params.minRoomSize, 50);
     ImGui::Separator();
 
     // Assuming std::size_t is uint32_t
-    ImGui::InputScalar("Min room count", ImGuiDataType_U32, &params.minRoomCount);
-    ImGui::InputScalar("Max room count", ImGuiDataType_U32, &params.maxRoomCount);
+    ImGui::InputScalar("Min room count", ImGuiDataType_U32, &m_map_generation_params.minRoomCount);
+    ImGui::InputScalar("Max room count", ImGuiDataType_U32, &m_map_generation_params.maxRoomCount);
     ImGui::Text("note: actual room count may be smaller if there is not enough space");
     ImGui::Separator();
 
-    ImGui::DragInt("Max dungeon width", &params.maxDungeonWidth, 0, 500);
-    ImGui::DragInt("Max dungeon height", &params.maxDungeonHeight, 0, 500);
+    ImGui::DragInt("Max dungeon width", &m_map_generation_params.maxDungeonWidth, 0, 500);
+    ImGui::DragInt("Max dungeon height", &m_map_generation_params.maxDungeonHeight, 0, 500);
     ImGui::Separator();
 
-    ImGui::SliderInt("Min corridor width", &params.minCorridorWidth, 0, params.maxCorridorWidth);
-    ImGui::SliderInt("Max corridor width", &params.maxCorridorWidth, params.minCorridorWidth, 50);
+    ImGui::SliderInt(
+        "Min corridor width", &m_map_generation_params.minCorridorWidth, 0, m_map_generation_params.maxCorridorWidth);
+    ImGui::SliderInt(
+        "Max corridor width", &m_map_generation_params.maxCorridorWidth, m_map_generation_params.minCorridorWidth, 50);
     ImGui::Separator();
 
     ImGui::End();
@@ -158,8 +163,21 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         if (updated) m_camera.setViewportSize(viewPortSize);
     }
+    ImGui::End();
 
+    auto infoHealth = world.get<Health>(player);
+    auto HP = infoHealth.current / infoHealth.max;
 
+    auto level = world.get<Level>(player);
+    auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
+
+    ImGui::Begin("Info Player");
+    ImGui::ProgressBar(HP, ImVec2(0.0f, 0.0f));
+    ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+    ImGui::Text("HP");
+    ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
+    ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+    ImGui::Text("XP - Level %d", level.current_level);
     ImGui::End();
 
     mapGenerationOverlayTick(world);

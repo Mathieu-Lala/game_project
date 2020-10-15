@@ -145,7 +145,7 @@ auto engine::Core::main() -> int
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 
-    while (m_window->isOpen()) { // note Core::isRunning instead ?
+    while (isRunning()) { // note Core::isRunning instead ?
         const auto event = getNextEvent();
 
         std::visit(
@@ -168,7 +168,7 @@ auto engine::Core::main() -> int
                     m_lastTick = std::chrono::steady_clock::now();
                     ::glViewport(0, 0, static_cast<int>(m_window->getSize().x), static_cast<int>(m_window->getSize().y));
                 },
-                [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); },
+                [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); this->close(); },
                 [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); }, // todo : move this in camera ? or window ?
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
                 [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
@@ -183,7 +183,7 @@ auto engine::Core::main() -> int
         if (keyPressed) {
             // todo : abstract glfw keyboard
             const auto keyEvent = std::get<Pressed<Key>>(event);
-            if (keyEvent.source.key == GLFW_KEY_ESCAPE) m_window->close();
+            if (keyEvent.source.key == GLFW_KEY_ESCAPE) this->close();
             if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
         }
 
@@ -204,10 +204,10 @@ auto engine::Core::main() -> int
             //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
             //                });
 
-            for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::Hitbox>()) {
+            for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
                 auto &moving_pos = m_world.get<d3::Position>(moving);
                 auto &moving_vel = m_world.get<d2::Velocity>(moving);
-                auto &moving_hitbox = m_world.get<d2::Hitbox>(moving);
+                auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
 
                 const auto new_pos = d3::Position{
                     moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
@@ -216,13 +216,13 @@ auto engine::Core::main() -> int
 
                 bool collide = false;
 
-                for (auto &others : m_world.view<d3::Position, d2::Hitbox>()) {
+                for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
                     if (moving == others) continue;
 
                     auto &others_pos = m_world.get<d3::Position>(others);
-                    auto &others_hitbox = m_world.get<d2::Hitbox>(others);
+                    auto &others_hitbox = m_world.get<d2::HitboxSolid>(others);
 
-                    if (d2::Hitbox::overlapped(moving_hitbox, new_pos, others_hitbox, others_pos)) {
+                    if (d2::overlapped(moving_hitbox, new_pos, others_hitbox, others_pos)) {
                         // spdlog::warn("{} and {} are colliding !", moving, others);
                         collide = true;
                         break;

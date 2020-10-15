@@ -6,9 +6,12 @@
 #include <Engine/component/Velocity.hpp>
 #include <Engine/component/Acceleration.hpp>
 #include <Engine/component/Hitbox.hpp>
+#include <Engine/component/Source.hpp>
 
 #include "component/ViewRange.hpp"
 #include "component/AttackRange.hpp"
 #include "component/AttackDamage.hpp"
 #include "component/AttackCooldown.hpp"
 #include "component/Health.hpp"
+#include "component/Lifetime.hpp"
+#include "component/Level.hpp"
