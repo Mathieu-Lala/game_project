@@ -1,11 +1,11 @@
 name: C++ CMake Build
 
 on:
-  push:
-    branches-ignore:
-      - 'doc/**'
-      - 'tmp/**'
-      - 'experimental/**'
+#  push:
+#    branches-ignore:
+#      - 'doc/**'
+#      - 'tmp/**'
+#      - 'experimental/**'
   pull_request:
     branches:
       - '**'
