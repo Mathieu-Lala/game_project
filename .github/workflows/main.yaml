@@ -51,12 +51,11 @@ jobs:
         run: ./tools/install.sh
 
 ## https://github.com/marketplace/actions/cache
-#      - name: Cache Build
-#        uses: actions/cache@v2
-#        with:
-#          path: ~/.conan
-#          key: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v3-${{ hashFiles('**/conanfile.txt') }}
-#          restore-keys: ${{ runner.os }}-conan-${{ matrix.build_type }}-cache-v3
+      - name: Conan Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.conan
+          key: conan-cache-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.build_type }}-${{ hashFiles('**/conanfile.txt') }}
 
       - name: Generate
         shell: bash
