@@ -17,7 +17,7 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() : m_logics{*this}, m_nextFloorSeed(static_cast<unsigned int>(std::time(nullptr))) {}
+game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<unsigned int>(std::time(nullptr))), m_logics{*this} {}
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
