@@ -17,7 +17,7 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() : m_logics{*this} {}
+game::ThePurge::ThePurge() : m_logics{*this}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))) {}
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
@@ -64,19 +64,23 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
 auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 {
+    static bool spamRegenerate = false;
+
     ImGui::Begin("MapGeneration");
 
-    if (ImGui::Button("Generate")) {
-        // TODO: check how to handle seeding better
-        auto data = generateFloor(world, &shader, m_map_generation_params, static_cast<std::uint32_t>(std::time(nullptr)));
+    ImGui::Checkbox("Spam regenerate", &spamRegenerate);
+
+    if (ImGui::Button("Regenerate") || spamRegenerate) {
+        world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+        world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+
+        auto data = generateFloor(world, &shader, m_map_generation_params, m_nextFloorSeed);
+        m_nextFloorSeed = data.nextFloorSeed;
+
         auto &pos = world.get<engine::d3::Position>(player);
 
         pos.x = data.spawn.x + data.spawn.w * 0.5;
         pos.y = data.spawn.y + data.spawn.h * 0.5;
-    }
-    if (ImGui::Button("Despawn")) {
-        world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
-        world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
     }
 
     ImGui::SliderInt("Min room size", &m_map_generation_params.minRoomSize, 0, m_map_generation_params.maxRoomSize);
@@ -114,8 +118,8 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         if (ImGui::Button("Start the game")) {
             // note : this block could be launch in a future
-            auto data =
-                generateFloor(world, &shader, m_map_generation_params, static_cast<std::uint32_t>(std::time(nullptr)));
+            auto data = generateFloor(world, &shader, m_map_generation_params, m_nextFloorSeed);
+            m_nextFloorSeed = data.nextFloorSeed;
 
             player = world.create();
             world.emplace<entt::tag<"player"_hs>>(player);
