@@ -14,7 +14,10 @@ public:
     static void FloorBossRoom(entt::registry &world, engine::Shader *, const glm::vec2 &pos, const glm::vec2 &size);
     static void FloorCorridor(entt::registry &world, engine::Shader *, const glm::vec2 &pos, const glm::vec2 &size);
 
+    static void ExitDoor(entt::registry &world, engine::Shader *, const glm::vec2 &pos, const glm::vec2 &size, float rotation);
     static void Wall(entt::registry &world, engine::Shader *, const glm::vec2 &pos, const glm::vec2 &size);
+
+    static void DebugTile(entt::registry &world, engine::Shader *, const glm::vec2 &pos, const glm::vec2 &size);
 };
 
 } // namespace game

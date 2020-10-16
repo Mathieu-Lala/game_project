@@ -43,11 +43,14 @@ public:
 
 private:
 
+    auto goToNextFloor(entt::registry &world) -> void;
+
     auto mapGenerationOverlayTick(entt::registry &world) -> void;
 
     State m_state{ LOADING };
 
     FloorGenParam m_map_generation_params;
+    unsigned int m_nextFloorSeed;
 
     engine::Camera m_camera;
 

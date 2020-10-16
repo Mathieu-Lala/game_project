@@ -18,6 +18,8 @@ struct MapData {
     Room spawn{};
     std::vector<Room> regularRooms;
     Room boss{};
+
+    unsigned int nextFloorSeed;
 };
 
 } // namespace game

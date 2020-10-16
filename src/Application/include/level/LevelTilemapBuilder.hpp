@@ -17,8 +17,14 @@ namespace game {
 enum class TileEnum : std::uint8_t {
     NONE = 0,
     RESERVED, // not a real tile, for internal use of the generation algorithm
+    DEBUG_TILE, // visual to ease debug
 
     WALL,
+    EXIT_DOOR_FACING_NORTH,
+    EXIT_DOOR_FACING_EAST,
+    EXIT_DOOR_FACING_SOUTH,
+    EXIT_DOOR_FACING_WEST,
+
     FLOOR_CORRIDOR,
     FLOOR_SPAWN,
     FLOOR_BOSS_ROOM,
