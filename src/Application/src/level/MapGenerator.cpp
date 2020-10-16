@@ -131,18 +131,17 @@ void generatorCorridor(
 
 
     if (randRange(0, 1, randomEngine)) {
-        auto maxWidth = std::min(
-            r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+        auto maxWidth = std::min(r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
         auto width = randRange(
-            std::min(maxWidth, params.minCorridorWidth), std::max(maxWidth, params.maxCorridorWidth), randomEngine);
+            std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1), randomEngine);
 
         auto pos = vertical(start, width);
         horizontal(pos, width);
     } else {
         auto maxWidth = std::min(
-            r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+            r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
         auto width = randRange(
-            std::min(maxWidth, params.minCorridorWidth), std::max(maxWidth, params.maxCorridorWidth), randomEngine);
+            std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1), randomEngine);
 
         auto pos = horizontal(start, width);
         vertical(pos, width);
