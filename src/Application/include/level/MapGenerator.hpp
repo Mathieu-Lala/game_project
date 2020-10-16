@@ -25,7 +25,7 @@ struct FloorGenParam {
     float mobDensity = 0.05f; // Average mob per tile
 };
 
-auto generateFloor(entt::registry &world, engine::Shader *, FloorGenParam params = {}, std::optional<std::uint32_t> seed = {})
+auto generateFloor(entt::registry &world, engine::Shader *, FloorGenParam params = {}, std::optional<unsigned int> seed = {})
     -> MapData;
 
 } // namespace game

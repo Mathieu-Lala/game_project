@@ -48,7 +48,7 @@ private:
     State m_state{ LOADING };
 
     FloorGenParam m_map_generation_params;
-    std::uint32_t m_nextFloorSeed;
+    unsigned int m_nextFloorSeed;
 
     engine::Camera m_camera;
 

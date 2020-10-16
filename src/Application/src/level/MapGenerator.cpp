@@ -181,7 +181,7 @@ void placeWalls(game::TilemapBuilder &builder)
         }
 }
 
-void placeBossRoomExitDoor(game::TilemapBuilder &builder, game::Room &r, std::default_random_engine &randomEngine)
+void placeBossRoomExitDoor(game::TilemapBuilder &builder, game::Room &r)
 {
     // Strategy :
     //  Check room boundaries, find the boss room entrance, place a door at the central opposite of the room with the right orientation
@@ -266,7 +266,7 @@ game::MapData
     placeRoomFloor(builder, result.spawn, game::TileEnum::FLOOR_SPAWN);
     for (const auto &r : result.regularRooms) placeRoomFloor(builder, r, game::TileEnum::FLOOR_NORMAL_ROOM);
 
-    placeBossRoomExitDoor(builder, result.boss, randomEngine);
+    placeBossRoomExitDoor(builder, result.boss);
     placeRoomFloor(builder, result.boss, game::TileEnum::FLOOR_BOSS_ROOM);
 
     placeWalls(builder);
@@ -290,7 +290,7 @@ void spawnMobsIn(
 }
 
 auto game::generateFloor(
-    entt::registry &world, engine::Shader *shader, game::FloorGenParam params, std::optional<std::uint32_t> seed) -> MapData
+    entt::registry &world, engine::Shader *shader, game::FloorGenParam params, std::optional<unsigned int> seed) -> MapData
 {
     std::default_random_engine randomEngine;
 
