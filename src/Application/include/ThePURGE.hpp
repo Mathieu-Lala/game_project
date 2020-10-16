@@ -43,6 +43,8 @@ public:
 
 private:
 
+    auto goToNextFloor(entt::registry &world) -> void;
+
     auto mapGenerationOverlayTick(entt::registry &world) -> void;
 
     State m_state{ LOADING };

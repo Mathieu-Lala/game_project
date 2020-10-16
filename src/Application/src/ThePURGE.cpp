@@ -64,24 +64,14 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
 auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 {
-    static bool spamRegenerate = false;
+    static bool spamNextFloor = false;
 
     ImGui::Begin("MapGeneration");
 
-    ImGui::Checkbox("Spam regenerate", &spamRegenerate);
+    ImGui::Checkbox("Spam next floor", &spamNextFloor);
 
-    if (ImGui::Button("Regenerate") || spamRegenerate) {
-        world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
-        world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
-
-        auto data = generateFloor(world, &shader, m_map_generation_params, m_nextFloorSeed);
-        m_nextFloorSeed = data.nextFloorSeed;
-
-        auto &pos = world.get<engine::d3::Position>(player);
-
-        pos.x = data.spawn.x + data.spawn.w * 0.5;
-        pos.y = data.spawn.y + data.spawn.h * 0.5;
-    }
+    if (ImGui::Button("Next floor") || spamNextFloor)
+        goToNextFloor(world);
 
     ImGui::SliderInt("Min room size", &m_map_generation_params.minRoomSize, 0, m_map_generation_params.maxRoomSize);
     ImGui::SliderInt("Max room size", &m_map_generation_params.maxRoomSize, m_map_generation_params.minRoomSize, 50);
@@ -117,17 +107,11 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         ImGui::Begin("Menu loading", nullptr, ImGuiWindowFlags_NoDecoration);
 
         if (ImGui::Button("Start the game")) {
-            // note : this block could be launch in a future
-            auto data = generateFloor(world, &shader, m_map_generation_params, m_nextFloorSeed);
-            m_nextFloorSeed = data.nextFloorSeed;
 
+            // note : this block could be launch in a future
             player = world.create();
             world.emplace<entt::tag<"player"_hs>>(player);
-            world.emplace<engine::d3::Position>(
-                player,
-                data.spawn.x + data.spawn.w * 0.5,
-                data.spawn.y + data.spawn.h * 0.5,
-                Z_COMPONENT_OF(EntityDepth::PLAYER));
+            world.emplace<engine::d3::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
             world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
             world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
             world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
@@ -142,6 +126,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             m_camera.setCenter(glm::vec2(13, 22));
             m_camera.setViewportSize(glm::vec2(109, 64));
 
+            goToNextFloor(world);
 
             setState(IN_GAME);
         }
@@ -213,4 +198,19 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         ImGui::End();
     }
+}
+
+auto game::ThePurge::goToNextFloor(entt::registry &world) -> void {
+    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
+
+    auto data = generateFloor(world, &shader, m_map_generation_params, m_nextFloorSeed);
+    m_nextFloorSeed = data.nextFloorSeed;
+
+
+    auto &pos = world.get<engine::d3::Position>(player);
+
+    pos.x = data.spawn.x + data.spawn.w * 0.5;
+    pos.y = data.spawn.y + data.spawn.h * 0.5;
 }
