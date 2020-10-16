@@ -300,7 +300,7 @@ auto game::generateFloor(
 
     for (auto &r : data.regularRooms) spawnMobsIn(world, shader, params, randomEngine, r);
 
-    data.nextFloorSeed = randomEngine();
+    data.nextFloorSeed = static_cast<unsigned int>(randomEngine());
 
     return data;
 }
