@@ -1,5 +1,6 @@
 #include "level/MapGenerator.hpp"
 #include <vector>
+#include <algorithm>
 #include <random>
 #include <cassert>
 #include "level/LevelTilemapBuilder.hpp"
@@ -165,7 +166,8 @@ void placeWalls(game::TilemapBuilder &builder)
 
     for (it.y = 0; it.y < builder.getSize().y; ++it.y)
         for (it.x = 0; it.x < builder.getSize().x; ++it.x) {
-            if (builder.get(it.x, it.y) != game::TileEnum::NONE) continue;
+            if (builder.get(it.x, it.y) != game::TileEnum::NONE && builder.get(it.x, it.y) != game::TileEnum::RESERVED)
+                continue;
 
             for (auto n : neighbours) {
                 auto checkPos = it + n;
@@ -177,6 +179,58 @@ void placeWalls(game::TilemapBuilder &builder)
                 }
             }
         }
+}
+
+void placeBossRoomExitDoor(game::TilemapBuilder &builder, game::Room &r, std::default_random_engine &randomEngine)
+{
+    // Strategy :
+    //  Check room boundaries, find the boss room entrance, place a door at the central opposite of the room with the right orientation
+    //  Reduce room size by one to make sure the door is not accessible by another room on the other side of the wall
+
+    int x1 = r.x;
+    int x2 = r.x + r.w;
+    int y1 = r.y;
+    int y2 = r.y + r.h;
+
+    // CHECK NORTH WALL
+    for (auto x = x1 + 1; x < x2 - 1; ++x)
+        if (IS_FLOOR(builder.get(x, y2 - 1))) {
+            r.y += 1;
+            r.h -= 1;
+
+            builder.get(x2 - 1 - (x - x1), r.y) = game::TileEnum::EXIT_DOOR_FACING_NORTH;
+            return;
+        }
+
+    // CHECK SOURTH WALL
+    for (auto x = x1 + 1; x < x2 - 1; ++x)
+        if (IS_FLOOR(builder.get(x, y1))) {
+            r.h -= 1;
+
+            builder.get(x2 - 1 - (x - x1), r.y + r.h - 1) = game::TileEnum::EXIT_DOOR_FACING_SOUTH;
+            return;
+        }
+
+    // CHECK WEST WALL
+    for (auto y = y1 + 1; y < y2 - 1; ++y)
+        if (IS_FLOOR(builder.get(x1, y))) {
+            r.w -= 1;
+
+            builder.get(r.x + r.w - 1, y2 - 1 - (y - y1)) = game::TileEnum::EXIT_DOOR_FACING_WEST;
+            return;
+        }
+
+    // CHECK EAST WALL
+    for (auto y = y1 + 1; y < y2 - 1; ++y)
+        if (IS_FLOOR(builder.get(x2 - 1, y))) {
+            r.x += 1;
+            r.w -= 1;
+
+            builder.get(r.x, y2 - 1 - (y - y1)) = game::TileEnum::EXIT_DOOR_FACING_EAST;
+            return;
+        }
+
+    assert(false && "Could not find boss room entrance, cannot place exit door");
 }
 
 game::MapData
@@ -196,7 +250,8 @@ game::MapData
         auto room = generateRoom(builder, params, randomEngine);
         if (room.w == 0 && room.h == 0) break; // Failed to place room
 
-        placeRoomFloor(builder, room, game::TileEnum::RESERVED); // Reserve the space, so multiple rooms don't spawn at the same place
+        placeRoomFloor(
+            builder, room, game::TileEnum::RESERVED); // Reserve the space, so multiple rooms don't spawn at the same place
         rooms.emplace_back(room);
 
         generatorCorridor(builder, params, randomEngine, rooms[i], rooms[i + 1]);
@@ -210,6 +265,8 @@ game::MapData
 
     placeRoomFloor(builder, result.spawn, game::TileEnum::FLOOR_SPAWN);
     for (const auto &r : result.regularRooms) placeRoomFloor(builder, r, game::TileEnum::FLOOR_NORMAL_ROOM);
+
+    placeBossRoomExitDoor(builder, result.boss, randomEngine);
     placeRoomFloor(builder, result.boss, game::TileEnum::FLOOR_BOSS_ROOM);
 
     placeWalls(builder);
