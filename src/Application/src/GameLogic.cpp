@@ -14,6 +14,7 @@ game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
 
     sinkGameUpdated.connect<&GameLogic::ai_pursue>(*this);
     sinkGameUpdated.connect<&GameLogic::cooldown>(*this);
+    //sinkGameUpdated.connect<&GameLogic::effect>(*this);
     sinkGameUpdated.connect<&GameLogic::enemies_try_attack>(*this);
     sinkGameUpdated.connect<&GameLogic::update_lifetime>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
@@ -57,7 +58,23 @@ auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed 
         }
     });
 }
+/*
+auto effect(entt::registry &world, entt::entity &player, const engine::TimeElapsed &dt) -> void
+{
+    auto player_health = world.get<game::Health>(player);
 
+    world.view<game::Effect>().each([&](auto &effect) {
+        if (!effect.is_in_effect) return;
+        if (dt.elapsed < effect.remaining_time_effect) {
+            effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
+            if (effect.effect_name == "stun") spdlog::warn('stun');
+            if (effect.effect_name == "bleed") player_health.current -= 1 * (dt * 0.001);
+        } else {
+            effect.is_in_effect = false;
+        }
+    });
+}
+*/
 auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     for (auto enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange, AttackCooldown, AttackDamage>()) {

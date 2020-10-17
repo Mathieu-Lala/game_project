@@ -44,7 +44,7 @@ public:
     auto cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void;
     auto enemies_try_attack(entt::registry &world, const engine::TimeElapsed &dt) -> void;
     auto check_collision(entt::registry &world, const engine::TimeElapsed &dt) -> void;
-
+    //auto effect(entt::registry &world, entt::entity &player, const engine::TimeElapsed &dt) -> void;
     auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
     auto cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void;

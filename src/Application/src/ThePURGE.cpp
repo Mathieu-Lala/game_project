@@ -13,6 +13,8 @@
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
+#include <Windows.h>
+
 //#include "Competences/FarmerCompetences.hpp"
 
 using namespace std::chrono_literals;
@@ -172,8 +174,16 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
 
             // todo : style because this is not a debug window
-            ImGui::Begin("Info Player");
-            ImGui::ProgressBar(HP, ImVec2(0.0f, 0.0f));
+            ImGui::SetNextWindowPos(ImVec2(650, 20));
+            ImGui::SetNextWindowSize(ImVec2(400, 100));
+            ImGui::Begin(
+                "Info Player",
+                (bool *) 0,
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
+                    | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+            char buf[32];
+            sprintf_s(buf, "%d/%d", (int) (infoHealth.current), (int) (infoHealth.max));
+            ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), buf);
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::Text("HP");
             ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
