@@ -37,6 +37,13 @@ public:
 
     auto setState(State new_state) noexcept { m_state = new_state; }
 
+    auto getBackgroundColor() const noexcept -> glm::vec3 final
+    {
+        return m_state == IN_GAME
+            ? glm::vec3{0.45f, 0.55f, 0.60f}
+            : glm::vec3{0.35f, 0.45f, 0.50f};
+    }
+
 private:
 
     auto goToNextFloor(entt::registry &world) -> void;

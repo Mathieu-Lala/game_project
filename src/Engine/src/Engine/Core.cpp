@@ -8,6 +8,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <stb_image.h>
+
 #include "Engine/helpers/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
 #include "Engine/component/Position.hpp"
@@ -60,10 +62,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
     m_joystickManager = std::make_unique<JoystickManager>();
 
-    // note : not working
-    // m_world.on_destroy<engine::Drawable>().connect<&engine::Drawable::dtor>();
-
-    // m_world.on_update<engine::d3::Position>() // require to use world.patch or world.replace
+    //    ::stbi_set_flip_vertically_on_load(true);
 }
 
 engine::Core::~Core()
@@ -149,12 +148,15 @@ auto engine::Core::main() -> int
     if (m_window == nullptr || m_game == nullptr) { return 1; }
 
     m_shader_colored.reset(
-        new Shader{Shader::fromFile(DATA_DIR "/shaders/colored.vert.glsl", DATA_DIR "/shaders/colored.frag.glsl")});
+        new Shader{Shader::fromFile(DATA_DIR "shaders/colored.vert.glsl", DATA_DIR "shaders/colored.frag.glsl")});
+
+    m_shader_colored_textured.reset(new Shader{Shader::fromFile(
+        DATA_DIR "shaders/colored_textured.vert.glsl", DATA_DIR "shaders/colored_textured.frag.glsl")});
 
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 
-    while (isRunning()) { // note Core::isRunning instead ?
+    while (isRunning()) {
         const auto event = getNextEvent();
 
         std::visit(
@@ -268,13 +270,14 @@ auto engine::Core::main() -> int
 
                 ImGui::Render();
 
-                // todo : add Game::getBackgroundColor()
-                ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+                const auto background = m_game->getBackgroundColor();
+
+                ::glClearColor(background.r, background.g, background.b, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 m_shader_colored->use();
-                m_world.view<Drawable, Color, d3::Position, d2::Scale>().each(
-                    [this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
+                m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<Texture>)
+                    .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
                         auto model = glm::dmat4(1.0);
                         model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
                         model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
@@ -282,9 +285,23 @@ auto engine::Core::main() -> int
 
                         ::glBindVertexArray(drawable.VAO);
 
-                        // note : mode could be defined in the drawable
                         ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                     });
+
+                m_shader_colored_textured->use();
+                m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale>().each(
+                    [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
+                        auto model = glm::dmat4(1.0);
+                        model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
+                        model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
+                        m_shader_colored_textured->uploadUniformMat4("model", model);
+
+                        ::glBindTexture(GL_TEXTURE_2D, texture.texture);
+                        ::glBindVertexArray(drawable.VAO);
+
+                        ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                    });
+
             });
         }
 
@@ -307,7 +324,11 @@ auto engine::Core::main() -> int
     return 0;
 }
 
-auto engine::Core::updateView(const glm::mat4 &view) -> void { m_shader_colored->uploadUniformMat4("viewProj", view); }
+auto engine::Core::updateView(const glm::mat4 &view) -> void
+{
+    m_shader_colored->uploadUniformMat4("viewProj", view);
+    m_shader_colored_textured->uploadUniformMat4("viewProj", view);
+}
 
 auto engine::Core::get() noexcept -> std::unique_ptr<Core> &
 {
