@@ -51,11 +51,19 @@ jobs:
         run: ./tools/install.sh
 
 ## https://github.com/marketplace/actions/cache
-      - name: Conan Cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.conan
-          key: conan-cache-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.build_type }}-${{ hashFiles('**/conanfile.txt') }}
+##      - name: Conan Cache
+##        uses: actions/cache@v2
+##        with:
+##          path: ~/.conan
+##          key: conan-cache-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.build_type }}-${{ hashFiles('**/conanfile.txt') }}
+
+## FIXME : This step generate this error
+## opengl/system: Already installed!
+## ERROR: opengl/system: Error in package_info() method, line 78
+##  self._fill_cppinfo_from_pkgconfig('gl')
+## while calling '_fill_cppinfo_from_pkgconfig', line 21
+##  if not pkg_config.provides:
+##  ConanException: pkg-config command ['pkg-config', '--print-provides', 'gl', '--print-errors'] failed with error: Command 'pkg-config --print-provides gl --print-errors' returned non-zero exit status 1.
 
       - name: Generate
         shell: bash
