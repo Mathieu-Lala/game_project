@@ -1,8 +1,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Graphics/third_party.hpp>
+#include <Engine/Graphics/Shader.hpp>
+#include <Engine/helpers/DrawableFactory.hpp>
+#include <Engine/Event/Event.hpp>
+#include <Engine/Core.hpp>
 
 #include "level/LevelTilemapBuilder.hpp"
 #include "level/MapGenerator.hpp"
@@ -25,6 +28,8 @@ auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void { 
 
 auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
+    static engine::Core::Holder holder{};
+
     if (m_state == IN_GAME) {
         std::visit(
             engine::overloaded{
@@ -56,9 +61,9 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
             },
             e);
 
-        // todo : update me only if camera updated
-        const auto viewProj = m_camera.getViewProjMatrix();
-        shader.uploadUniformMat4("viewProj", viewProj);
+        if (m_camera.isUpdated()) {
+            holder.instance->updateView(m_camera.getViewProjMatrix());
+        }
     }
 }
 
@@ -96,11 +101,11 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
     ImGui::End();
 }
 
-// static bool show_demo_window = true;
+static bool show_demo_window = true;
 
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
-    //    if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
+    if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
     if (m_state == LOADING) {
         // todo : style because this is not a debug window
@@ -116,7 +121,8 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
             world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
             world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
-            world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
+            world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());//.shader = &shader;
+            engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
             world.emplace<Health>(player, 100.0f, 100.0f);
             world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
             world.emplace<AttackDamage>(player, 50.0f);
@@ -205,7 +211,7 @@ auto game::ThePurge::goToNextFloor(entt::registry &world) -> void {
     world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
 
-    auto data = generateFloor(world, &shader, m_map_generation_params, m_nextFloorSeed);
+    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
     m_nextFloorSeed = data.nextFloorSeed;
 
 
