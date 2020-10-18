@@ -4,9 +4,13 @@
 #include "entity/EnemyFactory.hpp"
 #include "EntityDepth.hpp"
 
+<<<<<<< HEAD
 using namespace std::chrono_literals; // ms ..
 
 auto game::EnemyFactory::FirstEnemy(entt::registry &world, engine::Shader *shader, const glm::vec2 &pos) -> void
+=======
+auto game::EnemyFactory::FirstEnemy(entt::registry &world, const glm::vec2 &pos) -> void
+>>>>>>> 2ef832090ceee2b5f1494879689d876d5e658aae
 {
     const auto e = world.create();
     world.emplace<entt::tag<"enemy"_hs>>(e);
@@ -14,7 +18,8 @@ auto game::EnemyFactory::FirstEnemy(entt::registry &world, engine::Shader *shade
     world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
     world.emplace<engine::d2::Scale>(e, 1.0, 1.0);
     world.emplace<engine::d2::HitboxSolid>(e, 1.0, 1.0);
-    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle({1, 0, 0})).shader = shader;
+    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
+    engine::DrawableFactory::fix_color(world, e, {1, 0, 0});
     world.emplace<ViewRange>(e, 10.0f);
     world.emplace<AttackRange>(e, 3.0f);
     world.emplace<AttackCooldown>(e, false, 4000ms, 0ms);

@@ -8,15 +8,13 @@
 
 namespace game {
 
-#define IS_FLOOR(tile) \
-    ((tile == game::TileEnum::FLOOR_SPAWN \
-    || tile == game::TileEnum::FLOOR_CORRIDOR \
-    || tile == game::TileEnum::FLOOR_BOSS_ROOM \
-    || tile == game::TileEnum::FLOOR_NORMAL_ROOM))
+#define IS_FLOOR(tile)                                                              \
+    ((tile == game::TileEnum::FLOOR_SPAWN || tile == game::TileEnum::FLOOR_CORRIDOR \
+      || tile == game::TileEnum::FLOOR_BOSS_ROOM || tile == game::TileEnum::FLOOR_NORMAL_ROOM))
 
 enum class TileEnum : std::uint8_t {
     NONE = 0,
-    RESERVED, // not a real tile, for internal use of the generation algorithm
+    RESERVED,   // not a real tile, for internal use of the generation algorithm
     DEBUG_TILE, // visual to ease debug
 
     WALL,
@@ -33,9 +31,8 @@ enum class TileEnum : std::uint8_t {
 
 class TilemapBuilder {
 public:
-    TilemapBuilder(engine::Shader *shader, glm::ivec2 &&size = {100, 100}) :
-        m_shader(shader), m_size(size),
-        m_tiles(static_cast<std::size_t>(m_size.x) * static_cast<std::size_t>(m_size.y), TileEnum::NONE)
+    TilemapBuilder(glm::ivec2 &&size = {100, 100}) :
+        m_size(size), m_tiles(static_cast<std::size_t>(m_size.x) * static_cast<std::size_t>(m_size.y), TileEnum::NONE)
     {
     }
 
@@ -50,8 +47,6 @@ private:
     glm::ivec2 getTileSize(int x, int y);
 
 private:
-    engine::Shader *m_shader;
-
     const glm::ivec2 m_size;
     std::vector<TileEnum> m_tiles;
 };

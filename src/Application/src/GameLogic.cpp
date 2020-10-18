@@ -2,8 +2,9 @@
 
 #include <Engine/helpers/DrawableFactory.hpp>
 
-#include <Engine/Event/Event.hpp>
-#include <Engine/Core.hpp>
+//#include <Engine/Event/Event.hpp> // note : should not require this header here
+//#include <Engine/Graphics/Shader.hpp> // note : should not require this header here
+//#include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
@@ -189,7 +190,8 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     world.emplace<entt::tag<"spell"_hs>>(spell);
     world.emplace<Lifetime>(spell, 600ms);
     world.emplace<AttackDamage>(spell, attack_damage.damage);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle(std::move(color))).shader = &m_game.shader;
+    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());//.shader = &m_game.shader;
+    engine::DrawableFactory::fix_color(world, spell, std::move(color));
     world.emplace<engine::d3::Position>(spell, enemy_pos.x + direction.x / 2.0, enemy_pos.y + direction.y / 2.0, -1.0);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
     world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);

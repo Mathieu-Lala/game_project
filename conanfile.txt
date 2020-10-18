@@ -44,4 +44,5 @@ cmake
 
 [imports]
 bin, *.dll -> ../out/
+lib, *.so* -> ../out/
 lib, *.dylib* -> ../out/
