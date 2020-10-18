@@ -6,10 +6,10 @@
 
 #include "Declaration.hpp"
 
+using namespace std::chrono_literals; // ms ..
+
 auto game::EnemyFactory::FirstEnemy(entt::registry &world, const glm::vec2 &pos) -> void
 {
-    using namespace std::chrono_literals; // ms ..
-
     const auto e = world.create();
     world.emplace<entt::tag<"enemy"_hs>>(e);
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::ENEMIES));
@@ -24,4 +24,21 @@ auto game::EnemyFactory::FirstEnemy(entt::registry &world, const glm::vec2 &pos)
     world.emplace<AttackCooldown>(e, false, 4000ms, 0ms);
     world.emplace<AttackDamage>(e, 20.0f);
     world.emplace<Health>(e, 50.0f, 50.0f);
+}
+
+auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> void
+{
+    const auto e = world.create();
+    world.emplace<entt::tag<"boss"_hs>>(e);
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::ENEMIES));
+    world.emplace<engine::d2::Velocity>(e, 0.01 * (std::rand() & 1), 0.01 * (std::rand() & 1));
+    world.emplace<engine::d2::Scale>(e, 3.0, 3.0);
+    world.emplace<engine::d2::HitboxSolid>(e, 3.0, 3.0);
+    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
+    world.emplace<game::ViewRange>(e, 10.0f);
+    world.emplace<game::AttackRange>(e, 3.0f);
+    world.emplace<game::AttackCooldown>(e, false, 2000ms, 0ms);
+    world.emplace<game::Effect>(e, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
+    world.emplace<game::AttackDamage>(e, 30.0f);
+    world.emplace<Health>(e, 500.0f, 500.0f);
 }

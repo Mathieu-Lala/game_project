@@ -302,6 +302,19 @@ auto engine::Core::main() -> int
                         ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                     });
 
+//                m_world.view<Drawable, Color, d3::Position, d2::Scale>().each(
+//                    [this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
+//                        auto model = glm::dmat4(1.0);
+//                        model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
+//                        model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
+//                        m_shader_colored->uploadUniformMat4("model", model);
+//
+//                        ::glBindVertexArray(drawable.VAO);
+//
+//                        // note : mode could be defined in the drawable
+//                        ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+//                    });
+
             });
         }
 

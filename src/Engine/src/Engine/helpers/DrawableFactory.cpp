@@ -6,7 +6,6 @@
 #include "Engine/component/Color.hpp"
 #include "Engine/component/Texture.hpp"
 #include "Engine/helpers/DrawableFactory.hpp"
-
 #include "Engine/Graphics/Shader.hpp"
 #include "Engine/Event/Event.hpp"
 #include "Engine/Core.hpp"

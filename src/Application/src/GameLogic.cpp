@@ -2,12 +2,10 @@
 
 #include <Engine/helpers/DrawableFactory.hpp>
 
-//#include <Engine/Event/Event.hpp> // note : should not require this header here
-//#include <Engine/Graphics/Shader.hpp> // note : should not require this header here
-//#include <Engine/Core.hpp>
-
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
+
+using namespace std::chrono_literals;
 
 game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
 {
@@ -15,6 +13,7 @@ game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
 
     sinkGameUpdated.connect<&GameLogic::ai_pursue>(*this);
     sinkGameUpdated.connect<&GameLogic::cooldown>(*this);
+    sinkGameUpdated.connect<&GameLogic::effect>(*this);
     sinkGameUpdated.connect<&GameLogic::enemies_try_attack>(*this);
     sinkGameUpdated.connect<&GameLogic::update_lifetime>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
@@ -55,6 +54,23 @@ auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed 
         } else {
             attack_cooldown.is_in_cooldown = false;
             spdlog::warn("attack is up !");
+        }
+    });
+}
+
+auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &dt) -> void
+{
+    auto player_health = world.get<game::Health>(m_game.player);
+
+    world.view<game::Effect>().each([&](auto &effect) {
+        if (!effect.is_in_effect) return;
+        if (dt.elapsed < effect.remaining_time_effect) {
+            effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
+            if (effect.effect_name == "stun") spdlog::warn("stun");
+            if (effect.effect_name == "bleed")
+                player_health.current -= 0.01f /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so TODO*/;
+        } else {
+            effect.is_in_effect = false;
         }
     });
 }
@@ -103,7 +119,6 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
     for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
         auto &spell_pos = world.get<engine::d3::Position>(spell);
         auto &spell_hitbox = world.get<engine::d2::HitboxFloat>(spell);
-
         const auto source = world.get<engine::Source>(spell).source;
 
         if (world.has<entt::tag<"player"_hs>>(source)) {

@@ -62,4 +62,6 @@ auto engine::Texture::ctor(const std::string_view path) -> Texture
 auto engine::Texture::dtor(Texture *ptr) -> void
 {
     ::stbi_image_free(ptr->px);
+    ::glDeleteBuffers(1, &ptr->VBO);
+    ::glDeleteTextures(1, &ptr->texture);
 }

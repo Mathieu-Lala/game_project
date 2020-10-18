@@ -140,6 +140,7 @@ private:
     std::unique_ptr<Shader> m_shader_colored;
     std::unique_ptr<Shader> m_shader_colored_textured;
 
+
 #ifndef NDEBUG
     auto debugDrawJoystick() -> void;
     auto debugDrawDisplayOptions() -> void;
