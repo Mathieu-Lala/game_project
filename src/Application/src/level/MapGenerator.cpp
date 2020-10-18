@@ -285,7 +285,7 @@ void spawnMobsIn(
     for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
         for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
             if (randRange(0, static_cast<int>(1.0f / params.mobDensity), randomEngine) == 0)
-                game::EnemyFactory::FirstEnemy(world, shader, glm::vec2{x, y});
+                game::EnemyFactory::FirstEnemy(world, shader, glm::vec2{x + 0.5, y + 0.5});
 }
 
 auto game::generateFloor(
