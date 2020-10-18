@@ -4,6 +4,7 @@
 #include <Engine/Game.hpp>
 #include <Engine/Graphics/Shader.hpp>
 #include <Engine/Camera.hpp>
+#include <Engine/audio/AudioManager.hpp>
 
 #include "component/all.hpp"
 
@@ -53,6 +54,7 @@ private:
     unsigned int m_nextFloorSeed;
 
     engine::Camera m_camera;
+    engine::AudioManager m_audioManager;
 
     GameLogic m_logics;
 };

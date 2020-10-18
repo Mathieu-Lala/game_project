@@ -14,11 +14,10 @@ macro(run_conan)
     NO_OUTPUT_DIRS
     CMAKE_TARGETS
 
-    PROFILE game_project
     CONANFILE conanfile.txt
     BUILD missing
     INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
-    BUILD_TYPE ${CMAKE_BUILD_TYPE}
+    BUILD_TYPES ${CMAKE_BUILD_TYPE}
     # ARGUMENTS_ARCH
 
     SETTINGS

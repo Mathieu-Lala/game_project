@@ -31,6 +31,10 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::Pressed<engine::Key> &key) {
                     // not really working perfectly
                     switch (key.source.key) {
+                    case GLFW_KEY_V:
+                        m_audioManager.getSound(DATA_DIR "/sounds/hit.wav")->play();
+                        break;
+
                     case GLFW_KEY_UP: m_camera.move({0, 1}); break;
                     case GLFW_KEY_RIGHT: m_camera.move({1, 0}); break;
                     case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
@@ -152,10 +156,10 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::Text(
                 "Viewport size (%.3f, %.3f)", static_cast<double>(viewPortSize.x), static_cast<double>(viewPortSize.y));
             ImGui::Text("Viewport range :");
-            ImGui::Text("   left  : %.3f", static_cast<double>(pos.x - (viewPortSize.x / 2)));
-            ImGui::Text("   right : %.3f", static_cast<double>(pos.x + (viewPortSize.x / 2)));
-            ImGui::Text("   top   : %.3f", static_cast<double>(pos.y + (viewPortSize.y / 2)));
-            ImGui::Text("   bottom: %.3f", static_cast<double>(pos.y - (viewPortSize.y / 2)));
+            ImGui::Text("   left  : %.3f", (double)pos.x - (viewPortSize.x / 2.0));
+            ImGui::Text("   right : %.3f", (double)pos.x + (viewPortSize.x / 2.0));
+            ImGui::Text("   top   : %.3f", (double)pos.y + (viewPortSize.y / 2.0));
+            ImGui::Text("   bottom: %.3f", (double)pos.y - (viewPortSize.y / 2.0));
 
             bool updated = false;
             updated |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
