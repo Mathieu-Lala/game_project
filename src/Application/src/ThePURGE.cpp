@@ -13,6 +13,15 @@
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
+#include <stdio.h>
+
+#ifdef __unix__
+//define if linux
+#elif defined(_WIN32) || defined(WIN32)
+
+#define OS_Windows
+
+#endif
 
 //#include "Competences/FarmerCompetences.hpp"
 
@@ -177,11 +186,15 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::SetNextWindowSize(ImVec2(400, 100));
             ImGui::Begin(
                 "Info Player",
-                (bool *) 0,
+                static_cast<bool *>(0),
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
             char buf[32];
-            sprintf_s(buf, "%d/%d", (int) (infoHealth.current), (int) (infoHealth.max));
+#ifdef OS_Windows
+            sprintf_s(buf, "%d/%d", static_cast<int>(infoHealth.current), static_cast<int>(infoHealth.max));
+#else
+            sprintf(buf, "%d/%d", static_cast<int>(infoHealth.current), static_cast<int>(infoHealth.max));
+#endif
             ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), buf);
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::Text("HP");
