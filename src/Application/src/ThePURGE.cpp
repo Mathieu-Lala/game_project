@@ -13,7 +13,6 @@
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
-#include <Windows.h>
 
 //#include "Competences/FarmerCompetences.hpp"
 
