@@ -2,6 +2,7 @@
 
 #include "Engine/Graphics/third_party.hpp"
 #include "Engine/Event/JoystickManager.hpp"
+#include "Engine/Graphics/Shader.hpp" // note : should not require this header here
 #include "Engine/Core.hpp"
 
 engine::JoystickManager *engine::JoystickManager::s_instance{nullptr};

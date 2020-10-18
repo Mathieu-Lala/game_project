@@ -22,6 +22,7 @@ public:
 
     auto use() -> void;
 
+    // note : this could be templated
     auto uploadUniformMat4(const std::string &name, const glm::mat4 &mat) -> void;
 
 private:

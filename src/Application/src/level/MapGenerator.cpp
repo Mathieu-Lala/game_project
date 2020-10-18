@@ -7,13 +7,16 @@
 #include "entity/EnemyFactory.hpp"
 #include "level/MapData.hpp"
 
+// todo : move this in Core ?
+static std::default_random_engine random_engine{};
+
 // Generate random int in the interval [min; max[
 template<std::integral T>
-auto randRange(T min, T max, std::default_random_engine &randomEngine)
+auto randRange(T min, T max)
 {
     assert(max > min);
 
-    const auto r = randomEngine();
+    const auto r = random_engine();
     return min + static_cast<T>(r % static_cast<decltype(r)>(max - min));
 }
 
@@ -29,8 +32,7 @@ bool isRoomValid(game::TilemapBuilder &builder, const game::Room &r)
     return true;
 }
 
-game::Room
-    generateRoom(game::TilemapBuilder &builder, const game::FloorGenParam &params, std::default_random_engine &randomEngine)
+game::Room generateRoom(game::TilemapBuilder &builder, const game::FloorGenParam &params)
 {
     game::Room r;
 
@@ -39,11 +41,11 @@ game::Room
         if (tries++ > 10000) return {0, 0, 0, 0};
 
         // Width including walls (hence the +2)
-        r.w = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1, randomEngine);
-        r.h = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1, randomEngine);
+        r.w = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1);
+        r.h = randRange(params.minRoomSize + 2, params.maxRoomSize + 2 + 1);
 
-        r.x = randRange(0, params.maxDungeonWidth - r.w, randomEngine);
-        r.y = randRange(0, params.maxDungeonHeight - r.h, randomEngine);
+        r.x = randRange(0, params.maxDungeonWidth - r.w);
+        r.y = randRange(0, params.maxDungeonHeight - r.h);
     } while (!isRoomValid(builder, r));
 
     return r;
@@ -59,38 +61,34 @@ void placeRoomFloor(game::TilemapBuilder &builder, const game::Room &r, game::Ti
 }
 
 // If gap is even, center will be chosen randomly between the two center tiles
-int getOnePossibleCenterOf(int a, int b, std::default_random_engine &randomEngine)
+int getOnePossibleCenterOf(int a, int b)
 {
     int result = (a + b) / 2;
 
-    if ((a - b) % 2 == 0) result -= randRange(0, 1, randomEngine);
+    if ((a - b) % 2 == 0) result -= randRange(0, 1);
 
     return result;
 }
 
 // If room size is even, center will be chosen randomly between the two center tiles
-glm::ivec2 getOnePossibleCenterOf(const game::Room &r, std::default_random_engine &randomEngine)
+glm::ivec2 getOnePossibleCenterOf(const game::Room &r)
 {
     glm::ivec2 pos;
 
-    pos.x = getOnePossibleCenterOf(r.x, r.x + r.w, randomEngine);
-    pos.y = getOnePossibleCenterOf(r.y, r.y + r.h, randomEngine);
+    pos.x = getOnePossibleCenterOf(r.x, r.x + r.w);
+    pos.y = getOnePossibleCenterOf(r.y, r.y + r.h);
 
     return pos;
 }
 
 void generatorCorridor(
-    game::TilemapBuilder &builder,
-    const game::FloorGenParam &params,
-    std::default_random_engine &randomEngine,
-    const game::Room &r1,
-    const game::Room &r2)
+    game::TilemapBuilder &builder, const game::FloorGenParam &params, const game::Room &r1, const game::Room &r2)
 {
-    auto start = getOnePossibleCenterOf(r1, randomEngine);
-    auto end = getOnePossibleCenterOf(r2, randomEngine);
+    auto start = getOnePossibleCenterOf(r1);
+    auto end = getOnePossibleCenterOf(r2);
 
     auto vertical = [&](glm::vec<2, int> pos, int width) -> glm::vec<2, int> {
-        auto widthOffset = getOnePossibleCenterOf(0, width, randomEngine);
+        auto widthOffset = getOnePossibleCenterOf(0, width);
 
         auto minX = pos.x - widthOffset;
         auto maxX = pos.x + (width - widthOffset);
@@ -110,7 +108,7 @@ void generatorCorridor(
     };
 
     auto horizontal = [&](glm::vec<2, int> pos, int width) -> glm::vec<2, int> {
-        auto widthOffset = getOnePossibleCenterOf(0, width, randomEngine);
+        auto widthOffset = getOnePossibleCenterOf(0, width);
 
         auto minY = pos.y - widthOffset;
         auto maxY = pos.y + (width - widthOffset);
@@ -130,18 +128,19 @@ void generatorCorridor(
     };
 
 
-    if (randRange(0, 1, randomEngine)) {
-        auto maxWidth = std::min(r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
-        auto width = randRange(
-            std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1), randomEngine);
+    if (randRange(0, 1)) {
+        auto maxWidth = std::min(
+            r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+        auto width =
+            randRange(std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1));
 
         auto pos = vertical(start, width);
         horizontal(pos, width);
     } else {
         auto maxWidth = std::min(
             r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
-        auto width = randRange(
-            std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1), randomEngine);
+        auto width =
+            randRange(std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1));
 
         auto pos = horizontal(start, width);
         vertical(pos, width);
@@ -232,28 +231,27 @@ void placeBossRoomExitDoor(game::TilemapBuilder &builder, game::Room &r)
     assert(false && "Could not find boss room entrance, cannot place exit door");
 }
 
-game::MapData
-    generateLevel(entt::registry &world, engine::Shader *shader, game::FloorGenParam params, std::default_random_engine &randomEngine)
+game::MapData generateLevel(entt::registry &world, game::FloorGenParam params)
 {
-    game::TilemapBuilder builder(shader, {params.maxDungeonWidth, params.maxDungeonHeight});
+    game::TilemapBuilder builder({params.maxDungeonWidth, params.maxDungeonHeight});
 
-    auto roomCount = randRange(params.minRoomCount, params.maxRoomCount, randomEngine);
+    auto roomCount = randRange(params.minRoomCount, params.maxRoomCount);
 
     std::vector<game::Room> rooms;
     rooms.reserve(roomCount);
 
-    rooms.emplace_back(generateRoom(builder, params, randomEngine));
+    rooms.emplace_back(generateRoom(builder, params));
     placeRoomFloor(builder, rooms[0], game::TileEnum::RESERVED);
 
     for (std::size_t i = 0; i < roomCount - 1; ++i) {
-        auto room = generateRoom(builder, params, randomEngine);
+        auto room = generateRoom(builder, params);
         if (room.w == 0 && room.h == 0) break; // Failed to place room
 
         placeRoomFloor(
             builder, room, game::TileEnum::RESERVED); // Reserve the space, so multiple rooms don't spawn at the same place
         rooms.emplace_back(room);
 
-        generatorCorridor(builder, params, randomEngine, rooms[i], rooms[i + 1]);
+        generatorCorridor(builder, params, rooms[i], rooms[i + 1]);
     }
 
     game::MapData result;
@@ -275,31 +273,23 @@ game::MapData
     return result;
 }
 
-void spawnMobsIn(
-    entt::registry &world,
-    engine::Shader *shader,
-    game::FloorGenParam params,
-    std::default_random_engine &randomEngine,
-    const game::Room &r)
+void spawnMobsIn(entt::registry &world, game::FloorGenParam params, const game::Room &r)
 {
     for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
         for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
-            if (randRange(0, static_cast<int>(1.0f / params.mobDensity), randomEngine) == 0)
-                game::EnemyFactory::FirstEnemy(world, shader, glm::vec2{x + 0.5, y + 0.5});
+            if (randRange(0, static_cast<int>(1.0f / params.mobDensity)) == 0)
+                game::EnemyFactory::FirstEnemy(world, glm::vec2{x + 0.5, y + 0.5});
 }
 
-auto game::generateFloor(
-    entt::registry &world, engine::Shader *shader, game::FloorGenParam params, std::optional<unsigned int> seed) -> MapData
+auto game::generateFloor(entt::registry &world, game::FloorGenParam params, std::optional<unsigned int> seed) -> MapData
 {
-    std::default_random_engine randomEngine;
+    if (seed) random_engine.seed(seed.value());
 
-    if (seed) randomEngine.seed(seed.value());
+    auto data = generateLevel(world, params);
 
-    auto data = generateLevel(world, shader, params, randomEngine);
+    for (auto &r : data.regularRooms) spawnMobsIn(world, params, r);
 
-    for (auto &r : data.regularRooms) spawnMobsIn(world, shader, params, randomEngine, r);
-
-    data.nextFloorSeed = static_cast<unsigned int>(randomEngine());
+    data.nextFloorSeed = static_cast<unsigned int>(random_engine());
 
     return data;
 }

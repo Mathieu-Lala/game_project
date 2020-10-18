@@ -45,7 +45,6 @@ auto engine::Camera::setViewportSize(glm::vec2 size) -> void
     recomputeViewProj();
 }
 
-
 auto engine::Camera::move(const glm::vec2 &offset) -> void
 {
     m_pos.x += offset.x;
@@ -75,4 +74,6 @@ auto engine::Camera::recomputeViewProj() -> void
     m_viewMatrix = glm::inverse(transform);
 
     m_viewProjMatrix = m_projMatrix * m_viewMatrix;
+
+    is_updated = true;
 }

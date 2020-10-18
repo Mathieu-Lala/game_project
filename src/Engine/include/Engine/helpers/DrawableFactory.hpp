@@ -1,14 +1,20 @@
 #pragma once
 
+#include <cassert>
+
 #include <glm/vec3.hpp>
+
+#include <entt/entt.hpp>
 
 namespace engine {
 
 struct Drawable;
+struct Color;
 
 struct DrawableFactory {
-    // todo : isolate color in a component ?
-    static auto rectangle(glm::vec3 &&color) -> Drawable;
+    static auto rectangle() -> Drawable;
+
+    static auto fix_color(entt::registry &world, entt::entity e, glm::vec3 &&color) -> Color &;
 };
 
 } // namespace engine
