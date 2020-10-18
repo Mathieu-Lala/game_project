@@ -23,17 +23,16 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     auto tile = get(x, y);
     if (tile == TileEnum::NONE) return;
 
-    glm::ivec2 size(1, 1);
+     auto size = getTileSize(x, y);
 
-    // TODO: investigate why this doesn't work. It used to work before, problem probably comes from camera (?)
-    // auto size = getTileSize(x, y);
+     for (int clearY = y; clearY < y + size.y; ++clearY) {
+        for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
+    }
 
-    // for (int clearY = y; clearY < y + size.y; ++clearY) {
-    //    for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
-    //}
-
-    glm::vec2 tilePos{static_cast<float>(x), static_cast<float>(y)};
     glm::vec2 tileSize{static_cast<float>(size.x), static_cast<float>(size.y)};
+    glm::vec2 tilePos{static_cast<float>(x), static_cast<float>(y)};
+
+    tilePos += tileSize / 2.f;
 
     switch (tile) {
     case TileEnum::FLOOR_NORMAL_ROOM: TileFactory::FloorNormalRoom(world, tilePos, tileSize); break;
