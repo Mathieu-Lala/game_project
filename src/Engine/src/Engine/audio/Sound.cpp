@@ -12,7 +12,7 @@ engine::Sound::Sound(ALuint soundBuffer)
     alCall(alSource3f(m_buffer, AL_POSITION, 0, 0, 0));
     alCall(alSource3f(m_buffer, AL_VELOCITY, 0, 0, 0));
     alCall(alSourcei(m_buffer, AL_LOOPING, AL_FALSE));
-    alCall(alSourcei(m_buffer, AL_BUFFER, soundBuffer));
+    alCall(alSourcei(m_buffer, AL_BUFFER, static_cast<ALint>(soundBuffer)));
 }
 
 engine::Sound::~Sound()
