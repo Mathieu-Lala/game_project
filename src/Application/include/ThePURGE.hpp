@@ -51,7 +51,7 @@ private:
     unsigned int m_nextFloorSeed;
 
     engine::Camera m_camera;
-    engine::AudioManager m_audioManager;
+    engine::AudioManager m_audioManager; // should move to engine
 
     GameLogic m_logics;
 };
