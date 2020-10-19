@@ -7,26 +7,16 @@
 #include <Engine/Event/Event.hpp>
 #include <Engine/Core.hpp>
 
+#include <Engine/helpers/ImGui.hpp>
+
 #include "level/LevelTilemapBuilder.hpp"
 #include "level/MapGenerator.hpp"
 #include "entity/TileFactory.hpp"
 
-#include "EntityDepth.hpp"
+#include "entity/EnemyFactory.hpp"
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
-
-#include <stdio.h>
-
-#ifdef __unix__
-//define if linux
-#elif defined(_WIN32) || defined(WIN32)
-
-#define OS_Windows
-
-#endif
-
-//#include "Competences/FarmerCompetences.hpp"
 
 using namespace std::chrono_literals;
 
@@ -71,9 +61,7 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
             },
             e);
 
-        if (m_camera.isUpdated()) {
-            holder.instance->updateView(m_camera.getViewProjMatrix());
-        }
+        if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
     }
 }
 
@@ -186,21 +174,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         // note : this block could be launch in a future
         if (ImGui::Button("Start the game")) {
-
-            player = world.create();
-            world.emplace<entt::tag<"player"_hs>>(player);
-            world.emplace<engine::d3::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
-            world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
-            world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-            world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
-            world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
-            world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());//.shader = &shader;
-            engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
-            engine::DrawableFactory::fix_texture(world, player, DATA_DIR "textures/player.jpeg");
-            world.emplace<Health>(player, 100.0f, 100.0f);
-            world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
-            world.emplace<AttackDamage>(player, 50.0f);
-            world.emplace<Level>(player, 0u, 0u, 10u);
+            player = EnemyFactory::Player(world);
 
             // default camera value to see the generated terrain properly
             m_camera.setCenter(glm::vec2(13, 22));
@@ -218,7 +192,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             if (ImGui::Button("Reset")) m_camera = engine::Camera();
 
             auto cameraPos = m_camera.getCenter();
-            ImGui::Text("Camera Position (%.3f, %.3f)", static_cast<double>(cameraPos.x), static_cast<double>(cameraPos.y));
+            helper::ImGui::Text("Camera Position ({}, {})", cameraPos.x, cameraPos.y);
 
             bool pos_updated = false;
             pos_updated |= ImGui::DragFloat("Camera X", &cameraPos.x);
@@ -229,13 +203,12 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             auto viewPortSize = m_camera.getViewportSize();
             const auto pos = m_camera.getCenter();
 
-            ImGui::Text(
-                "Viewport size (%.3f, %.3f)", static_cast<double>(viewPortSize.x), static_cast<double>(viewPortSize.y));
+            helper::ImGui::Text("Viewport size ({}, {})", viewPortSize.x, viewPortSize.y);
             ImGui::Text("Viewport range :");
-            ImGui::Text("   left  : %.3f", static_cast<double>(pos.x) - static_cast<double>(viewPortSize.x / 2.0));
-            ImGui::Text("   right : %.3f", static_cast<double>(pos.x) + static_cast<double>(viewPortSize.x / 2.0));
-            ImGui::Text("   top   : %.3f", static_cast<double>(pos.y) + static_cast<double>(viewPortSize.y / 2.0));
-            ImGui::Text("   bottom: %.3f", static_cast<double>(pos.y) - static_cast<double>(viewPortSize.y / 2.0));
+            helper::ImGui::Text("   left  : {}", pos.x - viewPortSize.x / 2.0f);
+            helper::ImGui::Text("   right : {}", pos.x + viewPortSize.x / 2.0f);
+            helper::ImGui::Text("   top   : {}", pos.y + viewPortSize.y / 2.0f);
+            helper::ImGui::Text("   bottom: {}", pos.y - viewPortSize.y / 2.0f);
 
             bool updated = false;
             updated |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
@@ -258,21 +231,16 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::SetNextWindowSize(ImVec2(400, 100));
             ImGui::Begin(
                 "Info Player",
-                static_cast<bool *>(0),
+                nullptr,
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
-            char buf[32];
-#ifdef OS_Windows
-            sprintf_s(buf, "%d/%d", static_cast<int>(infoHealth.current), static_cast<int>(infoHealth.max));
-#else
-            sprintf(buf, "%d/%d", static_cast<int>(infoHealth.current), static_cast<int>(infoHealth.max));
-#endif
-            ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), buf);
+
+            ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), fmt::format("{}/{}", infoHealth.current, infoHealth.max).data());
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::Text("HP");
             ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-            ImGui::Text("XP - Level %d", level.current_level);
+            helper::ImGui::Text("XP - Level {}", level.current_level);
             ImGui::End();
 
             mapGenerationOverlayTick(world);
@@ -302,7 +270,6 @@ auto game::ThePurge::goToNextFloor(entt::registry &world) -> void
 
     auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
     m_nextFloorSeed = data.nextFloorSeed;
-
 
     auto &pos = world.get<engine::d3::Position>(player);
 

@@ -26,6 +26,7 @@
 #include "Engine/Core.hpp"
 
 #include "Engine/helpers/DrawableFactory.hpp"
+#include "Engine/helpers/ImGui.hpp"
 
 #include "Engine/Graphics/third_party.hpp" // note : only for DisplayMode
 
@@ -150,8 +151,8 @@ auto engine::Core::main() -> int
     m_shader_colored.reset(
         new Shader{Shader::fromFile(DATA_DIR "shaders/colored.vert.glsl", DATA_DIR "shaders/colored.frag.glsl")});
 
-    m_shader_colored_textured.reset(new Shader{Shader::fromFile(
-        DATA_DIR "shaders/colored_textured.vert.glsl", DATA_DIR "shaders/colored_textured.frag.glsl")});
+    m_shader_colored_textured.reset(new Shader{
+        Shader::fromFile(DATA_DIR "shaders/colored_textured.vert.glsl", DATA_DIR "shaders/colored_textured.frag.glsl")});
 
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
@@ -210,6 +211,8 @@ auto engine::Core::main() -> int
             m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
                 vel.x += acc.x;
                 vel.y += acc.y;
+
+                // todo : add max velocity
             });
 
             // todo : exclude the d2::Hitbox on this system
@@ -231,13 +234,16 @@ auto engine::Core::main() -> int
 
                 bool collide = false;
 
+                d3::Position others_pos;
+                d2::HitboxSolid others_hitbox;
+
                 for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
                     if (moving == others) continue;
 
-                    auto &others_pos = m_world.get<d3::Position>(others);
-                    auto &others_hitbox = m_world.get<d2::HitboxSolid>(others);
+                    others_pos = m_world.get<d3::Position>(others);
+                    others_hitbox = m_world.get<d2::HitboxSolid>(others);
 
-                    if (d2::overlapped(moving_hitbox, new_pos, others_hitbox, others_pos)) {
+                    if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, new_pos, others_hitbox, others_pos)) {
                         // spdlog::warn("{} and {} are colliding !", moving, others);
                         collide = true;
                         break;
@@ -247,7 +253,13 @@ auto engine::Core::main() -> int
                 if (!collide) {
                     moving_pos = new_pos;
                 } else {
-                    moving_vel = {0.0, 0.0};
+                    if (!d2::overlapped<d2::WITHOUT_EDGE>(
+                            moving_hitbox, d3::Position{new_pos.x, moving_pos.x, 0}, others_hitbox, others_pos)) {
+                        moving_vel.y = 0;
+                    } else if (!d2::overlapped<d2::WITHOUT_EDGE>(
+                                   moving_hitbox, d3::Position{moving_pos.y, new_pos.y, 0}, others_hitbox, others_pos)) {
+                        moving_vel.x = 0;
+                    }
                 }
             }
 
@@ -302,20 +314,6 @@ auto engine::Core::main() -> int
 
                         ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                     });
-
-//                m_world.view<Drawable, Color, d3::Position, d2::Scale>().each(
-//                    [this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
-//                        auto model = glm::dmat4(1.0);
-//                        model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
-//                        model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
-//                        m_shader_colored->uploadUniformMat4("model", model);
-//
-//                        ::glBindVertexArray(drawable.VAO);
-//
-//                        // note : mode could be defined in the drawable
-//                        ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-//                    });
-
             });
         }
 
@@ -375,15 +373,15 @@ auto engine::Core::debugDrawJoystick() -> void
     m_joystickManager->each([](const Joystick &joy) {
         ImGui::BeginChild("Scrolling");
         for (std::uint32_t n = 0; n < Joystick::BUTTONS_MAX; n++) {
-            ImGui::Text(
-                "%s = %i", magic_enum::enum_name(magic_enum::enum_cast<Joystick::Buttons>(n).value()).data(), joy.buttons[n]);
+            helper::ImGui::Text(
+                "{} = {}", magic_enum::enum_name(magic_enum::enum_cast<Joystick::Buttons>(n).value()).data(), joy.buttons[n]);
         }
         ImGui::EndChild();
 
         ImGui::BeginChild("Scrolling");
         for (std::uint32_t n = 0; n < Joystick::AXES_MAX; n++) {
-            ImGui::Text(
-                "%s = %f",
+            helper::ImGui::Text(
+                "{} = {}",
                 magic_enum::enum_name(magic_enum::enum_cast<Joystick::Axis>(n).value()).data(),
                 double{joy.axes[n]});
         }

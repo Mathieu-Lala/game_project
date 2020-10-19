@@ -38,7 +38,7 @@ enum WithEdgeInHitbox {
     WITH_EDGE = 1,
 };
 
-template<std::floating_point T, HitboxType Self, HitboxType Other, WithEdgeInHitbox v = WITHOUT_EDGE>
+template<WithEdgeInHitbox Edge, std::floating_point T, HitboxType Self, HitboxType Other>
 [[nodiscard]] constexpr
 auto overlapped(const HitboxT<T, Self> &self, const d3::PositionT<T> &self_pos, const HitboxT<T, Other> &other, const d3::PositionT<T> &other_pos) noexcept
         -> bool
@@ -53,7 +53,7 @@ auto overlapped(const HitboxT<T, Self> &self, const d3::PositionT<T> &self_pos, 
         const auto by = other_pos.y - other.height / 2.0;
         const auto bh = other_pos.y + other.height / 2.0;
 
-        if constexpr (v == WITH_EDGE)
+        if constexpr (Edge == WITH_EDGE)
             return aw >= bx && ax <= bw && ah >= by && ay <= bh;
         else
             return aw > bx && ax < bw && ah > by && ay < bh;

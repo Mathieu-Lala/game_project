@@ -100,7 +100,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
 
-        if (engine::d2::overlapped(entity_hitbox, entity_pos, spell_hitbox, spell_pos)) {
+        if (engine::d2::overlapped<engine::d2::WITHOUT_EDGE>(entity_hitbox, entity_pos, spell_hitbox, spell_pos)) {
             auto &entity_health = world.get<Health>(entity);
             auto &spell_damage = world.get<AttackDamage>(spell);
 
