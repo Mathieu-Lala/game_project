@@ -49,5 +49,5 @@ cmake
 [imports]
 bin, *.dll -> ../out/
 lib, *.so* -> ../out/
-bin, *.pdb -> ../out/
+lib, *.pdb -> ../out/ #not working :(
 lib, *.dylib* -> ../out/

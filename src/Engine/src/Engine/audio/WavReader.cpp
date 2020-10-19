@@ -6,7 +6,7 @@
 std::int32_t convert_to_int(char *buffer, std::size_t len)
 {
     std::int32_t a = 0;
-    if (std::endian::native == std::endian::little)
+    if constexpr (std::endian::native == std::endian::little)
         std::memcpy(&a, buffer, len);
     else
         for (std::size_t i = 0; i < len; ++i) reinterpret_cast<char *>(&a)[3 - i] = buffer[i];
@@ -68,7 +68,7 @@ bool load_wav_file_header(
         spdlog::error("ERROR: could not read number of channels");
         return false;
     }
-    channels = convert_to_int(buffer, 2);
+    channels = static_cast<uint8_t>(convert_to_int(buffer, 2));
 
     // sample rate
     if (!file.read(buffer, 4)) {
@@ -94,7 +94,7 @@ bool load_wav_file_header(
         spdlog::error("ERROR: could not read bits per sample");
         return false;
     }
-    bitsPerSample = convert_to_int(buffer, 2);
+    bitsPerSample = static_cast<uint8_t>(convert_to_int(buffer, 2));
 
     // data chunk header "data"
     if (!file.read(buffer, 4)) {
