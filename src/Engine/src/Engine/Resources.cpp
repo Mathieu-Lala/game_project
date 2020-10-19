@@ -2,6 +2,8 @@
 #include "Engine/resources/LoaderColor.hpp"
 #include "Engine/component/Texture.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
+#include "Engine/resources/AudioFileLoader.hpp"
+#include "Engine/audio/AudioManager.hpp"
 
 auto engine::LoaderColor::load(glm::vec3 &&color) const -> std::shared_ptr<Color>
 {
@@ -11,4 +13,9 @@ auto engine::LoaderColor::load(glm::vec3 &&color) const -> std::shared_ptr<Color
 auto engine::LoaderTexture::load(const std::string_view path) const -> std::shared_ptr<Texture>
 {
     return std::shared_ptr<Texture>(new Texture{Texture::ctor(path)}, Texture::dtor);
+}
+
+auto engine::AudioFileLoader::load(const std::string &path) const -> std::shared_ptr<AudioFileBuffer>
+{
+    return std::make_shared<AudioFileBuffer>(path);
 }

@@ -38,8 +38,12 @@ add_library(
   src/Engine/helpers/DrawableFactory.cpp
   src/Engine/Camera.cpp
   src/Engine/Component.cpp
-  src/Engine/JoystickManager.cpp
-  src/Engine/Resources.cpp)
+  src/Engine/JoystickManager.cpp 
+  src/Engine/audio/AudioManager.cpp 
+  src/Engine/audio/AlErrorHandling.cpp
+  src/Engine/audio/Sound.cpp
+  src/Engine/audio/WavReader.cpp
+  src/Engine/Resources.cpp "src/Engine/audio/AudioFileBuffer.cpp")
 
 target_include_directories(
   engine PUBLIC include ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}
@@ -57,7 +61,8 @@ target_link_libraries(
          CONAN_PKG::entt
          CONAN_PKG::stb
          CONAN_PKG::magic_enum
-         CONAN_PKG::CLI11)
+         CONAN_PKG::CLI11
+         CONAN_PKG::openal)
 
 if(MSVC)
   target_compile_definitions(engine PUBLIC NOMINMAX)

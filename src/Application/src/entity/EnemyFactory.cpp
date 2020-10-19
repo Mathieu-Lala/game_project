@@ -42,3 +42,22 @@ auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> vo
     world.emplace<game::AttackDamage>(e, 30.0f);
     world.emplace<Health>(e, 500.0f, 500.0f);
 }
+
+auto game::EnemyFactory::Player(entt::registry &world) -> entt::entity
+{
+    auto player = world.create();
+    world.emplace<entt::tag<"player"_hs>>(player);
+    world.emplace<engine::d3::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
+    world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
+    world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
+    world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
+    world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
+    world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
+    engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
+    engine::DrawableFactory::fix_texture(world, player, DATA_DIR "textures/player.jpeg");
+    world.emplace<Health>(player, 100.0f, 100.0f);
+    world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
+    world.emplace<AttackDamage>(player, 50.0f);
+    world.emplace<Level>(player, 0u, 0u, 10u);
+    return player;
+}
