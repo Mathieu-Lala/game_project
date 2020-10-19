@@ -232,10 +232,10 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::Text(
                 "Viewport size (%.3f, %.3f)", static_cast<double>(viewPortSize.x), static_cast<double>(viewPortSize.y));
             ImGui::Text("Viewport range :");
-            ImGui::Text("   left  : %.3f", (double) pos.x - (viewPortSize.x / 2.0));
-            ImGui::Text("   right : %.3f", (double) pos.x + (viewPortSize.x / 2.0));
-            ImGui::Text("   top   : %.3f", (double) pos.y + (viewPortSize.y / 2.0));
-            ImGui::Text("   bottom: %.3f", (double) pos.y - (viewPortSize.y / 2.0));
+            ImGui::Text("   left  : %.3f", static_cast<double>(pos.x) - (viewPortSize.x / 2.0));
+            ImGui::Text("   right : %.3f", static_cast<double>(pos.x) + (viewPortSize.x / 2.0));
+            ImGui::Text("   top   : %.3f", static_cast<double>(pos.y) + (viewPortSize.y / 2.0));
+            ImGui::Text("   bottom: %.3f", static_cast<double>(pos.y) - (viewPortSize.y / 2.0));
 
             bool updated = false;
             updated |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
