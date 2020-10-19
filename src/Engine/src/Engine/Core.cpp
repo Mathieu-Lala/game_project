@@ -146,6 +146,7 @@ auto engine::Core::main() -> int
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 
     while (isRunning()) { // note Core::isRunning instead ?
+
         const auto event = getNextEvent();
 
         std::visit(

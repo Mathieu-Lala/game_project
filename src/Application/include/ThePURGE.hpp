@@ -47,6 +47,7 @@ private:
     auto goToNextFloor(entt::registry &world) -> void;
 
     auto mapGenerationOverlayTick(entt::registry &world) -> void;
+    auto displaySoundDebugGui() -> void;
 
     State m_state{ LOADING };
 

@@ -31,10 +31,6 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::Pressed<engine::Key> &key) {
                     // not really working perfectly
                     switch (key.source.key) {
-                    case GLFW_KEY_V:
-                        m_audioManager.getSound(DATA_DIR "/sounds/hit.wav")->play();
-                        break;
-
                     case GLFW_KEY_UP: m_camera.move({0, 1}); break;
                     case GLFW_KEY_RIGHT: m_camera.move({1, 0}); break;
                     case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
@@ -66,6 +62,54 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
     }
 }
 
+void game::ThePurge::displaySoundDebugGui()
+{
+    static std::vector<std::shared_ptr<engine::Sound>> sounds;
+    static char pathBuff[256] = DATA_DIR "/sounds/DungeonMusic.wav";
+
+    ImGui::Begin("Sound debug window");
+
+    ImGui::InputText("Path", pathBuff, IM_ARRAYSIZE(pathBuff));
+    if (ImGui::Button("Load")) {
+        try {
+            sounds.push_back(m_audioManager.getSound(pathBuff));
+        } catch (...) {
+        }
+    }
+    ImGui::Separator();
+
+    std::shared_ptr<engine::Sound> toRemove = nullptr;
+
+    int loopId = 0;
+    for (const auto &s : sounds) {
+        ImGui::PushID(loopId++);
+
+        ImGui::Text("Status :");
+        ImGui::SameLine();
+
+        switch (s->getStatus()) {
+        case engine::SoundStatus::INITIAL: ImGui::TextColored(ImVec4(1, 1, 1, 1), "Initial"); break;
+        case engine::SoundStatus::PLAYING: ImGui::TextColored(ImVec4(0.2f, 1, 0.2f, 1), "Playing"); break;
+        case engine::SoundStatus::PAUSED: ImGui::TextColored(ImVec4(1, 1, 0.4f, 1), "Paused"); break;
+        case engine::SoundStatus::STOPPED: ImGui::TextColored(ImVec4(1, 0.2f, 0.2f, 1), "Stopped"); break;
+        }
+
+        if (ImGui::Button("Play")) s->play();
+        if (ImGui::Button("Sop")) s->stop();
+
+        if (ImGui::Button("Forget")) {
+            toRemove = s;
+            s->stop();
+        }
+
+        ImGui::PopID();
+    }
+
+    if (toRemove) sounds.erase(std::find(std::begin(sounds), std::end(sounds), toRemove));
+
+    ImGui::End();
+}
+
 auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 {
     static bool spamNextFloor = false;
@@ -74,8 +118,7 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 
     ImGui::Checkbox("Spam next floor", &spamNextFloor);
 
-    if (ImGui::Button("Next floor") || spamNextFloor)
-        goToNextFloor(world);
+    if (ImGui::Button("Next floor") || spamNextFloor) goToNextFloor(world);
 
     ImGui::SliderInt("Min room size", &m_map_generation_params.minRoomSize, 0, m_map_generation_params.maxRoomSize);
     ImGui::SliderInt("Max room size", &m_map_generation_params.maxRoomSize, m_map_generation_params.minRoomSize, 50);
@@ -111,7 +154,6 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         ImGui::Begin("Menu loading", nullptr, ImGuiWindowFlags_NoDecoration);
 
         if (ImGui::Button("Start the game")) {
-
             // note : this block could be launch in a future
             player = world.create();
             world.emplace<entt::tag<"player"_hs>>(player);
@@ -156,10 +198,10 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::Text(
                 "Viewport size (%.3f, %.3f)", static_cast<double>(viewPortSize.x), static_cast<double>(viewPortSize.y));
             ImGui::Text("Viewport range :");
-            ImGui::Text("   left  : %.3f", (double)pos.x - (viewPortSize.x / 2.0));
-            ImGui::Text("   right : %.3f", (double)pos.x + (viewPortSize.x / 2.0));
-            ImGui::Text("   top   : %.3f", (double)pos.y + (viewPortSize.y / 2.0));
-            ImGui::Text("   bottom: %.3f", (double)pos.y - (viewPortSize.y / 2.0));
+            ImGui::Text("   left  : %.3f", (double) pos.x - (viewPortSize.x / 2.0));
+            ImGui::Text("   right : %.3f", (double) pos.x + (viewPortSize.x / 2.0));
+            ImGui::Text("   top   : %.3f", (double) pos.y + (viewPortSize.y / 2.0));
+            ImGui::Text("   bottom: %.3f", (double) pos.y - (viewPortSize.y / 2.0));
 
             bool updated = false;
             updated |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
@@ -167,6 +209,8 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
             if (updated) m_camera.setViewportSize(viewPortSize);
             ImGui::End();
+
+            displaySoundDebugGui();
         }
         {
             const auto infoHealth = world.get<Health>(player);
@@ -204,7 +248,8 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
     }
 }
 
-auto game::ThePurge::goToNextFloor(entt::registry &world) -> void {
+auto game::ThePurge::goToNextFloor(entt::registry &world) -> void
+{
     world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });

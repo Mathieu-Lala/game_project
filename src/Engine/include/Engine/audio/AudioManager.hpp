@@ -22,6 +22,7 @@ public:
 
 private:
     auto genSoundBuffer(const std::string &path) -> ALuint;
+    void garbageCollectCurrentSounds();
 
 private:
     ALCdevice *m_device;

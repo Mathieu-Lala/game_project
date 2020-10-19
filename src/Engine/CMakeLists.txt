@@ -41,7 +41,8 @@ add_library(
   src/Engine/JoystickManager.cpp 
   src/Engine/audio/AudioManager.cpp 
   src/Engine/audio/AlErrorHandling.cpp
-  src/Engine/audio/Sound.cpp)
+  src/Engine/audio/Sound.cpp
+  src/Engine/audio/WavReader.cpp)
 
 target_include_directories(
   engine PUBLIC include ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}

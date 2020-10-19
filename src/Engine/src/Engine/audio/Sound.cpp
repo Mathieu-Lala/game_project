@@ -18,11 +18,30 @@ engine::Sound::Sound(ALuint soundBuffer)
 engine::Sound::~Sound()
 {
     alSourceStop(m_buffer);
-    alCall(alDeleteSources(1, &m_buffer));
+    alDeleteSources(1, &m_buffer);
 }
 
 void engine::Sound::play()
 {
     spdlog::info("Playing sound !");
     alCall(alSourcePlay(m_buffer));
+}
+
+void engine::Sound::stop()
+{
+    alCall(alSourceStop(m_buffer));
+}
+
+auto engine::Sound::getStatus() const -> SoundStatus
+{
+    ALint state;
+    alCall(alGetSourcei(m_buffer, AL_SOURCE_STATE, &state));
+
+    switch (state) {
+    case AL_INITIAL: return SoundStatus::INITIAL;
+    case AL_PLAYING: return SoundStatus::PLAYING;
+    case AL_PAUSED: return SoundStatus::PAUSED;
+    case AL_STOPPED: return SoundStatus::STOPPED;
+    default: std::abort();
+    }
 }
