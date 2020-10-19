@@ -10,6 +10,8 @@
 #include "Engine/Game.hpp"
 
 #include "Engine/resources/LoaderColor.hpp" // note : move me in .cpp
+#include "Engine/component/Texture.hpp"
+#include "Engine/resources/LoaderTexture.hpp"
 
 namespace engine {
 
@@ -133,8 +135,10 @@ private:
     //
 
     CacheColor m_colors;
+    CacheTexture m_textures;
 
     std::unique_ptr<Shader> m_shader_colored;
+    std::unique_ptr<Shader> m_shader_colored_textured;
 
 
 #ifndef NDEBUG
@@ -149,6 +153,12 @@ template<>
 inline auto Core::getCache() -> entt::resource_cache<Color> &
 {
     return m_colors;
+}
+
+template<>
+inline auto Core::getCache() -> entt::resource_cache<Texture> &
+{
+    return m_textures;
 }
 
 } // namespace engine

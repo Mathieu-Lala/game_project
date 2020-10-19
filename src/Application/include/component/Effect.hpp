@@ -5,10 +5,10 @@
 
 namespace game {
 
-struct Effect {
+struct Effect { // todo : split me in severals components
     bool is_in_effect;
     bool is_in_cooldown;
-    std::string effect_name;
+    std::string effect_name; // todo : use enum
 
     std::chrono::milliseconds time_effect;
     std::chrono::milliseconds remaining_time_effect;

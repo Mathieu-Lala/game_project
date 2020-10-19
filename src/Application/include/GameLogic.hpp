@@ -11,8 +11,6 @@
 
 #include "component/all.hpp"
 
-using namespace std::chrono_literals; // ms ..
-
 namespace game {
 
 class ThePurge;
@@ -48,7 +46,6 @@ public:
     auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
     auto cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void;
-
 };
 
 } // namespace game

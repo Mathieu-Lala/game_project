@@ -9,6 +9,12 @@ This project is a video game for PC. See the [Game Design Document](doc/GDD_ten_
 
 This repository contains the source code of the game and his engine.
 
+## Screenshots
+
+Application version 2.9
+
+![v2.9](./data/screenshots/Screenshot_from_2020-10-18_00-14-21.png)
+
 ## Installing
 
 ### Requirements

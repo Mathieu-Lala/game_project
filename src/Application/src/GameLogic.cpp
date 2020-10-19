@@ -2,12 +2,10 @@
 
 #include <Engine/helpers/DrawableFactory.hpp>
 
-//#include <Engine/Event/Event.hpp> // note : should not require this header here
-//#include <Engine/Graphics/Shader.hpp> // note : should not require this header here
-//#include <Engine/Core.hpp>
-
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
+
+using namespace std::chrono_literals;
 
 game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
 {
@@ -63,7 +61,7 @@ auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed 
 auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
     auto player_health = world.get<game::Health>(m_game.player);
-    
+
     world.view<game::Effect>().each([&](auto &effect) {
         if (!effect.is_in_effect) return;
         if (dt.elapsed < effect.remaining_time_effect) {

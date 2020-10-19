@@ -1,10 +1,12 @@
 #include <spdlog/spdlog.h>
+#include <stb_image.h>
 
 #include "Engine/Graphics/third_party.hpp"
-#include "Engine/Graphics/Shader.hpp"
 #include "Engine/component/Drawable.hpp"
 #include "Engine/component/Color.hpp"
+#include "Engine/component/Texture.hpp"
 #include "Engine/helpers/DrawableFactory.hpp"
+#include "Engine/Graphics/Shader.hpp"
 #include "Engine/Event/Event.hpp"
 #include "Engine/Core.hpp"
 
@@ -52,7 +54,6 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
 
     assert(world.has<Drawable>(e));
     auto &drawable = world.get<Drawable>(e);
-
     ::glBindVertexArray(drawable.VAO);
 
     auto handle = holder.instance->getCache<Color>().load<LoaderColor>(
@@ -73,5 +74,34 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
     } else {
         spdlog::error("could not load color in cache !");
         throw std::runtime_error("could not load color in cache !");
+    }
+}
+
+auto engine::DrawableFactory::fix_texture(entt::registry &world, entt::entity e, const std::string_view filepath)
+    -> Texture &
+{
+    static Core::Holder holder{};
+
+    assert(world.has<Drawable>(e));
+    auto &drawable = world.get<Drawable>(e);
+    ::glBindVertexArray(drawable.VAO);
+
+    auto handle = holder.instance->getCache<Texture>().load<LoaderTexture>(
+        entt::hashed_string{fmt::format("resource/texture/identifier/{}", filepath).data()}, filepath);
+    if (handle) {
+        ::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO);
+        ::glBufferData(
+            GL_ARRAY_BUFFER,
+            static_cast<GLsizeiptr>(handle->vertices.size() * sizeof(float)),
+            handle->vertices.data(),
+            GL_STATIC_DRAW);
+
+        ::glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), static_cast<void *>(0));
+        ::glEnableVertexAttribArray(2);
+
+        return world.emplace_or_replace<Texture>(e, *handle);
+    } else {
+        spdlog::error("could not load texture in cache !");
+        throw std::runtime_error("could not load texture in cache !");
     }
 }

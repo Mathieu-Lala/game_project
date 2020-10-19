@@ -7,10 +7,6 @@ Libaries:
     Utility:
         physics: ? units ? (https://github.com/mpusz/units)
 
-    # Not needed => game in 2D
-    3D assets manager: ? Assimp ? (https://github.com/assimp/assimp)
-    # Not needed => not in network
-    Network: ? boost ?
     Audio: ? portaudio ? irrlang ?
 
 Static Analyzer:
