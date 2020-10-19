@@ -33,8 +33,6 @@ engine::AudioManager::~AudioManager()
 
 auto engine::AudioManager::getSound(const std::string &path) -> std::shared_ptr<Sound>
 {
-    spdlog::info("Loading sound '{}'", path);
-
     garbageCollectCurrentSounds(); // We should run this method periodically. calling here is the easiest way for now
 
     // TODO: cache + proper delete via `alDeleteSources(1, &buffer)`
@@ -95,6 +93,4 @@ void engine::AudioManager::garbageCollectCurrentSounds()
             std::end(m_currentSounds),
             [](auto &s) { return s.use_count() == 1 && s->getStatus() != SoundStatus::PLAYING; }),
         std::end(m_currentSounds));
-
-    spdlog::info("current sound count : {}", m_currentSounds.size());
 }

@@ -23,14 +23,26 @@ engine::Sound::~Sound()
 
 void engine::Sound::play()
 {
-    spdlog::info("Playing sound !");
     alCall(alSourcePlay(m_buffer));
 }
 
-void engine::Sound::stop()
+void engine::Sound::stop() { alCall(alSourceStop(m_buffer)); }
+
+// Range [0.5; 2]
+auto engine::Sound::setSpeed(float pitch) -> void
 {
-    alCall(alSourceStop(m_buffer));
+    pitch = std::clamp(pitch, 0.5f, 2.f);
+    alCall(alSourcef(m_buffer, AL_PITCH, pitch));
 }
+// Range [0, +inf]
+auto engine::Sound::setVolume(float volume) -> void
+{
+    volume = std::clamp(volume, 0.f, 99999.f);
+
+    alCall(alSourcef(m_buffer, AL_GAIN, volume));
+}
+
+auto engine::Sound::setLoop(bool loop) -> void { alCall(alSourcei(m_buffer, AL_LOOPING, loop ? AL_TRUE : AL_FALSE)); }
 
 auto engine::Sound::getStatus() const -> SoundStatus
 {
@@ -44,4 +56,25 @@ auto engine::Sound::getStatus() const -> SoundStatus
     case AL_STOPPED: return SoundStatus::STOPPED;
     default: std::abort();
     }
+}
+
+
+auto engine::Sound::getSpeed() const -> float
+{
+    float result;
+    alCall(alGetSourcef(m_buffer, AL_PITCH, &result));
+    return result;
+}
+
+auto engine::Sound::getVolume() const -> float
+{
+    float result;
+    alCall(alGetSourcef(m_buffer, AL_GAIN, &result));
+    return result;
+}
+auto engine::Sound::doesLoop() const -> bool
+{
+    ALint result;
+    alCall(alGetSourcei(m_buffer, AL_LOOPING, &result));
+    return result;
 }

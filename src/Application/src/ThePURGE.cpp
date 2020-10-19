@@ -65,14 +65,18 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
 void game::ThePurge::displaySoundDebugGui()
 {
     static std::vector<std::shared_ptr<engine::Sound>> sounds;
-    static char pathBuff[256] = DATA_DIR "/sounds/DungeonMusic.wav";
 
     ImGui::Begin("Sound debug window");
 
-    ImGui::InputText("Path", pathBuff, IM_ARRAYSIZE(pathBuff));
-    if (ImGui::Button("Load")) {
+    if (ImGui::Button("Load Music")) {
         try {
-            sounds.push_back(m_audioManager.getSound(pathBuff));
+            sounds.push_back(m_audioManager.getSound(DATA_DIR "/sounds/DungeonMusic.wav"));
+        } catch (...) {
+        }
+    }
+    if (ImGui::Button("Load Hit sound")) {
+        try {
+            sounds.push_back(m_audioManager.getSound(DATA_DIR "/sounds/hit.wav"));
         } catch (...) {
         }
     }
@@ -97,12 +101,24 @@ void game::ThePurge::displaySoundDebugGui()
         if (ImGui::Button("Play")) s->play();
         if (ImGui::Button("Sop")) s->stop();
 
+        auto speed = s->getSpeed();
+        if (ImGui::SliderFloat("Speed", &speed, 0.5, 2)) s->setSpeed(speed);
+
+        auto volume = s->getVolume();
+        if (ImGui::SliderFloat("Volume", &volume, 0, 5)) s->setVolume(volume);
+
+        auto loop = s->doesLoop();
+        if (ImGui::Checkbox("Loop", &loop)) s->setLoop(loop);
+
+
         if (ImGui::Button("Forget")) {
             toRemove = s;
             s->stop();
         }
 
         ImGui::PopID();
+
+        ImGui::Separator();
     }
 
     if (toRemove) sounds.erase(std::find(std::begin(sounds), std::end(sounds), toRemove));
