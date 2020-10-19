@@ -1,11 +1,12 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 
-#include <Engine/Event/Event.hpp>
+#include <Engine/Event/Event.hpp> // note : should not require this header here
+#include <Engine/Graphics/Shader.hpp> // note : should not require this header here
 #include <Engine/Graphics/Window.hpp>
 #include <Engine/Core.hpp>
 
-#include "GameLogic.hpp"
+#include "GameLogic.hpp" // note : should not require this header here
 #include "ThePURGE.hpp"
 #include "Options.hpp"
 

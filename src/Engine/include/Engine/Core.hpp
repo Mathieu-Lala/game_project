@@ -2,15 +2,21 @@
 
 #include <concepts>
 #include <memory>
+#include <chrono>
+#include <vector>
+
 #include <entt/entt.hpp>
 
 #include "Engine/Game.hpp"
+
+#include "Engine/resources/LoaderColor.hpp" // note : move me in .cpp
 
 namespace engine {
 
 class Window;
 class Game;
 class JoystickManager;
+class Shader;
 
 class Core {
 private:
@@ -78,6 +84,14 @@ public:
 
     auto close() noexcept -> void { m_is_running = false; }
 
+    template<typename T>
+    auto getCache() -> entt::resource_cache<T> &;
+
+
+    // note : not the best way ..
+    auto updateView(const glm::mat4 &view) -> void;
+
+
 private:
     static auto get() noexcept -> std::unique_ptr<Core> &;
 
@@ -85,7 +99,7 @@ private:
 
     static auto loadOpenGL() -> void;
 
-    bool m_is_running{ true };
+    bool m_is_running{true};
 
     // note : for now the engine support only one window
     std::unique_ptr<Window> m_window{nullptr};
@@ -104,7 +118,6 @@ private:
 
     EventMode m_eventMode{RECORD};
 
-    // todo : std::pmr::queue instead of vector ? try it with google benchmark
     std::vector<Event> m_eventsPlayback;
 
 
@@ -115,6 +128,14 @@ private:
 
     std::unique_ptr<JoystickManager> m_joystickManager;
 
+    //
+    // Resources
+    //
+
+    CacheColor m_colors;
+
+    std::unique_ptr<Shader> m_shader_colored;
+
 
 #ifndef NDEBUG
     auto debugDrawJoystick() -> void;
@@ -124,8 +145,13 @@ private:
     std::uint32_t m_displayMode = 4; // GL_TRIANGLES
 };
 
-} // namespace engine
+template<>
+inline auto Core::getCache() -> entt::resource_cache<Color> &
+{
+    return m_colors;
+}
 
+} // namespace engine
 
 #ifndef NDEBUG
 #    define IF_RECORD(...)                                                                                           \

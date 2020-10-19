@@ -15,3 +15,4 @@
 #include "component/Health.hpp"
 #include "component/Lifetime.hpp"
 #include "component/Level.hpp"
+#include "component/Effect.hpp"

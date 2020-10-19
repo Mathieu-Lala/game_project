@@ -15,6 +15,7 @@
 #include "Engine/component/Velocity.hpp"
 #include "Engine/component/Acceleration.hpp"
 #include "Engine/component/Hitbox.hpp"
+#include "Engine/component/Color.hpp"
 
 #include "Engine/Event/Event.hpp"
 #include "Engine/Graphics/Shader.hpp"
@@ -22,7 +23,12 @@
 #include "Engine/Event/JoystickManager.hpp"
 #include "Engine/Core.hpp"
 
+#include "Engine/helpers/DrawableFactory.hpp"
+
 #include "Engine/Graphics/third_party.hpp" // note : only for DisplayMode
+
+// todo : remove me
+#include "Engine/../../../Application/include/Declaration.hpp"
 
 engine::Core *engine::Core::s_instance{nullptr};
 
@@ -142,6 +148,9 @@ auto engine::Core::main() -> int
 {
     if (m_window == nullptr || m_game == nullptr) { return 1; }
 
+    m_shader_colored.reset(
+        new Shader{Shader::fromFile(DATA_DIR "/shaders/colored.vert.glsl", DATA_DIR "/shaders/colored.frag.glsl")});
+
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 
@@ -169,7 +178,10 @@ auto engine::Core::main() -> int
                     m_lastTick = std::chrono::steady_clock::now();
                     ::glViewport(0, 0, static_cast<int>(m_window->getSize().x), static_cast<int>(m_window->getSize().y));
                 },
-                [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); this->close(); },
+                [&]([[maybe_unused]] const CloseWindow &) {
+                    m_window->close();
+                    this->close();
+                },
                 [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); }, // todo : move this in camera ? or window ?
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
                 [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
@@ -237,6 +249,16 @@ auto engine::Core::main() -> int
                 }
             }
 
+#ifdef MODE_EPILEPTIC // change the color at every frame
+            for (const auto &i : m_world.view<Drawable, Color>()) {
+                auto &color = m_world.get<Color>(i);
+                const auto r = std::clamp(Color::r(color) - 0.01f, 0.0f, 1.0f);
+                const auto g = std::clamp(Color::g(color) - 0.01f, 0.0f, 1.0f);
+                const auto b = std::clamp(Color::b(color) - 0.01f, 0.0f, 1.0f);
+                DrawableFactory::fix_color(m_world, i, {r ? r : 1.0f, g ? g : 1.0f, b ? b : 1.0f});
+            }
+#endif
+
             m_window->draw([&] {
                 m_game->drawUserInterface(m_world);
 
@@ -251,18 +273,18 @@ auto engine::Core::main() -> int
                 ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                m_world.view<Drawable, d3::Position, d2::Scale>().each(
-                    [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {
-                        drawable.shader->use();
-
+                m_shader_colored->use();
+                m_world.view<Drawable, Color, d3::Position, d2::Scale>().each(
+                    [this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
                         auto model = glm::dmat4(1.0);
                         model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
                         model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
-                        drawable.shader->uploadUniformMat4("model", model);
+                        m_shader_colored->uploadUniformMat4("model", model);
+
+                        ::glBindVertexArray(drawable.VAO);
 
                         // note : mode could be defined in the drawable
-                        ::glBindVertexArray(drawable.VAO);
-                        ::glDrawElements(mode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                        ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                     });
             });
         }
@@ -285,6 +307,8 @@ auto engine::Core::main() -> int
 
     return 0;
 }
+
+auto engine::Core::updateView(const glm::mat4 &view) -> void { m_shader_colored->uploadUniformMat4("viewProj", view); }
 
 auto engine::Core::get() noexcept -> std::unique_ptr<Core> &
 {

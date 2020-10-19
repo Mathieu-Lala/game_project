@@ -36,10 +36,6 @@ public:
 
     entt::entity player;
 
-    // todo : move shaders logics in Core
-    engine::Shader shader =
-        engine::Shader::fromFile(DATA_DIR "/shaders/camera.vert.glsl", DATA_DIR "/shaders/camera.frag.glsl");
-
     auto setState(State new_state) noexcept { m_state = new_state; }
 
 private:
