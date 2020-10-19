@@ -7,8 +7,6 @@
 
 namespace engine {
 
-// note : should be cached because it is very heavy !!!
-// we can use the same VBO on severals VAO, so keep this in cache with entt
 struct Color {
     // array of value normalized between 0.0 and 1.0
     std::array<float, 12ul> vertices{};

@@ -121,9 +121,9 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         // todo : style because this is not a debug window
         ImGui::Begin("Menu loading", nullptr, ImGuiWindowFlags_NoDecoration);
 
+        // note : this block could be launch in a future
         if (ImGui::Button("Start the game")) {
 
-            // note : this block could be launch in a future
             player = world.create();
             world.emplace<entt::tag<"player"_hs>>(player);
             world.emplace<engine::d3::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
@@ -133,6 +133,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
             world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());//.shader = &shader;
             engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
+            engine::DrawableFactory::fix_texture(world, player, DATA_DIR "textures/player.jpeg");
             world.emplace<Health>(player, 100.0f, 100.0f);
             world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
             world.emplace<AttackDamage>(player, 50.0f);

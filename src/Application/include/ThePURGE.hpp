@@ -37,18 +37,22 @@ public:
 
     auto setState(State new_state) noexcept { m_state = new_state; }
 
-private:
+    auto getBackgroundColor() const noexcept -> glm::vec3 final
+    {
+        return m_state == GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};
+    }
 
+private:
     auto goToNextFloor(entt::registry &world) -> void;
 
     auto mapGenerationOverlayTick(entt::registry &world) -> void;
 
-    State m_state{ LOADING };
+    State m_state{LOADING};
 
     FloorGenParam m_map_generation_params;
     unsigned int m_nextFloorSeed;
 
-    engine::Camera m_camera;
+    engine::Camera m_camera; // note : should be in engine::Core
 
     GameLogic m_logics;
 };

@@ -82,6 +82,8 @@ auto engine::Shader::use() -> void { ::glUseProgram(ID); }
 
 auto engine::Shader::uploadUniformMat4(const std::string &name, const ::glm::mat4 &mat) -> void
 {
+    use();
+
     if (const auto location = glGetUniformLocation(ID, name.c_str()); location != -1)
         ::glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
     else {

@@ -4,6 +4,8 @@
 #include "entity/EnemyFactory.hpp"
 #include "EntityDepth.hpp"
 
+#include "Declaration.hpp"
+
 using namespace std::chrono_literals; // ms ..
 
 auto game::EnemyFactory::FirstEnemy(entt::registry &world, const glm::vec2 &pos) -> void
@@ -16,6 +18,7 @@ auto game::EnemyFactory::FirstEnemy(entt::registry &world, const glm::vec2 &pos)
     world.emplace<engine::d2::HitboxSolid>(e, 1.0, 1.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 0, 0});
+    engine::DrawableFactory::fix_texture(world, e, DATA_DIR "textures/enemy.png");
     world.emplace<ViewRange>(e, 10.0f);
     world.emplace<AttackRange>(e, 3.0f);
     world.emplace<AttackCooldown>(e, false, 4000ms, 0ms);
