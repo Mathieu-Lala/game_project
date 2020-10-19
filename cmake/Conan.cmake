@@ -17,7 +17,7 @@ macro(run_conan)
     CONANFILE conanfile.txt
     BUILD missing
     INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
-    BUILD_TYPES ${CMAKE_BUILD_TYPE}
+    BUILD_TYPE ${CMAKE_BUILD_TYPE}
     # ARGUMENTS_ARCH
 
     SETTINGS
