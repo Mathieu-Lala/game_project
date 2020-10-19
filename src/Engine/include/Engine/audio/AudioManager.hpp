@@ -18,7 +18,7 @@ public:
 
     ~AudioManager();
 
-    // Only supports WAV and AIFF
+    // Only supports WAV
     auto getSound(const std::string &path) -> std::shared_ptr<Sound>;
 
 private:
