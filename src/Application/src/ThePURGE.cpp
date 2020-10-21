@@ -256,6 +256,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         if (ImGui::Button("Your are dead !")) {
             for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
             for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
+            for (const auto &i : world.view<entt::tag<"boss"_hs>>()) { world.destroy(i); }
             for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); }
             for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
 
