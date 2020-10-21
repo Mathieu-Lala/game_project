@@ -8,7 +8,7 @@ enum EntityDepth {
     PLAYER,
     ENEMIES,
     TERRAIN,
-
+    UTILITIES,
     MAX_VAL
 };
 
