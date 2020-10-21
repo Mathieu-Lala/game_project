@@ -188,6 +188,36 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         ImGui::End();
     } else if (m_state == IN_GAME) {
         {
+            const auto infoHealth = world.get<Health>(player);
+            const auto HP = infoHealth.current / infoHealth.max;
+
+            const auto level = world.get<Level>(player);
+            const auto Atk = world.get<AttackDamage>(player);
+            const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
+
+            // todo : style because this is not a debug window HUD
+            ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x / 10, 10));
+            ImGui::SetNextWindowSize(ImVec2(400, 100));
+            ImGui::Begin(
+                "Info Player",
+                nullptr,
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
+                    | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+            ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), fmt::format("{}/{}", infoHealth.current, infoHealth.max).data());
+            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::Text("HP");
+            ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
+            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::Text("XP");
+            helper::ImGui::Text("Level: {}", level.current_level);
+            helper::ImGui::Text("Speed: {}", 1);
+            helper::ImGui::Text("Atk: {}", Atk.damage);
+            ImGui::End();
+
+
+            mapGenerationOverlayTick(world);
+        }
+        {
             ImGui::Begin("Camera");
             if (ImGui::Button("Reset")) m_camera = engine::Camera();
 
@@ -218,32 +248,6 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::End();
 
             displaySoundDebugGui();
-        }
-        {
-            const auto infoHealth = world.get<Health>(player);
-            const auto HP = infoHealth.current / infoHealth.max;
-
-            const auto level = world.get<Level>(player);
-            const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
-
-            // todo : style because this is not a debug window
-            ImGui::SetNextWindowPos(ImVec2(650, 20));
-            ImGui::SetNextWindowSize(ImVec2(400, 100));
-            ImGui::Begin(
-                "Info Player",
-                nullptr,
-                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
-                    | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
-
-            ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), fmt::format("{}/{}", infoHealth.current, infoHealth.max).data());
-            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-            ImGui::Text("HP");
-            ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
-            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-            helper::ImGui::Text("XP - Level {}", level.current_level);
-            ImGui::End();
-
-            mapGenerationOverlayTick(world);
         }
     } else if (m_state == GAME_OVER) {
         // todo : style because this is not a debug window

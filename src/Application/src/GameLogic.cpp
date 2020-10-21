@@ -171,13 +171,13 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
         auto key = world.create();
         world.emplace<entt::tag<"key"_hs>>(key);
         world.emplace<engine::d2::Scale>(key, 1.0, 1.0);
-        world.emplace<engine::d3::Position>(key, pos.x + size.x, pos.y-size.y, Z_COMPONENT_OF(EntityDepth::UTILITIES));
+        world.emplace<engine::d3::Position>(key, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::UTILITIES));
         world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle()); //.shader = &shader;
         engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
         engine::DrawableFactory::fix_texture(world, key, DATA_DIR "textures/key.png");
         world.destroy(killed);
         auto &level = world.get<Level>(killer);
-        level.current_xp += 3;
+        level.current_xp += 5;
         if (level.current_xp >= level.xp_require) {
             level.current_level++;
             level.current_xp = 0;
