@@ -4,6 +4,7 @@
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
+#include "EntityDepth.hpp"
 
 using namespace std::chrono_literals;
 
@@ -48,7 +49,6 @@ auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed 
 {
     world.view<game::AttackCooldown>().each([&](auto &attack_cooldown) {
         if (!attack_cooldown.is_in_cooldown) return;
-
         if (dt.elapsed < attack_cooldown.remaining_cooldown) {
             attack_cooldown.remaining_cooldown -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
         } else {
@@ -88,9 +88,7 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
         auto &attack_range = world.get<AttackRange>(enemy);
 
         // if the enemy is close enough
-        if (glm::length(diff) <= attack_range.range) {
-            castSpell.publish(world, enemy, {diff.x, diff.y});
-        }
+        if (glm::length(diff) <= attack_range.range) { castSpell.publish(world, enemy, {diff.x, diff.y}); }
     }
 }
 
@@ -152,13 +150,28 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
     if (world.has<entt::tag<"player"_hs>>(killed)) {
         // note : may create segfault // assert fail
         m_game.setState(ThePurge::GAME_OVER);
-    } else {
+    } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         spdlog::warn("!! entity killed : dropping xp !!");
         world.destroy(killed);
-
         // todo : send signal instead
         auto &level = world.get<Level>(killer);
         level.current_xp += 1;
+        if (level.current_xp >= level.xp_require) {
+            level.current_level++;
+            level.current_xp = 0;
+        }
+    } else {
+        auto pos = world.get<engine::d3::Position>(killed);
+        auto key = world.create();
+        world.emplace<entt::tag<"key"_hs>>(key);
+        world.emplace<engine::d2::Scale>(key, 1.0, 1.0);
+        world.emplace<engine::d3::Position>(key, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::UTILITIES));
+        world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle()); //.shader = &shader;
+        engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
+        engine::DrawableFactory::fix_texture(world, key, DATA_DIR "textures/key.png");
+        world.destroy(killed);
+        auto &level = world.get<Level>(killer);
+        level.current_xp += 5;
         if (level.current_xp >= level.xp_require) {
             level.current_level++;
             level.current_xp = 0;
