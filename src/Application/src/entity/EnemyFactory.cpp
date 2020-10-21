@@ -29,6 +29,7 @@ auto game::EnemyFactory::FirstEnemy(entt::registry &world, const glm::vec2 &pos)
 auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> void
 {
     const auto e = world.create();
+    world.emplace<entt::tag<"enemy"_hs>>(e);
     world.emplace<entt::tag<"boss"_hs>>(e);
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::ENEMIES));
     world.emplace<engine::d2::Velocity>(e, 0.01 * (std::rand() & 1), 0.01 * (std::rand() & 1));
