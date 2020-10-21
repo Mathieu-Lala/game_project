@@ -35,6 +35,8 @@ auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> vo
     world.emplace<engine::d2::Scale>(e, 3.0, 3.0);
     world.emplace<engine::d2::HitboxSolid>(e, 3.0, 3.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
+    engine::DrawableFactory::fix_color(world, e, {1, 0, 0});
+    engine::DrawableFactory::fix_texture(world, e, DATA_DIR "textures/enemy.png");
     world.emplace<game::ViewRange>(e, 10.0f);
     world.emplace<game::AttackRange>(e, 3.0f);
     world.emplace<game::AttackCooldown>(e, false, 2000ms, 0ms);
