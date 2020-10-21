@@ -190,7 +190,6 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
         }
     } else {
         auto pos = world.get<engine::d3::Position>(killed);
-        auto size = world.get<engine::d2::Scale>(killed);
         auto key = world.create();
         world.emplace<entt::tag<"key"_hs>>(key);
         world.emplace<engine::d2::Scale>(key, 1.0, 1.0);
