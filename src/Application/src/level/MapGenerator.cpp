@@ -288,6 +288,7 @@ auto game::generateFloor(entt::registry &world, game::FloorGenParam params, std:
     auto data = generateLevel(world, params);
 
     for (auto &r : data.regularRooms) spawnMobsIn(world, params, r);
+    game::EnemyFactory::Boss(world, glm::vec2{data.boss.x + data.boss.w * 0.5, data.boss.y + data.boss.h * 0.5});
 
     data.nextFloorSeed = static_cast<unsigned int>(random_engine());
 
