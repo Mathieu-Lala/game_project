@@ -43,13 +43,24 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
                 vel = {0, 0};
             }
         });
+    world.view<entt::tag<"boss"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>().each(
+        [&](auto &, auto &pos, auto &vel, auto &view_range) {
+            const auto player_pos = world.get<engine::d3::Position>(m_game.player);
+            const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+
+            // if the enemy is close enough
+            if (glm::length(diff) <= view_range.range) {
+                vel = {diff.x, diff.y};
+            } else {
+                vel = {0, 0};
+            }
+        });
 }
 
 auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
     world.view<game::AttackCooldown>().each([&](auto &attack_cooldown) {
         if (!attack_cooldown.is_in_cooldown) return;
-
         if (dt.elapsed < attack_cooldown.remaining_cooldown) {
             attack_cooldown.remaining_cooldown -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
         } else {
@@ -78,8 +89,20 @@ auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &d
 
 auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    for (auto enemy :
-         world.view<entt::tag<"enemy"_hs> , engine::d3::Position, AttackRange, AttackCooldown, AttackDamage>()) {
+    for (auto enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange, AttackCooldown, AttackDamage>()) {
+        auto &attack_cooldown = world.get<AttackCooldown>(enemy);
+        if (attack_cooldown.is_in_cooldown) continue;
+
+        auto &pos = world.get<engine::d3::Position>(enemy);
+        const auto player_pos = world.get<engine::d3::Position>(m_game.player);
+        const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+
+        auto &attack_range = world.get<AttackRange>(enemy);
+
+        // if the enemy is close enough
+        if (glm::length(diff) <= attack_range.range) { castSpell.publish(world, enemy, {diff.x, diff.y}); }
+    }
+    for (auto enemy : world.view<entt::tag<"boss"_hs>, engine::d3::Position, AttackRange, AttackCooldown, AttackDamage>()) {
         auto &attack_cooldown = world.get<AttackCooldown>(enemy);
         if (attack_cooldown.is_in_cooldown) continue;
 
