@@ -3,9 +3,16 @@
 #include <entt/entt.hpp>
 #include <glm/vec2.hpp>
 
-#include "Engine/Shader.hpp"
+#include "Engine/Graphics/Shader.hpp"
 
-class EnemyFactory {
+namespace game {
+
+class EnemyFactory { // note : should be merged with TileFactory.hpp
 public:
-    static void FirstEnemy(entt::registry &world, engine::Shader *, const glm::vec2 &pos);
+    static void Boss(entt::registry &world, const glm::vec2 &pos);
+    static void FirstEnemy(entt::registry &world, const glm::vec2 &pos);
+
+    static auto Player(entt::registry &world) -> entt::entity;
 };
+
+} // namespace game

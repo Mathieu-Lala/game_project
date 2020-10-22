@@ -1,9 +1,9 @@
-#include "level/LevelTilemapBuilder.hpp"
 #include <cassert>
 
+#include "level/LevelTilemapBuilder.hpp"
 #include "entity/TileFactory.hpp"
 
-auto TilemapBuilder::get(int x, int y) -> TileEnum &
+auto game::TilemapBuilder::get(int x, int y) -> TileEnum &
 {
     assert(x < m_size.x);
     assert(y < m_size.y);
@@ -11,49 +11,48 @@ auto TilemapBuilder::get(int x, int y) -> TileEnum &
     return m_tiles[static_cast<std::size_t>(y) * static_cast<std::size_t>(m_size.x) + static_cast<std::size_t>(x)];
 }
 
-void TilemapBuilder::build(entt::registry &world)
+void game::TilemapBuilder::build(entt::registry &world)
 {
     for (auto y = 0; y < m_size.y; ++y) {
         for (auto x = 0; x < m_size.x; ++x) { handleTileBuild(world, x, y); }
     }
 }
 
-void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
+void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
 {
     auto tile = get(x, y);
     if (tile == TileEnum::NONE) return;
 
-    glm::ivec2 size(1, 1);
+     auto size = getTileSize(x, y);
 
-    // TODO: investigate why this doesn't work. It used to work before, problem probably comes from camera (?)
-    //auto size = getTileSize(x, y);
+     for (int clearY = y; clearY < y + size.y; ++clearY) {
+        for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
+    }
 
-    //for (int clearY = y; clearY < y + size.y; ++clearY) {
-    //    for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
-    //}
+    glm::vec2 tileSize{static_cast<float>(size.x), static_cast<float>(size.y)};
+    glm::vec2 tilePos{static_cast<float>(x), static_cast<float>(y)};
 
+    tilePos += tileSize / 2.f;
 
     switch (tile) {
-    case TileEnum::FLOOR:
-        TileFactory::Floor(
-            world,
-            m_shader,
-            {static_cast<float>(x), static_cast<float>(y)},
-            {static_cast<float>(size.x), static_cast<float>(size.y)});
-        break;
-    case TileEnum::WALL:
-        TileFactory::Wall(
-            world,
-            m_shader,
-            {static_cast<float>(x), static_cast<float>(y)},
-            {static_cast<float>(size.x), static_cast<float>(size.y)});
-        break;
+    case TileEnum::FLOOR_NORMAL_ROOM: TileFactory::FloorNormalRoom(world, tilePos, tileSize); break;
+    case TileEnum::FLOOR_BOSS_ROOM: TileFactory::FloorBossRoom(world, tilePos, tileSize); break;
+    case TileEnum::FLOOR_CORRIDOR: TileFactory::FloorCorridor(world, tilePos, tileSize); break;
+    case TileEnum::FLOOR_SPAWN: TileFactory::FloorSpawnRoom(world, tilePos, tileSize); break;
+
+    case TileEnum::EXIT_DOOR_FACING_NORTH: TileFactory::ExitDoor(world, tilePos, tileSize, 0); break;
+    case TileEnum::EXIT_DOOR_FACING_EAST: TileFactory::ExitDoor(world, tilePos, tileSize, 90); break;
+    case TileEnum::EXIT_DOOR_FACING_SOUTH: TileFactory::ExitDoor(world, tilePos, tileSize, 180); break;
+    case TileEnum::EXIT_DOOR_FACING_WEST: TileFactory::ExitDoor(world, tilePos, tileSize, 270); break;
+
+    case TileEnum::DEBUG_TILE: TileFactory::DebugTile(world, tilePos, tileSize); break;
+    case TileEnum::WALL: TileFactory::Wall(world, tilePos, tileSize); break;
 
     default: break;
     }
 }
 
-glm::ivec2 TilemapBuilder::getTileSize(int x1, int y1)
+glm::ivec2 game::TilemapBuilder::getTileSize(int x1, int y1)
 {
     auto tile = get(x1, y1);
 

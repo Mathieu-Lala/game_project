@@ -1,33 +1,38 @@
 #pragma once
 
-#include <memory>
-#include <entt/entt.hpp>
 #include <concepts>
+#include <memory>
+#include <chrono>
+#include <vector>
 
-#include "Engine/Window.hpp"
+#include <entt/entt.hpp>
+
 #include "Engine/Game.hpp"
-#include "Engine/JoystickManager.hpp"
+
+#include "Engine/resources/LoaderColor.hpp" // note : move me in .cpp
+#include "Engine/component/Texture.hpp"
+#include "Engine/resources/LoaderTexture.hpp"
 
 namespace engine {
 
+class Window;
+class Game;
+class JoystickManager;
+class Shader;
+
 class Core {
 private:
-
-    struct hidden_type{};
-
-public:
-
-    struct Holder {
-
-        static
-        auto init() noexcept -> Holder;
-
-        Core *instance = Core::s_instance;
-
+    struct hidden_type {
     };
 
-    explicit
-    Core(hidden_type &&);
+public:
+    struct Holder {
+        static auto init() noexcept -> Holder;
+
+        Core *instance = Core::s_instance;
+    };
+
+    explicit Core(hidden_type &&);
 
     ~Core();
 
@@ -44,8 +49,8 @@ public:
 
     auto window() -> std::unique_ptr<Window> & { return m_window; }
 
-    template<typename ...Args>
-    auto window(Args &&...args) -> std::unique_ptr<Window> &
+    template<typename... Args>
+    auto window(Args &&... args) -> std::unique_ptr<Window> &
     {
         if (m_window != nullptr) { return m_window; }
 
@@ -55,8 +60,8 @@ public:
         return m_window;
     }
 
-    template<std::derived_from<Game> UserDefinedGame, typename ...Args>
-    auto game(Args &&...args) -> std::unique_ptr<Game> &
+    template<std::derived_from<Game> UserDefinedGame, typename... Args>
+    auto game(Args &&... args) -> std::unique_ptr<Game> &
     {
         if (m_game != nullptr) { return m_game; }
 
@@ -77,34 +82,44 @@ public:
 
     auto setPendingEventsFromFile(const std::string_view filepath) -> bool;
 
-private:
+    [[nodiscard]] auto isRunning() const noexcept -> bool { return m_is_running; }
 
-    static
-    auto get() noexcept -> std::unique_ptr<Core> &;
+    auto close() noexcept -> void { m_is_running = false; }
+
+    template<typename T>
+    auto getCache() -> entt::resource_cache<T> &;
+
+
+    // note : not the best way ..
+    auto updateView(const glm::mat4 &view) -> void;
+
+
+private:
+    static auto get() noexcept -> std::unique_ptr<Core> &;
 
     static Core *s_instance;
 
-    static
-    auto loadOpenGL() -> void;
+    static auto loadOpenGL() -> void;
+
+    bool m_is_running{true};
 
     // note : for now the engine support only one window
-    std::unique_ptr<Window> m_window{ nullptr };
+    std::unique_ptr<Window> m_window{nullptr};
 
-//
-// World
-//
+    //
+    // World
+    //
 
-    std::unique_ptr<Game> m_game{ nullptr };
+    std::unique_ptr<Game> m_game{nullptr};
 
     entt::registry m_world;
 
-//
-// Event Handling
-//
+    //
+    // Event Handling
+    //
 
-    EventMode m_eventMode{ RECORD };
+    EventMode m_eventMode{RECORD};
 
-    // todo : std::pmr::queue instead of vector ? try it with google benchmark
     std::vector<Event> m_eventsPlayback;
 
 
@@ -115,38 +130,47 @@ private:
 
     std::unique_ptr<JoystickManager> m_joystickManager;
 
+    //
+    // Resources
+    //
+
+    CacheColor m_colors;
+    CacheTexture m_textures;
+
+    std::unique_ptr<Shader> m_shader_colored;
+    std::unique_ptr<Shader> m_shader_colored_textured;
+
 
 #ifndef NDEBUG
     auto debugDrawJoystick() -> void;
     auto debugDrawDisplayOptions() -> void;
 #endif
 
-    enum DisplayMode {
-        POINTS = GL_POINTS,
-        LINE_STRIP = GL_LINE_STRIP,
-        LINE_LOOP = GL_LINE_LOOP,
-        LINES = GL_LINES,
-        LINE_STRIP_ADJACENCY = GL_LINE_STRIP_ADJACENCY,
-        LINES_ADJACENCY = GL_LINES_ADJACENCY,
-        TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
-        TRIANGLE_FAN = GL_TRIANGLE_FAN,
-        TRIANGLES = GL_TRIANGLES,
-        TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
-        TRIANGLES_ADJACENCY = GL_TRIANGLES_ADJACENCY,
-        PATCHES = GL_PATCHES,
-    };
-
-    DisplayMode m_displayMode = TRIANGLES;
-
+    std::uint32_t m_displayMode = 4; // GL_TRIANGLES
 };
+
+template<>
+inline auto Core::getCache() -> entt::resource_cache<Color> &
+{
+    return m_colors;
+}
+
+template<>
+inline auto Core::getCache() -> entt::resource_cache<Texture> &
+{
+    return m_textures;
+}
 
 } // namespace engine
 
-
 #ifndef NDEBUG
-# define IF_RECORD(...) \
-    do { if (engine::Core::Holder{}.instance->getEventMode() \
-        == engine::Core::EventMode::RECORD) { __VA_ARGS__; } } while(0)
+#    define IF_RECORD(...)                                                                                           \
+        do {                                                                                                         \
+            if (engine::Core::Holder{}.instance->getEventMode() == engine::Core::EventMode::RECORD) { __VA_ARGS__; } \
+        } while (0)
 #else
-# define IF_RECORD(...) do { __VA_ARGS__; } while(0)
+#    define IF_RECORD(...) \
+        do {               \
+            __VA_ARGS__;   \
+        } while (0)
 #endif

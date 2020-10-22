@@ -37,7 +37,7 @@ add_library(project_pch INTERFACE)
 option(ENABLE_PCH "Enable Precompiled Headers" OFF)
 if(ENABLE_PCH)
   target_precompile_headers(project_pch INTERFACE
-    <vector> <string> <utility> <functional> <glm/glm.hpp>)
+    <vector> <string> <utility> <functional> <variant> <glm/glm.hpp>)
 endif()
 
 

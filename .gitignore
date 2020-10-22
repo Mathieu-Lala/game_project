@@ -31,6 +31,19 @@
 *.out
 *.app
 
+# CMake related
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
 # IDE related
 .vs
 .vscode
@@ -41,8 +54,12 @@ CMakeSettings.json
 build
 out
 
+# Temp directory
+tmp
+temp
+
 # Generated files
-imgui.ini
+## imgui.ini
 app.ini
 recorded_events.json
 logs

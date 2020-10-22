@@ -8,15 +8,30 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Engine/details/overloaded.hpp"
+#include <stb_image.h>
+
+#include "Engine/helpers/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
 #include "Engine/component/Position.hpp"
 #include "Engine/component/Scale.hpp"
 #include "Engine/component/Velocity.hpp"
 #include "Engine/component/Acceleration.hpp"
 #include "Engine/component/Hitbox.hpp"
+#include "Engine/component/Color.hpp"
 
+#include "Engine/Event/Event.hpp"
+#include "Engine/Graphics/Shader.hpp"
+#include "Engine/Graphics/Window.hpp"
+#include "Engine/Event/JoystickManager.hpp"
 #include "Engine/Core.hpp"
+
+#include "Engine/helpers/DrawableFactory.hpp"
+#include "Engine/helpers/ImGui.hpp"
+
+#include "Engine/Graphics/third_party.hpp" // note : only for DisplayMode
+
+// todo : remove me
+#include "Engine/../../../Application/include/Declaration.hpp"
 
 engine::Core *engine::Core::s_instance{nullptr};
 
@@ -48,12 +63,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
     m_joystickManager = std::make_unique<JoystickManager>();
 
-    
-
-    // note : not working
-    // m_world.on_destroy<engine::Drawable>().connect<&engine::Drawable::dtor>();
-
-    //m_world.on_update<engine::d2::Position>() // require to use world.patch or world.replace
+    //    ::stbi_set_flip_vertically_on_load(true);
 }
 
 engine::Core::~Core()
@@ -138,10 +148,17 @@ auto engine::Core::main() -> int
 {
     if (m_window == nullptr || m_game == nullptr) { return 1; }
 
+    m_shader_colored.reset(
+        new Shader{Shader::fromFile(DATA_DIR "shaders/colored.vert.glsl", DATA_DIR "shaders/colored.frag.glsl")});
+
+    m_shader_colored_textured.reset(new Shader{
+        Shader::fromFile(DATA_DIR "shaders/colored_textured.vert.glsl", DATA_DIR "shaders/colored_textured.frag.glsl")});
+
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 
-    while (m_window->isOpen()) { // note Core::isRunning instead ?
+    while (isRunning()) { // note Core::isRunning instead ?
+
         const auto event = getNextEvent();
 
         std::visit(
@@ -164,7 +181,10 @@ auto engine::Core::main() -> int
                     m_lastTick = std::chrono::steady_clock::now();
                     ::glViewport(0, 0, static_cast<int>(m_window->getSize().x), static_cast<int>(m_window->getSize().y));
                 },
-                [&]([[maybe_unused]] const CloseWindow &) { m_window->close(); },
+                [&]([[maybe_unused]] const CloseWindow &) {
+                    m_window->close();
+                    this->close();
+                },
                 [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); }, // todo : move this in camera ? or window ?
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
                 [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
@@ -179,49 +199,52 @@ auto engine::Core::main() -> int
         if (keyPressed) {
             // todo : abstract glfw keyboard
             const auto keyEvent = std::get<Pressed<Key>>(event);
-            if (keyEvent.source.key == GLFW_KEY_ESCAPE) m_window->close();
+            if (keyEvent.source.key == GLFW_KEY_ESCAPE) this->close();
             if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
         }
 
-        //// note : should note draw at every frame = heavy
+        // note : should note draw at every frame = heavy
         if (timeElapsed) {
             const auto t = std::get<TimeElapsed>(event);
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
-            m_world.view<d2::Velocity, d2::Acceleration>().each(
-                [](auto &vel, auto &acc) {
-                    vel.x += acc.x;
-                    vel.y += acc.y;
-                });
+            m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
+                vel.x += acc.x;
+                vel.y += acc.y;
+
+                // todo : add max velocity
+            });
 
             // todo : exclude the d2::Hitbox on this system
-//            m_world.view<d2::Position, d2::Velocity>().each(
-//                [&elapsed](auto &pos, auto &vel) {
-//                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
-//                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
-//                });
+            //            m_world.view<d3::Position, d2::Velocity>().each(
+            //                [&elapsed](auto &pos, auto &vel) {
+            //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
+            //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+            //                });
 
-            for (auto &moving : m_world.view<d2::Position, d2::Velocity, d2::Hitbox>()) {
-                auto &moving_pos = m_world.get<d2::Position>(moving);
+            for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
+                auto &moving_pos = m_world.get<d3::Position>(moving);
                 auto &moving_vel = m_world.get<d2::Velocity>(moving);
-                auto &moving_hitbox = m_world.get<d2::Hitbox>(moving);
+                auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
 
-                const auto new_pos = d2::Position{
+                const auto new_pos = d3::Position{
                     moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
                     moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                    moving_pos.z
-                };
+                    moving_pos.z};
 
                 bool collide = false;
 
-                for (auto &others : m_world.view<d2::Position, d2::Hitbox>()) {
+                d3::Position others_pos;
+                d2::HitboxSolid others_hitbox;
+
+                for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
                     if (moving == others) continue;
 
-                    auto &others_pos = m_world.get<d2::Position>(others);
-                    auto &others_hitbox = m_world.get<d2::Hitbox>(others);
+                    others_pos = m_world.get<d3::Position>(others);
+                    others_hitbox = m_world.get<d2::HitboxSolid>(others);
 
-                    if (d2::Hitbox::overlapped(moving_hitbox, new_pos, others_hitbox, others_pos)) {
-                        //spdlog::warn("{} and {} are colliding !", moving, others);
+                    if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, new_pos, others_hitbox, others_pos)) {
+                        // spdlog::warn("{} and {} are colliding !", moving, others);
                         collide = true;
                         break;
                     }
@@ -230,9 +253,25 @@ auto engine::Core::main() -> int
                 if (!collide) {
                     moving_pos = new_pos;
                 } else {
-                    moving_vel = { 0.0, 0.0 };
+                    if (!d2::overlapped<d2::WITHOUT_EDGE>(
+                            moving_hitbox, d3::Position{new_pos.x, moving_pos.x, 0}, others_hitbox, others_pos)) {
+                        moving_vel.y = 0;
+                    } else if (!d2::overlapped<d2::WITHOUT_EDGE>(
+                                   moving_hitbox, d3::Position{moving_pos.y, new_pos.y, 0}, others_hitbox, others_pos)) {
+                        moving_vel.x = 0;
+                    }
                 }
             }
+
+#ifdef MODE_EPILEPTIC // change the color at every frame
+            for (const auto &i : m_world.view<Drawable, Color>()) {
+                auto &color = m_world.get<Color>(i);
+                const auto r = std::clamp(Color::r(color) - 0.01f, 0.0f, 1.0f);
+                const auto g = std::clamp(Color::g(color) - 0.01f, 0.0f, 1.0f);
+                const auto b = std::clamp(Color::b(color) - 0.01f, 0.0f, 1.0f);
+                DrawableFactory::fix_color(m_world, i, {r ? r : 1.0f, g ? g : 1.0f, b ? b : 1.0f});
+            }
+#endif
 
             m_window->draw([&] {
                 m_game->drawUserInterface(m_world);
@@ -244,35 +283,44 @@ auto engine::Core::main() -> int
 
                 ImGui::Render();
 
-                // todo : add Game::getBackgroundColor()
-                ::glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+                const auto background = m_game->getBackgroundColor();
+
+                ::glClearColor(background.r, background.g, background.b, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                m_world.view<Drawable, d2::Position, d2::Scale>().each(
-                [mode = m_displayMode](auto &drawable, auto &pos, auto &scale) {
-                    drawable.shader->use();
+                m_shader_colored->use();
+                m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<Texture>)
+                    .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
+                        auto model = glm::dmat4(1.0);
+                        model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
+                        model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
+                        m_shader_colored->uploadUniformMat4("model", model);
 
-                    auto model = glm::dmat4(1.0);
-                    model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z}); 
-                    model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
-                    drawable.shader->uploadUniformMat4("model", model);
+                        ::glBindVertexArray(drawable.VAO);
 
-                    // note : mode could be defined in the drawable
-                    ::glBindVertexArray(drawable.VAO);
-                    ::glDrawElements(static_cast<std::uint32_t>(mode), 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-                });
+                        ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                    });
+
+                m_shader_colored_textured->use();
+                m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale>().each(
+                    [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
+                        auto model = glm::dmat4(1.0);
+                        model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
+                        model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
+                        m_shader_colored_textured->uploadUniformMat4("model", model);
+
+                        ::glBindTexture(GL_TEXTURE_2D, texture.texture);
+                        ::glBindVertexArray(drawable.VAO);
+
+                        ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                    });
             });
         }
 
         m_game->onUpdate(m_world, event);
     }
 
-    // todo : use entt::on_destroy or something ..
-    m_world.view<engine::Drawable>().each([](engine::Drawable &drawable) {
-        ::glDeleteVertexArrays(1, &drawable.VAO);
-        ::glDeleteBuffers(1, &drawable.VBO);
-        ::glDeleteBuffers(1, &drawable.EBO);
-    });
+    m_world.view<engine::Drawable>().each(engine::Drawable::dtor);
 
     m_game->onDestroy(m_world);
 
@@ -286,6 +334,12 @@ auto engine::Core::main() -> int
     get().reset(nullptr);
 
     return 0;
+}
+
+auto engine::Core::updateView(const glm::mat4 &view) -> void
+{
+    m_shader_colored->uploadUniformMat4("viewProj", view);
+    m_shader_colored_textured->uploadUniformMat4("viewProj", view);
 }
 
 auto engine::Core::get() noexcept -> std::unique_ptr<Core> &
@@ -319,15 +373,15 @@ auto engine::Core::debugDrawJoystick() -> void
     m_joystickManager->each([](const Joystick &joy) {
         ImGui::BeginChild("Scrolling");
         for (std::uint32_t n = 0; n < Joystick::BUTTONS_MAX; n++) {
-            ImGui::Text(
-                "%s = %i", magic_enum::enum_name(magic_enum::enum_cast<Joystick::Buttons>(n).value()).data(), joy.buttons[n]);
+            helper::ImGui::Text(
+                "{} = {}", magic_enum::enum_name(magic_enum::enum_cast<Joystick::Buttons>(n).value()).data(), joy.buttons[n]);
         }
         ImGui::EndChild();
 
         ImGui::BeginChild("Scrolling");
         for (std::uint32_t n = 0; n < Joystick::AXES_MAX; n++) {
-            ImGui::Text(
-                "%s = %f",
+            helper::ImGui::Text(
+                "{} = {}",
                 magic_enum::enum_name(magic_enum::enum_cast<Joystick::Axis>(n).value()).data(),
                 double{joy.axes[n]});
         }
@@ -340,6 +394,21 @@ auto engine::Core::debugDrawJoystick() -> void
 
 auto engine::Core::debugDrawDisplayOptions() -> void
 {
+    enum DisplayMode : std::uint32_t {
+        POINTS = GL_POINTS,
+        LINE_STRIP = GL_LINE_STRIP,
+        LINE_LOOP = GL_LINE_LOOP,
+        LINES = GL_LINES,
+        LINE_STRIP_ADJACENCY = GL_LINE_STRIP_ADJACENCY,
+        LINES_ADJACENCY = GL_LINES_ADJACENCY,
+        TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
+        TRIANGLE_FAN = GL_TRIANGLE_FAN,
+        TRIANGLES = GL_TRIANGLES,
+        TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
+        TRIANGLES_ADJACENCY = GL_TRIANGLES_ADJACENCY,
+        PATCHES = GL_PATCHES,
+    };
+
     static constexpr auto display_mode = std::to_array({
         POINTS,
         LINE_STRIP,
@@ -358,9 +427,9 @@ auto engine::Core::debugDrawDisplayOptions() -> void
     ImGui::Begin("Display Options");
     if (ImGui::BeginCombo("##combo", "Display Mode")) {
         for (auto n = 0ul; n < display_mode.size(); n++) {
-            bool is_selected = (m_displayMode == display_mode.at(n));
+            bool is_selected = (m_displayMode == static_cast<std::uint32_t>(display_mode.at(n)));
             if (ImGui::Selectable(magic_enum::enum_name<DisplayMode>(display_mode.at(n)).data(), is_selected))
-                m_displayMode = display_mode.at(n);
+                m_displayMode = static_cast<std::uint32_t>(display_mode.at(n));
             if (is_selected) ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();

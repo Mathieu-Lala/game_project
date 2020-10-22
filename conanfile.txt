@@ -31,14 +31,23 @@ stb/20190512@conan/stable
 # Argument parser (ac, av)
 CLI11/1.9.1@cliutils/stable
 
+# Audio
+openal/1.20.1
+
 [options]
-fmt:header_only=True
+# lib shared required to set the path of the .dll for app.exe
+glew:shared=False
+glfw:shared=False
+imgui:shared=False
 spdlog:header_only=True
-docopt.cpp:shared=False
+fmt:header_only=True
+
 
 [generators]
 cmake
 
 [imports]
 bin, *.dll -> ../out/
+lib, *.so* -> ../out/
+lib, *.pdb -> ../out/ #not working :(
 lib, *.dylib* -> ../out/
