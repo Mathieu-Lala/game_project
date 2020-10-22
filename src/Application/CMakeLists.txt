@@ -1,7 +1,8 @@
 add_executable(app src/main.cpp src/level/LevelTilemapBuilder.cpp
                    src/entity/TileFactory.cpp
                    src/level/MapGenerator.cpp
-                   src/entity/EnemyFactory.cpp)
+                   src/entity/EnemyFactory.cpp
+                   src/classes/ClassFactory.cpp)
 
 target_link_libraries(app PRIVATE engine)
 

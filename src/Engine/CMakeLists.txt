@@ -37,7 +37,8 @@ add_library(
   src/Engine/helpers/DrawableFactory.cpp
   src/Engine/Camera2d.cpp
   src/Engine/Shader.cpp
-  src/Engine/JoystickManager.cpp)
+  src/Engine/JoystickManager.cpp
+  src/Engine/DataConfigLoader.cpp)
 
 target_include_directories(
   engine PUBLIC include ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}

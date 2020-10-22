@@ -11,8 +11,6 @@
 #include "ThePurge.hpp"
 #include <Declaration.hpp>
 
-#include <Competences/FarmerCompetences.hpp>
-
 static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
 static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION

@@ -16,6 +16,7 @@
 #include <Engine/component/Acceleration.hpp>
 #include <Engine/component/Hitbox.hpp>
 #include <Engine/GameLogic.hpp>
+#include <Engine/DataConfigLoader.hpp>
 
 #include "component/ViewRange.hpp"
 #include "component/AttackRange.hpp"
@@ -28,13 +29,15 @@
 #include "level/MapGenerator.hpp"
 #include "entity/TileFactory.hpp"
 
-#include "EntityDepth.hpp"
+ #include "EntityDepth.hpp"
 
 class ThePurge : public engine::Game {
     engine::Shader shader =
         engine::Shader::fromFile(DATA_DIR "/shaders/camera.vert.glsl", DATA_DIR "/shaders/camera.frag.glsl");
 
     entt::entity player;
+
+    engine::DataConfigLoader loader;
 
     // Init movement signal player
     entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> movement;
@@ -67,17 +70,13 @@ class ThePurge : public engine::Game {
 
         sinkCastSpell.connect<&engine::GameLogic::castSpell>(engine::GameLogic());
 
+        // Test json loader
 
         player = world.create();
-        world.emplace<engine::d2::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
-        world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
-        world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-        world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
-        world.emplace<engine::d2::Hitbox>(player, 1.0, 1.0);
-        world.emplace<game::Health>(player, 100.0f, 100.0f);
-        world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle({0, 0, 1})).shader = &shader;
 
-
+        loader.loadPlayerConfigFile(std::string_view(DATA_DIR "json/player.json"), world, player, shader);
+        // loader.loadClassConfigFile(std::string_view(DATA_DIR "json/classes.json"), world, player, engine::Classes::FARMER);
+        loader.loadClassConfigFile(std::string_view(DATA_DIR "json/classes.json"), world, player, engine::Classes::SHOOTER);
         // default camera value to see the generated terrain properly
         m_camera.setCenter(glm::vec2(13, 22));
         m_camera.setViewportSize(glm::vec2(109, 64));

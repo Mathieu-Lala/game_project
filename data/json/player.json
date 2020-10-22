@@ -1,0 +1,9 @@
+{
+  "id": 1,
+  "name": "Player",
+  "stats": {
+    "cooldown": 1,
+    "hp": 100,
+    "atk": 20
+  }
+}
