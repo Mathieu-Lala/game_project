@@ -21,7 +21,7 @@ public:
     ThePurge();
 
     enum State {
-        LOADING, // pre-game
+        LOADING,
         IN_GAME,
         GAME_OVER
     };
@@ -34,10 +34,11 @@ public:
 
     auto drawUserInterface(entt::registry &world) -> void final;
 
-    entt::entity player;
+    entt::entity player; // note : should not require to keep it like that
 
     auto setState(State new_state) noexcept { m_state = new_state; }
 
+    constexpr
     auto getBackgroundColor() const noexcept -> glm::vec3 final
     {
         return m_state == GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};

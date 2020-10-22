@@ -34,9 +34,24 @@ auto engine::Color::ctor(glm::vec3 &&color) -> Color
 
 auto engine::Color::dtor(Color *color) -> void { ::glDeleteBuffers(1, &color->VBO); }
 
-auto engine::Texture::ctor(const std::string_view path) -> Texture
+auto engine::Texture::ctor(const std::string_view path, std::array<float, 4ul> &&clip) -> Texture
 {
-    Texture out;
+    // clang-format off
+    Texture out = {
+        .vertices = {
+            clip[0],             clip[1] + clip[3],   // top left
+            clip[0] + clip[2],   clip[1] + clip[3],   // top right
+            clip[0],             clip[1],             // bottom left
+            clip[0] + clip[2],   clip[1],             // bottom right
+        },
+        .VBO = 0,
+        .texture = 0,
+        .width = 0,
+        .height = 0,
+        .channels = 0,
+        .px = nullptr
+    };
+    // clang-format on
 
     ::glGenBuffers(1, &out.VBO);
 
@@ -50,7 +65,7 @@ auto engine::Texture::ctor(const std::string_view path) -> Texture
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     if (out.px = ::stbi_load(path.data(), &out.width, &out.height, &out.channels, 4); !out.px) {
-        spdlog::info("failed to load texture", path.data());
+        spdlog::info("failed to load texture {}", path.data());
     }
 
     ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, out.width, out.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, out.px);
