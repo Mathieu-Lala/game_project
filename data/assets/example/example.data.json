@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/example.spritesheet.png",
+        "file": "/assets/example/example.spritesheet.png",
         "width": 220,
         "height": 165,
         "speed": 50,

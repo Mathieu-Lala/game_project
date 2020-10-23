@@ -78,7 +78,7 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
 }
 
 auto engine::DrawableFactory::fix_texture(
-    entt::registry &world, entt::entity e, const std::string_view filepath, std::array<float, 4ul> &&clip) -> Texture &
+    entt::registry &world, entt::entity e, const std::string_view filepath, const std::array<float, 4ul> &clip) -> Texture &
 {
     static Core::Holder holder{};
 

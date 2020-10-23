@@ -44,7 +44,7 @@ auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> vo
     world.emplace<Health>(e, 500.0f, 500.0f);
     engine::DrawableFactory::fix_color(world, e, {0.95f, 0.95f, 0.95f});
     auto &sp = world.emplace<engine::Spritesheet>(
-        e, engine::Spritesheet::from_json(fmt::format("{}{}", DATA_DIR, "assets/example.data.json")));
+        e, engine::Spritesheet::from_json(fmt::format("{}{}", DATA_DIR, "assets/example/example.data.json")));
     engine::DrawableFactory::fix_texture(world, e, fmt::format("{}{}", DATA_DIR, sp.file));
 }
 

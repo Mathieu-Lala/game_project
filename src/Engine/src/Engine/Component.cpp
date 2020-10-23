@@ -34,7 +34,7 @@ auto engine::Color::ctor(glm::vec3 &&color) -> Color
 
 auto engine::Color::dtor(Color *color) -> void { ::glDeleteBuffers(1, &color->VBO); }
 
-auto engine::Texture::ctor(const std::string_view path, std::array<float, 4ul> &&clip) -> Texture
+auto engine::Texture::ctor(const std::string_view path, const std::array<float, 4ul> &clip) -> Texture
 {
     // clang-format off
     Texture out = {

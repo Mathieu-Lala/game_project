@@ -22,7 +22,7 @@ struct DrawableFactory {
         entt::registry &,
         entt::entity,
         const std::string_view filepath,
-        std::array<float, 4ul> &&clip = {0.0f, 0.0f, 1.0f, 1.0f}) -> Texture &;
+        const std::array<float, 4ul> &clip = {0.0f, 0.0f, 1.0f, 1.0f}) -> Texture &;
 };
 
 } // namespace engine

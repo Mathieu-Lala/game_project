@@ -23,7 +23,7 @@ struct Texture {
     std::int32_t channels;
     std::uint8_t *px;
 
-    static auto ctor(const std::string_view path, std::array<float, 4ul> &&) -> Texture;
+    static auto ctor(const std::string_view path, const std::array<float, 4ul> &) -> Texture;
 
     static auto dtor(Texture *ptr) -> void;
 
