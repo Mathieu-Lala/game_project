@@ -159,6 +159,8 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
         "Max corridor width", &m_map_generation_params.maxCorridorWidth, m_map_generation_params.minCorridorWidth, 50);
     ImGui::Separator();
 
+    ImGui::SliderFloat("Enemy per block", &m_map_generation_params.mobDensity, 0, 1);
+
     ImGui::End();
 }
 
@@ -166,6 +168,16 @@ static bool show_demo_window = true;
 
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
+    {
+        ImGui::Begin("Debug cheat");
+        if (ImGui::Button("kill boss")) {
+            for (auto &e : world.view<entt::tag<"boss"_hs>>()) {
+                m_logics.playerKilled.publish(world, e, world.view<entt::tag<"player"_hs>>()[0]);
+            }
+        }
+        ImGui::End();
+    }
+
     if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
     if (m_state == LOADING) {
@@ -194,10 +206,11 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             const auto level = world.get<Level>(player);
             const auto Atk = world.get<AttackDamage>(player);
             const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
+            KeyPicker keyPicker = world.get<KeyPicker>(player);
 
             // todo : style because this is not a debug window HUD
             ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x / 10, 10));
-            ImGui::SetNextWindowSize(ImVec2(400, 100));
+            ImGui::SetNextWindowSize(ImVec2(400, 200));
             ImGui::Begin(
                 "Info Player",
                 nullptr,
@@ -212,6 +225,9 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             helper::ImGui::Text("Level: {}", level.current_level);
             helper::ImGui::Text("Speed: {}", 1);
             helper::ImGui::Text("Atk: {}", Atk.damage);
+            helper::ImGui::Text("Test");
+
+            if (keyPicker.hasKey) helper::ImGui::Text("You have the key");
             ImGui::End();
 
 

@@ -16,3 +16,4 @@
 #include "component/Lifetime.hpp"
 #include "component/Level.hpp"
 #include "component/Effect.hpp"
+#include "component/KeyPicker.hpp"
