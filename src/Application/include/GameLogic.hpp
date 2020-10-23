@@ -10,6 +10,7 @@
 #include <Engine/Event/Event.hpp>
 
 #include "component/all.hpp"
+#include "level/MapGenerator.hpp"
 
 namespace game {
 
@@ -35,6 +36,10 @@ public:
     entt::sigh<void(entt::registry &, entt::entity killed, entt::entity killer)> playerKilled;
     entt::sink<void(entt::registry &, entt::entity killed, entt::entity killer)> sinkGetKilled{playerKilled};
 
+    entt::sigh<void(entt::registry &)> onFloorChange;
+    entt::sink<void(entt::registry &)> sinkOnFloorChange{onFloorChange};
+
+
     auto move(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void;
 
     auto ai_pursue(entt::registry &world, const engine::TimeElapsed &dt) -> void;
@@ -43,9 +48,19 @@ public:
     auto enemies_try_attack(entt::registry &world, const engine::TimeElapsed &dt) -> void;
     auto check_collision(entt::registry &world, const engine::TimeElapsed &dt) -> void;
     auto effect(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+    auto exit_door_interraction(entt::registry &, const engine::TimeElapsed &dt) -> void;
     auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
+
     auto cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void;
+
+    auto goToTheNextFloor(entt::registry &world) -> void;
+
+
+    FloorGenParam m_map_generation_params;
+    unsigned int m_nextFloorSeed;
+
+    static constexpr double kDoorInteractionRange = 3;
 };
 
 } // namespace game

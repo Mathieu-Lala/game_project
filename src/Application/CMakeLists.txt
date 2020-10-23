@@ -6,7 +6,7 @@ add_executable(
   src/level/MapGenerator.cpp
   src/entity/EnemyFactory.cpp
   src/ThePURGE.cpp
-  src/GameLogic.cpp "include/component/KeyPicker.hpp")
+  src/GameLogic.cpp)
 
 target_link_libraries(app PRIVATE engine)
 

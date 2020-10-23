@@ -8,7 +8,8 @@
 
 using namespace std::chrono_literals;
 
-game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
+game::GameLogic::GameLogic(ThePurge &game) :
+    m_game{game}, m_nextFloorSeed(static_cast<unsigned int>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
 
@@ -18,10 +19,12 @@ game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
     sinkGameUpdated.connect<&GameLogic::enemies_try_attack>(*this);
     sinkGameUpdated.connect<&GameLogic::update_lifetime>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
+    sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
     sinkGetKilled.connect<&GameLogic::entity_killed>(*this);
+    sinkOnFloorChange.connect<&GameLogic::goToTheNextFloor>(*this);
 }
 
 auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel)
@@ -131,19 +134,19 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 
     const auto systemKeyPicker =
         [&](KeyPicker &keypicker, const engine::d2::HitboxSolid &pickerhitbox, const engine::d3::Position &pickerPos) {
-        if (keypicker.hasKey) return;
+            if (keypicker.hasKey) return;
 
-        for (auto &key : world.view<entt::tag<"key"_hs>>()) {
-            auto &keyHitbox = world.get<engine::d2::HitboxFloat>(key);
-            auto &keyPos = world.get<engine::d3::Position>(key);
+            for (auto &key : world.view<entt::tag<"key"_hs>>()) {
+                auto &keyHitbox = world.get<engine::d2::HitboxFloat>(key);
+                auto &keyPos = world.get<engine::d3::Position>(key);
 
-            if (engine::d2::overlapped<engine::d2::WITH_EDGE>(pickerhitbox, pickerPos, keyHitbox, keyPos)) {
-                keypicker.hasKey = true;
+                if (engine::d2::overlapped<engine::d2::WITH_EDGE>(pickerhitbox, pickerPos, keyHitbox, keyPos)) {
+                    keypicker.hasKey = true;
 
-                world.destroy(key);
+                    world.destroy(key);
+                }
             }
-        }
-    };
+        };
 
     world.view<KeyPicker, engine::d2::HitboxSolid, engine::d3::Position>().each(systemKeyPicker);
 }
@@ -159,6 +162,21 @@ auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeE
             world.destroy(i);
         }
     }
+}
+
+auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    const auto &door = world.view<entt::tag<"exit_door"_hs>>()[0];
+    const auto &doorPosition = world.get<engine::d3::Position>(door);
+
+    const auto doorUsageSystem = [&](const KeyPicker &keypicker, const engine::d3::Position &playerPos) {
+        if (!keypicker.hasKey) return;
+
+        // would be cool if : && playerPos.hasVisionOn(doorPosition);
+        if (engine::d3::distance(doorPosition, playerPos) < kDoorInteractionRange) onFloorChange.publish(world);
+    };
+
+    world.view<KeyPicker, engine::d3::Position>().each(doorUsageSystem);
 }
 
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
@@ -223,4 +241,26 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
     world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
     world.emplace<engine::Source>(spell, entity);
+}
+
+auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void
+{
+    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
+
+    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
+    m_nextFloorSeed = data.nextFloorSeed;
+
+    auto allPlayers = world.view<entt::tag<"player"_hs>>();
+
+    for (auto &player : allPlayers) {
+        auto &pos = world.get<engine::d3::Position>(player);
+
+        pos.x = data.spawn.x + data.spawn.w * 0.5;
+        pos.y = data.spawn.y + data.spawn.h * 0.5;
+    }
+
 }
