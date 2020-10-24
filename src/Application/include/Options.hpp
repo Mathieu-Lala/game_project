@@ -24,7 +24,7 @@ static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION " 
     ;
 
 struct Options {
-    static constexpr auto DEFAULT_CONFIG = "app.ini";
+    static constexpr auto DEFAULT_CONFIG = "data/config/app.ini";
 
     enum Value { CONFIG_PATH, FULLSCREEN, REPLAY_PATH, OPTION_MAX };
 
