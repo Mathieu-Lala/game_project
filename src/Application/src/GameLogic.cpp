@@ -1,6 +1,7 @@
 #include <spdlog/spdlog.h>
 
 #include <Engine/helpers/DrawableFactory.hpp>
+#include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
@@ -94,6 +95,8 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
 
 auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
+    static engine::Core::Holder holder{};
+
     const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source){
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
@@ -106,6 +109,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
 
+            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/fire_hit.wav")->play();
             world.destroy(spell);
             if (entity_health.current <= 0.0f) {
                 playerKilled.publish(world, entity, source);
@@ -182,6 +186,8 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
 // todo : normalize direction
 auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void
 {
+    static engine::Core::Holder holder{};
+
     // todo : apply AttackDamage
     // todo : switch attack depending of entity type
 
@@ -197,6 +203,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
 
     auto color = world.has<entt::tag<"enemy"_hs>>(entity) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 0};
 
+    holder.instance->getAudioManager().getSound(DATA_DIR "sounds/fire_cast.wav")->play();
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
     world.emplace<Lifetime>(spell, 600ms);

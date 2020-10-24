@@ -6,12 +6,14 @@
 #include <vector>
 
 #include <entt/entt.hpp>
+#include <glm/matrix.hpp>
 
 #include "Engine/Game.hpp"
 
 #include "Engine/resources/LoaderColor.hpp" // note : move me in .cpp
 #include "Engine/component/Texture.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
+#include "Engine/audio/AudioManager.hpp"
 
 namespace engine {
 
@@ -89,6 +91,7 @@ public:
     template<typename T>
     auto getCache() -> entt::resource_cache<T> &;
 
+    auto getAudioManager() -> AudioManager & { return m_audioManager; }
 
     // note : not the best way ..
     auto updateView(const glm::mat4 &view) -> void;
@@ -140,6 +143,7 @@ private:
     std::unique_ptr<Shader> m_shader_colored;
     std::unique_ptr<Shader> m_shader_colored_textured;
 
+    engine::AudioManager m_audioManager;
 
 #ifndef NDEBUG
     auto debugDrawJoystick() -> void;

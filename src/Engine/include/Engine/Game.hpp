@@ -4,6 +4,8 @@
 
 #include <glm/vec3.hpp>
 
+#include "Engine/Event/Event.hpp"
+
 namespace engine {
 
 class Game {
