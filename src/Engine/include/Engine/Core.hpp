@@ -153,11 +153,15 @@ private:
     std::uint32_t m_displayMode = 4; // GL_TRIANGLES
 };
 
+// note : move me in .cpp
+
 template<>
 inline auto Core::getCache() -> entt::resource_cache<Color> &
 {
     return m_colors;
 }
+
+// note : move me in .cpp
 
 template<>
 inline auto Core::getCache() -> entt::resource_cache<Texture> &

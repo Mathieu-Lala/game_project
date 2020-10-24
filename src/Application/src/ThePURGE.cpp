@@ -145,27 +145,29 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 
     ImGui::Checkbox("Spam next floor", &spamNextFloor);
 
-    if (ImGui::Button("Next floor") || spamNextFloor) goToNextFloor(world);
+    if (ImGui::Button("Next floor") || spamNextFloor) m_logics.onFloorChange.publish(world);
 
-    ImGui::SliderInt("Min room size", &m_map_generation_params.minRoomSize, 0, m_map_generation_params.maxRoomSize);
-    ImGui::SliderInt("Max room size", &m_map_generation_params.maxRoomSize, m_map_generation_params.minRoomSize, 50);
+    ImGui::SliderInt("Min room size", &m_logics.m_map_generation_params.minRoomSize, 0, m_logics.m_map_generation_params.maxRoomSize);
+    ImGui::SliderInt("Max room size", &m_logics.m_map_generation_params.maxRoomSize, m_logics.m_map_generation_params.minRoomSize, 50);
     ImGui::Separator();
 
     // Assuming std::size_t is uint32_t
-    ImGui::InputScalar("Min room count", ImGuiDataType_U32, &m_map_generation_params.minRoomCount);
-    ImGui::InputScalar("Max room count", ImGuiDataType_U32, &m_map_generation_params.maxRoomCount);
+    ImGui::InputScalar("Min room count", ImGuiDataType_U32, &m_logics.m_map_generation_params.minRoomCount);
+    ImGui::InputScalar("Max room count", ImGuiDataType_U32, &m_logics.m_map_generation_params.maxRoomCount);
     ImGui::Text("note: actual room count may be smaller if there is not enough space");
     ImGui::Separator();
 
-    ImGui::DragInt("Max dungeon width", &m_map_generation_params.maxDungeonWidth, 0, 500);
-    ImGui::DragInt("Max dungeon height", &m_map_generation_params.maxDungeonHeight, 0, 500);
+    ImGui::DragInt("Max dungeon width", &m_logics.m_map_generation_params.maxDungeonWidth, 0, 500);
+    ImGui::DragInt("Max dungeon height", &m_logics.m_map_generation_params.maxDungeonHeight, 0, 500);
     ImGui::Separator();
 
     ImGui::SliderInt(
-        "Min corridor width", &m_map_generation_params.minCorridorWidth, 0, m_map_generation_params.maxCorridorWidth);
+        "Min corridor width", &m_logics.m_map_generation_params.minCorridorWidth, 0, m_logics.m_map_generation_params.maxCorridorWidth);
     ImGui::SliderInt(
-        "Max corridor width", &m_map_generation_params.maxCorridorWidth, m_map_generation_params.minCorridorWidth, 50);
+        "Max corridor width", &m_logics.m_map_generation_params.maxCorridorWidth, m_logics.m_map_generation_params.minCorridorWidth, 50);
     ImGui::Separator();
+
+    ImGui::SliderFloat("Enemy per block", &m_logics.m_map_generation_params.mobDensity, 0, 1);
 
     ImGui::End();
 }
@@ -175,6 +177,16 @@ static bool show_demo_window = true;
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
     static engine::Core::Holder holder{};
+
+    {
+        ImGui::Begin("Debug cheat");
+        if (ImGui::Button("kill boss")) {
+            for (auto &e : world.view<entt::tag<"boss"_hs>>()) {
+                m_logics.playerKilled.publish(world, e, world.view<entt::tag<"player"_hs>>()[0]);
+            }
+        }
+        ImGui::End();
+    }
 
     if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
@@ -193,7 +205,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             m_camera.setCenter(glm::vec2(13, 22));
             m_camera.setViewportSize(glm::vec2(109, 64));
 
-            goToNextFloor(world);
+            m_logics.onFloorChange.publish(world);
 
             setState(IN_GAME);
         }
@@ -207,10 +219,11 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             const auto level = world.get<Level>(player);
             const auto Atk = world.get<AttackDamage>(player);
             const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
+            KeyPicker keyPicker = world.get<KeyPicker>(player);
 
             // todo : style because this is not a debug window HUD
             ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x / 10, 10));
-            ImGui::SetNextWindowSize(ImVec2(400, 100));
+            ImGui::SetNextWindowSize(ImVec2(400, 200));
             ImGui::Begin(
                 "Info Player",
                 nullptr,
@@ -225,6 +238,8 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             helper::ImGui::Text("Level: {}", level.current_level);
             helper::ImGui::Text("Speed: {}", 1);
             helper::ImGui::Text("Atk: {}", Atk.damage);
+
+            if (keyPicker.hasKey) helper::ImGui::Text("You have the key");
             ImGui::End();
 
 
@@ -278,19 +293,4 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         ImGui::End();
     }
-}
-
-auto game::ThePurge::goToNextFloor(entt::registry &world) -> void
-{
-    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
-
-    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
-    m_nextFloorSeed = data.nextFloorSeed;
-
-    auto &pos = world.get<engine::d3::Position>(player);
-
-    pos.x = data.spawn.x + data.spawn.w * 0.5;
-    pos.y = data.spawn.y + data.spawn.h * 0.5;
 }

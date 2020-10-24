@@ -7,6 +7,7 @@
 #include <Engine/component/Acceleration.hpp>
 #include <Engine/component/Hitbox.hpp>
 #include <Engine/component/Source.hpp>
+#include <Engine/component/Spritesheet.hpp>
 
 #include "component/ViewRange.hpp"
 #include "component/AttackRange.hpp"
@@ -16,3 +17,4 @@
 #include "component/Lifetime.hpp"
 #include "component/Level.hpp"
 #include "component/Effect.hpp"
+#include "component/KeyPicker.hpp"
