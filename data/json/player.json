@@ -2,8 +2,8 @@
   "id": 1,
   "name": "Player",
   "stats": {
-    "cooldown": 1,
-    "hp": 100,
-    "atk": 20
+    "cooldown": 1000,
+    "hp": 200,
+    "atk": 50.0
   }
 }

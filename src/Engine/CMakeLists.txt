@@ -45,7 +45,6 @@ add_library(
   src/Engine/audio/WavReader.cpp
   src/Engine/Resources.cpp
   src/Engine/audio/AudioFileBuffer.cpp
-  src/Engine/DataConfigLoader.cpp
   )
 
 target_include_directories(

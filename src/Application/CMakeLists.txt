@@ -8,6 +8,7 @@ add_executable(
   src/ThePURGE.cpp
   src/GameLogic.cpp
   src/classes/ClassFactory.cpp
+  src/DataConfigLoader.cpp
   )
 
 target_link_libraries(app PRIVATE engine)
