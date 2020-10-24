@@ -6,7 +6,10 @@ add_executable(
   src/level/MapGenerator.cpp
   src/entity/EnemyFactory.cpp
   src/ThePURGE.cpp
-  src/GameLogic.cpp)
+  src/GameLogic.cpp
+  src/classes/ClassFactory.cpp
+  src/DataConfigLoader.cpp
+  )
 
 target_link_libraries(app PRIVATE engine)
 

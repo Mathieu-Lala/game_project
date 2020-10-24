@@ -1,10 +1,12 @@
 #include <Engine/helpers/DrawableFactory.hpp>
 
+#include "EntityDepth.hpp"
 #include "component/all.hpp"
 #include "entity/EnemyFactory.hpp"
-#include "EntityDepth.hpp"
+#include "classes/ClassFactory.hpp"
 
 #include "Declaration.hpp"
+#include "DataConfigLoader.hpp"
 
 using namespace std::chrono_literals; // ms ..
 
@@ -51,6 +53,11 @@ auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> vo
 auto game::EnemyFactory::Player(entt::registry &world) -> entt::entity
 {
     auto player = world.create();
+
+    player = DataConfigLoader::loadPlayerConfigFile(DATA_DIR "config/player.json", world, player);
+    player = DataConfigLoader::loadClassConfigFile(DATA_DIR "config/classes.json", world, player, Classes::FARMER);
+
+/*
     world.emplace<entt::tag<"player"_hs>>(player);
     world.emplace<engine::d3::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
     world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
@@ -65,5 +72,7 @@ auto game::EnemyFactory::Player(entt::registry &world) -> entt::entity
     world.emplace<AttackDamage>(player, 50.0f);
     world.emplace<Level>(player, 0u, 0u, 10u);
     world.emplace<KeyPicker>(player);
+*/
+
     return player;
 }

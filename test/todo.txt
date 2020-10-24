@@ -3,3 +3,5 @@ unit test
 fuzz test
 
 benchmarking
+
+golden test (auto screenshot)
