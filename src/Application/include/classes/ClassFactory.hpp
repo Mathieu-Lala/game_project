@@ -5,27 +5,34 @@
 
 #include "Classes.hpp"
 
-namespace engine {
-    class ClassFactory
-    {
-    public:
-        ClassFactory(engine::Classes cl, const std::string &desc, const double &cooldown, const std::uint32_t &range, const std::uint32_t &damage, const bool attackType);
+namespace game {
 
-        auto activateSkill() -> void;
-        auto displayInfos() -> void;
+class ClassFactory {
+public:
+    ClassFactory(
+        Classes cl,
+        const std::string &desc,
+        const double &cooldown,
+        const std::uint32_t &range,
+        const std::uint32_t &damage,
+        const bool attackType);
 
-        bool m_isOnCooldown{false};
+    auto activateSkill() -> void;
+    auto displayInfos() -> void;
 
-        bool s_isRangedAttack{false};
+    bool m_isOnCooldown{false};
 
-        std::string s_name{""};
-        std::string s_description{""};
+    bool s_isRangedAttack{false};
 
-        // std::chrono::duration<double> s_cooldown{0};
-        double s_cooldown{0};
-        std::uint32_t s_range{0};
-        std::uint32_t s_damage{0};
+    std::string s_name{""};
+    std::string s_description{""};
 
-    private:
-    };
+    // std::chrono::duration<double> s_cooldown{0};
+    double s_cooldown{0};
+    std::uint32_t s_range{0};
+    std::uint32_t s_damage{0};
+
+private:
 };
+
+} // namespace game

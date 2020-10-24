@@ -54,8 +54,8 @@ auto game::EnemyFactory::Player(entt::registry &world) -> entt::entity
 {
     auto player = world.create();
 
-    player = engine::DataConfigLoader::loadPlayerConfigFile(DATA_DIR "json/player.json", world, player);
-    player = engine::DataConfigLoader::loadClassConfigFile(DATA_DIR "json/classes.json", world, player, engine::Classes::FARMER);
+    player = DataConfigLoader::loadPlayerConfigFile(DATA_DIR "json/player.json", world, player);
+    player = DataConfigLoader::loadClassConfigFile(DATA_DIR "json/classes.json", world, player, Classes::FARMER);
 
     return player;
 }

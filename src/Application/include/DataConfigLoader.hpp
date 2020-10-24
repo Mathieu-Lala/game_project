@@ -5,14 +5,17 @@
 #include <entt/entt.hpp>
 
 #include <Engine/Graphics/Shader.hpp>
-#include <../../Application/include/classes/Classes.hpp>
+#include "classes/Classes.hpp"
 
-namespace engine {
-	struct DataConfigLoader
-	{
-		static auto loadPlayerConfigFile(const std::string_view &filename, entt::registry &world, entt::entity &player) -> entt::entity;
-		static auto loadClassConfigFile(const std::string_view &filename, entt::registry &world, entt::entity &player, engine::Classes cl) -> entt::entity;
+namespace game {
 
-        auto reloadFiles() -> void;
-	};
+struct DataConfigLoader {
+    static auto loadPlayerConfigFile(const std::string_view, entt::registry &, entt::entity &) -> entt::entity;
+
+    static auto loadClassConfigFile(const std::string_view, entt::registry &, entt::entity &, Classes cl)
+        -> entt::entity;
+
+    auto reloadFiles() -> void;
 };
+
+} // namespace game

@@ -1,10 +1,7 @@
 #pragma once
 
-namespace engine {
-	enum Classes {
-		FARMER,
-		SHOOTER,
-		SOLDIER,
-		SORCERER
-	};    
-}
+namespace game {
+
+enum Classes { FARMER, SHOOTER, SOLDIER, SORCERER };
+
+} // namespace game
