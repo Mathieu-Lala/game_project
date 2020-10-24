@@ -38,7 +38,7 @@ public:
 
     auto setState(State new_state) noexcept { m_state = new_state; }
 
-    constexpr
+    // constexpr // note : C++20 but not supported by MSVC yet
     auto getBackgroundColor() const noexcept -> glm::vec3 final
     {
         return m_state == GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};
