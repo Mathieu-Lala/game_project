@@ -4,7 +4,6 @@
 #include <Engine/Game.hpp>
 #include <Engine/Graphics/Shader.hpp>
 #include <Engine/Camera.hpp>
-#include <Engine/audio/AudioManager.hpp>
 
 #include "component/all.hpp"
 
@@ -44,15 +43,21 @@ public:
     }
 
 private:
+    auto goToNextFloor(entt::registry &world) -> void;
+
     auto mapGenerationOverlayTick(entt::registry &world) -> void;
     auto displaySoundDebugGui() -> void;
 
     State m_state{LOADING};
 
+    FloorGenParam m_map_generation_params;
+    unsigned int m_nextFloorSeed;
+
     engine::Camera m_camera; // note : should be in engine::Core
-    engine::AudioManager m_audioManager; // should move to engine
 
     GameLogic m_logics;
+
+    std::shared_ptr<engine::Sound> m_dungeonMusic;
 };
 
 } // namespace game

@@ -20,7 +20,14 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() : m_logics{*this} {}
+game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<unsigned int>(std::time(nullptr))), m_logics{*this}
+{
+    static engine::Core::Holder holder{};
+
+    m_dungeonMusic = holder.instance->getAudioManager().getSound(DATA_DIR "sounds/dungeon_music.wav");
+    m_dungeonMusic->setVolume(0.1f)
+        .setLoop(true);
+}
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
@@ -67,19 +74,20 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
 void game::ThePurge::displaySoundDebugGui()
 {
+    static engine::Core::Holder holder{};
     static std::vector<std::shared_ptr<engine::Sound>> sounds;
 
     ImGui::Begin("Sound debug window");
 
     if (ImGui::Button("Load Music")) {
         try {
-            sounds.push_back(m_audioManager.getSound(DATA_DIR "/sounds/DungeonMusic.wav"));
+            sounds.push_back(holder.instance->getAudioManager().getSound(DATA_DIR "/sounds/dungeon_music.wav"));
         } catch (...) {
         }
     }
     if (ImGui::Button("Load Hit sound")) {
         try {
-            sounds.push_back(m_audioManager.getSound(DATA_DIR "/sounds/hit.wav"));
+            sounds.push_back(holder.instance->getAudioManager().getSound(DATA_DIR "/sounds/hit.wav"));
         } catch (...) {
         }
     }
@@ -168,6 +176,8 @@ static bool show_demo_window = true;
 
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
+    static engine::Core::Holder holder{};
+
     {
         ImGui::Begin("Debug cheat");
         if (ImGui::Button("kill boss")) {
@@ -186,6 +196,9 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         // note : this block could be launch in a future
         if (ImGui::Button("Start the game")) {
+            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/entrance_gong.wav")->setVolume(0.2f).play();
+            m_dungeonMusic->play();
+
             player = EnemyFactory::Player(world);
 
             // default camera value to see the generated terrain properly
@@ -280,4 +293,19 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         ImGui::End();
     }
+}
+
+auto game::ThePurge::goToNextFloor(entt::registry &world) -> void
+{
+    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
+
+    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
+    m_nextFloorSeed = data.nextFloorSeed;
+
+    auto &pos = world.get<engine::d3::Position>(player);
+
+    pos.x = data.spawn.x + data.spawn.w * 0.5;
+    pos.y = data.spawn.y + data.spawn.h * 0.5;
 }

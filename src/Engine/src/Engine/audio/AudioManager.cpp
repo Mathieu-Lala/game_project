@@ -24,7 +24,7 @@ engine::AudioManager::AudioManager()
 
 engine::AudioManager::~AudioManager()
 {
-    m_currentSounds.clear(); // destroys most sounds
+    for (auto &s : m_currentSounds) s->forceDestroy(); // destroys sounds even if user still have references
     m_audioFileCache.clear();
 
     alcCall(m_device, alcDestroyContext(m_context));
