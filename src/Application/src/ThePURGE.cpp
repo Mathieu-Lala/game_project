@@ -294,3 +294,18 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         ImGui::End();
     }
 }
+
+auto game::ThePurge::goToNextFloor(entt::registry &world) -> void
+{
+    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
+
+    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
+    m_nextFloorSeed = data.nextFloorSeed;
+
+    auto &pos = world.get<engine::d3::Position>(player);
+
+    pos.x = data.spawn.x + data.spawn.w * 0.5;
+    pos.y = data.spawn.y + data.spawn.h * 0.5;
+}
