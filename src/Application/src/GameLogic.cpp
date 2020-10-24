@@ -8,7 +8,8 @@
 
 using namespace std::chrono_literals;
 
-game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
+game::GameLogic::GameLogic(ThePurge &game) :
+    m_game{game}, m_nextFloorSeed(static_cast<unsigned int>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
 
@@ -18,13 +19,16 @@ game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
     sinkGameUpdated.connect<&GameLogic::enemies_try_attack>(*this);
     sinkGameUpdated.connect<&GameLogic::update_lifetime>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
+    sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
     sinkGetKilled.connect<&GameLogic::entity_killed>(*this);
+    sinkOnFloorChange.connect<&GameLogic::goToTheNextFloor>(*this);
 }
 
-auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
+auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel)
+    -> void
 {
     world.get<engine::d2::Acceleration>(player) = accel;
 }
@@ -68,7 +72,8 @@ auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &d
             effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
             if (effect.effect_name == "stun") spdlog::warn("stun");
             if (effect.effect_name == "bleed")
-                player_health.current -= 0.01f /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so TODO*/;
+                player_health.current -=
+                    0.01f /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so TODO*/;
         } else {
             effect.is_in_effect = false;
         }
@@ -94,7 +99,7 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
 
 auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source){
+    const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source) {
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
 
@@ -107,10 +112,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             spdlog::warn("player took damage");
 
             world.destroy(spell);
-            if (entity_health.current <= 0.0f) {
-                playerKilled.publish(world, entity, source);
-            }
-
+            if (entity_health.current <= 0.0f) { playerKilled.publish(world, entity, source); }
         }
     };
 
@@ -128,8 +130,25 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
                 apply_damage(player, spell, spell_hitbox, spell_pos, source);
             }
         }
-
     }
+
+    const auto systemKeyPicker =
+        [&](KeyPicker &keypicker, const engine::d2::HitboxSolid &pickerhitbox, const engine::d3::Position &pickerPos) {
+            if (keypicker.hasKey) return;
+
+            for (auto &key : world.view<entt::tag<"key"_hs>>()) {
+                auto &keyHitbox = world.get<engine::d2::HitboxFloat>(key);
+                auto &keyPos = world.get<engine::d3::Position>(key);
+
+                if (engine::d2::overlapped<engine::d2::WITH_EDGE>(pickerhitbox, pickerPos, keyHitbox, keyPos)) {
+                    keypicker.hasKey = true;
+
+                    world.destroy(key);
+                }
+            }
+        };
+
+    world.view<KeyPicker, engine::d2::HitboxSolid, engine::d3::Position>().each(systemKeyPicker);
 }
 
 auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void
@@ -145,25 +164,31 @@ auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeE
     }
 }
 
+auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    const auto &door = world.view<entt::tag<"exit_door"_hs>>()[0];
+    const auto &doorPosition = world.get<engine::d3::Position>(door);
+
+    const auto doorUsageSystem = [&](const KeyPicker &keypicker, const engine::d3::Position &playerPos) {
+        if (!keypicker.hasKey) return;
+
+        // would be cool if : && playerPos.hasVisionOn(doorPosition);
+        if (engine::d3::distance(doorPosition, playerPos) < kDoorInteractionRange) onFloorChange.publish(world);
+    };
+
+    world.view<KeyPicker, engine::d3::Position>().each(doorUsageSystem);
+}
+
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
     if (world.has<entt::tag<"player"_hs>>(killed)) {
         // note : may create segfault // assert fail
         m_game.setState(ThePurge::GAME_OVER);
-    } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
-        spdlog::warn("!! entity killed : dropping xp !!");
-        world.destroy(killed);
-        // todo : send signal instead
-        auto &level = world.get<Level>(killer);
-        level.current_xp += 1;
-        if (level.current_xp >= level.xp_require) {
-            level.current_level++;
-            level.current_xp = 0;
-        }
-    } else {
+    } else if (world.has<entt::tag<"boss"_hs>>(killed)) {
         auto pos = world.get<engine::d3::Position>(killed);
         auto key = world.create();
         world.emplace<entt::tag<"key"_hs>>(key);
+        world.emplace<engine::d2::HitboxFloat>(key);
         world.emplace<engine::d2::Scale>(key, 1.0, 1.0);
         world.emplace<engine::d3::Position>(key, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::UTILITIES));
         world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle()); //.shader = &shader;
@@ -172,6 +197,16 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
         world.destroy(killed);
         auto &level = world.get<Level>(killer);
         level.current_xp += 5;
+        if (level.current_xp >= level.xp_require) {
+            level.current_level++;
+            level.current_xp = 0;
+        }
+    } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
+        spdlog::warn("!! entity killed : dropping xp !!");
+        world.destroy(killed);
+        // todo : send signal instead
+        auto &level = world.get<Level>(killer);
+        level.current_xp += 1;
         if (level.current_xp >= level.xp_require) {
             level.current_level++;
             level.current_xp = 0;
@@ -189,8 +224,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     auto &attack_damage = world.get<AttackDamage>(entity);
     auto &enemy_pos = world.get<engine::d3::Position>(entity);
 
-    if (attack_cooldown.is_in_cooldown)
-        return;
+    if (attack_cooldown.is_in_cooldown) return;
 
     attack_cooldown.is_in_cooldown = true;
     attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
@@ -201,10 +235,32 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     world.emplace<entt::tag<"spell"_hs>>(spell);
     world.emplace<Lifetime>(spell, 600ms);
     world.emplace<AttackDamage>(spell, attack_damage.damage);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());//.shader = &m_game.shader;
+    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle()); //.shader = &m_game.shader;
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
     world.emplace<engine::d3::Position>(spell, enemy_pos.x + direction.x / 2.0, enemy_pos.y + direction.y / 2.0, -1.0);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
     world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
     world.emplace<engine::Source>(spell, entity);
+}
+
+auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void
+{
+    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
+
+    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
+    m_nextFloorSeed = data.nextFloorSeed;
+
+    auto allPlayers = world.view<entt::tag<"player"_hs>>();
+
+    for (auto &player : allPlayers) {
+        auto &pos = world.get<engine::d3::Position>(player);
+
+        pos.x = data.spawn.x + data.spawn.w * 0.5;
+        pos.y = data.spawn.y + data.spawn.h * 0.5;
+    }
+
 }

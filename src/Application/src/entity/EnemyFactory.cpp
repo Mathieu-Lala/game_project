@@ -40,7 +40,7 @@ auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> vo
     world.emplace<game::AttackRange>(e, 3.0f);
     world.emplace<game::AttackCooldown>(e, false, 2000ms, 0ms);
     world.emplace<game::Effect>(e, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
-    world.emplace<game::AttackDamage>(e, 30.0f);
+    world.emplace<game::AttackDamage>(e, 15.0f);
     world.emplace<Health>(e, 500.0f, 500.0f);
     engine::DrawableFactory::fix_color(world, e, {0.95f, 0.95f, 0.95f});
     auto &sp = world.emplace<engine::Spritesheet>(
@@ -64,5 +64,6 @@ auto game::EnemyFactory::Player(entt::registry &world) -> entt::entity
     world.emplace<AttackCooldown>(player, false, 1000ms, 0ms);
     world.emplace<AttackDamage>(player, 50.0f);
     world.emplace<Level>(player, 0u, 0u, 10u);
+    world.emplace<KeyPicker>(player);
     return player;
 }
