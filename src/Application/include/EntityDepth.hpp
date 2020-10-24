@@ -6,8 +6,8 @@ namespace game {
 
 enum EntityDepth {
     PLAYER,
-    ENEMIES, 
-    UTILITIES, 
+    ENEMIES,
+    UTILITIES,
     TERRAIN,
     MAX_VAL
 };

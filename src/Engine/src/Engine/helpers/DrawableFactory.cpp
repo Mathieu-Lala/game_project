@@ -77,8 +77,8 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
     }
 }
 
-auto engine::DrawableFactory::fix_texture(entt::registry &world, entt::entity e, const std::string_view filepath)
-    -> Texture &
+auto engine::DrawableFactory::fix_texture(
+    entt::registry &world, entt::entity e, const std::string_view filepath, const std::array<float, 4ul> &clip) -> Texture &
 {
     static Core::Holder holder{};
 
@@ -86,8 +86,14 @@ auto engine::DrawableFactory::fix_texture(entt::registry &world, entt::entity e,
     auto &drawable = world.get<Drawable>(e);
     ::glBindVertexArray(drawable.VAO);
 
+    // note : could split the texture in two component :
+    // Texture = raw image from file
+    // ClippedTexture = VBO binded and clipped
     auto handle = holder.instance->getCache<Texture>().load<LoaderTexture>(
-        entt::hashed_string{fmt::format("resource/texture/identifier/{}", filepath).data()}, filepath);
+        entt::hashed_string{
+            fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}", filepath, clip[0], clip[1], clip[2], clip[3]).data()},
+        filepath,
+        std::move(clip));
     if (handle) {
         ::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO);
         ::glBufferData(

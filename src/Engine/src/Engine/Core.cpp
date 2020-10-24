@@ -18,6 +18,7 @@
 #include "Engine/component/Acceleration.hpp"
 #include "Engine/component/Hitbox.hpp"
 #include "Engine/component/Color.hpp"
+#include "Engine/component/Spritesheet.hpp"
 
 #include "Engine/Event/Event.hpp"
 #include "Engine/Graphics/Shader.hpp"
@@ -208,6 +209,38 @@ auto engine::Core::main() -> int
             const auto t = std::get<TimeElapsed>(event);
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
+            // check if the spritesheet need to update the texture
+            m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
+                if (!sprite.speed.is_in_cooldown) return;
+
+                if (std::chrono::milliseconds{elapsed} < sprite.speed.remaining_cooldown) {
+                    sprite.speed.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+                } else {
+                    sprite.speed.is_in_cooldown = false;
+                }
+            });
+
+            // update and reset the cooldown of the spritesheet
+            for (auto &i : m_world.view<Spritesheet>()) {
+                auto &sprite = m_world.get<Spritesheet>(i);
+                if (sprite.speed.is_in_cooldown) continue;
+                sprite.speed.is_in_cooldown = true;
+                sprite.speed.remaining_cooldown = sprite.speed.cooldown;
+                sprite.current_frame++;
+                sprite.current_frame %= static_cast<std::uint16_t>(sprite.frames.size());
+
+                auto &texture = m_world.get<Texture>(i);
+
+                DrawableFactory::fix_texture(
+                    m_world,
+                    i,
+                    std::string(DATA_DIR) + sprite.file,
+                    {static_cast<float>(sprite.frames[sprite.current_frame].x) / static_cast<float>(texture.width),
+                     static_cast<float>(sprite.frames[sprite.current_frame].y) / static_cast<float>(texture.height),
+                     sprite.width / static_cast<float>(texture.width),
+                     sprite.height / static_cast<float>(texture.height)});
+            }
+
             m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
                 vel.x += acc.x;
                 vel.y += acc.y;
@@ -253,6 +286,8 @@ auto engine::Core::main() -> int
                 if (!collide) {
                     moving_pos = new_pos;
                 } else {
+                    moving_vel = {0.0f, 0.0f};
+#ifdef COLLISION_EXPERIMENTAL
                     if (!d2::overlapped<d2::WITHOUT_EDGE>(
                             moving_hitbox, d3::Position{new_pos.x, moving_pos.x, 0}, others_hitbox, others_pos)) {
                         moving_vel.y = 0;
@@ -260,6 +295,7 @@ auto engine::Core::main() -> int
                                    moving_hitbox, d3::Position{moving_pos.y, new_pos.y, 0}, others_hitbox, others_pos)) {
                         moving_vel.x = 0;
                     }
+#endif
                 }
             }
 
@@ -287,6 +323,10 @@ auto engine::Core::main() -> int
 
                 ::glClearColor(background.r, background.g, background.b, 1.00f);
                 ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                // todo : add rendering
+                // texture and no color
+                // no texture and no color
 
                 m_shader_colored->use();
                 m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<Texture>)
