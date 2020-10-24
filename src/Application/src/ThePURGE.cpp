@@ -184,7 +184,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         // note : this block could be launch in a future
         if (ImGui::Button("Start the game")) {
-            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/entrance_gong.wav")->setVolume(0.2).play();
+            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/entrance_gong.wav")->setVolume(0.2f).play();
             m_dungeonMusic->play();
 
             player = EnemyFactory::Player(world);
