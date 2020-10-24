@@ -5,12 +5,6 @@
 #include <entt/entt.hpp>
 
 #include <Engine/helpers/DrawableFactory.hpp>
-#include <Engine/component/Acceleration.hpp>
-#include <Engine/component/Drawable.hpp>
-#include <Engine/component/Position.hpp>
-#include <Engine/component/Velocity.hpp>
-#include <Engine/component/Hitbox.hpp>
-#include <Engine/component/Scale.hpp>
 #include <Engine/Graphics/Shader.hpp>
 
 #include <classes/ClassFactory.hpp>
