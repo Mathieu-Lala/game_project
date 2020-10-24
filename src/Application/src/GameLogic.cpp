@@ -25,7 +25,8 @@ game::GameLogic::GameLogic(ThePurge &game) : m_game{game}
     sinkGetKilled.connect<&GameLogic::entity_killed>(*this);
 }
 
-auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
+auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel)
+    -> void
 {
     world.get<engine::d2::Acceleration>(player) = accel;
 }
@@ -69,7 +70,8 @@ auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &d
             effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
             if (effect.effect_name == "stun") spdlog::warn("stun");
             if (effect.effect_name == "bleed")
-                player_health.current -= 0.01f /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so TODO*/;
+                player_health.current -=
+                    0.01f /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so TODO*/;
         } else {
             effect.is_in_effect = false;
         }
@@ -97,7 +99,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 {
     static engine::Core::Holder holder{};
 
-    const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source){
+    const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source) {
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
 
@@ -111,10 +113,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 
             holder.instance->getAudioManager().getSound(DATA_DIR "sounds/fire_hit.wav")->play();
             world.destroy(spell);
-            if (entity_health.current <= 0.0f) {
-                playerKilled.publish(world, entity, source);
-            }
-
+            if (entity_health.current <= 0.0f) { playerKilled.publish(world, entity, source); }
         }
     };
 
@@ -132,7 +131,6 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
                 apply_damage(player, spell, spell_hitbox, spell_pos, source);
             }
         }
-
     }
 }
 
@@ -151,11 +149,22 @@ auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeE
 
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
+    static engine::Core::Holder holder{};
+
     if (world.has<entt::tag<"player"_hs>>(killed)) {
+        holder.instance->getAudioManager().getSound(DATA_DIR "sounds/player_death.wav")->play();
+
         // note : may create segfault // assert fail
         m_game.setState(ThePurge::GAME_OVER);
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         spdlog::warn("!! entity killed : dropping xp !!");
+
+        // TODO: actual random utilities
+        bool lazyDevCoinflip = static_cast<std::uint32_t>(killed) % 2;
+        holder.instance->getAudioManager()
+            .getSound(lazyDevCoinflip ? DATA_DIR "sounds/death_01.wav" : DATA_DIR "sounds/death_02.wav")
+            ->play();
+
         world.destroy(killed);
         // todo : send signal instead
         auto &level = world.get<Level>(killer);
@@ -165,6 +174,8 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
             level.current_xp = 0;
         }
     } else {
+        holder.instance->getAudioManager().getSound(DATA_DIR "sounds/boss_death.wav")->play();
+
         auto pos = world.get<engine::d3::Position>(killed);
         auto key = world.create();
         world.emplace<entt::tag<"key"_hs>>(key);
@@ -195,8 +206,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     auto &attack_damage = world.get<AttackDamage>(entity);
     auto &enemy_pos = world.get<engine::d3::Position>(entity);
 
-    if (attack_cooldown.is_in_cooldown)
-        return;
+    if (attack_cooldown.is_in_cooldown) return;
 
     attack_cooldown.is_in_cooldown = true;
     attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
@@ -208,7 +218,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
     world.emplace<entt::tag<"spell"_hs>>(spell);
     world.emplace<Lifetime>(spell, 600ms);
     world.emplace<AttackDamage>(spell, attack_damage.damage);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());//.shader = &m_game.shader;
+    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle()); //.shader = &m_game.shader;
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
     world.emplace<engine::d3::Position>(spell, enemy_pos.x + direction.x / 2.0, enemy_pos.y + direction.y / 2.0, -1.0);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
