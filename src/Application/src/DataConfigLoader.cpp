@@ -39,6 +39,7 @@ auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filenam
         player, false, static_cast<std::chrono::milliseconds>(data["stats"]["cooldown"]), 0ms);
     world.emplace<AttackDamage>(player, data["stats"]["atk"]);
     world.emplace<Level>(player, 0u, 0u, 10u);
+    world.emplace<KeyPicker>(player);
 
     file.close();
     return player;

@@ -63,4 +63,4 @@ fi
 export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
 
-cmake $argument -j $(nproc) -DENABLE_CACHE=ON -DENABLE_PCH=ON .
+cmake $argument -j $(nproc) -DENABLE_CACHE=ON .
