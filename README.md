@@ -9,11 +9,30 @@ This project is a video game for PC. See the [Game Design Document](doc/GDD_ten_
 
 This repository contains the source code of the game and his engine.
 
+## Usage
+
+```sh
+$> ./build/${build_type}/${arch}/out/app --help
+ThePURGE 0.2.10
+Usage: ./build/${build_type}/${arch}/out/app [OPTIONS]
+
+Options:
+  -h,--help                   Print this help message and exit
+  --version                   Print the version number and exit.
+  --config=app.ini            Read an ini file
+  --fullscreen BOOLEAN=1      Launch the window in fullscreen mode.
+  --replay_path TEXT          Path of the events to replay.
+```
+
 ## Screenshots
 
-Application version 2.9
+Application version 0.2.12
 
-![v2.9](./data/screenshots/Screenshot_from_2020-10-18_00-14-21.png)
+![v0.2.12](./doc/screenshots/app_v0.2.12.gif)
+
+Application version 0.1.9
+
+![v0.1.9](./doc/screenshots/app_v0.1.9.png)
 
 ## Installing
 
@@ -50,7 +69,9 @@ $> ./tools/install.sh
 
 * Windows
 
-    * [VS conan extension](https://blog.conan.io/2019/06/17/Conan-extension-for-Visual-Studio.html)
+    * [VS conan extension](https://marketplace.visualstudio.com/items?itemName=conan-io.conan-vs-extension)
+    * [VS GLSL extension](https://marketplace.visualstudio.com/items?itemName=DanielScherzer.GLSL)
+    * [VS clang-format extension](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
 
 ## Build and Run
 

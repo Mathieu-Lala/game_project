@@ -7,6 +7,7 @@
 #include <Engine/component/Acceleration.hpp>
 #include <Engine/component/Hitbox.hpp>
 #include <Engine/component/Source.hpp>
+#include <Engine/component/Spritesheet.hpp>
 
 #include "component/ViewRange.hpp"
 #include "component/AttackRange.hpp"
