@@ -1,18 +1,19 @@
 #pragma once
 
-#include "AL/al.h"
+#include <AL/al.h>
 
 namespace engine {
 
-    enum class SoundStatus {
-        INITIAL,
-        PLAYING,
-        PAUSED,
-        STOPPED,
-    };
+enum class SoundStatus {
+    INITIAL,
+    PLAYING,
+    PAUSED,
+    STOPPED,
+};
+
 class Sound {
 public:
-    Sound(ALuint soundBuffer);
+    explicit Sound(ALuint soundBuffer);
     ~Sound();
 
     auto play() -> Sound &;
@@ -31,9 +32,10 @@ public:
 
     // Don't call that yourself
     auto forceDestroy() -> void;
+
 private:
     ALuint m_buffer;
     bool m_forceDestroyed = false;
-
 };
+
 } // namespace engine

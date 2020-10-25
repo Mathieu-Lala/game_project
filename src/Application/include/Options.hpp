@@ -24,9 +24,10 @@ static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION " 
     ;
 
 struct Options {
+    static constexpr auto DEFAULT_DATA_FOLDER = "data";
     static constexpr auto DEFAULT_CONFIG = "data/config/app.ini";
 
-    enum Value { CONFIG_PATH, FULLSCREEN, REPLAY_PATH, OPTION_MAX };
+    enum Value { CONFIG_PATH, FULLSCREEN, REPLAY_PATH, DATA_FOLDER, OPTION_MAX };
 
     std::array<CLI::Option *, OPTION_MAX> options;
 
@@ -45,6 +46,7 @@ struct Options {
         options[CONFIG_PATH] = app.set_config("--config", DEFAULT_CONFIG);
         options[FULLSCREEN] = app.add_option("--fullscreen", fullscreen, "Launch the window in fullscreen mode.", true);
         options[REPLAY_PATH] = app.add_option("--replay_path", replay_path, "Path of the events to replay.");
+        options[DATA_FOLDER] = app.add_option("--data", data_folder, "Path of the data folder");
 
         if (const auto res = [&]() -> std::optional<int> {
                 CLI11_PARSE(app, argc, argv);
@@ -74,6 +76,7 @@ struct Options {
 
     bool fullscreen = true;
     std::string replay_path;
+    std::string data_folder;
 };
 
 } // namespace game

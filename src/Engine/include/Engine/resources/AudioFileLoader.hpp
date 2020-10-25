@@ -10,7 +10,11 @@
 namespace engine {
 
 struct AudioFileLoader : entt::resource_loader<AudioFileLoader, AudioFileBuffer> {
-    auto load(const std::string &path) const -> std::shared_ptr<AudioFileBuffer>;
+    template<typename... Args>
+    auto load(Args &&... args) const -> std::shared_ptr<AudioFileBuffer>
+    {
+        return std::make_shared<AudioFileBuffer>(std::move(args)...);
+    }
 };
 
 using AudioFileCache = entt::resource_cache<AudioFileBuffer>;

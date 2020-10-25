@@ -12,7 +12,7 @@ static std::default_random_engine random_engine{};
 
 // Generate random int in the interval [min; max[
 template<std::integral T>
-auto randRange(T min, T max)
+static auto randRange(T min, T max)
 {
     assert(max > min);
 
@@ -20,19 +20,21 @@ auto randRange(T min, T max)
     return min + static_cast<T>(r % static_cast<decltype(r)>(max - min));
 }
 
-bool isRoomValid(game::TilemapBuilder &builder, const game::Room &r)
+constexpr static bool isRoomValid(const game::TilemapBuilder &builder, const game::Room &r)
 {
-    int x2 = r.x + r.w;
-    int y2 = r.y + r.h;
+    const auto x2 = r.x + r.w;
+    const auto y2 = r.y + r.h;
 
-    for (int x = r.x; x < x2; ++x)
-        for (int y = r.y; y < y2; ++y)
-            if (builder.get(x, y) != game::TileEnum::NONE) return false;
+    for (auto x = r.x; x < x2; ++x) {
+        for (auto y = r.y; y < y2; ++y) {
+            if (builder.at(glm::ivec2{x, y}) != game::TileEnum::NONE) { return false; }
+        }
+    }
 
     return true;
 }
 
-game::Room generateRoom(game::TilemapBuilder &builder, const game::FloorGenParam &params)
+static auto generateRoom(const game::TilemapBuilder &builder, const game::FloorGenParam &params) -> game::Room
 {
     game::Room r;
 
@@ -51,17 +53,18 @@ game::Room generateRoom(game::TilemapBuilder &builder, const game::FloorGenParam
     return r;
 }
 
-void placeRoomFloor(game::TilemapBuilder &builder, const game::Room &r, game::TileEnum floorTile)
+static auto placeRoomFloor(game::TilemapBuilder &builder, const game::Room &r, game::TileEnum floorTile) -> void
 {
-    int x2 = r.x + r.w;
-    int y2 = r.y + r.h;
+    const auto x2 = r.x + r.w;
+    const auto y2 = r.y + r.h;
 
-    for (int y = r.y + 1; y < y2 - 1; ++y)
-        for (int x = r.x + 1; x < x2 - 1; ++x) builder.get(x, y) = floorTile;
+    for (auto y = r.y + 1; y < y2 - 1; ++y) {
+        for (auto x = r.x + 1; x < x2 - 1; ++x) { builder[glm::ivec2{x, y}] = floorTile; }
+    }
 }
 
 // If gap is even, center will be chosen randomly between the two center tiles
-int getOnePossibleCenterOf(int a, int b)
+static int getOnePossibleCenterOf(int a, int b)
 {
     int result = (a + b) / 2;
 
@@ -71,167 +74,147 @@ int getOnePossibleCenterOf(int a, int b)
 }
 
 // If room size is even, center will be chosen randomly between the two center tiles
-glm::ivec2 getOnePossibleCenterOf(const game::Room &r)
+static auto getOnePossibleCenterOf(const game::Room &r) -> glm::ivec2
 {
-    glm::ivec2 pos;
-
-    pos.x = getOnePossibleCenterOf(r.x, r.x + r.w);
-    pos.y = getOnePossibleCenterOf(r.y, r.y + r.h);
-
-    return pos;
+    return {getOnePossibleCenterOf(r.x, r.x + r.w), getOnePossibleCenterOf(r.y, r.y + r.h)};
 }
 
-void generatorCorridor(
+static void generatorCorridor(
     game::TilemapBuilder &builder, const game::FloorGenParam &params, const game::Room &r1, const game::Room &r2)
 {
     auto start = getOnePossibleCenterOf(r1);
     auto end = getOnePossibleCenterOf(r2);
 
-    auto vertical = [&](glm::vec<2, int> pos, int width) -> glm::vec<2, int> {
-        auto widthOffset = getOnePossibleCenterOf(0, width);
+    auto vertical = [&](glm::ivec2 pos, int width) -> glm::ivec2 {
+        const auto widthOffset = getOnePossibleCenterOf(0, width);
 
-        auto minX = pos.x - widthOffset;
-        auto maxX = pos.x + (width - widthOffset);
+        const auto minX = pos.x - widthOffset;
+        const auto maxX = pos.x + (width - widthOffset);
 
         while (pos.y != end.y) {
-            for (int x = minX; x < maxX; ++x)
-                if (builder.get(x, pos.y) == game::TileEnum::NONE)
-                    builder.get(x, pos.y) = game::TileEnum::FLOOR_CORRIDOR;
+            for (auto x = minX; x < maxX; ++x) {
+                if (builder.at(glm::ivec2{x, pos.y}) == game::TileEnum::NONE) {
+                    builder[glm::ivec2{x, pos.y}] = game::TileEnum::FLOOR_CORRIDOR;
+                }
+            }
 
-            if (pos.y < end.y)
-                ++pos.y;
-            else
-                --pos.y;
+            pos.y += pos.y < end.y ? 1 : -1;
         }
 
         return pos;
     };
 
-    auto horizontal = [&](glm::vec<2, int> pos, int width) -> glm::vec<2, int> {
-        auto widthOffset = getOnePossibleCenterOf(0, width);
+    auto horizontal = [&](glm::ivec2 pos, int width) -> glm::ivec2 {
+        const auto widthOffset = getOnePossibleCenterOf(0, width);
 
-        auto minY = pos.y - widthOffset;
-        auto maxY = pos.y + (width - widthOffset);
+        const auto minY = pos.y - widthOffset;
+        const auto maxY = pos.y + (width - widthOffset);
 
         while (pos.x != end.x) {
-            for (int y = minY; y < maxY; ++y)
-                if (builder.get(pos.x, y) == game::TileEnum::NONE)
-                    builder.get(pos.x, y) = game::TileEnum::FLOOR_CORRIDOR;
+            for (auto y = minY; y < maxY; ++y) {
+                if (builder.at(glm::ivec2{pos.x, y}) == game::TileEnum::NONE) {
+                    builder[glm::ivec2{pos.x, y}] = game::TileEnum::FLOOR_CORRIDOR;
+                }
+            }
 
-            if (pos.x < end.x)
-                ++pos.x;
-            else
-                --pos.x;
+            pos.x += pos.x < end.x ? 1 : -1;
         }
 
         return pos;
     };
 
+    // -2 for walls, and -1 to be safe about the random center not making wall go off bound
+    auto maxWidth = std::min(r1.h - 3, r2.w - 3);
+    auto width =
+        randRange(std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1));
 
     if (randRange(0, 1)) {
-        auto maxWidth = std::min(
-            r1.w - 3, r2.h - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
-        auto width =
-            randRange(std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1));
-
-        auto pos = vertical(start, width);
-        horizontal(pos, width);
+        horizontal(vertical(start, width), width);
     } else {
-        auto maxWidth = std::min(
-            r1.h - 3, r2.w - 3); // -2 for walls, and -1 to be safe about the random center not making wall go off bound
-        auto width =
-            randRange(std::min(maxWidth, params.minCorridorWidth), std::min(maxWidth + 1, params.maxCorridorWidth + 1));
-
-        auto pos = horizontal(start, width);
-        vertical(pos, width);
+        vertical(horizontal(start, width), width);
     }
 }
 
-void placeWalls(game::TilemapBuilder &builder)
+static void placeWalls(game::TilemapBuilder &builder)
 {
     // For each empty tile, if one it's neighbour is a floor, make it a wall
-    std::array<glm::vec<2, int>, 8> neighbours = {
-        glm::vec<2, int>{-1, -1},
-        glm::vec<2, int>{0, -1},
-        glm::vec<2, int>{1, -1},
-        glm::vec<2, int>{-1, 0},
-        glm::vec<2, int>{1, 0},
-        glm::vec<2, int>{-1, 1},
-        glm::vec<2, int>{0, 1},
-        glm::vec<2, int>{1, 1}};
+    static constexpr auto neighbours =
+        std::to_array<glm::ivec2>({{-1, -1}, {+0, -1}, {+1, -1}, {-1, +0}, {+1, +0}, {-1, +1}, {+0, +1}, {+1, +1}});
 
-    glm::vec<2, int> it;
+    glm::ivec2 it;
 
-    for (it.y = 0; it.y < builder.getSize().y; ++it.y)
+    for (it.y = 0; it.y < builder.getSize().y; ++it.y) {
         for (it.x = 0; it.x < builder.getSize().x; ++it.x) {
-            if (builder.get(it.x, it.y) != game::TileEnum::NONE && builder.get(it.x, it.y) != game::TileEnum::RESERVED)
+            if (builder.at(glm::ivec2{it.x, it.y}) != game::TileEnum::NONE
+                && builder.at(glm::ivec2{it.x, it.y}) != game::TileEnum::RESERVED)
                 continue;
 
-            for (auto n : neighbours) {
-                auto checkPos = it + n;
+            for (const auto &n : neighbours) {
+                const auto checkPos = it + n;
 
                 if (checkPos.x > 0 && checkPos.x < builder.getSize().x && checkPos.y > 0
-                    && checkPos.y < builder.getSize().y && IS_FLOOR(builder.get(checkPos.x, checkPos.y))) {
-                    builder.get(it.x, it.y) = game::TileEnum::WALL;
+                    && checkPos.y < builder.getSize().y && IS_FLOOR(builder.at(glm::ivec2{checkPos.x, checkPos.y}))) {
+                    builder[glm::ivec2{it.x, it.y}] = game::TileEnum::WALL;
                     break;
                 }
             }
         }
+    }
 }
 
-void placeBossRoomExitDoor(game::TilemapBuilder &builder, game::Room &r)
+static auto placeBossRoomExitDoor(game::TilemapBuilder &builder, game::Room &r) -> void
 {
     // Strategy :
     //  Check room boundaries, find the boss room entrance, place a door at the central opposite of the room with the right orientation
     //  Reduce room size by one to make sure the door is not accessible by another room on the other side of the wall
 
-    int x1 = r.x;
-    int x2 = r.x + r.w;
-    int y1 = r.y;
-    int y2 = r.y + r.h;
+    const auto x1 = r.x;
+    const auto x2 = r.x + r.w;
+    const auto y1 = r.y;
+    const auto y2 = r.y + r.h;
 
     // CHECK NORTH WALL
     for (auto x = x1 + 1; x < x2 - 1; ++x)
-        if (IS_FLOOR(builder.get(x, y2 - 1))) {
+        if (IS_FLOOR(builder.at(glm::ivec2{x, y2 - 1}))) {
             r.y += 1;
             r.h -= 1;
 
-            builder.get(x2 - 1 - (x - x1), r.y) = game::TileEnum::EXIT_DOOR_FACING_NORTH;
+            builder[glm::ivec2{x2 - 1 - (x - x1), r.y}] = game::TileEnum::EXIT_DOOR_FACING_NORTH;
             return;
         }
 
     // CHECK SOURTH WALL
     for (auto x = x1 + 1; x < x2 - 1; ++x)
-        if (IS_FLOOR(builder.get(x, y1))) {
+        if (IS_FLOOR(builder.at(glm::ivec2{x, y1}))) {
             r.h -= 1;
 
-            builder.get(x2 - 1 - (x - x1), r.y + r.h - 1) = game::TileEnum::EXIT_DOOR_FACING_SOUTH;
+            builder[glm::ivec2{x2 - 1 - (x - x1), r.y + r.h - 1}] = game::TileEnum::EXIT_DOOR_FACING_SOUTH;
             return;
         }
 
     // CHECK WEST WALL
     for (auto y = y1 + 1; y < y2 - 1; ++y)
-        if (IS_FLOOR(builder.get(x1, y))) {
+        if (IS_FLOOR(builder.at(glm::ivec2{x1, y}))) {
             r.w -= 1;
 
-            builder.get(r.x + r.w - 1, y2 - 1 - (y - y1)) = game::TileEnum::EXIT_DOOR_FACING_WEST;
+            builder[glm::ivec2{r.x + r.w - 1, y2 - 1 - (y - y1)}] = game::TileEnum::EXIT_DOOR_FACING_WEST;
             return;
         }
 
     // CHECK EAST WALL
     for (auto y = y1 + 1; y < y2 - 1; ++y)
-        if (IS_FLOOR(builder.get(x2 - 1, y))) {
+        if (IS_FLOOR(builder.at(glm::ivec2{x2 - 1, y}))) {
             r.x += 1;
             r.w -= 1;
 
-            builder.get(r.x, y2 - 1 - (y - y1)) = game::TileEnum::EXIT_DOOR_FACING_EAST;
+            builder[glm::ivec2{r.x, y2 - 1 - (y - y1)}] = game::TileEnum::EXIT_DOOR_FACING_EAST;
             return;
         }
 
     assert(false && "Could not find boss room entrance, cannot place exit door");
 }
 
-game::MapData generateLevel(entt::registry &world, game::FloorGenParam params)
+static auto generateLevel(entt::registry &world, game::FloorGenParam params) -> game::MapData
 {
     game::TilemapBuilder builder({params.maxDungeonWidth, params.maxDungeonHeight});
 
@@ -247,8 +230,8 @@ game::MapData generateLevel(entt::registry &world, game::FloorGenParam params)
         auto room = generateRoom(builder, params);
         if (room.w == 0 && room.h == 0) break; // Failed to place room
 
-        placeRoomFloor(
-            builder, room, game::TileEnum::RESERVED); // Reserve the space, so multiple rooms don't spawn at the same place
+        // Reserve the space, so multiple rooms don't spawn at the same place
+        placeRoomFloor(builder, room, game::TileEnum::RESERVED);
         rooms.emplace_back(room);
 
         generatorCorridor(builder, params, rooms[i], rooms[i + 1]);
@@ -273,10 +256,9 @@ game::MapData generateLevel(entt::registry &world, game::FloorGenParam params)
     return result;
 }
 
-void spawnMobsIn(entt::registry &world, game::FloorGenParam params, const game::Room &r)
+static void spawnMobsIn(entt::registry &world, game::FloorGenParam params, const game::Room &r)
 {
-    if (params.mobDensity == 0)
-        return;
+    if (params.mobDensity == 0) return;
 
     for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
         for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
@@ -284,16 +266,16 @@ void spawnMobsIn(entt::registry &world, game::FloorGenParam params, const game::
                 game::EnemyFactory::FirstEnemy(world, glm::vec2{x + 0.5, y + 0.5});
 }
 
-auto game::generateFloor(entt::registry &world, game::FloorGenParam params, std::optional<unsigned int> seed) -> MapData
+auto game::generateFloor(entt::registry &world, const game::FloorGenParam &params, std::optional<std::uint32_t> seed) -> MapData
 {
-    if (seed) random_engine.seed(seed.value());
+    if (seed) random_engine.seed(seed.value()); // todo : move this in engine::Core
 
     auto data = generateLevel(world, params);
 
     for (auto &r : data.regularRooms) spawnMobsIn(world, params, r);
     game::EnemyFactory::Boss(world, glm::vec2{data.boss.x + data.boss.w * 0.5, data.boss.y + data.boss.h * 0.5});
 
-    data.nextFloorSeed = static_cast<unsigned int>(random_engine());
+    data.nextFloorSeed = static_cast<std::uint32_t>(random_engine());
 
     return data;
 }

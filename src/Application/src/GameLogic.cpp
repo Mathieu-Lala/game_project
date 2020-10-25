@@ -10,7 +10,7 @@
 using namespace std::chrono_literals;
 
 game::GameLogic::GameLogic(ThePurge &game) :
-    m_game{game}, m_nextFloorSeed(static_cast<unsigned int>(std::time(nullptr)))
+    m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
 

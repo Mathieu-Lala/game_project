@@ -13,6 +13,7 @@ DISABLE_WARNING_POP
 
 template<std::size_t type>
 struct shader_ {
+    explicit
     shader_(const char *source) : ID{::glCreateShader(type)}
     {
         ::glShaderSource(ID, 1, &source, nullptr);
@@ -71,11 +72,11 @@ engine::Shader::~Shader()
     spdlog::info("Destroyed shader program {}", ID);
 }
 
-auto engine::Shader::fromFile(const std::string_view vertexFile, const std::string_view fragmentFile) -> Shader
+auto engine::Shader::fromFile(const std::string_view vFile, const std::string_view fFile) -> Shader
 {
     return {
-        getFileContent(vertexFile).value_or(fmt::format("Cannot open file: {}", vertexFile)),
-        getFileContent(fragmentFile).value_or(fmt::format("Cannot open file: {}", fragmentFile))};
+        getFileContent(vFile).value_or(fmt::format("Cannot open file: {}", vFile)),
+        getFileContent(fFile).value_or(fmt::format("Cannot open file: {}", fFile))};
 }
 
 auto engine::Shader::use() -> void { ::glUseProgram(ID); }

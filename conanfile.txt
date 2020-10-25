@@ -2,6 +2,7 @@
 # UI API
 imgui/1.78
 
+# Reslove the conflict of dependencies
 opengl/system
 
 # Window / Cursor / Event libary
@@ -19,7 +20,7 @@ nlohmann_json/3.9.0
 # Logging libary, spdlog use {fmt} so we can use CONAN_PKG::fmt
 spdlog/1.6.0
 
-# ECS
+# ECS / cache manager
 entt/3.5.2
 
 # C++ enum helper
@@ -42,12 +43,12 @@ imgui:shared=False
 spdlog:header_only=True
 fmt:header_only=True
 
-
 [generators]
 cmake
 
 [imports]
+#not working :(
 bin, *.dll -> ../out/
 lib, *.so* -> ../out/
-lib, *.pdb -> ../out/ #not working :(
+lib, *.pdb -> ../out/
 lib, *.dylib* -> ../out/
