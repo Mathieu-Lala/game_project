@@ -7,7 +7,9 @@
 #include "Engine/component/Texture.hpp"
 #include "Engine/helpers/DrawableFactory.hpp"
 #include "Engine/Graphics/Shader.hpp"
-#include "Engine/Event/Event.hpp"
+#include "Engine/Event/Event.hpp"        // note : should not require this header here
+#include "Engine/audio/AudioManager.hpp" // note : should not require this header here
+#include "Engine/Settings.hpp"           // note : should not require this header here
 #include "Engine/Core.hpp"
 
 auto engine::DrawableFactory::rectangle() -> Drawable

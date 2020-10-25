@@ -1,6 +1,9 @@
 #include <spdlog/spdlog.h>
 
 #include <Engine/helpers/DrawableFactory.hpp>
+#include <Engine/Event/Event.hpp>
+#include <Engine/audio/AudioManager.hpp>
+#include <Engine/Settings.hpp>
 #include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
@@ -8,6 +11,8 @@
 #include "EntityDepth.hpp"
 
 using namespace std::chrono_literals;
+
+static engine::Core::Holder holder{};
 
 game::GameLogic::GameLogic(ThePurge &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
@@ -101,8 +106,6 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
 
 auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    static engine::Core::Holder holder{};
-
     const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source) {
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
@@ -115,7 +118,9 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
 
-            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/fire_hit.wav")->play();
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
+                ->play();
             world.destroy(spell);
             if (entity_health.current <= 0.0f) { playerKilled.publish(world, entity, source); }
         }
@@ -186,10 +191,10 @@ auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine
 
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
-    static engine::Core::Holder holder{};
-
     if (world.has<entt::tag<"player"_hs>>(killed)) {
-        holder.instance->getAudioManager().getSound(DATA_DIR "sounds/player_death.wav")->play();
+        holder.instance->getAudioManager()
+            .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
+            ->play();
 
         // note : may create segfault // assert fail
         m_game.setState(ThePurge::GAME_OVER);
@@ -199,7 +204,9 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
         // TODO: actual random utilities
         bool lazyDevCoinflip = static_cast<std::uint32_t>(killed) % 2;
         holder.instance->getAudioManager()
-            .getSound(lazyDevCoinflip ? DATA_DIR "sounds/death_01.wav" : DATA_DIR "sounds/death_02.wav")
+            .getSound(
+                lazyDevCoinflip ? holder.instance->settings().data_folder + "sounds/death_01.wav"
+                                : holder.instance->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
         // todo : send signal instead
@@ -220,9 +227,11 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
             world.emplace<engine::d3::Position>(key, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::UTILITIES));
             world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
             engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
-            engine::DrawableFactory::fix_texture(world, key, DATA_DIR "textures/key.png");
+            engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "textures/key.png");
 
-            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/boss_death.wav")->play();
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
+                ->play();
         }
         world.destroy(killed);
     }
@@ -231,8 +240,6 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
 // todo : normalize direction
 auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void
 {
-    static engine::Core::Holder holder{};
-
     // todo : apply AttackDamage
     // todo : switch attack depending of entity type
 
@@ -247,7 +254,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, co
 
     auto color = world.has<entt::tag<"enemy"_hs>>(entity) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 0};
 
-    holder.instance->getAudioManager().getSound(DATA_DIR "sounds/fire_cast.wav")->play();
+    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_cast.wav")->play();
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
     world.emplace<Lifetime>(spell, 600ms);

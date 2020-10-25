@@ -8,12 +8,8 @@
 #include <entt/entt.hpp>
 #include <glm/matrix.hpp>
 
-#include "Engine/Game.hpp"
-
-#include "Engine/resources/LoaderColor.hpp" // note : move me in .cpp
-#include "Engine/component/Texture.hpp"
+#include "Engine/resources/LoaderColor.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
-#include "Engine/audio/AudioManager.hpp"
 
 namespace engine {
 
@@ -21,6 +17,8 @@ class Window;
 class Game;
 class JoystickManager;
 class Shader;
+class AudioManager;
+class Settings;
 
 class Core {
 private:
@@ -28,6 +26,7 @@ private:
     };
 
 public:
+    // note : an Holder should NEVER be declared as global variable
     struct Holder {
         static auto init() noexcept -> Holder;
 
@@ -45,11 +44,15 @@ public:
     Core &operator=(Core &&) = delete;
 
 
-    auto main() -> int;
+    auto main(int argc, char **argv) -> int;
+
 
     auto getNextEvent() -> Event;
 
-    auto window() -> std::unique_ptr<Window> & { return m_window; }
+    auto setPendingEvents(std::vector<Event> &&events) -> void;
+
+    auto setPendingEventsFromFile(const std::string_view filepath) -> bool;
+
 
     template<typename... Args>
     auto window(Args &&... args) -> std::unique_ptr<Window> &
@@ -68,33 +71,36 @@ public:
         if (m_game != nullptr) { return m_game; }
 
         m_game = std::make_unique<UserDefinedGame>(std::forward<Args>(args)...);
-        m_game->onCreate(m_world);
 
         return m_game;
     }
+
 
     enum EventMode {
         RECORD,
         PLAYBACK,
     };
 
-    auto getEventMode() const { return m_eventMode; }
-
-    auto setPendingEvents(std::vector<Event> &&events) -> void;
-
-    auto setPendingEventsFromFile(const std::string_view filepath) -> bool;
-
-    [[nodiscard]] auto isRunning() const noexcept -> bool { return m_is_running; }
-
     auto close() noexcept -> void { m_is_running = false; }
-
-    template<typename T>
-    auto getCache() -> entt::resource_cache<T> &;
-
-    auto getAudioManager() -> AudioManager & { return m_audioManager; }
 
     // note : not the best way ..
     auto updateView(const glm::mat4 &view) -> void;
+
+
+    // note : getter
+
+    auto window() noexcept -> std::unique_ptr<Window> & { return m_window; }
+
+    [[nodiscard]] auto getEventMode() const noexcept { return m_eventMode; }
+
+    [[nodiscard]] auto isRunning() const noexcept -> bool { return m_is_running; }
+
+    template<typename T>
+    auto getCache() noexcept -> entt::resource_cache<T> &;
+
+    auto getAudioManager() noexcept -> AudioManager & { return m_audioManager; }
+
+    auto settings() const noexcept -> Settings { return m_settings; }
 
 
 private:
@@ -105,6 +111,8 @@ private:
     static auto loadOpenGL() -> void;
 
     bool m_is_running{true};
+
+    Settings m_settings;
 
     // note : for now the engine support only one window
     std::unique_ptr<Window> m_window{nullptr};
@@ -128,7 +136,7 @@ private:
 
     std::chrono::steady_clock::time_point m_lastTick;
 
-    auto getElapsedTime() -> std::chrono::nanoseconds;
+    [[nodiscard]] auto getElapsedTime() noexcept -> std::chrono::nanoseconds;
 
 
     std::unique_ptr<JoystickManager> m_joystickManager;
@@ -143,7 +151,7 @@ private:
     std::unique_ptr<Shader> m_shader_colored;
     std::unique_ptr<Shader> m_shader_colored_textured;
 
-    engine::AudioManager m_audioManager;
+    AudioManager m_audioManager;
 
 #ifndef NDEBUG
     auto debugDrawJoystick() -> void;
@@ -153,21 +161,11 @@ private:
     std::uint32_t m_displayMode = 4; // GL_TRIANGLES
 };
 
-// note : move me in .cpp
+template<>
+auto Core::getCache() noexcept -> entt::resource_cache<Color> &;
 
 template<>
-inline auto Core::getCache() -> entt::resource_cache<Color> &
-{
-    return m_colors;
-}
-
-// note : move me in .cpp
-
-template<>
-inline auto Core::getCache() -> entt::resource_cache<Texture> &
-{
-    return m_textures;
-}
+auto Core::getCache() noexcept -> entt::resource_cache<Texture> &;
 
 } // namespace engine
 
