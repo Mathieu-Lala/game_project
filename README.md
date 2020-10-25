@@ -69,6 +69,7 @@ $> ./tools/install.sh
 
 * Windows
 
+    * [VS cppcheck extension](https://marketplace.visualstudio.com/items?itemName=Alexium.Cppcheckadd-in)
     * [VS conan extension](https://marketplace.visualstudio.com/items?itemName=conan-io.conan-vs-extension)
     * [VS GLSL extension](https://marketplace.visualstudio.com/items?itemName=DanielScherzer.GLSL)
     * [VS clang-format extension](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
