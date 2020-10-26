@@ -172,8 +172,6 @@ auto engine::Core::main(int argc, char **argv) -> int
 
         // 2. Initialize the Engine / Window / Game
 
-        auto holder = engine::Core::Holder::init();
-
         std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
         if (opt.settings.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
 
@@ -181,7 +179,7 @@ auto engine::Core::main(int argc, char **argv) -> int
 
 #ifndef NDEBUG
         if (!opt.options[Options::REPLAY_PATH]->empty())
-            holder.instance->setPendingEventsFromFile(opt.settings.replay_path);
+            setPendingEventsFromFile(opt.settings.replay_path);
 #endif
 
         m_settings = std::move(opt.settings);
@@ -298,6 +296,11 @@ auto engine::Core::main(int argc, char **argv) -> int
             //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
             //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
             //                });
+
+            m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel){
+                pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+                pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+            });
 
             for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
                 auto &moving_pos = m_world.get<d3::Position>(moving);

@@ -59,7 +59,12 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_J: m_logics.movement.publish(world, player, {-0.1, 0.0}); break; // go left
                     case GLFW_KEY_U: {
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y});
+                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, Spell::STICK_ATTACK);
+                        break;
+                    }
+                    case GLFW_KEY_Y: {
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, Spell::FIREBALL);
                         break;
                     }
                     default: return;
