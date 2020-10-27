@@ -13,8 +13,7 @@ DISABLE_WARNING_POP
 
 template<std::size_t type>
 struct shader_ {
-    explicit
-    shader_(const char *source) : ID{::glCreateShader(type)}
+    explicit shader_(const char *source) : ID{::glCreateShader(type)}
     {
         ::glShaderSource(ID, 1, &source, nullptr);
         ::glCompileShader(ID);

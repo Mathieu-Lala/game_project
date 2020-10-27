@@ -6,6 +6,8 @@
 #include "Engine/Graphics/Shader.hpp"
 #include "Engine/Graphics/Window.hpp"
 #include "Engine/Event/JoystickManager.hpp"
+#include "Engine/audio/AudioManager.hpp" // note : should not require this header here
+#include "Engine/Settings.hpp"           // note : should not require this header here
 #include "Engine/Core.hpp"
 
 engine::Window *engine::Window::s_instance{nullptr};

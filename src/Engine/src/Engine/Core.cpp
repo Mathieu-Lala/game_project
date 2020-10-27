@@ -1,6 +1,8 @@
 #include <fstream>
 #include <functional>
+#include <filesystem>
 
+#include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <magic_enum.hpp>
@@ -8,7 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <stb_image.h>
+// #include <stb_image.h>
 
 #include "Engine/helpers/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
@@ -24,15 +26,15 @@
 #include "Engine/Graphics/Shader.hpp"
 #include "Engine/Graphics/Window.hpp"
 #include "Engine/Event/JoystickManager.hpp"
+#include "Engine/Options.hpp"
+#include "Engine/Game.hpp"
+#include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Core.hpp"
 
 #include "Engine/helpers/DrawableFactory.hpp"
 #include "Engine/helpers/ImGui.hpp"
 
 #include "Engine/Graphics/third_party.hpp" // note : only for DisplayMode
-
-// todo : remove me
-#include "Engine/../../../Application/include/Declaration.hpp"
 
 engine::Core *engine::Core::s_instance{nullptr};
 
@@ -64,7 +66,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
     m_joystickManager = std::make_unique<JoystickManager>();
 
-    //    ::stbi_set_flip_vertically_on_load(true);
+    // ::stbi_set_flip_vertically_on_load(true);
 }
 
 engine::Core::~Core()
@@ -145,21 +147,61 @@ auto engine::Core::getNextEvent() -> Event
     }
 }
 
-auto engine::Core::main() -> int
+auto engine::Core::main(int argc, char **argv) -> int
 {
+    {
+#ifdef LOGLOGLOG
+        // todo : setup properly logging
+        auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
+        logger->info("logger created");
+#endif
+
+        // 1. Parse the program argument
+
+        Options opt{argc, argv};
+
+#ifndef NDEBUG
+        opt.dump();
+#endif
+
+        std::filesystem::rename(
+            std::filesystem::path(opt.settings.config_path), std::filesystem::path(opt.settings.config_path + ".old"));
+        opt.write_to_file(opt.settings.config_path);
+
+        spdlog::info("{}", std::filesystem::absolute(std::filesystem::path(opt.settings.data_folder)).string());
+
+        // 2. Initialize the Engine / Window / Game
+
+        std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
+        if (opt.settings.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
+
+        this->window(glm::ivec2{400, 400}, VERSION, windowProperty);
+
+#ifndef NDEBUG
+        if (!opt.options[Options::REPLAY_PATH]->empty())
+            setPendingEventsFromFile(opt.settings.replay_path);
+#endif
+
+        m_settings = std::move(opt.settings);
+    }
+
+    // 3. Start of the application
+
     if (m_window == nullptr || m_game == nullptr) { return 1; }
 
-    m_shader_colored.reset(
-        new Shader{Shader::fromFile(DATA_DIR "shaders/colored.vert.glsl", DATA_DIR "shaders/colored.frag.glsl")});
+    m_shader_colored.reset(new Shader{Shader::fromFile(
+        m_settings.data_folder + "shaders/colored.vert.glsl", m_settings.data_folder + "shaders/colored.frag.glsl")});
 
-    m_shader_colored_textured.reset(new Shader{
-        Shader::fromFile(DATA_DIR "shaders/colored_textured.vert.glsl", DATA_DIR "shaders/colored_textured.frag.glsl")});
+    m_shader_colored_textured.reset(new Shader{Shader::fromFile(
+        m_settings.data_folder + "shaders/colored_textured.vert.glsl",
+        m_settings.data_folder + "shaders/colored_textured.frag.glsl")});
 
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 
-    while (isRunning()) { // note Core::isRunning instead ?
+    m_game->onCreate(m_world);
 
+    while (isRunning()) {
         const auto event = getNextEvent();
 
         std::visit(
@@ -234,7 +276,7 @@ auto engine::Core::main() -> int
                 DrawableFactory::fix_texture(
                     m_world,
                     i,
-                    std::string(DATA_DIR) + sprite.file,
+                    m_settings.data_folder + sprite.file,
                     {static_cast<float>(sprite.frames[sprite.current_frame].x) / static_cast<float>(texture.width),
                      static_cast<float>(sprite.frames[sprite.current_frame].y) / static_cast<float>(texture.height),
                      sprite.width / static_cast<float>(texture.width),
@@ -388,6 +430,18 @@ auto engine::Core::get() noexcept -> std::unique_ptr<Core> &
     return instance;
 }
 
+template<>
+auto engine::Core::getCache() noexcept -> entt::resource_cache<Color> &
+{
+    return m_colors;
+}
+
+template<>
+auto engine::Core::getCache() noexcept -> entt::resource_cache<Texture> &
+{
+    return m_textures;
+}
+
 auto engine::Core::loadOpenGL() -> void
 {
     if (const auto err = ::glewInit(); err != GLEW_OK) {
@@ -396,7 +450,7 @@ auto engine::Core::loadOpenGL() -> void
     }
 }
 
-auto engine::Core::getElapsedTime() -> std::chrono::nanoseconds
+auto engine::Core::getElapsedTime() noexcept -> std::chrono::nanoseconds
 {
     const auto nextTick = std::chrono::steady_clock::now();
     const auto timeElapsed = nextTick - m_lastTick;
