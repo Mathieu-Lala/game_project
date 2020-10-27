@@ -126,10 +126,11 @@ bool load_wav_file_header(
     return true;
 }
 
-char *engine::load_wav(
-    const std::string &filename, std::uint8_t &channels, std::int32_t &sampleRate, std::uint8_t &bitsPerSample, ALsizei &size)
+auto engine::load_wav(
+    const std::string_view filename, std::uint8_t &channels, std::int32_t &sampleRate, std::uint8_t &bitsPerSample, ALsizei &size)
+    -> char *
 {
-    std::ifstream in(filename, std::ios::binary);
+    std::ifstream in(filename.data(), std::ios::binary);
     if (!in.is_open()) {
         spdlog::error("ERROR: Could not open '{}'", filename);
         return nullptr;
@@ -139,7 +140,7 @@ char *engine::load_wav(
         return nullptr;
     }
 
-    char *data = new char[size];
+    auto data = new char[size];
 
     in.read(data, size);
 

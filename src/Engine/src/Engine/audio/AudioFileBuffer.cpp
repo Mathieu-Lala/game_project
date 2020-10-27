@@ -6,7 +6,7 @@
 #include "Engine/audio/WavReader.hpp"
 #include "Engine/audio/AlErrorHandling.hpp"
 
-engine::AudioFileBuffer::AudioFileBuffer(const std::string &path)
+engine::AudioFileBuffer::AudioFileBuffer(const std::string_view path)
 {
     std::uint8_t channels;
     std::int32_t sampleRate;

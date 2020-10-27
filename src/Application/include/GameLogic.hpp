@@ -58,7 +58,7 @@ public:
 
 
     FloorGenParam m_map_generation_params;
-    unsigned int m_nextFloorSeed;
+    std::uint32_t m_nextFloorSeed;
 
     static constexpr double kDoorInteractionRange = 3;
 };

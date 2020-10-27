@@ -9,6 +9,7 @@ macro(run_conan)
 
   conan_add_remote(NAME bincrafters URL https://api.bintray.com/conan/bincrafters/public-conan)
 
+  # cmake-format: off
   conan_cmake_run(
     BASIC_SETUP
     NO_OUTPUT_DIRS
@@ -18,10 +19,10 @@ macro(run_conan)
     BUILD missing
     INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
     BUILD_TYPE ${CMAKE_BUILD_TYPE}
-    # ARGUMENTS_ARCH
 
     SETTINGS
     cppstd=20
   )
+  # cmake-format: on
 
 endmacro()

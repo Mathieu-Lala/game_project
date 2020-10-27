@@ -14,3 +14,7 @@ add_executable(
 target_link_libraries(app PRIVATE engine)
 
 target_include_directories(app PRIVATE include)
+
+# note : maybe not the best solution because the assets might be heavy
+add_custom_command(TARGET app POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/out/data)

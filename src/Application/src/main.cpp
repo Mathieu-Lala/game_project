@@ -1,3 +1,5 @@
+#include <filesystem>
+
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 
@@ -12,10 +14,11 @@
 
 int main(int argc, char **argv)
 try {
+#ifdef LOGLOGLOG
     // todo : setup properly logging
     auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
     logger->info("logger created");
-
+#endif
 
     // 1. Parse the program argument
 
@@ -28,6 +31,11 @@ try {
     opt.write_to_file(
         !opt.options[game::Options::CONFIG_PATH]->empty() ? opt.options[game::Options::CONFIG_PATH]->as<std::string>()
                                                           : game::Options::DEFAULT_CONFIG);
+
+    std::filesystem::path path(
+        !opt.options[game::Options::DATA_FOLDER]->empty() ? opt.options[game::Options::DATA_FOLDER]->as<std::string>()
+                                                          : game::Options::DEFAULT_DATA_FOLDER);
+    spdlog::info("{}", std::filesystem::absolute(path).string());
 
     // 2. Initialize the Engine / Window / Game
 

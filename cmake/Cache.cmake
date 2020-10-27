@@ -13,8 +13,7 @@ list(FIND CACHE_OPTION_VALUES ${CACHE_OPTION} CACHE_OPTION_INDEX)
 if(${CACHE_OPTION_INDEX} EQUAL -1)
   message(
     STATUS
-      "Using custom compiler cache system: '${CACHE_OPTION}', explicitly supported entries are ${CACHE_OPTION_VALUES}"
-  )
+      "Using custom compiler cache system: '${CACHE_OPTION}', explicitly supported entries are ${CACHE_OPTION_VALUES}")
 endif()
 
 find_program(CACHE_BINARY ${CACHE_OPTION})

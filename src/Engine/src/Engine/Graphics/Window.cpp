@@ -21,6 +21,8 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
     ::glfwGetWindowSize(m_handle, &m_size.x, &m_size.y);
     ::glfwGetWindowPos(m_handle, &m_pos.x, &m_pos.y);
 
+    ImGuiIO &io = ImGui::GetIO();
+    io.IniFilename = "data/config/imgui.ini";
 
     setActive();
 

@@ -7,12 +7,14 @@ namespace engine {
 
 class AudioFileBuffer {
 public:
-	explicit AudioFileBuffer(const std::string &path);
-	~AudioFileBuffer();
+    explicit AudioFileBuffer(const std::string_view path);
+    ~AudioFileBuffer();
 
-	auto get() -> ALuint { return m_buffer;} 
+    constexpr
+    auto get() const noexcept -> ALuint { return m_buffer; }
 
 private:
-	ALuint m_buffer;
+    ALuint m_buffer;
 };
-}
+
+} // namespace engine

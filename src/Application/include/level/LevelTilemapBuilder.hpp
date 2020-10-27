@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <cassert>
+
 #include <entt/entt.hpp>
 #include <glm/vec2.hpp>
 
@@ -31,20 +33,34 @@ enum class TileEnum : std::uint8_t {
 
 class TilemapBuilder {
 public:
-    TilemapBuilder(glm::ivec2 &&size = {100, 100}) :
+    explicit TilemapBuilder(glm::ivec2 &&size = {100, 100}) :
         m_size(size), m_tiles(static_cast<std::size_t>(m_size.x) * static_cast<std::size_t>(m_size.y), TileEnum::NONE)
     {
     }
 
-    auto get(int x, int y) -> TileEnum &;
+    template<typename T>
+    auto operator[](const glm::vec<2, T> &index) noexcept -> TileEnum &
+    {
+        assert(index.x < m_size.x);
+        assert(index.y < m_size.y);
+        return m_tiles[static_cast<std::size_t>(index.y * m_size.x + index.x)];
+    }
 
-    void build(entt::registry &world);
+    template<typename T>
+    auto at(const glm::vec<2, T> &index) const -> TileEnum
+    {
+        assert(index.x < m_size.x);
+        assert(index.y < m_size.y);
+        return m_tiles.at(static_cast<std::size_t>(index.y * m_size.x + index.x));
+    }
+
+    auto build(entt::registry &world) -> void;
 
     auto getSize() const -> const glm::ivec2 & { return m_size; }
 
 private:
-    void handleTileBuild(entt::registry &world, int x, int y);
-    glm::ivec2 getTileSize(int x, int y);
+    auto handleTileBuild(entt::registry &world, int x, int y) -> void;
+    auto getTileSize(int x, int y) const -> glm::ivec2;
 
 private:
     const glm::ivec2 m_size;

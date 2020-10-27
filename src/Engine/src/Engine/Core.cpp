@@ -366,7 +366,7 @@ auto engine::Core::main() -> int
 
 #ifndef NDEBUG
     nlohmann::json serialized(eventsProcessed);
-    std::ofstream f{"recorded_events.json"};
+    std::ofstream f{"logs/recorded_events.json"};
     f << serialized;
 #endif
 

@@ -1,15 +1,5 @@
-#include <cassert>
-
 #include "level/LevelTilemapBuilder.hpp"
 #include "entity/TileFactory.hpp"
-
-auto game::TilemapBuilder::get(int x, int y) -> TileEnum &
-{
-    assert(x < m_size.x);
-    assert(y < m_size.y);
-
-    return m_tiles[static_cast<std::size_t>(y) * static_cast<std::size_t>(m_size.x) + static_cast<std::size_t>(x)];
-}
 
 void game::TilemapBuilder::build(entt::registry &world)
 {
@@ -20,13 +10,13 @@ void game::TilemapBuilder::build(entt::registry &world)
 
 void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
 {
-    auto tile = get(x, y);
+    const auto tile = at(glm::ivec2{x, y});
     if (tile == TileEnum::NONE) return;
 
-     auto size = getTileSize(x, y);
+    auto size = getTileSize(x, y);
 
-     for (int clearY = y; clearY < y + size.y; ++clearY) {
-        for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
+    for (auto clearY = y; clearY < y + size.y; ++clearY) {
+        for (auto clearX = x; clearX < x + size.x; ++clearX) { operator[](glm::ivec2{clearX, clearY}) = TileEnum::NONE; }
     }
 
     glm::vec2 tileSize{static_cast<float>(size.x), static_cast<float>(size.y)};
@@ -52,20 +42,20 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     }
 }
 
-glm::ivec2 game::TilemapBuilder::getTileSize(int x1, int y1)
+auto game::TilemapBuilder::getTileSize(int x, int y) const -> glm::ivec2
 {
-    auto tile = get(x1, y1);
+    const auto tile = at(glm::ivec2{x, y});
 
-    int x2 = x1 + 1;
-    int y2 = y1 + 1;
+    auto x2 = x + 1;
+    auto y2 = y + 1;
 
-    while (x2 < m_size.x && get(x2, y1) == tile) ++x2;
+    while (x2 < m_size.x && at(glm::ivec2{x2, y}) == tile) ++x2;
 
     while (y2 < m_size.x) {
         bool isEntireLineSame = true;
 
-        for (auto x = x1; x < x2; ++x) {
-            if (get(x, y2) != tile) {
+        for (auto i = x; i < x2; ++i) {
+            if (at(glm::ivec2{i, y2}) != tile) {
                 isEntireLineSame = false;
                 break;
             }
@@ -75,5 +65,5 @@ glm::ivec2 game::TilemapBuilder::getTileSize(int x1, int y1)
         ++y2;
     }
 
-    return {x2 - x1, y2 - y1};
+    return {x2 - x, y2 - y};
 }

@@ -47,8 +47,7 @@ function(set_project_warnings project_name)
       -Wnull-dereference # warn if a null dereference is detected
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output (ie printf)
-      -fdiagnostics-color=always
-  )
+      -fdiagnostics-color=always)
 
   if(WARNINGS_AS_ERRORS)
     set(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
@@ -67,8 +66,9 @@ function(set_project_warnings project_name)
   if(MSVC)
     set(PROJECT_WARNINGS ${MSVC_WARNINGS})
     # Because VS add /W3 and we already set /W4
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /GR /EHsc" CACHE STRING
-        "Flags used by the CXX compiler during all build types." FORCE)
+    set(CMAKE_CXX_FLAGS
+        "/DWIN32 /D_WINDOWS /GR /EHsc"
+        CACHE STRING "Flags used by the CXX compiler during all build types." FORCE)
 
   elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(PROJECT_WARNINGS ${CLANG_WARNINGS})
@@ -77,8 +77,9 @@ function(set_project_warnings project_name)
     set(PROJECT_WARNINGS ${GCC_WARNINGS})
 
     # Because O2 is used by default
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG" CACHE STRING
-        "Flags used by the CXX compiler during RELEASE builds." FORCE)
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "-O3 -DNDEBUG"
+        CACHE STRING "Flags used by the CXX compiler during RELEASE builds." FORCE)
 
   else()
     message(AUTHOR_WARNING "No compiler warnings set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
