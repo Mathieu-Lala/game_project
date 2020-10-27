@@ -172,8 +172,6 @@ auto engine::Core::main(int argc, char **argv) -> int
 
         // 2. Initialize the Engine / Window / Game
 
-        auto holder = engine::Core::Holder::init();
-
         std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
         if (opt.settings.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
 
@@ -181,7 +179,7 @@ auto engine::Core::main(int argc, char **argv) -> int
 
 #ifndef NDEBUG
         if (!opt.options[Options::REPLAY_PATH]->empty())
-            holder.instance->setPendingEventsFromFile(opt.settings.replay_path);
+            setPendingEventsFromFile(opt.settings.replay_path);
 #endif
 
         m_settings = std::move(opt.settings);
