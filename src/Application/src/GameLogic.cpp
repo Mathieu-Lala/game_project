@@ -12,8 +12,6 @@
 
 using namespace std::chrono_literals;
 
-static engine::Core::Holder holder{};
-
 game::GameLogic::GameLogic(ThePurge &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
@@ -106,6 +104,8 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
 
 auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
+    static engine::Core::Holder holder{};
+
     const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source) {
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
@@ -191,6 +191,8 @@ auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine
 
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
+    static engine::Core::Holder holder{};
+
     if (world.has<entt::tag<"player"_hs>>(killed)) {
         holder.instance->getAudioManager()
             .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
@@ -240,6 +242,8 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
 // todo : normalize direction
 auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void
 {
+    static engine::Core::Holder holder{};
+
     // todo : apply AttackDamage
     // todo : switch attack depending of entity type
 
