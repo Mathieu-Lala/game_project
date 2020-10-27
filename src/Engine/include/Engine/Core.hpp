@@ -18,7 +18,7 @@ class Game;
 class JoystickManager;
 class Shader;
 class AudioManager;
-class Settings;
+struct Settings;
 
 class Core {
 private:
