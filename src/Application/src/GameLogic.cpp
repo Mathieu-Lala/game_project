@@ -54,7 +54,7 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
             world.replace<engine::d2::Velocity>(i, diff.x, diff.y);
 
             if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
-                if (chasing) break;
+                if (chasing) continue;
 
                 auto &sp = world.get<engine::Spritesheet>(i);
                 sp.current_animation = "hold";
@@ -68,7 +68,7 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
             world.replace<engine::d2::Velocity>(i, 0.0f, 0.0f);
 
             if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
-                if (!chasing) break;
+                if (!chasing) continue;
 
                 auto &sp = world.get<engine::Spritesheet>(i);
                 sp.current_animation = "default";
