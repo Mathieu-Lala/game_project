@@ -41,7 +41,7 @@ private:
 
 private:
     ALuint m_buffer;
-    bool m_alive = false;
+    bool m_alive = true;
 };
 
 } // namespace engine
