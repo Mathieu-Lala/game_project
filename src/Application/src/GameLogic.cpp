@@ -39,18 +39,45 @@ auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity 
 
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>().each(
-        [&](auto &, auto &pos, auto &vel, auto &view_range) {
-            const auto player_pos = world.get<engine::d3::Position>(m_game.player);
-            const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+    for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
+        auto &pos = world.get<engine::d3::Position>(i);
+        //auto &vel = world.get<engine::d2::Velocity>(i);
+        auto &view_range = world.get<ViewRange>(i);
 
-            // if the enemy is close enough
-            if (glm::length(diff) <= view_range.range) {
-                vel = {diff.x, diff.y};
-            } else {
-                vel = {0, 0};
+        const auto player_pos = world.get<engine::d3::Position>(m_game.player);
+        const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+
+        static bool chasing = false; // tmp : true if the boss is chasing the player
+
+        // if the enemy is close enough
+        if (glm::length(diff) <= view_range.range) {
+            world.replace<engine::d2::Velocity>(i, diff.x, diff.y);
+
+            if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
+                if (chasing) break;
+
+                auto &sp = world.get<engine::Spritesheet>(i);
+                sp.current_animation = "hold";
+                sp.current_frame = 0;
+
+                chasing = true;
             }
-        });
+
+        } else {
+            // todo : make the enemy move randomly
+            world.replace<engine::d2::Velocity>(i, 0, 0);
+
+            if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
+                if (!chasing) break;
+
+                auto &sp = world.get<engine::Spritesheet>(i);
+                sp.current_animation = "default";
+                sp.current_frame = 0;
+
+                chasing = false;
+            }
+        }
+    }
 }
 
 auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
