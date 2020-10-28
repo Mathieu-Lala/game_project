@@ -286,7 +286,7 @@ static const auto spells = std::to_array<std::pair<game::Spell::ID, spell_factor
           const auto spell = world.create();
           world.emplace<entt::tag<"spell"_hs>>(spell);
           world.emplace<game::Lifetime>(spell, 2000ms);
-          world.emplace<game::AttackDamage>(spell, 15.0);
+          world.emplace<game::AttackDamage>(spell, 15.0f);
           world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
           engine::DrawableFactory::fix_color(world, spell, {0.6, 0.6, 1});
           world.emplace<engine::d3::Position>(spell, caster_pos.x + dir.x / 2.0, caster_pos.y + dir.y / 2.0, -1.0);
