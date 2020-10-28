@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <AL/al.h>
 
 namespace engine {
@@ -15,6 +16,8 @@ class Sound {
 public:
     explicit Sound(ALuint soundBuffer);
     ~Sound();
+
+    static std::shared_ptr<Sound> GetEmptySound();
 
     auto play() -> Sound &;
     auto stop() -> Sound &;
@@ -34,8 +37,11 @@ public:
     auto forceDestroy() -> void;
 
 private:
+    Sound(); // Not alive;
+
+private:
     ALuint m_buffer;
-    bool m_forceDestroyed = false;
+    bool m_alive = false;
 };
 
 } // namespace engine
