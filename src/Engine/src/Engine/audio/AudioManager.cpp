@@ -10,7 +10,10 @@ engine::AudioManager::AudioManager()
 {
     m_device = alcOpenDevice(nullptr);
 
-    if (!m_device) throw std::runtime_error("Could not open audio device");
+    if (!m_device) {
+        spdlog::warn("Could not open audio device, no audio will be playing");
+        return;
+    }
 
     alcCall(m_device, m_context = alcCreateContext(m_device, nullptr));
 
@@ -24,6 +27,9 @@ engine::AudioManager::AudioManager()
 
 engine::AudioManager::~AudioManager()
 {
+    if (!m_device)
+        return;
+
     for (auto &s : m_currentSounds) s->forceDestroy(); // destroys sounds even if user still have references
     m_audioFileCache.clear();
 
@@ -33,6 +39,9 @@ engine::AudioManager::~AudioManager()
 
 auto engine::AudioManager::getSound(const std::string &path) -> std::shared_ptr<Sound>
 {
+    if (!m_device)
+        return Sound::GetEmptySound();
+
     garbageCollectCurrentSounds(); // We should run this method periodically. calling here is the easiest way for now
 
     auto buffer = m_audioFileCache.load<AudioFileLoader>(entt::hashed_string(path.c_str()).value(), path);

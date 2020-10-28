@@ -15,28 +15,32 @@ engine::Sound::Sound(ALuint soundBuffer)
     alCall(alSourcei(m_buffer, AL_BUFFER, static_cast<ALint>(soundBuffer)));
 }
 
+engine::Sound::Sound() : m_alive(false) {}
+
 engine::Sound::~Sound() { forceDestroy(); }
+
+std::shared_ptr<engine::Sound> engine::Sound::GetEmptySound() { return std::shared_ptr<Sound>(new Sound); }
 
 auto engine::Sound::play() -> Sound &
 {
-    if (!m_forceDestroyed) alCall(alSourcePlay(m_buffer));
+    if (m_alive) alCall(alSourcePlay(m_buffer));
 
     return *this;
 }
 
 auto engine::Sound::stop() -> Sound &
 {
-    if (!m_forceDestroyed) alCall(alSourceStop(m_buffer));
+    if (m_alive) alCall(alSourceStop(m_buffer));
 
     return *this;
 }
 
 // Range [0.5; 2]
-auto engine::Sound::setSpeed(float pitch) -> Sound &
+auto engine::Sound::setSpeed(float speed) -> Sound &
 {
-    if (!m_forceDestroyed) {
-        pitch = std::clamp(pitch, 0.5f, 2.f);
-        alCall(alSourcef(m_buffer, AL_PITCH, pitch));
+    if (m_alive) {
+        speed = std::clamp(speed, 0.5f, 2.f);
+        alCall(alSourcef(m_buffer, AL_PITCH, speed));
     }
 
     return *this;
@@ -44,7 +48,7 @@ auto engine::Sound::setSpeed(float pitch) -> Sound &
 // Range [0, +inf]
 auto engine::Sound::setVolume(float volume) -> Sound &
 {
-    if (!m_forceDestroyed) {
+    if (m_alive) {
         volume = std::clamp(volume, 0.f, 99999.f);
         alCall(alSourcef(m_buffer, AL_GAIN, volume));
     }
@@ -54,13 +58,13 @@ auto engine::Sound::setVolume(float volume) -> Sound &
 
 auto engine::Sound::setLoop(bool loop) -> Sound &
 {
-    if (!m_forceDestroyed) alCall(alSourcei(m_buffer, AL_LOOPING, loop ? AL_TRUE : AL_FALSE));
+    if (m_alive) alCall(alSourcei(m_buffer, AL_LOOPING, loop ? AL_TRUE : AL_FALSE));
     return *this;
 }
 
 auto engine::Sound::getStatus() const -> SoundStatus
 {
-    if (m_forceDestroyed) return SoundStatus::STOPPED;
+    if (!m_alive) return SoundStatus::STOPPED;
 
     ALint state;
     alCall(alGetSourcei(m_buffer, AL_SOURCE_STATE, &state));
@@ -77,7 +81,7 @@ auto engine::Sound::getStatus() const -> SoundStatus
 
 auto engine::Sound::getSpeed() const -> float
 {
-    if (m_forceDestroyed) return 0;
+    if (!m_alive) return 0;
 
     float result;
     alCall(alGetSourcef(m_buffer, AL_PITCH, &result));
@@ -86,7 +90,7 @@ auto engine::Sound::getSpeed() const -> float
 
 auto engine::Sound::getVolume() const -> float
 {
-    if (m_forceDestroyed) return 0;
+    if (!m_alive) return 0;
 
     float result;
     alCall(alGetSourcef(m_buffer, AL_GAIN, &result));
@@ -94,7 +98,7 @@ auto engine::Sound::getVolume() const -> float
 }
 auto engine::Sound::doesLoop() const -> bool
 {
-    if (m_forceDestroyed) return false;
+    if (!m_alive) return false;
 
     ALint result;
     alCall(alGetSourcei(m_buffer, AL_LOOPING, &result));
@@ -103,9 +107,9 @@ auto engine::Sound::doesLoop() const -> bool
 
 auto engine::Sound::forceDestroy() -> void
 {
-    if (m_forceDestroyed) return;
+    if (!m_alive) return;
 
-    m_forceDestroyed = true;
+    m_alive = false;
 
     alSourceStop(m_buffer);
     alDeleteSources(1, &m_buffer);
