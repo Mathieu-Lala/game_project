@@ -65,7 +65,7 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
 
         } else {
             // todo : make the enemy move randomly
-            world.replace<engine::d2::Velocity>(i, 0, 0);
+            world.replace<engine::d2::Velocity>(i, 0.0f, 0.0f);
 
             if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
                 if (!chasing) break;
