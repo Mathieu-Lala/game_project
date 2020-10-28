@@ -8,8 +8,7 @@
 
 engine::AudioManager::AudioManager()
 {
-    //m_device = alcOpenDevice(nullptr);
-    m_device = nullptr;
+    m_device = alcOpenDevice(nullptr);
 
     if (!m_device) {
         spdlog::warn("Could not open audio device, no audio will be playing");
