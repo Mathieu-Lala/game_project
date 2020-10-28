@@ -7,9 +7,6 @@
 
 #include "component/all.hpp"
 
-#include "Declaration.hpp" // note : for DATA_DIR
-
-
 namespace game {
 
 class GameLogic;
