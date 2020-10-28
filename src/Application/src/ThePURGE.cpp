@@ -5,6 +5,8 @@
 #include <Engine/Graphics/Shader.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Event/Event.hpp>
+#include <Engine/audio/AudioManager.hpp>
+#include <Engine/Settings.hpp>
 #include <Engine/Core.hpp>
 
 #include <Engine/helpers/ImGui.hpp>
@@ -22,11 +24,11 @@ using namespace std::chrono_literals;
 
 game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
 
-    m_dungeonMusic = holder.instance->getAudioManager().getSound(DATA_DIR "sounds/dungeon_music.wav");
-    m_dungeonMusic->setVolume(0.1f)
-        .setLoop(true);
+    m_dungeonMusic =
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
+    m_dungeonMusic->setVolume(0.1f).setLoop(true);
 }
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
@@ -35,7 +37,7 @@ auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void { 
 
 auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
 
     if (m_state == IN_GAME) {
         std::visit(
@@ -74,20 +76,23 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
 void game::ThePurge::displaySoundDebugGui()
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
+
     static std::vector<std::shared_ptr<engine::Sound>> sounds;
 
     ImGui::Begin("Sound debug window");
 
     if (ImGui::Button("Load Music")) {
         try {
-            sounds.push_back(holder.instance->getAudioManager().getSound(DATA_DIR "/sounds/dungeon_music.wav"));
+            sounds.push_back(holder.instance->getAudioManager().getSound(
+                holder.instance->settings().data_folder + "/sounds/dungeon_music.wav"));
         } catch (...) {
         }
     }
     if (ImGui::Button("Load Hit sound")) {
         try {
-            sounds.push_back(holder.instance->getAudioManager().getSound(DATA_DIR "/sounds/hit.wav"));
+            sounds.push_back(
+                holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "/sounds/hit.wav"));
         } catch (...) {
         }
     }
@@ -147,8 +152,10 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 
     if (ImGui::Button("Next floor") || spamNextFloor) m_logics.onFloorChange.publish(world);
 
-    ImGui::SliderInt("Min room size", &m_logics.m_map_generation_params.minRoomSize, 0, m_logics.m_map_generation_params.maxRoomSize);
-    ImGui::SliderInt("Max room size", &m_logics.m_map_generation_params.maxRoomSize, m_logics.m_map_generation_params.minRoomSize, 50);
+    ImGui::SliderInt(
+        "Min room size", &m_logics.m_map_generation_params.minRoomSize, 0, m_logics.m_map_generation_params.maxRoomSize);
+    ImGui::SliderInt(
+        "Max room size", &m_logics.m_map_generation_params.maxRoomSize, m_logics.m_map_generation_params.minRoomSize, 50);
     ImGui::Separator();
 
     // Assuming std::size_t is uint32_t
@@ -162,9 +169,15 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
     ImGui::Separator();
 
     ImGui::SliderInt(
-        "Min corridor width", &m_logics.m_map_generation_params.minCorridorWidth, 0, m_logics.m_map_generation_params.maxCorridorWidth);
+        "Min corridor width",
+        &m_logics.m_map_generation_params.minCorridorWidth,
+        0,
+        m_logics.m_map_generation_params.maxCorridorWidth);
     ImGui::SliderInt(
-        "Max corridor width", &m_logics.m_map_generation_params.maxCorridorWidth, m_logics.m_map_generation_params.minCorridorWidth, 50);
+        "Max corridor width",
+        &m_logics.m_map_generation_params.maxCorridorWidth,
+        m_logics.m_map_generation_params.minCorridorWidth,
+        50);
     ImGui::Separator();
 
     ImGui::SliderFloat("Enemy per block", &m_logics.m_map_generation_params.mobDensity, 0, 1);
@@ -176,7 +189,7 @@ static bool show_demo_window = true;
 
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
 
     {
         ImGui::Begin("Debug cheat");
@@ -196,7 +209,10 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         // note : this block could be launch in a future
         if (ImGui::Button("Start the game")) {
-            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/entrance_gong.wav")->setVolume(0.2f).play();
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
+                ->setVolume(0.2f)
+                .play();
             m_dungeonMusic->play();
 
             player = EnemyFactory::Player(world);

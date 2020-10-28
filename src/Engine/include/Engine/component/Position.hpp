@@ -9,8 +9,8 @@ namespace engine {
 
 namespace d2 {
 
-template<typename T> requires std::floating_point<T> || std::integral<T>
-struct PositionT {
+template<typename T>
+    requires std::floating_point<T> || std::integral<T> struct PositionT {
     using type = T;
     T x;
     T y;

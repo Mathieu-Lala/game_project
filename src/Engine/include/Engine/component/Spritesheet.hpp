@@ -27,12 +27,13 @@ struct Spritesheet {
     std::uint16_t current_frame{0};
 
     static auto from_json(const std::string_view file) -> Spritesheet;
-
 };
 
-inline
-void to_json(nlohmann::json &j, const engine::Spritesheet &sprite)
+// todo : move in .cpp
+
+inline void to_json(nlohmann::json &j, const engine::Spritesheet &sprite)
 {
+    // clang-format off
     j = nlohmann::json{{"object", {
         "file", sprite.file,
         "width", sprite.width,
@@ -40,10 +41,10 @@ void to_json(nlohmann::json &j, const engine::Spritesheet &sprite)
         "frames", sprite.frames,
         "speed", sprite.speed.cooldown.count()
     }}};
+    // clang-format on
 }
 
-inline
-void from_json(const nlohmann::json &j, engine::Spritesheet &sprite)
+inline void from_json(const nlohmann::json &j, engine::Spritesheet &sprite)
 {
     using namespace std::chrono_literals;
 
@@ -57,8 +58,7 @@ void from_json(const nlohmann::json &j, engine::Spritesheet &sprite)
     sprite.speed.remaining_cooldown = 0ms;
 }
 
-inline
-auto Spritesheet::from_json(const std::string_view file) -> Spritesheet
+inline auto Spritesheet::from_json(const std::string_view file) -> Spritesheet
 {
     std::ifstream f(file.data());
     const auto json = nlohmann::json::parse(f);

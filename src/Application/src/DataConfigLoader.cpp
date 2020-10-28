@@ -6,18 +6,23 @@
 
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Graphics/Shader.hpp>
+#include <Engine/Event/Event.hpp>
+#include <Engine/Settings.hpp>
+#include <Engine/audio/AudioManager.hpp>
+#include <Engine/Core.hpp>
 
-#include <classes/ClassFactory.hpp>
-#include <Declaration.hpp>
-#include <DataConfigLoader.hpp>
-#include <EntityDepth.hpp>
-#include <component/all.hpp>
+#include "classes/ClassFactory.hpp"
+#include "DataConfigLoader.hpp"
+#include "EntityDepth.hpp"
+#include "component/all.hpp"
 
 using namespace std::chrono_literals; // ms ..
 
 auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filename, entt::registry &world, entt::entity &player)
     -> entt::entity
 {
+    static auto holder = engine::Core::Holder{};
+
     spdlog::info("Create a new Player from the file: " + std::string(filename.data()));
 
     std::ifstream file(filename.data());
@@ -33,7 +38,7 @@ auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filenam
     world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
     world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
-    engine::DrawableFactory::fix_texture(world, player, DATA_DIR "textures/player.jpeg");
+    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + "textures/player.jpeg");
     world.emplace<Health>(player, float(data["stats"]["hp"]), float(data["stats"]["hp"]));
     world.emplace<AttackCooldown>(
         player, false, static_cast<std::chrono::milliseconds>(data["stats"]["cooldown"]), 0ms);
