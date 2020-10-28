@@ -297,6 +297,11 @@ auto engine::Core::main(int argc, char **argv) -> int
             //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
             //                });
 
+            m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel){
+                pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+                pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+            });
+
             for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
                 auto &moving_pos = m_world.get<d3::Position>(moving);
                 auto &moving_vel = m_world.get<d2::Velocity>(moving);

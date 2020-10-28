@@ -58,6 +58,7 @@ template<std::floating_point T>
 [[nodiscard]] constexpr auto distance(const PositionT<T> &a, const PositionT<T> &b) noexcept -> double
 {
     return std::sqrt(distanceSquared(a, b));
+//    return std::sqrt(std::pow(a.x - b.x, 2) + std::pow(a.y - b.y, 2));
 }
 
 } // namespace d3
