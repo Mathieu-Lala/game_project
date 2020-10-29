@@ -396,7 +396,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                 // texture and no color
                 // no texture and no color
 
-                static long tmp = 0; // note : elapsed time since the start of the app
+                static decltype(elapsed) tmp = 0; // note : elapsed time since the start of the app
                 tmp += elapsed;
 
                 m_shader_colored->use();
