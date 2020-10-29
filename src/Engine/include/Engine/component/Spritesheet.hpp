@@ -21,10 +21,11 @@ struct Spritesheet {
     std::uint16_t width;
     std::uint16_t height;
 
-    std::vector<d2::PositionT<std::uint16_t>> frames;
+    std::unordered_map<std::string, std::vector<d2::PositionT<std::uint16_t>>> animations;
 
     Cooldown speed;
     std::uint16_t current_frame{0};
+    std::string current_animation{"default"};
 
     static auto from_json(const std::string_view file) -> Spritesheet;
 };
@@ -38,7 +39,7 @@ inline void to_json(nlohmann::json &j, const engine::Spritesheet &sprite)
         "file", sprite.file,
         "width", sprite.width,
         "height", sprite.height,
-        "frames", sprite.frames,
+        "animations", sprite.animations,
         "speed", sprite.speed.cooldown.count()
     }}};
     // clang-format on
@@ -51,7 +52,7 @@ inline void from_json(const nlohmann::json &j, engine::Spritesheet &sprite)
     sprite.file = j.at("object").at("file");
     sprite.width = j.at("object").at("width");
     sprite.height = j.at("object").at("height");
-    sprite.frames = j.at("object").at("frames").get<std::decay_t<decltype(sprite.frames)>>();
+    sprite.animations = j.at("object").at("animations").get<std::decay_t<decltype(sprite.animations)>>();
     std::uint64_t value = j.at("object").at("speed");
     sprite.speed.cooldown = std::chrono::milliseconds{value};
     sprite.speed.is_in_cooldown = false;
