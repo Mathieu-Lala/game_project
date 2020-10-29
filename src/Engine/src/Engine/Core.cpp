@@ -178,8 +178,7 @@ auto engine::Core::main(int argc, char **argv) -> int
         this->window(glm::ivec2{400, 400}, VERSION, windowProperty);
 
 #ifndef NDEBUG
-        if (!opt.options[Options::REPLAY_PATH]->empty())
-            setPendingEventsFromFile(opt.settings.replay_path);
+        if (!opt.options[Options::REPLAY_PATH]->empty()) setPendingEventsFromFile(opt.settings.replay_path);
 #endif
 
         m_settings = std::move(opt.settings);
@@ -269,7 +268,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                 sprite.speed.is_in_cooldown = true;
                 sprite.speed.remaining_cooldown = sprite.speed.cooldown;
                 sprite.current_frame++;
-                sprite.current_frame %= static_cast<std::uint16_t>(sprite.frames.size());
+                sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations[sprite.current_animation].size());
 
                 auto &texture = m_world.get<Texture>(i);
 
@@ -277,8 +276,10 @@ auto engine::Core::main(int argc, char **argv) -> int
                     m_world,
                     i,
                     m_settings.data_folder + sprite.file,
-                    {static_cast<float>(sprite.frames[sprite.current_frame].x) / static_cast<float>(texture.width),
-                     static_cast<float>(sprite.frames[sprite.current_frame].y) / static_cast<float>(texture.height),
+                    {static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].x)
+                         / static_cast<float>(texture.width),
+                     static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].y)
+                         / static_cast<float>(texture.height),
                      sprite.width / static_cast<float>(texture.width),
                      sprite.height / static_cast<float>(texture.height)});
             }
