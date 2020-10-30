@@ -65,6 +65,7 @@ $> ./tools/install.sh
 * Unix systems
 
     * [ccache](https://ccache.dev/)
+    * [cppcheck](http://cppcheck.sourceforge.net/)
     * [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
 
 * Windows
@@ -77,28 +78,26 @@ $> ./tools/install.sh
 ## Build and Run
 
 <table>
-    <tr>
-        <td>master branch</td>
-        <td>
-            <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Amaster">
-                <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=master"
-                    alt="Build status not found"
-                >
-            </a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            develop branch
-        </td>
-        <td>
-            <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Adevelop">
-                <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop"
-                    alt="Build status not found"
-                >
-            </a>
-        </td>
-    </tr>
+  <tr>
+    <td>master (stable)</td>
+    <td>
+      <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Amaster">
+        <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=master"
+          alt="Build status not found"
+        >
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td>develop (latest)</td>
+    <td>
+      <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Adevelop">
+        <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop"
+          alt="Build status not found"
+        >
+      </a>
+    </td>
+  </tr>
 </table>
 
 * Unix systems
@@ -111,7 +110,7 @@ $> ./tools/install.sh
     $> ./tools/build.sh
 
     # Run the executable
-    $> ./build/${build_type}/${arch}/out/app
+    $> ./tools/launch.sh
     ```
 
 ### Package Manager
@@ -135,3 +134,7 @@ Not deployed yet.
 * Yanis FOUREL - [github](https://github.com/Yanis-F)
 * Adil RAJABALY - [github](https://github.com/ADeal24)
 * Pierre-Genest ESTRADE - [github](https://github.com/Pierre-Genest)
+
+## License
+
+This software is licensed under the ISC license see [LICENSE](/LICENSE) for further details.

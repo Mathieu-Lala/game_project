@@ -58,6 +58,7 @@ auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> vo
     world.emplace<game::AttackDamage>(e, 15.0f);
     world.emplace<Health>(e, 500.0f, 500.0f);
     engine::DrawableFactory::fix_color(world, e, {0.95f, 0.95f, 0.95f});
+    // todo : add cache
     auto &sp = world.emplace<engine::Spritesheet>(
         e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/example/example.data.json"));
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + sp.file);
