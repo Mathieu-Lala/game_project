@@ -10,6 +10,9 @@
 
 #include "Engine/resources/LoaderColor.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
+#include "Engine/Event/Event.hpp"
+#include "Engine/Settings.hpp"
+#include "Engine/audio/AudioManager.hpp"
 
 namespace engine {
 

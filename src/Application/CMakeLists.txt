@@ -9,7 +9,8 @@ add_executable(
   src/GameLogic.cpp
   src/classes/ClassFactory.cpp
   src/DataConfigLoader.cpp
-  )
+  src/entity/SpellCaster.cpp
+  src/SpellDatabase.cpp "src/Spell.cpp")
 
 target_link_libraries(app PRIVATE engine)
 

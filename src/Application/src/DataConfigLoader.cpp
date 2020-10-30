@@ -40,13 +40,10 @@ auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filenam
     engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
     engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + "textures/player.jpeg");
     world.emplace<Health>(player, float(data["stats"]["hp"]), float(data["stats"]["hp"]));
-    world.emplace<AttackCooldown>(
-        player, false, static_cast<std::chrono::milliseconds>(data["stats"]["cooldown"]), 0ms);
     world.emplace<AttackDamage>(player, data["stats"]["atk"]);
     world.emplace<Level>(player, 0u, 0u, 10u);
     world.emplace<KeyPicker>(player);
 
-    file.close();
     return player;
 }
 

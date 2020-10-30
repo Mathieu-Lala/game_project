@@ -11,8 +11,9 @@
 
 #include "component/all.hpp"
 #include "level/MapGenerator.hpp"
+#include "entity/SpellCaster.hpp"
 
-#include "classes/Spell.hpp"
+#include "Spellid.hpp"
 
 namespace game {
 
@@ -32,8 +33,8 @@ public:
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
     entt::sink<void(entt::registry &, const engine::TimeElapsed &)> sinkGameUpdated{gameUpdated};
 
-    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell::ID)> castSpell;
-    entt::sink<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell::ID)> sinkCastSpell{castSpell};
+    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, SpellId)> castSpell;
+    entt::sink<void(entt::registry &, entt::entity, const glm::dvec2 &, SpellId)> sinkCastSpell{castSpell};
 
     entt::sigh<void(entt::registry &, entt::entity killed, entt::entity killer)> playerKilled;
     entt::sink<void(entt::registry &, entt::entity killed, entt::entity killer)> sinkGetKilled{playerKilled};
@@ -54,7 +55,7 @@ public:
     auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
 
-    auto cast_attack(entt::registry &, entt::entity , const glm::dvec2 &direction, Spell::ID) -> void;
+    auto cast_attack(entt::registry &, entt::entity, const glm::dvec2 &, SpellId) -> void;
 
     auto goToTheNextFloor(entt::registry &world) -> void;
 

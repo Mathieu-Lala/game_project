@@ -8,6 +8,7 @@
 #include "component/all.hpp"
 #include "entity/EnemyFactory.hpp"
 #include "classes/ClassFactory.hpp"
+#include "SpellDatabase.hpp"
 
 #include "DataConfigLoader.hpp"
 
@@ -28,9 +29,14 @@ auto game::EnemyFactory::FirstEnemy(entt::registry &world, const glm::vec2 &pos)
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/enemy.png");
     world.emplace<ViewRange>(e, 10.0f);
     world.emplace<AttackRange>(e, 3.0f);
-    world.emplace<AttackCooldown>(e, false, 4000ms, 0ms);
     world.emplace<AttackDamage>(e, 20.0f);
     world.emplace<Health>(e, 50.0f, 50.0f);
+
+    {
+        auto &slots = world.emplace<SpellSlots>(e);
+
+        slots.spells[0] = game::Spell(SpellId::STICK_ATTACK);
+    }
 }
 
 auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> void
@@ -55,6 +61,12 @@ auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> vo
     auto &sp = world.emplace<engine::Spritesheet>(
         e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/example/example.data.json"));
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + sp.file);
+
+    {
+        auto &slots = world.emplace<SpellSlots>(e);
+        (void)slots;
+        // TODO: add some spells
+    }
 }
 
 auto game::EnemyFactory::Player(entt::registry &world) -> entt::entity
