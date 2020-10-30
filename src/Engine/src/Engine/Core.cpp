@@ -200,6 +200,12 @@ auto engine::Core::main(int argc, char **argv) -> int
 
     m_game->onCreate(m_world);
 
+    using namespace std::chrono_literals;
+
+    auto screenshake = m_world.create();
+    m_world.emplace<entt::tag<"screenshake"_hs>>(screenshake);
+    m_world.emplace<engine::Cooldown>(screenshake, false, 500ms, 0ms);
+
     while (isRunning()) {
         const auto event = getNextEvent();
 
@@ -250,6 +256,19 @@ auto engine::Core::main(int argc, char **argv) -> int
             const auto t = std::get<TimeElapsed>(event);
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
+            // should have only one entity cooldown
+            m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
+                if (!cd.is_in_cooldown) return;
+
+                if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
+                    cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+                } else {
+                    cd.remaining_cooldown = std::chrono::milliseconds(0);
+                    cd.is_in_cooldown = false;
+                    setScreenshake(false);
+                }
+            });
+
             // check if the spritesheet need to update the texture
             m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
                 if (!sprite.speed.is_in_cooldown) return;
@@ -257,6 +276,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                 if (std::chrono::milliseconds{elapsed} < sprite.speed.remaining_cooldown) {
                     sprite.speed.remaining_cooldown -= std::chrono::milliseconds{elapsed};
                 } else {
+                    sprite.speed.remaining_cooldown = std::chrono::milliseconds(0);
                     sprite.speed.is_in_cooldown = false;
                 }
             });
@@ -376,30 +396,31 @@ auto engine::Core::main(int argc, char **argv) -> int
                 // texture and no color
                 // no texture and no color
 
+                static std::decay_t<decltype(elapsed)> tmp = 0; // note : elapsed time since the start of the app
+                tmp += elapsed;
+
                 m_shader_colored->use();
+                m_shader_colored->setUniform<float>("time", static_cast<float>(tmp));
                 m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<Texture>)
                     .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
                         auto model = glm::dmat4(1.0);
                         model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
                         model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                         m_shader_colored->uploadUniformMat4("model", model);
-
                         ::glBindVertexArray(drawable.VAO);
-
                         ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                     });
 
                 m_shader_colored_textured->use();
+                m_shader_colored_textured->setUniform<float>("time", static_cast<float>(tmp));
                 m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale>().each(
                     [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
                         auto model = glm::dmat4(1.0);
                         model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
                         model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                         m_shader_colored_textured->uploadUniformMat4("model", model);
-
                         ::glBindTexture(GL_TEXTURE_2D, texture.texture);
                         ::glBindVertexArray(drawable.VAO);
-
                         ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                     });
             });
@@ -428,6 +449,22 @@ auto engine::Core::updateView(const glm::mat4 &view) -> void
 {
     m_shader_colored->uploadUniformMat4("viewProj", view);
     m_shader_colored_textured->uploadUniformMat4("viewProj", view);
+}
+
+auto engine::Core::setScreenshake(bool value, std::chrono::milliseconds delay) -> void
+{
+    m_shader_colored->use();
+    m_shader_colored->setUniform<bool>("shake", value);
+    m_shader_colored_textured->use();
+    m_shader_colored_textured->setUniform<bool>("shake", value);
+
+    if (value) {
+        m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([&delay](auto &, auto &cd) {
+            cd.cooldown = delay;
+            cd.remaining_cooldown = delay;
+            cd.is_in_cooldown = true;
+        });
+    }
 }
 
 auto engine::Core::get() noexcept -> std::unique_ptr<Core> &

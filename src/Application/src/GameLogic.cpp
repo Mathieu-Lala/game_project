@@ -151,6 +151,8 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
 
+            holder.instance->setScreenshake(true, 300ms);
+
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
                 ->play();
