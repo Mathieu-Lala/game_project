@@ -43,15 +43,14 @@ auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filenam
     world.emplace<AttackDamage>(player, data["stats"]["atk"]);
     world.emplace<Level>(player, 0u, 0u, 10u);
     world.emplace<KeyPicker>(player);
+    world.emplace<SpellSlots>(player);
 
     return player;
 }
 
 auto game::DataConfigLoader::loadClassConfigFile(
-    const std::string_view filename,
-    [[maybe_unused]] entt::registry &world,
-    [[maybe_unused]] entt::entity &player,
-    Classes cl) -> entt::entity
+    const std::string_view filename, [[maybe_unused]] entt::registry &world, [[maybe_unused]] entt::entity &player, Classes cl)
+    -> void
 {
     spdlog::info("Create a new Class from the file: " + std::string(filename.data()));
 
@@ -60,55 +59,24 @@ auto game::DataConfigLoader::loadClassConfigFile(
     if (!file.is_open()) { spdlog::error("Can't open the given file"); }
     nlohmann::json data = nlohmann::json::parse(file);
 
-    switch (cl) {
-    case Classes::FARMER:
-        world.emplace<ClassFactory>(
-            player,
-            Classes::FARMER,
-            data["farmer"]["desc"],
-            data["farmer"]["cooldown"],
-            data["farmer"]["range"],
-            data["farmer"]["damage"],
-            data["farmer"]["isRanged"]);
-        spdlog::info("Farmer class successfully created");
-        break;
-    case Classes::SHOOTER:
-        world.emplace<ClassFactory>(
-            player,
-            Classes::SHOOTER,
-            data["shooter"]["desc"],
-            data["shooter"]["cooldown"],
-            data["shooter"]["range"],
-            data["shooter"]["damage"],
-            data["shooter"]["isRanged"]);
-        spdlog::info("Shooter class successfully created");
-        break;
-    case Classes::SOLDIER:
-        world.emplace<ClassFactory>(
-            player,
-            Classes::SOLDIER,
-            data["soldier"]["desc"],
-            data["soldier"]["cooldown"],
-            data["soldier"]["range"],
-            data["soldier"]["damage"],
-            data["soldier"]["isRanged"]);
-        spdlog::info("Soldier class successfully created");
-        break;
-    case Classes::SORCERER:
-        world.emplace<ClassFactory>(
-            player,
-            Classes::SORCERER,
-            data["sorcerer"]["desc"],
-            data["sorcerer"]["cooldown"],
-            data["sorcerer"]["range"],
-            data["sorcerer"]["damage"],
-            data["sorcerer"]["isRanged"]);
-        spdlog::info("Sorcerer class successfully created");
-        break;
-    }
+    nlohmann::json classRoot = [cl, &data]() {
+        switch (cl) {
+        case Classes::FARMER: return data["farmer"];
+        case Classes::SHOOTER: return data["shooter"];
+        case Classes::SOLDIER: return data["soldier"];
+        case Classes::SORCERER: return data["sorcerer"];
+        default: std::abort();
+        }
+    }();
 
-    file.close();
-    return player;
+    world.emplace<ClassFactory>(
+        player, cl, classRoot["desc"], classRoot["cooldown"], classRoot["range"], classRoot["damage"], classRoot["isRanged"]);
+
+
+    for (int i = 0; auto &spellId : classRoot["spellsId"])
+        world.get<SpellSlots>(player).spells[i++] = Spell(static_cast<SpellId>(spellId.get<int>()));
+
+    spdlog::info("{} class successfully created", classRoot["name"]);
 }
 
 void game::DataConfigLoader::reloadFiles() { std::cout << "Reload all files" << std::endl; }

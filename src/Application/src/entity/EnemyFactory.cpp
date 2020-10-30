@@ -64,7 +64,7 @@ auto game::EnemyFactory::Boss(entt::registry &world, const glm::vec2 &pos) -> vo
 
     {
         auto &slots = world.emplace<SpellSlots>(e);
-        (void)slots;
+        (void) slots;
         // TODO: add some spells
     }
 }
@@ -77,14 +77,8 @@ auto game::EnemyFactory::Player(entt::registry &world) -> entt::entity
 
     player = DataConfigLoader::loadPlayerConfigFile(
         holder.instance->settings().data_folder + "config/player.json", world, player);
-    player = DataConfigLoader::loadClassConfigFile(
+    DataConfigLoader::loadClassConfigFile(
         holder.instance->settings().data_folder + "config/classes.json", world, player, Classes::FARMER);
-
-    {
-        auto &slots = world.emplace<SpellSlots>(player);
-        slots.spells[0] = Spell(SpellId::STICK_ATTACK);
-        slots.spells[1] = Spell(SpellId::FIREBALL);
-    }
 
     return player;
 }

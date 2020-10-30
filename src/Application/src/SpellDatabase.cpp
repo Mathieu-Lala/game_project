@@ -10,9 +10,9 @@ auto makeSpellDatabase() -> SpellDatabase
 {
     SpellDatabase db;
 
-    db[SpellId::STICK_ATTACK] = {"stick_attack", 2000ms};
-    db[SpellId::SWORD_ATTACK] = {"sword_attack", 2000ms};
-    db[SpellId::FIREBALL] = {"fireball", 5000ms};
+    db[SpellId::STICK_ATTACK] = {2000ms};
+    db[SpellId::SWORD_ATTACK] = {2000ms};
+    db[SpellId::FIREBALL] = {5000ms};
 
     return db;
 }

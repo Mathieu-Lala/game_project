@@ -8,8 +8,6 @@
 namespace game {
 
 struct SpellData {
-    std::string uniqueName; // (Will be) used to reference spell from the class config file
-
     std::chrono::milliseconds cooldown;
 };
 
