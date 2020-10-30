@@ -80,5 +80,11 @@ auto game::EnemyFactory::Player(entt::registry &world) -> entt::entity
     player = DataConfigLoader::loadClassConfigFile(
         holder.instance->settings().data_folder + "config/classes.json", world, player, Classes::FARMER);
 
+    {
+        auto &slots = world.emplace<SpellSlots>(player);
+        slots.spells[0] = Spell(SpellId::STICK_ATTACK);
+        slots.spells[1] = Spell(SpellId::FIREBALL);
+    }
+
     return player;
 }

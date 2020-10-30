@@ -58,13 +58,19 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_L: m_logics.movement.publish(world, player, {0.1, 0.0}); break;  // go right
                     case GLFW_KEY_J: m_logics.movement.publish(world, player, {-0.1, 0.0}); break; // go left
                     case GLFW_KEY_U: {
+                        auto &spell = world.get<SpellSlots>(player).spells[0];
+                        if (!spell.has_value()) break;
+
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, SpellId::STICK_ATTACK);
+                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
                     case GLFW_KEY_Y: {
+                        auto &spell = world.get<SpellSlots>(player).spells[1];
+                        if (!spell.has_value()) break;
+
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, SpellId::FIREBALL);
+                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
                     default: return;

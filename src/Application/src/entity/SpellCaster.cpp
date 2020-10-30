@@ -2,7 +2,7 @@
 #include <cassert>
 
 
-void game::castSpellDynamic(SpellId spell, entt::registry &world, const entt::entity &caster, const glm::dvec2 &direction)
+void game::castSpell(SpellId spell, entt::registry &world, const entt::entity &caster, const glm::dvec2 &direction)
 {
 #define MAP_SPELL(t) \
     case game::t: castSpell<game::t>(world, caster, direction); break;
@@ -51,7 +51,11 @@ void game::castSpell<game::SpellId::SWORD_ATTACK>(entt::registry &, const entt::
 template<>
 void game::castSpell<game::SpellId::FIREBALL>(entt::registry &world, const entt::entity &caster, const glm::dvec2 &dir)
 {
+    static engine::Core::Holder holder{};
+
     spdlog::info("casting fireball");
+
+    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_cast.wav")->play();
 
     auto &caster_pos = world.get<engine::d3::Position>(caster);
 

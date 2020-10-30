@@ -22,8 +22,7 @@
 
 namespace game {
 
-// TODO: proper name
-void castSpellDynamic(SpellId spell, entt::registry &world, const entt::entity &caster, const glm::dvec2 &direction);
+void castSpell(SpellId spell, entt::registry &world, const entt::entity &caster, const glm::dvec2 &direction);
 
 template<SpellId spell>
 void castSpell(entt::registry &world, const entt::entity &caster, const glm::dvec2 &direction);

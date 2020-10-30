@@ -99,9 +99,6 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
         for (auto &spell : world.get<SpellSlots>(enemy).spells) {
             if (!spell.has_value()) continue;
 
-            if (spell->current_cooldown > 0ms) continue;
-
-
             const auto &selfPosition = world.get<engine::d3::Position>(enemy);
             const auto &targetPosition = world.get<engine::d3::Position>(m_game.player);
 
@@ -110,8 +107,7 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
             auto &attack_range = world.get<AttackRange>(enemy);
 
             if (glm::length(diff) <= attack_range.range) {
-                castSpell.publish(world, enemy, {diff.x, diff.y}, spell->id);
-                spell->current_cooldown = spell->cooldown_duration;
+                castSpell.publish(world, enemy, {diff.x, diff.y}, spell.value());
             }
         }
     }
@@ -265,10 +261,13 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
 }
 
 // todo : normalize direction
-auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, SpellId spell_id)
+auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)
     -> void
 {
-    castSpellDynamic(spell_id, world, caster, direction);
+    if (spell.current_cooldown == 0ms) {
+        game::castSpell(spell.id, world, caster, direction);
+        spell.current_cooldown = spell.cooldown_duration;
+    }
 }
 
 auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void

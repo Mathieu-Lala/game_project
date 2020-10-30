@@ -7,7 +7,7 @@
 namespace game {
 
 struct SpellSlots {
-    std::optional<Spell> spells[4]; // TODO: check if this gets properly initialized
+    std::optional<Spell> spells[4];
 };
 
 } // namespace game

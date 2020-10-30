@@ -33,8 +33,8 @@ public:
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
     entt::sink<void(entt::registry &, const engine::TimeElapsed &)> sinkGameUpdated{gameUpdated};
 
-    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, SpellId)> castSpell;
-    entt::sink<void(entt::registry &, entt::entity, const glm::dvec2 &, SpellId)> sinkCastSpell{castSpell};
+    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell &)> castSpell;
+    entt::sink<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell &)> sinkCastSpell{castSpell};
 
     entt::sigh<void(entt::registry &, entt::entity killed, entt::entity killer)> playerKilled;
     entt::sink<void(entt::registry &, entt::entity killed, entt::entity killer)> sinkGetKilled{playerKilled};
@@ -55,7 +55,7 @@ public:
     auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
 
-    auto cast_attack(entt::registry &, entt::entity, const glm::dvec2 &, SpellId) -> void;
+    auto cast_attack(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;
 
     auto goToTheNextFloor(entt::registry &world) -> void;
 
