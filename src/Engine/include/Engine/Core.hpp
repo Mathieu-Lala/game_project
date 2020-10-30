@@ -86,8 +86,12 @@ public:
 
     auto close() noexcept -> void { m_is_running = false; }
 
+
     // note : not the best way ..
     auto updateView(const glm::mat4 &view) -> void;
+
+    // todo : add strength
+    auto setScreenshake(bool, std::chrono::milliseconds = {}) -> void;
 
 
     // note : getter
