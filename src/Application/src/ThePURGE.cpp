@@ -33,13 +33,13 @@ game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<std::uint32_t>(std::tim
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
-auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void { setState(LOADING); }
+auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void { setState(State::LOADING); }
 
 auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
     static auto holder = engine::Core::Holder{};
 
-    if (m_state == IN_GAME) {
+    if (m_state == State::IN_GAME) {
         std::visit(
             engine::overloaded{
                 [&](const engine::Pressed<engine::Key> &key) {
@@ -214,7 +214,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
     if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
-    if (m_state == LOADING) {
+    if (m_state == State::LOADING) {
         // todo : style because this is not a debug window
         ImGui::Begin("Menu loading", nullptr, ImGuiWindowFlags_NoDecoration);
 
@@ -234,11 +234,11 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
             m_logics.onFloorChange.publish(world);
 
-            setState(IN_GAME);
+            setState(State::IN_GAME);
         }
 
         ImGui::End();
-    } else if (m_state == IN_GAME) {
+    } else if (m_state == State::IN_GAME) {
         {
             const auto infoHealth = world.get<Health>(player);
             const auto HP = infoHealth.current / infoHealth.max;
@@ -304,7 +304,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
             displaySoundDebugGui();
         }
-    } else if (m_state == GAME_OVER) {
+    } else if (m_state == State::GAME_OVER) {
         // todo : style because this is not a debug window
         ImGui::Begin("Menu Game Over", nullptr, ImGuiWindowFlags_NoDecoration);
 
@@ -315,7 +315,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); }
             for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
 
-            setState(LOADING);
+            setState(State::LOADING);
         }
 
         ImGui::End();

@@ -91,7 +91,7 @@ auto engine::JoystickManager::each(const std::function<void(const Joystick &)> &
 
 auto engine::JoystickManager::callback_eventJoystickDetection(int id, int event) -> void
 {
-    if (Core::Holder().instance->getEventMode() == Core::RECORD) {
+    if (Core::Holder().instance->getEventMode() == Core::EventMode::RECORD) {
         if (event == GLFW_CONNECTED) {
             s_instance->m_events.emplace_back(Connected<Joystick>{{id}});
         } else if (event == GLFW_DISCONNECTED) {

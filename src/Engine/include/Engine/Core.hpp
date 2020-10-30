@@ -79,7 +79,7 @@ public:
     }
 
 
-    enum EventMode {
+    enum class EventMode {
         RECORD,
         PLAYBACK,
     };
@@ -132,7 +132,7 @@ private:
     // Event Handling
     //
 
-    EventMode m_eventMode{RECORD};
+    EventMode m_eventMode{EventMode::RECORD};
 
     std::vector<Event> m_eventsPlayback;
 

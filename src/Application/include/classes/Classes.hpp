@@ -2,6 +2,6 @@
 
 namespace game {
 
-enum Classes { FARMER, SHOOTER, SOLDIER, SORCERER };
+enum class Classes { FARMER, SHOOTER, SOLDIER, SORCERER };
 
 } // namespace game
