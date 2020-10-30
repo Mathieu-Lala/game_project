@@ -80,6 +80,9 @@ function(set_project_warnings project_name)
     set(CMAKE_CXX_FLAGS_RELEASE
         "-O3 -DNDEBUG"
         CACHE STRING "Flags used by the CXX compiler during RELEASE builds." FORCE)
+    set(CMAKE_CXX_FLAGS_DEBUG
+        "-O0 -g"
+        CACHE STRING "Flags used by the CXX compiler during DEBUG builds." FORCE)
 
   else()
     message(AUTHOR_WARNING "No compiler warnings set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
