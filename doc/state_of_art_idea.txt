@@ -7,14 +7,10 @@ Libaries:
 
 Static Analyzer:
     clang-tidy
-    cppcheck
     include-what-you-use (ubuntu/debian only)
 
 Tests:
-    Test driver: CTest
-    Units tests: Catch2 (https://github.com/catchorg/Catch2)
     Undefined Behaviour: Fuzz (ubuntu/debian only)
-    Benchmark: google_benchmark
 
 Documentation:
     Doxygen

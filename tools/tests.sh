@@ -1,7 +1,3 @@
-./tools/generate.sh && ./tools/build.sh || exit 1
+./tools/generate.sh -- -DENABLE_TESTING=ON -DENABLE_COVERAGE=ON && ./tools/build.sh || exit 1
 
-make -C ./build/Debug/x64 coverage
-
-# cd src && lcov --directory . -c -o ./gen/rapport.info
-#
-# genhtml -o ./gen/rapport -t "couverture de code des tests" ./gen/rapport.info
+make -C ./build/Debug/x64 generated_coverage
