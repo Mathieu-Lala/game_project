@@ -10,9 +10,9 @@ game::DebugConsole::DebugConsole(ThePurge &game) : m_game(game)
     m_console.SetCommandAutoCompletion(m_commands.getCommands());
 }
 
-auto game::DebugConsole::info(const std::string &str) { m_console.AddLog(str.c_str()); }
-auto game::DebugConsole::warn(const std::string &str) { m_console.AddLog("[warn] %s", str.c_str()); }
-auto game::DebugConsole::error(const std::string &str) { m_console.AddLog("[error] %s", str.c_str()); }
+void game::DebugConsole::info(const std::string &str) { m_console.AddLog(str.c_str()); }
+void game::DebugConsole::warn(const std::string &str) { m_console.AddLog("[warn] %s", str.c_str()); }
+void game::DebugConsole::error(const std::string &str) { m_console.AddLog("[error] %s", str.c_str()); }
 
 void game::DebugConsole::handleCmd(const std::string &line)
 {

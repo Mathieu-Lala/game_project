@@ -18,9 +18,9 @@ public:
 
     void clear() { m_console.ClearLog(); }
 
-    auto info(const std::string &str);
-    auto warn(const std::string &str);
-    auto error(const std::string &str);
+    void info(const std::string &str);
+    void warn(const std::string &str);
+    void error(const std::string &str);
 
     void handleCmd(const std::string &cmd);
 private:

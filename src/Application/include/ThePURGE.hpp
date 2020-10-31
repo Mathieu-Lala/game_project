@@ -42,6 +42,7 @@ public:
     }
 
     auto getLogics() -> GameLogic & { return m_logics; }
+    auto getMusic() -> std::shared_ptr<engine::Sound> { return m_dungeonMusic; }
 
 private:
     auto goToNextFloor(entt::registry &world) -> void;
@@ -60,6 +61,7 @@ private:
 
     std::shared_ptr<engine::Sound> m_dungeonMusic;
 
+    bool m_consoleEnabled = true;
     DebugConsole m_debugConsole;
 };
 

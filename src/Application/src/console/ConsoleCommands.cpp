@@ -2,6 +2,8 @@
 #include <spdlog/spdlog.h>
 #include "console/ArgParsingUtils.hpp"
 
+#include <Engine/audio/Sound.hpp>
+
 #include "component/all.hpp"
 #include "ThePURGE.hpp"
 
@@ -11,6 +13,7 @@ game::CommandHandler::CommandHandler()
     m_commands["setSpell"] = cmd_setSpell;
     m_commands["addXp"] = cmd_addXp;
     m_commands["addLevel"] = cmd_addLevel;
+    m_commands["setMusicVolume"] = cmd_setMusicVolume;
 }
 
 auto game::CommandHandler::getCommandHandler(const std::string &cmd) -> const game::CommandHandler::handler_t &
@@ -116,4 +119,21 @@ void game::CommandHandler::cmd_addLevel(entt::registry &world, ThePurge &game, s
     } catch (const std::runtime_error &e) {
         throw std::runtime_error(fmt::format("{}\nusage: addLevel level", e.what()));
     }
+}
+
+void game::CommandHandler::cmd_setMusicVolume(entt::registry &, ThePurge &game, std::vector<std::string> &&args)
+{
+    float volume;
+
+    try {
+        if (args.size()!=  1) throw std::runtime_error("Wrong argument count");
+
+        volume = lexicalCast<float>(args[0]);
+
+        game.getMusic()->setVolume(volume);
+
+    } catch (const std::runtime_error &e) {
+        throw std::runtime_error(fmt::format("{}\nusage: setMusicVolume volume\n\tvolume : [0; 2]", e.what()));
+    }
+
 }

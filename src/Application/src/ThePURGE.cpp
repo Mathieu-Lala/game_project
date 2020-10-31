@@ -22,13 +22,16 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}, m_debugConsole(*this)
+game::ThePurge::ThePurge() :
+    m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}, m_debugConsole(*this)
 {
     static auto holder = engine::Core::Holder{};
 
     m_dungeonMusic =
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
     m_dungeonMusic->setVolume(0.1f).setLoop(true);
+
+    m_debugConsole.info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 }
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
@@ -67,6 +70,7 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         m_logics.castSpell.publish(world, player, {vel.x, vel.y}, Spell::FIREBALL);
                         break;
                     }
+                    case GLFW_KEY_F1: m_consoleEnabled = !m_consoleEnabled; break;
                     default: return;
                     }
                 },
@@ -196,7 +200,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
 
-    m_debugConsole.draw();
+    if (m_consoleEnabled) m_debugConsole.draw();
 
     if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
