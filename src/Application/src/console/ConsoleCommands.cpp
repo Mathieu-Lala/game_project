@@ -8,6 +8,17 @@ auto game::CommandHandler::getCommandHandler(const std::string &cmd) -> const ga
     return m_commands.at(cmd);
 }
 
+std::vector<std::string> game::CommandHandler::getCommands() const
+{
+    std::vector<std::string> result;
+
+    result.reserve(m_commands.size());
+
+    for (const auto &[k, v] : m_commands) result.push_back(k);
+
+    return result;
+}
+
 void game::CommandHandler::cmd_test(std::vector<std::string> &&args)
 {
     spdlog::info("Called test cmd with : ");

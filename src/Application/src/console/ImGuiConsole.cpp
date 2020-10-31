@@ -69,6 +69,12 @@ void ImGuiConsole::AddLog(const char *fmt, ...) IM_FMTARGS(2)
     Items.push_back(Strdup(buf));
 }
 
+void ImGuiConsole::SetCommandAutoCompletion(const std::vector<std::string> &commands)
+{
+    Commands.clear();
+    for (const auto &cmd : commands) Commands.push_back(Strdup(cmd.c_str()));
+}
+
 void ImGuiConsole::Draw(bool *p_open)
 {
     ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);

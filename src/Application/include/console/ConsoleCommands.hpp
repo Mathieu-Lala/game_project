@@ -14,6 +14,7 @@ public:
 
     auto getCommandHandler(const std::string &cmd) -> const handler_t &;
 
+    std::vector<std::string> getCommands() const;
 private:
     static void cmd_test(std::vector<std::string> &&args);
 

@@ -27,6 +27,7 @@ public:
 
     void SetCommandHandler(const cmdHandler_t &handler) { m_cmdHandler = handler; }
 
+    void SetCommandAutoCompletion(const std::vector<std::string> &commands);
 private:
     void ExecCommand(const char *command_line);
 

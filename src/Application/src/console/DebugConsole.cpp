@@ -5,6 +5,7 @@
 game::DebugConsole::DebugConsole()
 {
     m_console.SetCommandHandler([this](auto &cmd) { handleCmd(cmd); });
+    m_console.SetCommandAutoCompletion(m_commands.getCommands());
 }
 
 auto game::DebugConsole::info(const std::string &str) { m_console.AddLog(str.c_str()); }
