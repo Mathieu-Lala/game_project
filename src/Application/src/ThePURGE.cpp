@@ -20,7 +20,7 @@
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
-#include "DebugConsole.hpp"
+#include "console/ImGuiConsole.hpp"
 
 using namespace std::chrono_literals;
 

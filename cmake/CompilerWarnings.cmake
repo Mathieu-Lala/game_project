@@ -29,6 +29,8 @@ function(set_project_warnings project_name)
       /w14906 # string literal cast to 'LPWSTR'
       /w14928 # illegal copy-initialization; more than one user-defined conversion has been implicitly applied
       /permissive- # standards conformance mode for MSVC compiler.
+
+      /D _CRT_SECURE_NO_WARNINGS # disables : 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead.
   )
 
   set(CLANG_WARNINGS
