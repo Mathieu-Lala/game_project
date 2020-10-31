@@ -111,8 +111,16 @@ auto engine::Core::getNextEvent() -> Event
         // 1. poll the window event
         // 2. poll the joysticks event
         // 3. send elapsed time
-        return m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
+        auto event = m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
 
+        // TEMPORARY, BY YANIS. Allows for keyboard input to work. waiting for Mathieu to help do it a clean way
+        std::visit(
+            overloaded{
+                [&](const auto &e) { m_window->applyEvent(e); },
+            },
+            event);
+        // ----
+        return event;
     } break;
     case PLAYBACK: {
         if (m_eventsPlayback.empty()) {

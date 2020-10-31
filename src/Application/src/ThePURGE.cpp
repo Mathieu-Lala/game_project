@@ -20,6 +20,8 @@
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
+#include "DebugConsole.hpp"
+
 using namespace std::chrono_literals;
 
 game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}
@@ -195,6 +197,8 @@ static bool show_demo_window = true;
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
+
+    ShowExampleAppConsole();
 
     {
         ImGui::Begin("Debug cheat");

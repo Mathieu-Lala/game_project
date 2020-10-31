@@ -9,6 +9,7 @@ add_executable(
   src/GameLogic.cpp
   src/classes/ClassFactory.cpp
   src/DataConfigLoader.cpp
+  src/DebugConsole.cpp
   )
 
 target_link_libraries(app PRIVATE engine)
