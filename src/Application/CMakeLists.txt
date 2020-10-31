@@ -10,7 +10,7 @@ add_executable(
   src/classes/ClassFactory.cpp
   src/DataConfigLoader.cpp
   "src/console/DebugConsole.cpp"
-   "include/console/ImGuiConsole.hpp" "src/console/ImGuiConsole.cpp")
+   "include/console/ImGuiConsole.hpp" "src/console/ImGuiConsole.cpp" "include/console/ConsoleCommands.hpp" "src/console/ConsoleCommands.cpp")
 
 target_link_libraries(app PRIVATE engine)
 

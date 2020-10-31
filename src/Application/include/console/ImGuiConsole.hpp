@@ -9,10 +9,12 @@
 #include <stdlib.h> // NULL, malloc, free, atoi
 #include <stdint.h> // intptr_t
 
+#include <functional>
 
 // Taken from https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp
 
 class ImGuiConsole {
+    using cmdHandler_t = std::function<void(const std::string &)>;
 public:
     ImGuiConsole();
     ~ImGuiConsole();
@@ -21,7 +23,9 @@ public:
 
     void AddLog(const char *fmt, ...) IM_FMTARGS(2);
 
-    void Draw(const char *title, bool *p_open);
+    void Draw(bool *p_open = nullptr);
+
+    void SetCommandHandler(const cmdHandler_t &handler) { m_cmdHandler = handler; }
 
 private:
     void ExecCommand(const char *command_line);
@@ -44,12 +48,5 @@ private:
     ImGuiTextFilter Filter;
     bool AutoScroll;
     bool ScrollToBottom;
+    cmdHandler_t m_cmdHandler;
 };
-
-namespace game {
-inline void ShowExampleAppConsole(bool *p_open = nullptr)
-{
-    static ImGuiConsole console;
-    console.Draw("Example: Console", p_open);
-}
-} // namespace game

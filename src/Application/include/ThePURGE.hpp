@@ -7,6 +7,8 @@
 
 #include "component/all.hpp"
 
+#include "console/DebugConsole.hpp"
+
 namespace game {
 
 class GameLogic;
@@ -55,6 +57,8 @@ private:
     GameLogic m_logics;
 
     std::shared_ptr<engine::Sound> m_dungeonMusic;
+
+    DebugConsole m_debugConsole;
 };
 
 } // namespace game

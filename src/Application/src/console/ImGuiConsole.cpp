@@ -69,10 +69,10 @@ void ImGuiConsole::AddLog(const char *fmt, ...) IM_FMTARGS(2)
     Items.push_back(Strdup(buf));
 }
 
-void ImGuiConsole::Draw(const char *title, bool *p_open)
+void ImGuiConsole::Draw(bool *p_open)
 {
     ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin(title, p_open)) {
+    if (!ImGui::Begin("console", p_open, ImGuiWindowFlags_NoDecoration)) {
         ImGui::End();
         return;
     }
@@ -159,7 +159,7 @@ void ImGuiConsole::Draw(const char *title, bool *p_open)
         if (strstr(item, "[error]")) {
             color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
             has_color = true;
-        } else if (strncmp(item, "# ", 2) == 0) {
+        } else if (strstr(item, "[warn]")) {
             color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f);
             has_color = true;
         }
@@ -211,18 +211,7 @@ void ImGuiConsole::ExecCommand(const char *command_line)
         }
     History.push_back(Strdup(command_line));
 
-    // Process command
-    if (Stricmp(command_line, "CLEAR") == 0) {
-        ClearLog();
-    } else if (Stricmp(command_line, "HELP") == 0) {
-        AddLog("Commands:");
-        for (int i = 0; i < Commands.Size; i++) AddLog("- %s", Commands[i]);
-    } else if (Stricmp(command_line, "HISTORY") == 0) {
-        int first = History.Size - 10;
-        for (int i = first > 0 ? first : 0; i < History.Size; i++) AddLog("%3d: %s\n", i, History[i]);
-    } else {
-        AddLog("Unknown command: '%s'\n", command_line);
-    }
+    m_cmdHandler(command_line);
 
     // On command input, we scroll to bottom even if AutoScroll==false
     ScrollToBottom = true;
