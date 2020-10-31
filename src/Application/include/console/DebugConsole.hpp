@@ -1,13 +1,18 @@
 #pragma once
 
+#include <entt/entt.hpp>
+
 #include "ImGuiConsole.hpp"
 #include "ConsoleCommands.hpp"
 
+
 namespace game {
+
+class ThePurge;
 
 class DebugConsole {
 public:
-    DebugConsole();
+    explicit DebugConsole(ThePurge &game);
 
     void draw() { m_console.Draw(); }
 
@@ -18,10 +23,11 @@ public:
     auto error(const std::string &str);
 
     void handleCmd(const std::string &cmd);
-
 private:
     ImGuiConsole m_console;
     CommandHandler m_commands;
+
+    ThePurge &m_game;
 };
 
 } // namespace game

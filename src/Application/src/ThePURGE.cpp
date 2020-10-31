@@ -22,7 +22,7 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}
+game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}, m_debugConsole(*this)
 {
     static auto holder = engine::Core::Holder{};
 

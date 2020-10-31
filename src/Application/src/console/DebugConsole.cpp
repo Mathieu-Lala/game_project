@@ -2,7 +2,9 @@
 #include <spdlog/spdlog.h>
 #include <sstream>
 
-game::DebugConsole::DebugConsole()
+#include "Engine/Core.hpp"
+
+game::DebugConsole::DebugConsole(ThePurge &game) : m_game(game)
 {
     m_console.SetCommandHandler([this](auto &cmd) { handleCmd(cmd); });
     m_console.SetCommandAutoCompletion(m_commands.getCommands());
@@ -14,6 +16,8 @@ auto game::DebugConsole::error(const std::string &str) { m_console.AddLog("[erro
 
 void game::DebugConsole::handleCmd(const std::string &line)
 {
+    static engine::Core::Holder holder{};
+
     std::string cmd;
     std::vector<std::string> args;
 
@@ -22,8 +26,7 @@ void game::DebugConsole::handleCmd(const std::string &line)
     ss >> cmd;
 
     std::string buff;
-    while (ss >> buff)
-        args.push_back(std::move(buff));
+    while (ss >> buff) args.push_back(std::move(buff));
 
     if (cmd.empty()) return;
 
@@ -37,7 +40,7 @@ void game::DebugConsole::handleCmd(const std::string &line)
     }
 
     try {
-        handler(std::move(args));
+        handler(holder.instance->getWorld(), m_game, std::move(args));
     } catch (const std::exception &e) {
         error(e.what());
     }

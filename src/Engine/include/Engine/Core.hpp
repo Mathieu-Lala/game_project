@@ -10,6 +10,9 @@
 
 #include "Engine/resources/LoaderColor.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
+#include "Engine/Event/Event.hpp"
+#include "Engine/Settings.hpp"
+#include "Engine/audio/AudioManager.hpp"
 
 namespace engine {
 
@@ -103,6 +106,8 @@ public:
     auto getCache() noexcept -> entt::resource_cache<T> &;
 
     auto getAudioManager() noexcept -> AudioManager & { return m_audioManager; }
+
+    auto getWorld() noexcept -> entt::registry & { return m_world; }
 
     auto settings() const noexcept -> Settings { return m_settings; }
 
