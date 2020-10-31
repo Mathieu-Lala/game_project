@@ -198,16 +198,6 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
     m_debugConsole.draw();
 
-    {
-        ImGui::Begin("Debug cheat");
-        if (ImGui::Button("kill boss")) {
-            for (auto &e : world.view<entt::tag<"boss"_hs>>()) {
-                m_logics.playerKilled.publish(world, e, world.view<entt::tag<"player"_hs>>()[0]);
-            }
-        }
-        ImGui::End();
-    }
-
     if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
 
     if (m_state == LOADING) {

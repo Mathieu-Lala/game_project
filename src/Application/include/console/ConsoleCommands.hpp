@@ -23,6 +23,9 @@ public:
 
 private:
     static void cmd_kill(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
+    static void cmd_setSpell(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
+    static void cmd_addXp(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
+    static void cmd_addLevel(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
 
 
 private:
