@@ -9,8 +9,8 @@ namespace engine {
 
 namespace d2 {
 
-template<typename T> requires std::floating_point<T> || std::integral<T>
-struct PositionT {
+template<typename T>
+    requires std::floating_point<T> || std::integral<T> struct PositionT {
     using type = T;
     T x;
     T y;
@@ -58,6 +58,7 @@ template<std::floating_point T>
 [[nodiscard]] constexpr auto distance(const PositionT<T> &a, const PositionT<T> &b) noexcept -> double
 {
     return std::sqrt(distanceSquared(a, b));
+//    return std::sqrt(std::pow(a.x - b.x, 2) + std::pow(a.y - b.y, 2));
 }
 
 } // namespace d3

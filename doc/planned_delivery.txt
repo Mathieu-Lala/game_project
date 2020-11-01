@@ -38,6 +38,8 @@
         menu level up / menu competence
         audio
 
+[Beta]
+
 [Final Delivery]
     Gameplay :
         Multi-joueur

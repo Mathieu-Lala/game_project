@@ -15,9 +15,9 @@ public:
 
     auto move(const glm::vec2 &offset) -> void;
 
-    auto getViewProjMatrix() const -> const glm::mat4 & { return m_viewProjMatrix; }
-    auto getCenter() -> glm::vec2 { return m_pos; }
-    auto getViewportSize() -> glm::vec2 { return m_viewportSize; };
+    [[nodiscard]] auto getViewProjMatrix() const noexcept -> const glm::mat4 & { return m_viewProjMatrix; }
+    [[nodiscard]] auto getCenter() const noexcept -> glm::vec2 { return m_pos; }
+    [[nodiscard]] auto getViewportSize() const noexcept -> glm::vec2 { return m_viewportSize; };
 
     [[nodiscard("this function will set is_updated to false")]] auto isUpdated() -> bool
     {

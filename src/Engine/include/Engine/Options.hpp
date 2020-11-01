@@ -9,9 +9,10 @@
 
 #include <CLI/CLI.hpp>
 
-#include <Engine/details/Version.hpp>
+#include "Engine/details/Version.hpp"
+#include "Engine/Settings.hpp"
 
-namespace game {
+namespace engine {
 
 static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
@@ -24,9 +25,10 @@ static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION " 
     ;
 
 struct Options {
-    static constexpr auto DEFAULT_CONFIG = "app.ini";
+    static constexpr auto DEFAULT_DATA_FOLDER = "data";
+    static constexpr auto DEFAULT_CONFIG = "data/config/app.ini";
 
-    enum Value { CONFIG_PATH, FULLSCREEN, REPLAY_PATH, OPTION_MAX };
+    enum Value { CONFIG_PATH, FULLSCREEN, REPLAY_PATH, DATA_FOLDER, OPTION_MAX };
 
     std::array<CLI::Option *, OPTION_MAX> options;
 
@@ -36,23 +38,34 @@ struct Options {
             "--version",
             [](auto v) -> void {
                 if (v == 1) {
-                    std::cout << VERSION;
-                    exit(0);
+                    std::cout << VERSION << "\n";
+                    std::exit(0);
                 }
             },
             "Print the version number and exit.");
 
         options[CONFIG_PATH] = app.set_config("--config", DEFAULT_CONFIG);
-        options[FULLSCREEN] = app.add_option("--fullscreen", fullscreen, "Launch the window in fullscreen mode.", true);
-        options[REPLAY_PATH] = app.add_option("--replay_path", replay_path, "Path of the events to replay.");
+        options[FULLSCREEN] =
+            app.add_option("--fullscreen", settings.fullscreen, "Launch the window in fullscreen mode.", true);
+        options[REPLAY_PATH] = app.add_option("--replay-path", settings.replay_path, "Path of the events to replay.");
+        options[DATA_FOLDER] = app.add_option("--data", settings.data_folder, "Path of the data folder");
 
         if (const auto res = [&]() -> std::optional<int> {
                 CLI11_PARSE(app, argc, argv);
                 return {};
             }();
             res.has_value()) {
+            this->setDefaultValue();
             throw res.value_or(0);
         }
+    }
+
+    auto setDefaultValue() -> void
+    {
+        if (!options[Options::CONFIG_PATH]->empty())
+            settings.config_path = options[Options::CONFIG_PATH]->as<std::string>();
+        if (!options[Options::DATA_FOLDER]->empty())
+            settings.data_folder = options[Options::DATA_FOLDER]->as<std::string>();
     }
 
     auto dump() const -> void
@@ -72,8 +85,8 @@ struct Options {
 
     CLI::App app;
 
-    bool fullscreen = true;
-    std::string replay_path;
+    Settings settings{
+        .fullscreen = true, .replay_path = "", .data_folder = DEFAULT_DATA_FOLDER, .config_path = DEFAULT_CONFIG};
 };
 
-} // namespace game
+} // namespace engine

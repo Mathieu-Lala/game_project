@@ -12,6 +12,8 @@
 #include "component/all.hpp"
 #include "level/MapGenerator.hpp"
 
+#include "classes/Spell.hpp"
+
 namespace game {
 
 class ThePurge;
@@ -30,8 +32,8 @@ public:
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
     entt::sink<void(entt::registry &, const engine::TimeElapsed &)> sinkGameUpdated{gameUpdated};
 
-    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &)> castSpell;
-    entt::sink<void(entt::registry &, entt::entity, const glm::dvec2 &)> sinkCastSpell{castSpell};
+    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell::ID)> castSpell;
+    entt::sink<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell::ID)> sinkCastSpell{castSpell};
 
     entt::sigh<void(entt::registry &, entt::entity killed, entt::entity killer)> playerKilled;
     entt::sink<void(entt::registry &, entt::entity killed, entt::entity killer)> sinkGetKilled{playerKilled};
@@ -52,13 +54,13 @@ public:
     auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
 
-    auto cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void;
+    auto cast_attack(entt::registry &, entt::entity , const glm::dvec2 &direction, Spell::ID) -> void;
 
     auto goToTheNextFloor(entt::registry &world) -> void;
 
 
     FloorGenParam m_map_generation_params;
-    unsigned int m_nextFloorSeed;
+    std::uint32_t m_nextFloorSeed;
 
     static constexpr double kDoorInteractionRange = 3;
 };

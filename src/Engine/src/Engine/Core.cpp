@@ -1,6 +1,8 @@
 #include <fstream>
 #include <functional>
+#include <filesystem>
 
+#include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <magic_enum.hpp>
@@ -8,7 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <stb_image.h>
+// #include <stb_image.h>
 
 #include "Engine/helpers/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
@@ -24,15 +26,15 @@
 #include "Engine/Graphics/Shader.hpp"
 #include "Engine/Graphics/Window.hpp"
 #include "Engine/Event/JoystickManager.hpp"
+#include "Engine/Options.hpp"
+#include "Engine/Game.hpp"
+#include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Core.hpp"
 
 #include "Engine/helpers/DrawableFactory.hpp"
 #include "Engine/helpers/ImGui.hpp"
 
 #include "Engine/Graphics/third_party.hpp" // note : only for DisplayMode
-
-// todo : remove me
-#include "Engine/../../../Application/include/Declaration.hpp"
 
 engine::Core *engine::Core::s_instance{nullptr};
 
@@ -64,7 +66,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
     m_joystickManager = std::make_unique<JoystickManager>();
 
-    //    ::stbi_set_flip_vertically_on_load(true);
+    // ::stbi_set_flip_vertically_on_load(true);
 }
 
 engine::Core::~Core()
@@ -145,21 +147,66 @@ auto engine::Core::getNextEvent() -> Event
     }
 }
 
-auto engine::Core::main() -> int
+auto engine::Core::main(int argc, char **argv) -> int
 {
+    {
+#ifdef LOGLOGLOG
+        // todo : setup properly logging
+        auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
+        logger->info("logger created");
+#endif
+
+        // 1. Parse the program argument
+
+        Options opt{argc, argv};
+
+#ifndef NDEBUG
+        opt.dump();
+#endif
+
+        std::filesystem::rename(
+            std::filesystem::path(opt.settings.config_path), std::filesystem::path(opt.settings.config_path + ".old"));
+        opt.write_to_file(opt.settings.config_path);
+
+        spdlog::info("{}", std::filesystem::absolute(std::filesystem::path(opt.settings.data_folder)).string());
+
+        // 2. Initialize the Engine / Window / Game
+
+        std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
+        if (opt.settings.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
+
+        this->window(glm::ivec2{400, 400}, VERSION, windowProperty);
+
+#ifndef NDEBUG
+        if (!opt.options[Options::REPLAY_PATH]->empty()) setPendingEventsFromFile(opt.settings.replay_path);
+#endif
+
+        m_settings = std::move(opt.settings);
+    }
+
+    // 3. Start of the application
+
     if (m_window == nullptr || m_game == nullptr) { return 1; }
 
-    m_shader_colored.reset(
-        new Shader{Shader::fromFile(DATA_DIR "shaders/colored.vert.glsl", DATA_DIR "shaders/colored.frag.glsl")});
+    m_shader_colored.reset(new Shader{Shader::fromFile(
+        m_settings.data_folder + "shaders/colored.vert.glsl", m_settings.data_folder + "shaders/colored.frag.glsl")});
 
-    m_shader_colored_textured.reset(new Shader{
-        Shader::fromFile(DATA_DIR "shaders/colored_textured.vert.glsl", DATA_DIR "shaders/colored_textured.frag.glsl")});
+    m_shader_colored_textured.reset(new Shader{Shader::fromFile(
+        m_settings.data_folder + "shaders/colored_textured.vert.glsl",
+        m_settings.data_folder + "shaders/colored_textured.frag.glsl")});
 
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 
-    while (isRunning()) { // note Core::isRunning instead ?
+    m_game->onCreate(m_world);
 
+    using namespace std::chrono_literals;
+
+    auto screenshake = m_world.create();
+    m_world.emplace<entt::tag<"screenshake"_hs>>(screenshake);
+    m_world.emplace<engine::Cooldown>(screenshake, false, 500ms, 0ms);
+
+    while (isRunning()) {
         const auto event = getNextEvent();
 
         std::visit(
@@ -209,6 +256,19 @@ auto engine::Core::main() -> int
             const auto t = std::get<TimeElapsed>(event);
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
+            // should have only one entity cooldown
+            m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
+                if (!cd.is_in_cooldown) return;
+
+                if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
+                    cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+                } else {
+                    cd.remaining_cooldown = std::chrono::milliseconds(0);
+                    cd.is_in_cooldown = false;
+                    setScreenshake(false);
+                }
+            });
+
             // check if the spritesheet need to update the texture
             m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
                 if (!sprite.speed.is_in_cooldown) return;
@@ -216,6 +276,7 @@ auto engine::Core::main() -> int
                 if (std::chrono::milliseconds{elapsed} < sprite.speed.remaining_cooldown) {
                     sprite.speed.remaining_cooldown -= std::chrono::milliseconds{elapsed};
                 } else {
+                    sprite.speed.remaining_cooldown = std::chrono::milliseconds(0);
                     sprite.speed.is_in_cooldown = false;
                 }
             });
@@ -227,16 +288,18 @@ auto engine::Core::main() -> int
                 sprite.speed.is_in_cooldown = true;
                 sprite.speed.remaining_cooldown = sprite.speed.cooldown;
                 sprite.current_frame++;
-                sprite.current_frame %= static_cast<std::uint16_t>(sprite.frames.size());
+                sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations[sprite.current_animation].size());
 
                 auto &texture = m_world.get<Texture>(i);
 
                 DrawableFactory::fix_texture(
                     m_world,
                     i,
-                    std::string(DATA_DIR) + sprite.file,
-                    {static_cast<float>(sprite.frames[sprite.current_frame].x) / static_cast<float>(texture.width),
-                     static_cast<float>(sprite.frames[sprite.current_frame].y) / static_cast<float>(texture.height),
+                    m_settings.data_folder + sprite.file,
+                    {static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].x)
+                         / static_cast<float>(texture.width),
+                     static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].y)
+                         / static_cast<float>(texture.height),
                      sprite.width / static_cast<float>(texture.width),
                      sprite.height / static_cast<float>(texture.height)});
             }
@@ -254,6 +317,11 @@ auto engine::Core::main() -> int
             //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
             //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
             //                });
+
+            m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel){
+                pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+                pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+            });
 
             for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
                 auto &moving_pos = m_world.get<d3::Position>(moving);
@@ -328,30 +396,31 @@ auto engine::Core::main() -> int
                 // texture and no color
                 // no texture and no color
 
+                static std::decay_t<decltype(elapsed)> tmp = 0; // note : elapsed time since the start of the app
+                tmp += elapsed;
+
                 m_shader_colored->use();
+                m_shader_colored->setUniform<float>("time", static_cast<float>(tmp));
                 m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<Texture>)
                     .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
                         auto model = glm::dmat4(1.0);
                         model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
                         model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                         m_shader_colored->uploadUniformMat4("model", model);
-
                         ::glBindVertexArray(drawable.VAO);
-
                         ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                     });
 
                 m_shader_colored_textured->use();
+                m_shader_colored_textured->setUniform<float>("time", static_cast<float>(tmp));
                 m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale>().each(
                     [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
                         auto model = glm::dmat4(1.0);
                         model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
                         model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
                         m_shader_colored_textured->uploadUniformMat4("model", model);
-
                         ::glBindTexture(GL_TEXTURE_2D, texture.texture);
                         ::glBindVertexArray(drawable.VAO);
-
                         ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
                     });
             });
@@ -366,7 +435,7 @@ auto engine::Core::main() -> int
 
 #ifndef NDEBUG
     nlohmann::json serialized(eventsProcessed);
-    std::ofstream f{"recorded_events.json"};
+    std::ofstream f{"logs/recorded_events.json"};
     f << serialized;
 #endif
 
@@ -382,10 +451,38 @@ auto engine::Core::updateView(const glm::mat4 &view) -> void
     m_shader_colored_textured->uploadUniformMat4("viewProj", view);
 }
 
+auto engine::Core::setScreenshake(bool value, std::chrono::milliseconds delay) -> void
+{
+    m_shader_colored->use();
+    m_shader_colored->setUniform<bool>("shake", value);
+    m_shader_colored_textured->use();
+    m_shader_colored_textured->setUniform<bool>("shake", value);
+
+    if (value) {
+        m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([&delay](auto &, auto &cd) {
+            cd.cooldown = delay;
+            cd.remaining_cooldown = delay;
+            cd.is_in_cooldown = true;
+        });
+    }
+}
+
 auto engine::Core::get() noexcept -> std::unique_ptr<Core> &
 {
     static auto instance = std::make_unique<Core>(hidden_type{});
     return instance;
+}
+
+template<>
+auto engine::Core::getCache() noexcept -> entt::resource_cache<Color> &
+{
+    return m_colors;
+}
+
+template<>
+auto engine::Core::getCache() noexcept -> entt::resource_cache<Texture> &
+{
+    return m_textures;
 }
 
 auto engine::Core::loadOpenGL() -> void
@@ -396,7 +493,7 @@ auto engine::Core::loadOpenGL() -> void
     }
 }
 
-auto engine::Core::getElapsedTime() -> std::chrono::nanoseconds
+auto engine::Core::getElapsedTime() noexcept -> std::chrono::nanoseconds
 {
     const auto nextTick = std::chrono::steady_clock::now();
     const auto timeElapsed = nextTick - m_lastTick;

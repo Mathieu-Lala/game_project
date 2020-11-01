@@ -19,7 +19,7 @@ struct MapData {
     std::vector<Room> regularRooms;
     Room boss{};
 
-    unsigned int nextFloorSeed;
+    std::uint32_t nextFloorSeed;
 };
 
 } // namespace game

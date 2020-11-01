@@ -12,16 +12,17 @@ This repository contains the source code of the game and his engine.
 ## Usage
 
 ```sh
-$> ./build/${build_type}/${arch}/out/app --help
-ThePURGE 0.2.10
-Usage: ./build/${build_type}/${arch}/out/app [OPTIONS]
+$> ./tools/launch.sh -- --help
+ThePURGE 0.2.22
+Usage: ./app [OPTIONS]
 
 Options:
   -h,--help                   Print this help message and exit
   --version                   Print the version number and exit.
   --config=app.ini            Read an ini file
   --fullscreen BOOLEAN=1      Launch the window in fullscreen mode.
-  --replay_path TEXT          Path of the events to replay.
+  --replay-path TEXT          Path of the events to replay.
+  --data TEXT                 Path of the data folder
 ```
 
 ## Screenshots
@@ -65,10 +66,12 @@ $> ./tools/install.sh
 * Unix systems
 
     * [ccache](https://ccache.dev/)
+    * [cppcheck](http://cppcheck.sourceforge.net/)
     * [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
 
 * Windows
 
+    * [VS cppcheck extension](https://marketplace.visualstudio.com/items?itemName=Alexium.Cppcheckadd-in)
     * [VS conan extension](https://marketplace.visualstudio.com/items?itemName=conan-io.conan-vs-extension)
     * [VS GLSL extension](https://marketplace.visualstudio.com/items?itemName=DanielScherzer.GLSL)
     * [VS clang-format extension](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
@@ -76,28 +79,26 @@ $> ./tools/install.sh
 ## Build and Run
 
 <table>
-    <tr>
-        <td>master branch</td>
-        <td>
-            <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Amaster">
-                <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=master"
-                    alt="Build status not found"
-                >
-            </a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            develop branch
-        </td>
-        <td>
-            <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Adevelop">
-                <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop"
-                    alt="Build status not found"
-                >
-            </a>
-        </td>
-    </tr>
+  <tr>
+    <td>master (stable)</td>
+    <td>
+      <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Amaster">
+        <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=master"
+          alt="Build status not found"
+        >
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td>develop (latest)</td>
+    <td>
+      <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Adevelop">
+        <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop"
+          alt="Build status not found"
+        >
+      </a>
+    </td>
+  </tr>
 </table>
 
 * Unix systems
@@ -110,7 +111,7 @@ $> ./tools/install.sh
     $> ./tools/build.sh
 
     # Run the executable
-    $> ./build/${build_type}/${arch}/out/app
+    $> ./tools/launch.sh
     ```
 
 ### Package Manager
@@ -134,3 +135,7 @@ Not deployed yet.
 * Yanis FOUREL - [github](https://github.com/Yanis-F)
 * Adil RAJABALY - [github](https://github.com/ADeal24)
 * Pierre-Genest ESTRADE - [github](https://github.com/Pierre-Genest)
+
+## License
+
+This software is licensed under the ISC license see [LICENSE](/LICENSE) for further details.

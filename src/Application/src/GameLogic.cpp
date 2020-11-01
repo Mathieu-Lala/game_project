@@ -1,6 +1,9 @@
 #include <spdlog/spdlog.h>
 
 #include <Engine/helpers/DrawableFactory.hpp>
+#include <Engine/Event/Event.hpp>
+#include <Engine/audio/AudioManager.hpp>
+#include <Engine/Settings.hpp>
 #include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
@@ -10,7 +13,7 @@
 using namespace std::chrono_literals;
 
 game::GameLogic::GameLogic(ThePurge &game) :
-    m_game{game}, m_nextFloorSeed(static_cast<unsigned int>(std::time(nullptr)))
+    m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
 
@@ -36,18 +39,45 @@ auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity 
 
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>().each(
-        [&](auto &, auto &pos, auto &vel, auto &view_range) {
-            const auto player_pos = world.get<engine::d3::Position>(m_game.player);
-            const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+    for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
+        auto &pos = world.get<engine::d3::Position>(i);
+        //auto &vel = world.get<engine::d2::Velocity>(i);
+        auto &view_range = world.get<ViewRange>(i);
 
-            // if the enemy is close enough
-            if (glm::length(diff) <= view_range.range) {
-                vel = {diff.x, diff.y};
-            } else {
-                vel = {0, 0};
+        const auto player_pos = world.get<engine::d3::Position>(m_game.player);
+        const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+
+        static bool chasing = false; // tmp : true if the boss is chasing the player
+
+        // if the enemy is close enough
+        if (glm::length(diff) <= view_range.range) {
+            world.replace<engine::d2::Velocity>(i, diff.x, diff.y);
+
+            if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
+                if (chasing) continue;
+
+                auto &sp = world.get<engine::Spritesheet>(i);
+                sp.current_animation = "hold";
+                sp.current_frame = 0;
+
+                chasing = true;
             }
-        });
+
+        } else {
+            // todo : make the enemy move randomly
+            world.replace<engine::d2::Velocity>(i, 0.0f, 0.0f);
+
+            if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
+                if (!chasing) continue;
+
+                auto &sp = world.get<engine::Spritesheet>(i);
+                sp.current_animation = "default";
+                sp.current_frame = 0;
+
+                chasing = false;
+            }
+        }
+    }
 }
 
 auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
@@ -95,13 +125,19 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
         auto &attack_range = world.get<AttackRange>(enemy);
 
         // if the enemy is close enough
-        if (glm::length(diff) <= attack_range.range) { castSpell.publish(world, enemy, {diff.x, diff.y}); }
+        if (glm::length(diff) <= attack_range.range) {
+            castSpell.publish(world, enemy, {diff.x, diff.y}, Spell::STICK_ATTACK);
+        }
     }
 }
 
 auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     static engine::Core::Holder holder{};
+
+    // todo : handle collision terrain and spell
+
+    // todo : spell (fireball) should destroy on collide
 
     const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source) {
         auto &entity_pos = world.get<engine::d3::Position>(entity);
@@ -115,29 +151,42 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
 
-            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/fire_hit.wav")->play();
+            holder.instance->setScreenshake(true, 300ms);
+
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
+                ->play();
             world.destroy(spell);
             if (entity_health.current <= 0.0f) { playerKilled.publish(world, entity, source); }
         }
     };
 
-    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
+    auto check_collision_spell = [&world, &apply_damage]<engine::d2::HitboxType T>(
+                                     entt::entity spell, entt::entity source, const engine::d2::Hitbox<T> &hitbox) {
         auto &spell_pos = world.get<engine::d3::Position>(spell);
-        auto &spell_hitbox = world.get<engine::d2::HitboxFloat>(spell);
-        const auto source = world.get<engine::Source>(spell).source;
+
+        if (!world.valid(source)) return;
 
         if (world.has<entt::tag<"player"_hs>>(source)) {
             for (auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
-                apply_damage(enemy, spell, spell_hitbox, spell_pos, source);
+                apply_damage(enemy, spell, hitbox, spell_pos, source);
             }
         } else {
             for (auto &player : world.view<entt::tag<"player"_hs>>()) {
-                apply_damage(player, spell, spell_hitbox, spell_pos, source);
+                apply_damage(player, spell, hitbox, spell_pos, source);
             }
+        }
+    };
+
+    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
+        if (world.has<engine::d2::HitboxFloat>(spell)) {
+            check_collision_spell(spell, world.get<engine::Source>(spell).source, world.get<engine::d2::HitboxFloat>(spell));
+        } else if (world.has<engine::d2::HitboxSolid>(spell)) {
+            check_collision_spell(spell, world.get<engine::Source>(spell).source, world.get<engine::d2::HitboxSolid>(spell));
         }
     }
 
-    const auto systemKeyPicker =
+    world.view<KeyPicker, engine::d2::HitboxSolid, engine::d3::Position>().each(
         [&](KeyPicker &keypicker, const engine::d2::HitboxSolid &pickerhitbox, const engine::d3::Position &pickerPos) {
             if (keypicker.hasKey) return;
 
@@ -151,9 +200,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
                     world.destroy(key);
                 }
             }
-        };
-
-    world.view<KeyPicker, engine::d2::HitboxSolid, engine::d3::Position>().each(systemKeyPicker);
+        });
 }
 
 auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void
@@ -189,9 +236,10 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
     static engine::Core::Holder holder{};
 
     if (world.has<entt::tag<"player"_hs>>(killed)) {
-        holder.instance->getAudioManager().getSound(DATA_DIR "sounds/player_death.wav")->play();
+        holder.instance->getAudioManager()
+            .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
+            ->play();
 
-        // note : may create segfault // assert fail
         m_game.setState(ThePurge::GAME_OVER);
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         spdlog::warn("!! entity killed : dropping xp !!");
@@ -199,7 +247,9 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
         // TODO: actual random utilities
         bool lazyDevCoinflip = static_cast<std::uint32_t>(killed) % 2;
         holder.instance->getAudioManager()
-            .getSound(lazyDevCoinflip ? DATA_DIR "sounds/death_01.wav" : DATA_DIR "sounds/death_02.wav")
+            .getSound(
+                lazyDevCoinflip ? holder.instance->settings().data_folder + "sounds/death_01.wav"
+                                : holder.instance->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
         // todo : send signal instead
@@ -220,44 +270,75 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
             world.emplace<engine::d3::Position>(key, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::UTILITIES));
             world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
             engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
-            engine::DrawableFactory::fix_texture(world, key, DATA_DIR "textures/key.png");
+            engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "textures/key.png");
 
-            holder.instance->getAudioManager().getSound(DATA_DIR "sounds/boss_death.wav")->play();
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
+                ->play();
         }
         world.destroy(killed);
     }
 }
 
+using spell_factory = std::function<void(entt::registry &, entt::entity, const glm::dvec2 &)>;
+
+static const auto spells = std::to_array<std::pair<game::Spell::ID, spell_factory>>(
+    {{game::Spell::STICK_ATTACK,
+      [](entt::registry &world, entt::entity caster, const glm::dvec2 &dir) {
+          static engine::Core::Holder holder{};
+
+          spdlog::info("casting a stick attack");
+          auto &caster_pos = world.get<engine::d3::Position>(caster);
+          auto &attack_damage = world.get<game::AttackDamage>(caster);
+
+          auto color = world.has<entt::tag<"enemy"_hs>>(caster) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 0};
+
+          holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_cast.wav")->play();
+          const auto spell = world.create();
+          world.emplace<entt::tag<"spell"_hs>>(spell);
+          world.emplace<game::Lifetime>(spell, 600ms);
+          world.emplace<game::AttackDamage>(spell, attack_damage.damage);
+          world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
+          engine::DrawableFactory::fix_color(world, spell, std::move(color));
+          world.emplace<engine::d3::Position>(spell, caster_pos.x + dir.x / 2.0, caster_pos.y + dir.y / 2.0, -1.0);
+          world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
+          world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
+          world.emplace<engine::Source>(spell, caster);
+      }},
+     {game::Spell::SWORD_ATTACK,
+      [](entt::registry &, entt::entity, const glm::dvec2 &) { spdlog::info("casting a sword attack"); }},
+     {game::Spell::FIREBALL, [](entt::registry &world, entt::entity caster, const glm::dvec2 &dir) {
+          spdlog::info("casting fireball");
+
+          auto &caster_pos = world.get<engine::d3::Position>(caster);
+
+          const auto spell = world.create();
+          world.emplace<entt::tag<"spell"_hs>>(spell);
+          world.emplace<game::Lifetime>(spell, 2000ms);
+          world.emplace<game::AttackDamage>(spell, 15.0f);
+          world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
+          engine::DrawableFactory::fix_color(world, spell, {0.6, 0.6, 1});
+          world.emplace<engine::d3::Position>(spell, caster_pos.x + dir.x / 2.0, caster_pos.y + dir.y / 2.0, -1.0);
+          world.emplace<engine::d2::Velocity>(spell, dir.x * 2.0, dir.y * 2.0);
+          world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
+          world.emplace<engine::d2::HitboxSolid>(spell, 0.7, 0.7);
+          world.emplace<engine::Source>(spell, caster);
+          spdlog::info("done");
+      }}});
+
 // todo : normalize direction
-auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction) -> void
+auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction, Spell::ID spell_id)
+    -> void
 {
-    static engine::Core::Holder holder{};
-
-    // todo : apply AttackDamage
-    // todo : switch attack depending of entity type
-
     auto &attack_cooldown = world.get<AttackCooldown>(entity);
-    auto &attack_damage = world.get<AttackDamage>(entity);
-    auto &enemy_pos = world.get<engine::d3::Position>(entity);
 
     if (attack_cooldown.is_in_cooldown) return;
 
     attack_cooldown.is_in_cooldown = true;
     attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
 
-    auto color = world.has<entt::tag<"enemy"_hs>>(entity) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 0};
-
-    holder.instance->getAudioManager().getSound(DATA_DIR "sounds/fire_cast.wav")->play();
-    const auto spell = world.create();
-    world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<Lifetime>(spell, 600ms);
-    world.emplace<AttackDamage>(spell, attack_damage.damage);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle()); //.shader = &m_game.shader;
-    engine::DrawableFactory::fix_color(world, spell, std::move(color));
-    world.emplace<engine::d3::Position>(spell, enemy_pos.x + direction.x / 2.0, enemy_pos.y + direction.y / 2.0, -1.0);
-    world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
-    world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
-    world.emplace<engine::Source>(spell, entity);
+    const auto it = std::find_if(spells.begin(), spells.end(), [&spell_id](auto &i) { return i.first == spell_id; });
+    it->second(world, entity, direction);
 }
 
 auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void
