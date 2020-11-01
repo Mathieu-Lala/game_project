@@ -8,7 +8,8 @@
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
-#include "EntityDepth.hpp"
+#include "factory/EntityFactory.hpp"
+#include "factory/SpellFactory.hpp"
 
 using namespace std::chrono_literals;
 
@@ -272,15 +273,7 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);
-            auto key = world.create();
-            world.emplace<entt::tag<"key"_hs>>(key);
-            world.emplace<engine::d2::HitboxFloat>(key);
-            world.emplace<engine::d2::Scale>(key, 1.0, 1.0);
-            world.emplace<engine::d3::Position>(key, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::UTILITIES));
-            world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
-            engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
-            engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "textures/key.png");
-
+            EntityFactory::create<EntityFactory::KEY>(world, {pos.x, pos.y}, {1.0, 1.0});
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
                 ->play();
@@ -294,7 +287,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, co
     -> void
 {
     if (spell.current_cooldown == 0ms) {
-        game::castSpell(spell.id, world, caster, direction);
+        SpellFactory::create(spell.id, world, caster, direction);
         spell.current_cooldown = spell.cooldown_duration;
     }
 }

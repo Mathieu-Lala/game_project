@@ -13,8 +13,8 @@
 
 #include "classes/ClassFactory.hpp"
 #include "DataConfigLoader.hpp"
-#include "EntityDepth.hpp"
 #include "component/all.hpp"
+#include "factory/EntityFactory.hpp"
 
 using namespace std::chrono_literals; // ms ..
 
@@ -31,7 +31,7 @@ auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filenam
     nlohmann::json data = nlohmann::json::parse(file);
 
     world.emplace<entt::tag<"player"_hs>>(player);
-    world.emplace<engine::d3::Position>(player, 0.0, 0.0, Z_COMPONENT_OF(EntityDepth::PLAYER));
+    world.emplace<engine::d3::Position>(player, 0.0, 0.0, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
     world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
     world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
     world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
@@ -72,9 +72,8 @@ auto game::DataConfigLoader::loadClassConfigFile(
     world.emplace<ClassFactory>(
         player, cl, classRoot["desc"], classRoot["cooldown"], classRoot["range"], classRoot["damage"], classRoot["isRanged"]);
 
-
     for (int i = 0; auto &spellId : classRoot["spellsId"])
-        world.get<SpellSlots>(player).spells[i++] = Spell(static_cast<SpellId>(spellId.get<int>()));
+        world.get<SpellSlots>(player).spells[i++] = Spell::create(static_cast<SpellFactory::ID>(spellId.get<int>()));
 
     spdlog::info("{} class successfully created", classRoot["name"]);
 }

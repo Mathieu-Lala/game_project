@@ -13,9 +13,9 @@
 
 #include "level/LevelTilemapBuilder.hpp"
 #include "level/MapGenerator.hpp"
-#include "entity/TileFactory.hpp"
+#include "factory/EntityFactory.hpp"
 
-#include "entity/EnemyFactory.hpp"
+#include "factory/EntityFactory.hpp"
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
@@ -226,7 +226,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
                 .play();
             m_dungeonMusic->play();
 
-            player = EnemyFactory::Player(world);
+            player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
 
             // default camera value to see the generated terrain properly
             m_camera.setCenter(glm::vec2(13, 22));

@@ -1,5 +1,5 @@
 #include "level/LevelTilemapBuilder.hpp"
-#include "entity/TileFactory.hpp"
+#include "factory/EntityFactory.hpp"
 
 void game::TilemapBuilder::build(entt::registry &world)
 {
@@ -16,7 +16,9 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     auto size = getTileSize(x, y);
 
     for (auto clearY = y; clearY < y + size.y; ++clearY) {
-        for (auto clearX = x; clearX < x + size.x; ++clearX) { operator[](glm::ivec2{clearX, clearY}) = TileEnum::NONE; }
+        for (auto clearX = x; clearX < x + size.x; ++clearX) {
+            operator[](glm::ivec2{clearX, clearY}) = TileEnum::NONE;
+        }
     }
 
     glm::vec2 tileSize{static_cast<float>(size.x), static_cast<float>(size.y)};
@@ -25,18 +27,30 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     tilePos += tileSize / 2.f;
 
     switch (tile) {
-    case TileEnum::FLOOR_NORMAL_ROOM: TileFactory::FloorNormalRoom(world, tilePos, tileSize); break;
-    case TileEnum::FLOOR_BOSS_ROOM: TileFactory::FloorBossRoom(world, tilePos, tileSize); break;
-    case TileEnum::FLOOR_CORRIDOR: TileFactory::FloorCorridor(world, tilePos, tileSize); break;
-    case TileEnum::FLOOR_SPAWN: TileFactory::FloorSpawnRoom(world, tilePos, tileSize); break;
+    case TileEnum::FLOOR_NORMAL_ROOM:
+        EntityFactory::create<EntityFactory::FLOOR_NORMAL>(world, tilePos, tileSize);
+        break;
+    case TileEnum::FLOOR_BOSS_ROOM: EntityFactory::create<EntityFactory::FLOOR_BOSS>(world, tilePos, tileSize); break;
+    case TileEnum::FLOOR_CORRIDOR:
+        EntityFactory::create<EntityFactory::FLOOR_CORRIDOR>(world, tilePos, tileSize);
+        break;
+    case TileEnum::FLOOR_SPAWN: EntityFactory::create<EntityFactory::FLOOR_SPAWN>(world, tilePos, tileSize); break;
 
-    case TileEnum::EXIT_DOOR_FACING_NORTH: TileFactory::ExitDoor(world, tilePos, tileSize, 0); break;
-    case TileEnum::EXIT_DOOR_FACING_EAST: TileFactory::ExitDoor(world, tilePos, tileSize, 90); break;
-    case TileEnum::EXIT_DOOR_FACING_SOUTH: TileFactory::ExitDoor(world, tilePos, tileSize, 180); break;
-    case TileEnum::EXIT_DOOR_FACING_WEST: TileFactory::ExitDoor(world, tilePos, tileSize, 270); break;
+    case TileEnum::EXIT_DOOR_FACING_NORTH:
+        EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize /*, 0*/);
+        break;
+    case TileEnum::EXIT_DOOR_FACING_EAST:
+        EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize /*, 90*/);
+        break;
+    case TileEnum::EXIT_DOOR_FACING_SOUTH:
+        EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize /*, 180*/);
+        break;
+    case TileEnum::EXIT_DOOR_FACING_WEST:
+        EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize /*, 270*/);
+        break;
 
-    case TileEnum::DEBUG_TILE: TileFactory::DebugTile(world, tilePos, tileSize); break;
-    case TileEnum::WALL: TileFactory::Wall(world, tilePos, tileSize); break;
+    case TileEnum::DEBUG_TILE: EntityFactory::create<EntityFactory::DEBUG_TILE>(world, tilePos, tileSize); break;
+    case TileEnum::WALL: EntityFactory::create<EntityFactory::WALL>(world, tilePos, tileSize); break;
 
     default: break;
     }

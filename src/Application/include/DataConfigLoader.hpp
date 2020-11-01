@@ -6,7 +6,7 @@
 
 #include <Engine/Graphics/Shader.hpp>
 #include "classes/Classes.hpp"
-#include "SpellDatabase.hpp"
+#include "models/SpellDatabase.hpp"
 
 namespace game {
 

@@ -11,9 +11,6 @@
 
 #include "component/all.hpp"
 #include "level/MapGenerator.hpp"
-#include "entity/SpellCaster.hpp"
-
-#include "Spellid.hpp"
 
 namespace game {
 
