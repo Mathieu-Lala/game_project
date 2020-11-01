@@ -31,17 +31,20 @@ add_test(NAME relaxed_constexpr_unit_tests COMMAND relaxed_constexpr_unit_tests)
 if(ENABLE_COVERAGE)
   include(${PROJECT_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 
-  set(EXCLUDE "")
-  foreach(path ${CONAN_INCLUDE_DIRS})
-      list(APPEND EXCLUDE "${path}")
-  endforeach()
+#  set(EXCLUDE "")
+#  foreach(path ${CONAN_INCLUDE_DIRS})
+#      list(APPEND EXCLUDE "${path}")
+#  endforeach()
 
   ## FIXME : not working as wanted
   setup_target_for_coverage_lcov(
     NAME generated_coverage # todo : set generated files in a generated folder to keep build dir clean
     EXECUTABLE ctest -j4
     BASE_DIRECTORY ${PROJECT_SOURCE_DIR}
-    EXCLUDE ${EXCLUDE} ${CMAKE_BINARY_DIR}/download/* /usr/include
+    EXCLUDE /usr/include
+    #    EXCLUDE ${CMAKE_BINARY_DIR}/download/
+    #    BASE_DIRECTORY ${PROJECT_SOURCE_DIR}
+#    EXCLUDE ${EXCLUDE} ${CMAKE_BINARY_DIR}/download/* /usr/include
     NO_DEMANGLE
     DEPENDENCIES unit_tests constexpr_unit_tests relaxed_constexpr_unit_tests
   )
