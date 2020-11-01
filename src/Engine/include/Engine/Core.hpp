@@ -93,6 +93,8 @@ public:
 
     auto getAudioManager() -> AudioManager & { return m_audioManager; }
 
+    auto getJoystick(int id) -> std::optional<Joystick *const>; 
+
     // note : not the best way ..
     auto updateView(const glm::mat4 &view) -> void;
 

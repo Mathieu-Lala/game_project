@@ -404,6 +404,11 @@ auto engine::Core::getElapsedTime() -> std::chrono::nanoseconds
     return timeElapsed;
 }
 
+auto engine::Core::getJoystick(int id) -> std::optional<Joystick *const>
+{
+    return m_joystickManager->get(id);
+}
+
 #ifndef NDEBUG
 
 // todo : what happen when more than 1 joystick ?
