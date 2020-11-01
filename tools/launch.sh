@@ -51,7 +51,8 @@ esac
 done
 
 if [[ $(uname -a) =~ "Linux" ]]; then
-    cd ./build/$build_type/$arch/out && ./app $extra_arg && cd -
+    echo "not working :)"
+    # cd ./build/$build_type/$arch/out && ./app $extra_arg && cd -
 else
-    cd ./build/$build_type/out/$build_type && app.exe && cd -
+    cd ./build/$build_type/out/$build_type && ./app.exe && cd -
 fi
