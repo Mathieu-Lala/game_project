@@ -1,34 +1,35 @@
 {
-   "farmer": {
-       "name": "Farmer",
-       "desc": "Farmer description",
-       "cooldown": 2,
-       "range": 2,
-       "damage": 10,
-       "isRanged": false
-   },
-   "soldier": {
-       "name": "Soldier",
-       "desc": "Soldier description",
-       "cooldown": 3,
-       "range": 2,
-       "damage": 15,
-       "isRanged": false
-   },
-   "shooter": {
-       "name": "Shooter",
-       "desc": "Shooter description",
-       "cooldown": 3,
-       "range": 5,
-       "damage": 15,
-       "isRanged": true
-   },
-   "sorcerer": {
-       "name": "Sorcerer",
-       "desc": "Sorcerer description",
-       "cooldown": 3,
-       "range": 5,
-       "damage": 15,
-       "isRanged": true
-   }
+  "farmer": {
+    "name": "Farmer",
+    "desc": "Farmer description",
+    "cooldown": 2,
+    "range": 2,
+    "damage": 10,
+    "isRanged": false,
+    "spellsId": [ 0, 2 ]
+  },
+  "soldier": {
+    "name": "Soldier",
+    "desc": "Soldier description",
+    "cooldown": 3,
+    "range": 2,
+    "damage": 15,
+    "isRanged": false
+  },
+  "shooter": {
+    "name": "Shooter",
+    "desc": "Shooter description",
+    "cooldown": 3,
+    "range": 5,
+    "damage": 15,
+    "isRanged": true
+  },
+  "sorcerer": {
+    "name": "Sorcerer",
+    "desc": "Sorcerer description",
+    "cooldown": 3,
+    "range": 5,
+    "damage": 15,
+    "isRanged": true
+  }
 }
