@@ -106,8 +106,6 @@ public:
 
     auto getJoystick(int id) -> std::optional<Joystick *const>; 
 
-    // note : not the best way ..
-    auto updateView(const glm::mat4 &view) -> void;
     auto settings() const noexcept -> Settings { return m_settings; }
 
 private:
