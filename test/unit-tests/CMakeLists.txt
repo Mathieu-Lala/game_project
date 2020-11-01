@@ -31,21 +31,28 @@ add_test(NAME relaxed_constexpr_unit_tests COMMAND relaxed_constexpr_unit_tests)
 if(ENABLE_COVERAGE)
   include(${PROJECT_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 
-#  set(EXCLUDE "")
-#  foreach(path ${CONAN_INCLUDE_DIRS})
-#      list(APPEND EXCLUDE "${path}")
-#  endforeach()
+  set(INCLUDE_FOLDER_CONAN)
+  foreach(path ${CONAN_INCLUDE_DIRS})
+    list(APPEND INCLUDE_FOLDER_CONAN ${path}/*)
+  endforeach()
 
-  ## FIXME : not working as wanted
+  message("${INCLUDE_FOLDER_CONAN}")
+
+  # cmake-format: off
   setup_target_for_coverage_lcov(
-    NAME generated_coverage # todo : set generated files in a generated folder to keep build dir clean
+    NAME coverage
     EXECUTABLE ctest -j4
-    BASE_DIRECTORY ${PROJECT_SOURCE_DIR}
-    EXCLUDE /usr/include
-    #    EXCLUDE ${CMAKE_BINARY_DIR}/download/
-    #    BASE_DIRECTORY ${PROJECT_SOURCE_DIR}
-#    EXCLUDE ${EXCLUDE} ${CMAKE_BINARY_DIR}/download/* /usr/include
+    BASE_DIRECTORY ${PROJECT_SOURCE_DIR}/src/
+    EXCLUDE
+      "/usr/include/*"
+      "/usr/lib/*"
+      "${CMAKE_BINARY_DIR}/download/*"
+      "${INCLUDE_FOLDER_CONAN}"
+      "test/*" # should we exclude the tests from the coverage ?
     NO_DEMANGLE
-    DEPENDENCIES unit_tests constexpr_unit_tests relaxed_constexpr_unit_tests
-  )
+    DEPENDENCIES
+      unit_tests
+      constexpr_unit_tests
+      relaxed_constexpr_unit_tests)
+  # cmake-format: on
 endif()
