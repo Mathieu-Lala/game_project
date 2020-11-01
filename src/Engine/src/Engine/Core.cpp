@@ -81,7 +81,7 @@ engine::Core::~Core()
 
 auto engine::Core::setPendingEvents(std::vector<Event> &&events) -> void
 {
-    m_eventMode = PLAYBACK;
+    m_eventMode = EventMode::PLAYBACK;
     m_eventsPlayback = std::move(events);
 }
 
@@ -105,7 +105,7 @@ auto engine::Core::getNextEvent() -> Event
     ::glfwPollEvents();
 
     switch (m_eventMode) {
-    case RECORD: {
+    case EventMode::RECORD: {
         m_joystickManager->poll();
 
         // 1. poll the window event
@@ -114,10 +114,10 @@ auto engine::Core::getNextEvent() -> Event
         return m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
 
     } break;
-    case PLAYBACK: {
+    case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
             spdlog::warn("Engine::Window switching to record mode");
-            m_eventMode = RECORD;
+            m_eventMode = EventMode::RECORD;
             return TimeElapsed{getElapsedTime()};
         }
         auto event = m_eventsPlayback.front();

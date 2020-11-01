@@ -10,6 +10,9 @@
 
 #include "Engine/resources/LoaderColor.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
+#include "Engine/Event/Event.hpp"
+#include "Engine/Settings.hpp"
+#include "Engine/audio/AudioManager.hpp"
 
 namespace engine {
 
@@ -76,7 +79,7 @@ public:
     }
 
 
-    enum EventMode {
+    enum class EventMode {
         RECORD,
         PLAYBACK,
     };
@@ -134,7 +137,7 @@ private:
     // Event Handling
     //
 
-    EventMode m_eventMode{RECORD};
+    EventMode m_eventMode{EventMode::RECORD};
 
     std::vector<Event> m_eventsPlayback;
 
