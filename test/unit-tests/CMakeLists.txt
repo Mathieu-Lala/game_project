@@ -36,8 +36,6 @@ if(ENABLE_COVERAGE)
     list(APPEND INCLUDE_FOLDER_CONAN ${path}/*)
   endforeach()
 
-  message("${INCLUDE_FOLDER_CONAN}")
-
   # cmake-format: off
   setup_target_for_coverage_lcov(
     NAME coverage

@@ -244,11 +244,24 @@ auto engine::Core::main(int argc, char **argv) -> int
                 []([[maybe_unused]] const auto &) {}},
             event);
 
+        static constexpr auto time_to_string = [](std::time_t now) -> std::string {
+            const auto tp = std::localtime(&now);
+            char buffer[32];
+            return std::strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", tp) ? buffer : "1970-01-01_00:00:00";
+        };
+
         if (keyPressed) {
             // todo : abstract glfw keyboard
             const auto keyEvent = std::get<Pressed<Key>>(event);
             if (keyEvent.source.key == GLFW_KEY_ESCAPE) this->close();
             if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
+            if (keyEvent.source.key == GLFW_KEY_F12) {
+                std::filesystem::create_directories("screenshot/");
+                const auto file = fmt::format("screenshot/{}.png", time_to_string(std::time(nullptr)));
+                if (!m_window->screenshot(file)) {
+                    spdlog::warn("failed to take a screenshot: {}", file);
+                }
+            }
         }
 
         // note : should note draw at every frame = heavy
@@ -318,7 +331,7 @@ auto engine::Core::main(int argc, char **argv) -> int
             //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
             //                });
 
-            m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel){
+            m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel) {
                 pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
                 pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
             });
@@ -501,10 +514,7 @@ auto engine::Core::getElapsedTime() noexcept -> std::chrono::nanoseconds
     return timeElapsed;
 }
 
-auto engine::Core::getJoystick(int id) -> std::optional<Joystick *const>
-{
-    return m_joystickManager->get(id);
-}
+auto engine::Core::getJoystick(int id) -> std::optional<Joystick *const> { return m_joystickManager->get(id); }
 
 #ifndef NDEBUG
 

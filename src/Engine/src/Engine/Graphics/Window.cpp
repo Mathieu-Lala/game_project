@@ -1,4 +1,5 @@
 #include <spdlog/spdlog.h>
+#include <stb_image_write.h>
 
 #include "Engine/Graphics/third_party.hpp"
 
@@ -109,6 +110,35 @@ auto engine::Window::setFullscreen(bool fullscreen) -> void
     }
 }
 
+bool engine::Window::screenshot(const std::string_view filename)
+{
+    GLint viewport[4];
+
+    ::glGetIntegerv(GL_VIEWPORT, viewport);
+    const auto &x = viewport[0];
+    const auto &y = viewport[1];
+    const auto &width = viewport[2];
+    const auto &height = viewport[3];
+
+    constexpr auto CHANNEL = 4ul;
+    std::vector<char> pixels(static_cast<std::size_t>(width * height) * CHANNEL);
+
+    ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    ::glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+    std::array<char, CHANNEL> pixel;
+    for (auto j = 0; j < height / 2; ++j)
+        for (auto i = 0; i < width; ++i) {
+            const auto top = static_cast<std::size_t>(i + j * width) * pixel.size();
+            const auto bottom = static_cast<std::size_t>(i + (height - j - 1) * width) * pixel.size();
+
+            std::memcpy(pixel.data(),           pixels.data() + top,    pixel.size());
+            std::memcpy(pixels.data() + top,    pixels.data() + bottom, pixel.size());
+            std::memcpy(pixels.data() + bottom, pixel.data(),           pixel.size());
+        }
+
+    return !!::stbi_write_png(filename.data(), width, height, 4, pixels.data(), 0);
+}
 
 auto engine::Window::isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
 
