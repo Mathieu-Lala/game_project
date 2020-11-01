@@ -12,16 +12,17 @@ This repository contains the source code of the game and his engine.
 ## Usage
 
 ```sh
-$> ./build/${build_type}/${arch}/out/app --help
-ThePURGE 0.2.10
-Usage: ./build/${build_type}/${arch}/out/app [OPTIONS]
+$> ./tools/launch.sh -- --help
+ThePURGE 0.2.22
+Usage: ./app [OPTIONS]
 
 Options:
   -h,--help                   Print this help message and exit
   --version                   Print the version number and exit.
   --config=app.ini            Read an ini file
   --fullscreen BOOLEAN=1      Launch the window in fullscreen mode.
-  --replay_path TEXT          Path of the events to replay.
+  --replay-path TEXT          Path of the events to replay.
+  --data TEXT                 Path of the data folder
 ```
 
 ## Screenshots

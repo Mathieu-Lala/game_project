@@ -8,7 +8,8 @@
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
-#include "EntityDepth.hpp"
+#include "factory/EntityFactory.hpp"
+#include "factory/SpellFactory.hpp"
 
 using namespace std::chrono_literals;
 
@@ -82,13 +83,19 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
 
 auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
-    world.view<game::AttackCooldown>().each([&](auto &attack_cooldown) {
-        if (!attack_cooldown.is_in_cooldown) return;
-        if (dt.elapsed < attack_cooldown.remaining_cooldown) {
-            attack_cooldown.remaining_cooldown -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-        } else {
-            attack_cooldown.is_in_cooldown = false;
-            spdlog::warn("attack is up !");
+    world.view<game::SpellSlots>().each([&](SpellSlots &slots) {
+        for (auto &spell : slots.spells) {
+            if (!spell.has_value()) continue;
+
+            if (spell->current_cooldown > 0ms) {
+                spell->current_cooldown -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
+
+                // it's <= to still print the message even if the cooldown arrive directly at 0
+                if (spell->current_cooldown <= 0ms) {
+                    spell->current_cooldown = 0ms;
+                    spdlog::warn("attack is up !");
+                }
+            }
         }
     });
 }
@@ -114,19 +121,22 @@ auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &d
 
 auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    for (auto enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange, AttackCooldown, AttackDamage>()) {
-        auto &attack_cooldown = world.get<AttackCooldown>(enemy);
-        if (attack_cooldown.is_in_cooldown) continue;
+    for (auto enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange>()) {
+        // TODO: Add brain to AI. current strategy : spam every spell towards the player
 
-        auto &pos = world.get<engine::d3::Position>(enemy);
-        const auto player_pos = world.get<engine::d3::Position>(m_game.player);
-        const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
+        for (auto &spell : world.get<SpellSlots>(enemy).spells) {
+            if (!spell.has_value()) continue;
 
-        auto &attack_range = world.get<AttackRange>(enemy);
+            const auto &selfPosition = world.get<engine::d3::Position>(enemy);
+            const auto &targetPosition = world.get<engine::d3::Position>(m_game.player);
 
-        // if the enemy is close enough
-        if (glm::length(diff) <= attack_range.range) {
-            castSpell.publish(world, enemy, {diff.x, diff.y}, Spell::STICK_ATTACK);
+            const glm::vec2 diff = {targetPosition.x - selfPosition.x, targetPosition.y - selfPosition.y};
+
+            auto &attack_range = world.get<AttackRange>(enemy);
+
+            if (glm::length(diff) <= attack_range.range) {
+                castSpell.publish(world, enemy, {diff.x, diff.y}, spell.value());
+            }
         }
     }
 }
@@ -150,6 +160,8 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             // todo : publish player_took_damage instead
             entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
+
+            holder.instance->setScreenshake(true, 300ms);
 
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
@@ -238,7 +250,7 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
             .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
             ->play();
 
-        m_game.setState(ThePurge::GAME_OVER);
+        m_game.setState(ThePurge::State::GAME_OVER);
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         spdlog::warn("!! entity killed : dropping xp !!");
 
@@ -261,15 +273,7 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);
-            auto key = world.create();
-            world.emplace<entt::tag<"key"_hs>>(key);
-            world.emplace<engine::d2::HitboxFloat>(key);
-            world.emplace<engine::d2::Scale>(key, 1.0, 1.0);
-            world.emplace<engine::d3::Position>(key, pos.x, pos.y, Z_COMPONENT_OF(EntityDepth::UTILITIES));
-            world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
-            engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
-            engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "textures/key.png");
-
+            EntityFactory::create<EntityFactory::KEY>(world, {pos.x, pos.y}, {1.0, 1.0});
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
                 ->play();
@@ -278,65 +282,14 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
     }
 }
 
-using spell_factory = std::function<void(entt::registry &, entt::entity, const glm::dvec2 &)>;
-
-static const auto spells = std::to_array<std::pair<game::Spell::ID, spell_factory>>(
-    {{game::Spell::STICK_ATTACK,
-      [](entt::registry &world, entt::entity caster, const glm::dvec2 &dir) {
-          static engine::Core::Holder holder{};
-
-          spdlog::info("casting a stick attack");
-          auto &caster_pos = world.get<engine::d3::Position>(caster);
-          auto &attack_damage = world.get<game::AttackDamage>(caster);
-
-          auto color = world.has<entt::tag<"enemy"_hs>>(caster) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 0};
-
-          holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_cast.wav")->play();
-          const auto spell = world.create();
-          world.emplace<entt::tag<"spell"_hs>>(spell);
-          world.emplace<game::Lifetime>(spell, 600ms);
-          world.emplace<game::AttackDamage>(spell, attack_damage.damage);
-          world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-          engine::DrawableFactory::fix_color(world, spell, std::move(color));
-          world.emplace<engine::d3::Position>(spell, caster_pos.x + dir.x / 2.0, caster_pos.y + dir.y / 2.0, -1.0);
-          world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
-          world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
-          world.emplace<engine::Source>(spell, caster);
-      }},
-     {game::Spell::SWORD_ATTACK,
-      [](entt::registry &, entt::entity, const glm::dvec2 &) { spdlog::info("casting a sword attack"); }},
-     {game::Spell::FIREBALL, [](entt::registry &world, entt::entity caster, const glm::dvec2 &dir) {
-          spdlog::info("casting fireball");
-
-          auto &caster_pos = world.get<engine::d3::Position>(caster);
-
-          const auto spell = world.create();
-          world.emplace<entt::tag<"spell"_hs>>(spell);
-          world.emplace<game::Lifetime>(spell, 2000ms);
-          world.emplace<game::AttackDamage>(spell, 15.0f);
-          world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-          engine::DrawableFactory::fix_color(world, spell, {0.6, 0.6, 1});
-          world.emplace<engine::d3::Position>(spell, caster_pos.x + dir.x / 2.0, caster_pos.y + dir.y / 2.0, -1.0);
-          world.emplace<engine::d2::Velocity>(spell, dir.x * 2.0, dir.y * 2.0);
-          world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
-          world.emplace<engine::d2::HitboxSolid>(spell, 0.7, 0.7);
-          world.emplace<engine::Source>(spell, caster);
-          spdlog::info("done");
-      }}});
-
 // todo : normalize direction
-auto game::GameLogic::cast_attack(entt::registry &world, entt::entity entity, const glm::dvec2 &direction, Spell::ID spell_id)
+auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)
     -> void
 {
-    auto &attack_cooldown = world.get<AttackCooldown>(entity);
-
-    if (attack_cooldown.is_in_cooldown) return;
-
-    attack_cooldown.is_in_cooldown = true;
-    attack_cooldown.remaining_cooldown = attack_cooldown.cooldown;
-
-    const auto it = std::find_if(spells.begin(), spells.end(), [&spell_id](auto &i) { return i.first == spell_id; });
-    it->second(world, entity, direction);
+    if (spell.current_cooldown == 0ms) {
+        SpellFactory::create(spell.id, world, caster, direction);
+        spell.current_cooldown = spell.cooldown_duration;
+    }
 }
 
 auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void

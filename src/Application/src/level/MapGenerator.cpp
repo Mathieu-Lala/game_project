@@ -4,7 +4,7 @@
 #include <random>
 #include <cassert>
 #include "level/LevelTilemapBuilder.hpp"
-#include "entity/EnemyFactory.hpp"
+#include "factory/EntityFactory.hpp"
 #include "level/MapData.hpp"
 
 // todo : move this in Core ?
@@ -260,10 +260,13 @@ static void spawnMobsIn(entt::registry &world, game::FloorGenParam params, const
 {
     if (params.mobDensity == 0) return;
 
-    for (auto x = r.x + 1; x < r.x + r.w - 1; ++x)
-        for (auto y = r.y + 1; y < r.y + r.h - 1; ++y)
-            if (randRange(0, static_cast<int>(1.0f / params.mobDensity)) == 0)
-                game::EnemyFactory::FirstEnemy(world, glm::vec2{x + 0.5, y + 0.5});
+    for (auto x = r.x + 1; x < r.x + r.w - 1; ++x) {
+        for (auto y = r.y + 1; y < r.y + r.h - 1; ++y) {
+            if (randRange(0, static_cast<int>(1.0f / params.mobDensity)) == 0) {
+                game::EntityFactory::create<game::EntityFactory::ENEMY>(world, glm::vec2{x + 0.5, y + 0.5}, {1.0, 1.0});
+            }
+        }
+    }
 }
 
 auto game::generateFloor(entt::registry &world, const game::FloorGenParam &params, std::optional<std::uint32_t> seed) -> MapData
@@ -273,7 +276,8 @@ auto game::generateFloor(entt::registry &world, const game::FloorGenParam &param
     auto data = generateLevel(world, params);
 
     for (auto &r : data.regularRooms) spawnMobsIn(world, params, r);
-    game::EnemyFactory::Boss(world, glm::vec2{data.boss.x + data.boss.w * 0.5, data.boss.y + data.boss.h * 0.5});
+    game::EntityFactory::create<game::EntityFactory::BOSS>(
+        world, glm::vec2{data.boss.x + data.boss.w * 0.5, data.boss.y + data.boss.h * 0.5}, {3.0, 3.0});
 
     data.nextFloorSeed = static_cast<std::uint32_t>(random_engine());
 

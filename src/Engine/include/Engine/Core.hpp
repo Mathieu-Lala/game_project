@@ -10,6 +10,9 @@
 
 #include "Engine/resources/LoaderColor.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
+#include "Engine/Event/Event.hpp"
+#include "Engine/Settings.hpp"
+#include "Engine/audio/AudioManager.hpp"
 
 namespace engine {
 
@@ -76,15 +79,19 @@ public:
     }
 
 
-    enum EventMode {
+    enum class EventMode {
         RECORD,
         PLAYBACK,
     };
 
     auto close() noexcept -> void { m_is_running = false; }
 
+
     // note : not the best way ..
     auto updateView(const glm::mat4 &view) -> void;
+
+    // todo : add strength
+    auto setScreenshake(bool, std::chrono::milliseconds = {}) -> void;
 
 
     // note : getter
@@ -100,8 +107,9 @@ public:
 
     auto getAudioManager() noexcept -> AudioManager & { return m_audioManager; }
 
-    auto settings() const noexcept -> Settings { return m_settings; }
+    auto getJoystick(int id) -> std::optional<Joystick *const>; 
 
+    auto settings() const noexcept -> Settings { return m_settings; }
 
 private:
     static auto get() noexcept -> std::unique_ptr<Core> &;
@@ -129,7 +137,7 @@ private:
     // Event Handling
     //
 
-    EventMode m_eventMode{RECORD};
+    EventMode m_eventMode{EventMode::RECORD};
 
     std::vector<Event> m_eventsPlayback;
 
