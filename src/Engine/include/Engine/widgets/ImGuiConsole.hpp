@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include <functional>
+#include <optional>
 
 #include <imgui.h>
 #include <fmt/format.h>
