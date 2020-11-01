@@ -1,11 +1,11 @@
 #pragma once
 
+#include <functional>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <functional>
 
 #include <entt/entt.hpp>
-
 
 namespace game {
 
@@ -22,16 +22,14 @@ public:
     std::vector<std::string> getCommands() const;
 
 private:
-    static void cmd_kill(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
-    static void cmd_setSpell(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
-    static void cmd_addXp(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
-    static void cmd_addLevel(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
-    static void cmd_setMusicVolume(entt::registry &world, ThePurge &game, std::vector<std::string> &&args);
-
+    static handler_t cmd_kill;
+    static handler_t cmd_setSpell;
+    static handler_t cmd_addXp;
+    static handler_t cmd_addLevel;
+    static handler_t cmd_setMusicVolume;
 
 private:
-    std::unordered_map<std::string, handler_t> m_commands;
+    const std::unordered_map<std::string, handler_t> m_commands;
 };
-
 
 } // namespace game

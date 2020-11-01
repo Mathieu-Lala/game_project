@@ -21,7 +21,11 @@ class ThePurge : public engine::Game {
 public:
     ThePurge();
 
-    enum State { LOADING, IN_GAME, GAME_OVER };
+    enum class State {
+        LOADING,
+        IN_GAME,
+        GAME_OVER
+    };
 
     auto onCreate(entt::registry &world) -> void final;
 
@@ -38,7 +42,7 @@ public:
     // constexpr // note : C++20 but not supported by MSVC yet
     auto getBackgroundColor() const noexcept -> glm::vec3 final
     {
-        return m_state == GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};
+        return m_state == State::GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};
     }
 
     auto getLogics() -> GameLogic & { return m_logics; }
@@ -50,7 +54,7 @@ private:
     auto mapGenerationOverlayTick(entt::registry &world) -> void;
     auto displaySoundDebugGui() -> void;
 
-    State m_state{LOADING};
+    State m_state{State::LOADING};
 
     FloorGenParam m_map_generation_params;
     std::uint32_t m_nextFloorSeed;
@@ -61,7 +65,6 @@ private:
 
     std::shared_ptr<engine::Sound> m_dungeonMusic;
 
-    bool m_consoleEnabled = true;
     DebugConsole m_debugConsole;
 };
 

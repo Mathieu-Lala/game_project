@@ -10,11 +10,12 @@
 
 namespace game {
 
+// note : avoid macro
 #define IS_FLOOR(tile)                                                              \
     ((tile == game::TileEnum::FLOOR_SPAWN || tile == game::TileEnum::FLOOR_CORRIDOR \
       || tile == game::TileEnum::FLOOR_BOSS_ROOM || tile == game::TileEnum::FLOOR_NORMAL_ROOM))
 
-enum class TileEnum : std::uint8_t {
+enum class TileEnum : std::uint8_t { // note : should be merged with EntityFactory::ID
     NONE = 0,
     RESERVED,   // not a real tile, for internal use of the generation algorithm
     DEBUG_TILE, // visual to ease debug

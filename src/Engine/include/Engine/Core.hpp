@@ -79,7 +79,7 @@ public:
     }
 
 
-    enum EventMode {
+    enum class EventMode {
         RECORD,
         PLAYBACK,
     };
@@ -109,7 +109,11 @@ public:
 
     auto getWorld() noexcept -> entt::registry & { return m_world; }
 
-    auto settings() const noexcept -> Settings { return m_settings; }
+    auto settings() const noexcept -> const Settings & { return m_settings; }
+
+#ifndef NDEBUG
+    [[nodiscard]] constexpr auto isShowingDebugInfo() noexcept -> bool { return m_show_debug_info; }
+#endif
 
 
 private:
@@ -138,7 +142,7 @@ private:
     // Event Handling
     //
 
-    EventMode m_eventMode{RECORD};
+    EventMode m_eventMode{EventMode::RECORD};
 
     std::vector<Event> m_eventsPlayback;
 
@@ -163,6 +167,8 @@ private:
     AudioManager m_audioManager;
 
 #ifndef NDEBUG
+    bool m_show_debug_info = false;
+
     auto debugDrawJoystick() -> void;
     auto debugDrawDisplayOptions() -> void;
 #endif

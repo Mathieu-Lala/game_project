@@ -1,10 +1,12 @@
 #pragma once
 
+#include <string_view>
+
 #include <entt/entt.hpp>
 
-#include "ImGuiConsole.hpp"
-#include "ConsoleCommands.hpp"
+#include <Engine/widgets/ImGuiConsole.hpp>
 
+#include "ConsoleCommands.hpp"
 
 namespace game {
 
@@ -14,17 +16,18 @@ class DebugConsole {
 public:
     explicit DebugConsole(ThePurge &game);
 
-    void draw() { m_console.Draw(); }
+    auto draw() -> void { m_console.draw(); }
 
-    void clear() { m_console.ClearLog(); }
+    auto clear() -> void { m_console.logClear(); }
 
-    void info(const std::string &str);
-    void warn(const std::string &str);
-    void error(const std::string &str);
+    auto info(const std::string_view str) -> void;
+    auto warn(const std::string_view str) -> void;
+    auto error(const std::string_view str) -> void;
 
-    void handleCmd(const std::string &cmd);
+    auto handleCmd(const std::string_view cmd) -> void;
+
 private:
-    ImGuiConsole m_console;
+    engine::widget::ImGuiConsole m_console;
     CommandHandler m_commands;
 
     ThePurge &m_game;

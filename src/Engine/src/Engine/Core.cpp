@@ -81,7 +81,7 @@ engine::Core::~Core()
 
 auto engine::Core::setPendingEvents(std::vector<Event> &&events) -> void
 {
-    m_eventMode = PLAYBACK;
+    m_eventMode = EventMode::PLAYBACK;
     m_eventsPlayback = std::move(events);
 }
 
@@ -105,7 +105,7 @@ auto engine::Core::getNextEvent() -> Event
     ::glfwPollEvents();
 
     switch (m_eventMode) {
-    case RECORD: {
+    case EventMode::RECORD: {
         m_joystickManager->poll();
 
         // 1. poll the window event
@@ -122,10 +122,10 @@ auto engine::Core::getNextEvent() -> Event
         // ----
         return event;
     } break;
-    case PLAYBACK: {
+    case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
             spdlog::warn("Engine::Window switching to record mode");
-            m_eventMode = RECORD;
+            m_eventMode = EventMode::RECORD;
             return TimeElapsed{getElapsedTime()};
         }
         auto event = m_eventsPlayback.front();
@@ -256,6 +256,9 @@ auto engine::Core::main(int argc, char **argv) -> int
             // todo : abstract glfw keyboard
             const auto keyEvent = std::get<Pressed<Key>>(event);
             if (keyEvent.source.key == GLFW_KEY_ESCAPE) this->close();
+#ifndef NDEBUG
+            if (keyEvent.source.key == GLFW_KEY_F1) m_show_debug_info = !m_show_debug_info;
+#endif
             if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
         }
 
@@ -389,8 +392,10 @@ auto engine::Core::main(int argc, char **argv) -> int
                 m_game->drawUserInterface(m_world);
 
 #ifndef NDEBUG
-                debugDrawJoystick();
-                debugDrawDisplayOptions();
+                if (isShowingDebugInfo()) {
+                    debugDrawJoystick();
+                    debugDrawDisplayOptions();
+                }
 #endif
 
                 ImGui::Render();

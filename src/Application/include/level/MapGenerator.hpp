@@ -24,6 +24,7 @@ struct FloorGenParam {
     float mobDensity = 0.05f; // Average mob per tile
 };
 
+// note : avoid free function
 auto generateFloor(entt::registry &, const FloorGenParam & = {}, std::optional<std::uint32_t> seed = {})
     -> MapData;
 

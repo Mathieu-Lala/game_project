@@ -6,22 +6,22 @@
 
 game::DebugConsole::DebugConsole(ThePurge &game) : m_game(game)
 {
-    m_console.SetCommandHandler([this](auto &cmd) { handleCmd(cmd); });
-    m_console.SetCommandAutoCompletion(m_commands.getCommands());
+    m_console.setCommandHandler([this](const std::string_view cmd) { handleCmd(cmd); });
+    m_console.setCommandAutoCompletion(m_commands.getCommands());
 }
 
-void game::DebugConsole::info(const std::string &str) { m_console.AddLog(str.c_str()); }
-void game::DebugConsole::warn(const std::string &str) { m_console.AddLog("[warn] %s", str.c_str()); }
-void game::DebugConsole::error(const std::string &str) { m_console.AddLog("[error] %s", str.c_str()); }
+void game::DebugConsole::info(const std::string_view str) { m_console.logAdd(str); }
+void game::DebugConsole::warn(const std::string_view str) { m_console.logAdd("[warn] {}", str); }
+void game::DebugConsole::error(const std::string_view str) { m_console.logAdd("[error] {}", str); }
 
-void game::DebugConsole::handleCmd(const std::string &line)
+void game::DebugConsole::handleCmd(const std::string_view line)
 {
     static engine::Core::Holder holder{};
 
     std::string cmd;
     std::vector<std::string> args;
 
-    std::stringstream ss(line);
+    std::stringstream ss(line.data());
 
     ss >> cmd;
 
