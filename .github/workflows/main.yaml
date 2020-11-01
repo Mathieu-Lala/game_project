@@ -75,7 +75,7 @@ jobs:
 
       - name: launch
         shell: bash
-        run: ./tools/build.sh --build_type ${{ matrix.build_type }} --arch ${{ matrix.arch }} -- --version
+        run: ./tools/launch.sh --build_type ${{ matrix.build_type }} --arch ${{ matrix.arch }} -- --version
 
 ## FIXME : Not launching on ubuntu because it cause this error : https://github.com/Mathieu-Lala/game_project/runs/1318788094?check_suite_focus=true
 ## ALSA lib confmisc.c:767:(parse_card) cannot find card '0'

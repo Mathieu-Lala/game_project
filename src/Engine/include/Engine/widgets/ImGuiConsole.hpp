@@ -7,8 +7,10 @@
 #include <cstdlib>
 #include <cstdint>
 
+#include <array>
 #include <functional>
 #include <optional>
+#include <vector>
 
 #include <imgui.h>
 #include <fmt/format.h>
