@@ -107,8 +107,9 @@ public:
 
     auto getAudioManager() noexcept -> AudioManager & { return m_audioManager; }
 
-    auto settings() const noexcept -> Settings { return m_settings; }
+    auto getJoystick(int id) -> std::optional<Joystick *const>; 
 
+    auto settings() const noexcept -> Settings { return m_settings; }
 
 private:
     static auto get() noexcept -> std::unique_ptr<Core> &;
