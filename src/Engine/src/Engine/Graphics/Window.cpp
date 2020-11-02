@@ -47,6 +47,7 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
     ::glfwSetKeyCallback(m_handle, callback_eventKeyBoard);
     ::glfwSetMouseButtonCallback(m_handle, callback_eventMousePressed);
     ::glfwSetCursorPosCallback(m_handle, callback_eventMouseMoved);
+    ::glfwSetCharCallback(m_handle, ImGui_ImplGlfw_CharCallback);
 
     // todo : mouse wheel / request_focus ...
 

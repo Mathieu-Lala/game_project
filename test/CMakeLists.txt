@@ -9,3 +9,8 @@ cmake_dependent_option(ENABLE_BENCHMARK "Enable benchmark testings" OFF "ENABLE_
 if (ENABLE_BENCHMARK)
   add_subdirectory(benchmark)
 endif()
+
+cmake_dependent_option(ENABLE_GOLDEN_TESTS "Enable golden testings" OFF "ENABLE_TESTING" OFF)
+if (ENABLE_GOLDEN_TESTS)
+  add_subdirectory(golden-tests)
+endif()

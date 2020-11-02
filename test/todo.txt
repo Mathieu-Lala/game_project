@@ -1,5 +1,3 @@
 fuzz test
 
-golden test (auto screenshot)
-
 setup codecov

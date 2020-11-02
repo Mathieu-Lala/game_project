@@ -14,6 +14,8 @@
 
 namespace engine {
 
+// note : the name of the game should not be here
+
 static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
 static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION " - "
@@ -25,10 +27,24 @@ static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION " 
     ;
 
 struct Options {
-    static constexpr auto DEFAULT_DATA_FOLDER = "data";
+    // note : should note have the '/' at the end of the path
+    static constexpr auto DEFAULT_DATA_FOLDER = "data/";
+    static constexpr auto DEFAULT_OUTPUT_FOLDER = "../generated/";
     static constexpr auto DEFAULT_CONFIG = "data/config/app.ini";
 
-    enum Value { CONFIG_PATH, FULLSCREEN, REPLAY_PATH, DATA_FOLDER, OPTION_MAX };
+    enum Value {
+        CONFIG_PATH,
+        REPLAY_PATH,
+        REPLAY_DATA,
+        DATA_FOLDER,
+        OUTPUT_FOLDER,
+
+        FULLSCREEN,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+
+        OPTION_MAX
+    };
 
     std::array<CLI::Option *, OPTION_MAX> options;
 
@@ -47,17 +63,23 @@ struct Options {
         options[CONFIG_PATH] = app.set_config("--config", DEFAULT_CONFIG);
         options[FULLSCREEN] =
             app.add_option("--fullscreen", settings.fullscreen, "Launch the window in fullscreen mode.", true);
+
+        options[WINDOW_WIDTH] = app.add_option("--window-width", settings.window_width, "Width of the window.", true);
+        options[WINDOW_HEIGHT] = app.add_option("--window-height", settings.window_height, "Height of the window.", true);
+
         options[REPLAY_PATH] = app.add_option("--replay-path", settings.replay_path, "Path of the events to replay.");
-        options[DATA_FOLDER] = app.add_option("--data", settings.data_folder, "Path of the data folder");
+        options[REPLAY_DATA] = app.add_option("--replay-data", settings.replay_data, "Json events to replay.");
+        options[DATA_FOLDER] = app.add_option("--data", settings.data_folder, "Path of the data folder.", true);
+        options[OUTPUT_FOLDER] = app.add_option("--output-folder", settings.data_folder, "Path of the generated output.", true);
 
         if (const auto res = [&]() -> std::optional<int> {
                 CLI11_PARSE(app, argc, argv);
                 return {};
             }();
             res.has_value()) {
-            this->setDefaultValue();
             throw res.value_or(0);
         }
+        this->setDefaultValue();
     }
 
     auto setDefaultValue() -> void
@@ -66,6 +88,8 @@ struct Options {
             settings.config_path = options[Options::CONFIG_PATH]->as<std::string>();
         if (!options[Options::DATA_FOLDER]->empty())
             settings.data_folder = options[Options::DATA_FOLDER]->as<std::string>();
+        if (!options[Options::OUTPUT_FOLDER]->empty())
+            settings.output_folder = options[Options::OUTPUT_FOLDER]->as<std::string>();
     }
 
     auto dump() const -> void
@@ -86,7 +110,15 @@ struct Options {
     CLI::App app;
 
     Settings settings{
-        .fullscreen = true, .replay_path = "", .data_folder = DEFAULT_DATA_FOLDER, .config_path = DEFAULT_CONFIG};
+        .config_path = DEFAULT_CONFIG,
+        .replay_path = "",
+        .replay_data = "",
+        .data_folder = DEFAULT_DATA_FOLDER,
+        .output_folder = DEFAULT_OUTPUT_FOLDER,
+        .fullscreen = true,
+        .window_width = 1024,
+        .window_height = 768
+    };
 };
 
 } // namespace engine

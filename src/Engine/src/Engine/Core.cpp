@@ -111,8 +111,17 @@ auto engine::Core::getNextEvent() -> Event
         // 1. poll the window event
         // 2. poll the joysticks event
         // 3. send elapsed time
-        return m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
+        auto event =
+            m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
 
+        // TEMPORARY, BY YANIS. Allows for keyboard input to work. waiting for Mathieu to help do it a clean way
+        std::visit(
+            overloaded{
+                [&](const auto &e) { m_window->applyEvent(e); },
+            },
+            event);
+        // ----
+        return event;
     } break;
     case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
@@ -164,21 +173,21 @@ auto engine::Core::main(int argc, char **argv) -> int
         opt.dump();
 #endif
 
-        std::filesystem::rename(
-            std::filesystem::path(opt.settings.config_path), std::filesystem::path(opt.settings.config_path + ".old"));
-        opt.write_to_file(opt.settings.config_path);
-
-        spdlog::info("{}", std::filesystem::absolute(std::filesystem::path(opt.settings.data_folder)).string());
+        opt.write_to_file(opt.settings.config_path + ".last");
 
         // 2. Initialize the Engine / Window / Game
 
         std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
         if (opt.settings.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
 
-        this->window(glm::ivec2{400, 400}, VERSION, windowProperty);
+        this->window(glm::ivec2{opt.settings.window_width, opt.settings.window_height}, VERSION, windowProperty);
 
 #ifndef NDEBUG
-        if (!opt.options[Options::REPLAY_PATH]->empty()) setPendingEventsFromFile(opt.settings.replay_path);
+        if (!opt.options[Options::REPLAY_PATH]->empty()) {
+            setPendingEventsFromFile(opt.settings.replay_path);
+        } else if (!opt.options[Options::REPLAY_DATA]->empty()) {
+            setPendingEvents(nlohmann::json::parse(opt.settings.replay_data));
+        }
 #endif
 
         m_settings = std::move(opt.settings);
@@ -254,13 +263,14 @@ auto engine::Core::main(int argc, char **argv) -> int
             // todo : abstract glfw keyboard
             const auto keyEvent = std::get<Pressed<Key>>(event);
             if (keyEvent.source.key == GLFW_KEY_ESCAPE) this->close();
+#ifndef NDEBUG
+            if (keyEvent.source.key == GLFW_KEY_F1) m_show_debug_info = !m_show_debug_info;
+#endif
             if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
             if (keyEvent.source.key == GLFW_KEY_F12) {
-                std::filesystem::create_directories("screenshot/");
-                const auto file = fmt::format("screenshot/{}.png", time_to_string(std::time(nullptr)));
-                if (!m_window->screenshot(file)) {
-                    spdlog::warn("failed to take a screenshot: {}", file);
-                }
+                std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
+                const auto file = fmt::format(m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
+                if (!m_window->screenshot(file)) { spdlog::warn("failed to take a screenshot: {}", file); }
             }
         }
 
@@ -394,8 +404,10 @@ auto engine::Core::main(int argc, char **argv) -> int
                 m_game->drawUserInterface(m_world);
 
 #ifndef NDEBUG
-                debugDrawJoystick();
-                debugDrawDisplayOptions();
+                if (isShowingDebugInfo()) {
+                    debugDrawJoystick();
+                    debugDrawDisplayOptions();
+                }
 #endif
 
                 ImGui::Render();
@@ -448,7 +460,8 @@ auto engine::Core::main(int argc, char **argv) -> int
 
 #ifndef NDEBUG
     nlohmann::json serialized(eventsProcessed);
-    std::ofstream f{"logs/recorded_events.json"};
+    std::filesystem::create_directories(m_settings.output_folder + "logs/");
+    std::ofstream f{m_settings.output_folder + "logs/recorded_events.json"};
     f << serialized;
 #endif
 
