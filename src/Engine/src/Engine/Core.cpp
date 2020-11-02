@@ -111,8 +111,16 @@ auto engine::Core::getNextEvent() -> Event
         // 1. poll the window event
         // 2. poll the joysticks event
         // 3. send elapsed time
-        return m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
+        auto event = m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
 
+        // TEMPORARY, BY YANIS. Allows for keyboard input to work. waiting for Mathieu to help do it a clean way
+        std::visit(
+            overloaded{
+                [&](const auto &e) { m_window->applyEvent(e); },
+            },
+            event);
+        // ----
+        return event;
     } break;
     case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
@@ -248,6 +256,9 @@ auto engine::Core::main(int argc, char **argv) -> int
             // todo : abstract glfw keyboard
             const auto keyEvent = std::get<Pressed<Key>>(event);
             if (keyEvent.source.key == GLFW_KEY_ESCAPE) this->close();
+#ifndef NDEBUG
+            if (keyEvent.source.key == GLFW_KEY_F1) m_show_debug_info = !m_show_debug_info;
+#endif
             if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
         }
 
@@ -381,8 +392,10 @@ auto engine::Core::main(int argc, char **argv) -> int
                 m_game->drawUserInterface(m_world);
 
 #ifndef NDEBUG
-                debugDrawJoystick();
-                debugDrawDisplayOptions();
+                if (isShowingDebugInfo()) {
+                    debugDrawJoystick();
+                    debugDrawDisplayOptions();
+                }
 #endif
 
                 ImGui::Render();

@@ -22,13 +22,16 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() : m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}
+game::ThePurge::ThePurge() :
+    m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}, m_debugConsole(*this)
 {
     static auto holder = engine::Core::Holder{};
 
     m_dungeonMusic =
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
     m_dungeonMusic->setVolume(0.1f).setLoop(true);
+
+    m_debugConsole.info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 }
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
@@ -200,23 +203,16 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
     ImGui::End();
 }
 
-static bool show_demo_window = true;
-
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
 
-    {
-        ImGui::Begin("Debug cheat");
-        if (ImGui::Button("kill boss")) {
-            for (auto &e : world.view<entt::tag<"boss"_hs>>()) {
-                m_logics.playerKilled.publish(world, e, world.view<entt::tag<"player"_hs>>()[0]);
-            }
-        }
-        ImGui::End();
+#ifndef NDEBUG
+    if (holder.instance->isShowingDebugInfo()) {
+        m_debugConsole.draw();
+        ImGui::ShowDemoWindow();
     }
-
-    if (show_demo_window) { ImGui::ShowDemoWindow(&show_demo_window); }
+#endif
 
     if (m_state == State::LOADING) {
         // todo : style because this is not a debug window
@@ -276,7 +272,8 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
             mapGenerationOverlayTick(world);
         }
-        {
+#ifndef NDEBUG
+        if (holder.instance->isShowingDebugInfo()) {
             ImGui::Begin("Camera");
             if (ImGui::Button("Reset")) m_camera = engine::Camera();
 
@@ -308,6 +305,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
             displaySoundDebugGui();
         }
+#endif
     } else if (m_state == State::GAME_OVER) {
         // todo : style because this is not a debug window
         ImGui::Begin("Menu Game Over", nullptr, ImGuiWindowFlags_NoDecoration);
