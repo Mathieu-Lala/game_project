@@ -80,6 +80,10 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     }
                 },
                 [&](const engine::TimeElapsed &dt) { m_logics.gameUpdated.publish(world, dt); },
+                [&](const engine::Moved<engine::JoystickAxis> &joy) {
+                    auto joystick = holder.instance->getJoystick(joy.source.id);
+                    m_logics.movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                },
                 [&](auto) {},
             },
             e);
