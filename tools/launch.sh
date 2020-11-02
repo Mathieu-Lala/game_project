@@ -50,5 +50,10 @@ case $key in
 esac
 done
 
-# todo : handle msvc build
-cd ./build/$build_type/$arch/out && ./app $extra_arg && cd -
+if [[ $(uname -a) =~ "Linux" ]]; then
+    echo "not working :)"
+    # cd ./build/$build_type/$arch/out && ./app $extra_arg && cd -
+else
+    echo "not working :)"
+    # cd ./build/$build_type/out/$build_type && ./app.exe && cd -
+fi

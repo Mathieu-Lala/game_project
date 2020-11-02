@@ -72,7 +72,7 @@ auto game::DataConfigLoader::loadClassConfigFile(
     world.emplace<ClassFactory>(
         player, cl, classRoot["desc"], classRoot["cooldown"], classRoot["range"], classRoot["damage"], classRoot["isRanged"]);
 
-    for (int i = 0; auto &spellId : classRoot["spellsId"])
+    for (auto i = 0ul; auto &spellId : classRoot["spellsId"])
         world.get<SpellSlots>(player).spells[i++] = Spell::create(static_cast<SpellFactory::ID>(spellId.get<int>()));
 
     spdlog::info("{} class successfully created", classRoot["name"]);

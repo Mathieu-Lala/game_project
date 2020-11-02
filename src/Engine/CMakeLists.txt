@@ -34,7 +34,8 @@ add_library(
   src/Engine/audio/AlErrorHandling.cpp
   src/Engine/audio/Sound.cpp
   src/Engine/audio/WavReader.cpp
-  src/Engine/audio/AudioFileBuffer.cpp)
+  src/Engine/audio/AudioFileBuffer.cpp
+  src/Engine/widgets/ImGuiConsole.cpp)
 
 target_include_directories(engine PUBLIC include ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}
                                          ${CMAKE_CURRENT_BINARY_DIR}/include)

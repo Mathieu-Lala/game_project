@@ -14,6 +14,8 @@
 
 namespace engine {
 
+// note : the name of the game should not be here
+
 static constexpr auto NAME = "ThePURGE " PROJECT_VERSION;
 
 static constexpr auto VERSION = PROJECT_NAME " - ThePURGE - " PROJECT_VERSION " - "

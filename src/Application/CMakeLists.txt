@@ -9,6 +9,8 @@ add_executable(
   src/factory/SpellFactory.cpp
   src/classes/ClassFactory.cpp
   src/DataConfigLoader.cpp
+  src/console/DebugConsole.cpp
+  src/console/ConsoleCommands.cpp
   src/models/SpellDatabase.cpp)
 
 target_link_libraries(app PRIVATE engine)

@@ -107,9 +107,14 @@ public:
 
     auto getAudioManager() noexcept -> AudioManager & { return m_audioManager; }
 
-    auto getJoystick(int id) -> std::optional<Joystick *const>; 
+    auto getWorld() noexcept -> entt::registry & { return m_world; }
 
-    auto settings() const noexcept -> Settings { return m_settings; }
+    auto settings() const noexcept -> const Settings & { return m_settings; }
+
+#ifndef NDEBUG
+    [[nodiscard]] constexpr auto isShowingDebugInfo() noexcept -> bool { return m_show_debug_info; }
+#endif
+    auto getJoystick(int id) -> std::optional<Joystick *const>; 
 
 private:
     static auto get() noexcept -> std::unique_ptr<Core> &;
@@ -162,6 +167,8 @@ private:
     AudioManager m_audioManager;
 
 #ifndef NDEBUG
+    bool m_show_debug_info = false;
+
     auto debugDrawJoystick() -> void;
     auto debugDrawDisplayOptions() -> void;
 #endif

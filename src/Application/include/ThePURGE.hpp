@@ -4,8 +4,14 @@
 #include <Engine/Game.hpp>
 #include <Engine/Graphics/Shader.hpp>
 #include <Engine/Camera.hpp>
+#include <Engine/audio/Sound.hpp>
 
 #include "component/all.hpp"
+
+#include "console/DebugConsole.hpp"
+
+#include "level/MapGenerator.hpp"
+#include "GameLogic.hpp"
 
 namespace game {
 
@@ -39,6 +45,9 @@ public:
         return m_state == State::GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};
     }
 
+    auto getLogics() -> GameLogic & { return m_logics; }
+    auto getMusic() -> std::shared_ptr<engine::Sound> { return m_dungeonMusic; }
+
 private:
     auto goToNextFloor(entt::registry &world) -> void;
 
@@ -55,6 +64,8 @@ private:
     GameLogic m_logics;
 
     std::shared_ptr<engine::Sound> m_dungeonMusic;
+
+    DebugConsole m_debugConsole;
 };
 
 } // namespace game
