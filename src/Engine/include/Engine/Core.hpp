@@ -116,8 +116,6 @@ public:
 #endif
     auto getJoystick(int id) -> std::optional<Joystick *const>; 
 
-    auto settings() const noexcept -> Settings { return m_settings; }
-
 private:
     static auto get() noexcept -> std::unique_ptr<Core> &;
 
