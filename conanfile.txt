@@ -35,6 +35,12 @@ CLI11/1.9.1@cliutils/stable
 # Audio
 openal/1.20.1
 
+# benchmarking
+benchmark/1.5.2@_/_
+
+# units test
+Catch2/2.11.1@catchorg/stable
+
 [options]
 # lib shared required to set the path of the .dll for app.exe
 glew:shared=False

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9[..3.18])
+cmake_minimum_required(VERSION 3.13[..3.18])
 
 # Get version from the file 'VERSION'
 file(STRINGS "VERSION" PROJECT_VERSION LIMIT_COUNT 1)
@@ -46,3 +46,9 @@ run_conan()
 
 # Our targets
 add_subdirectory(src)
+
+option(ENABLE_TESTING "Enable Test Builds" OFF)
+if(ENABLE_TESTING)
+  enable_testing()
+  add_subdirectory(test)
+endif()

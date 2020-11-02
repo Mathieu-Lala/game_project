@@ -42,7 +42,7 @@ Application version 0.1.9
 * Unix systems
 
     * g++>=10
-    * cmake>=3.9.0
+    * cmake>=3.13.0
     * python>=3.8
 
 * Windows

@@ -1,10 +1,14 @@
 function(enable_sanitizers project_name)
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-    # option(ENABLE_COVERAGE "Enable coverage reporting for gcc/clang" OFF)
-    #
-    # if(ENABLE_COVERAGE) target_compile_options(${project_name} INTERFACE --coverage -O0 -g)
-    # target_link_libraries(${project_name} INTERFACE --coverage) endif()
+    option(ENABLE_COVERAGE "Enable coverage reporting for gcc/clang" OFF)
+    if(ENABLE_COVERAGE)
+      if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+        message(AUTHOR_WARNING "Coverage should be computed with a debug mode")
+      endif()
+      target_compile_options(${project_name} INTERFACE --coverage)
+      target_link_options(${project_name} INTERFACE --coverage)
+    endif()
 
     set(SANITIZERS "")
 
@@ -50,7 +54,7 @@ function(enable_sanitizers project_name)
   if(LIST_OF_SANITIZERS)
     if(NOT "${LIST_OF_SANITIZERS}" STREQUAL "")
       target_compile_options(${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS})
-      target_link_libraries(${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS})
+      target_link_options(${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS})
     endif()
   endif()
 
