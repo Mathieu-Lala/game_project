@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <Engine/Event/Event.hpp>
 #include <Engine/Game.hpp>
 #include <Engine/Graphics/Shader.hpp>
@@ -45,7 +47,7 @@ public:
         return m_state == State::GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};
     }
 
-    auto getLogics() -> GameLogic & { return m_logics; }
+    auto getLogics() -> GameLogic & { return *m_logics; }
     auto getMusic() -> std::shared_ptr<engine::Sound> { return m_dungeonMusic; }
 
 private:
@@ -61,11 +63,11 @@ private:
 
     engine::Camera m_camera; // note : should be in engine::Core
 
-    GameLogic m_logics;
+    std::unique_ptr<GameLogic> m_logics;
 
     std::shared_ptr<engine::Sound> m_dungeonMusic;
 
-    DebugConsole m_debugConsole;
+    std::unique_ptr<DebugConsole> m_debugConsole;
 };
 
 } // namespace game

@@ -58,6 +58,8 @@ public:
 
     auto setFullscreen(bool fullscreen) -> void;
 
+    bool screenshot(const std::string_view filename);
+
 private:
     static Window *s_instance;
 

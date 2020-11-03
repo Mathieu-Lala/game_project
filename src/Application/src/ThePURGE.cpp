@@ -22,21 +22,28 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() :
-    m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}, m_debugConsole(*this)
+game::ThePurge::ThePurge()
 {
+}
+
+auto game::ThePurge::onDestroy(entt::registry &) -> void {}
+
+auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void {
+
     static auto holder = engine::Core::Holder{};
+
+    m_nextFloorSeed = static_cast<std::uint32_t>(std::time(nullptr));
+    m_logics = std::make_unique<GameLogic>(*this);
+    m_debugConsole = std::make_unique<DebugConsole>(*this);
 
     m_dungeonMusic =
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
     m_dungeonMusic->setVolume(0.1f).setLoop(true);
 
-    m_debugConsole.info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
+    m_debugConsole->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
+
+    setState(State::LOADING);
 }
-
-auto game::ThePurge::onDestroy(entt::registry &) -> void {}
-
-auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void { setState(State::LOADING); }
 
 auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
@@ -56,16 +63,16 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
                         break;                                                                     // player stop
-                    case GLFW_KEY_I: m_logics.movement.publish(world, player, {0.0, 0.1}); break;  // go top
-                    case GLFW_KEY_K: m_logics.movement.publish(world, player, {0.0, -0.1}); break; // go bottom
-                    case GLFW_KEY_L: m_logics.movement.publish(world, player, {0.1, 0.0}); break;  // go right
-                    case GLFW_KEY_J: m_logics.movement.publish(world, player, {-0.1, 0.0}); break; // go left
+                    case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break;  // go top
+                    case GLFW_KEY_K: m_logics->movement.publish(world, player, {0.0, -0.1}); break; // go bottom
+                    case GLFW_KEY_L: m_logics->movement.publish(world, player, {0.1, 0.0}); break;  // go right
+                    case GLFW_KEY_J: m_logics->movement.publish(world, player, {-0.1, 0.0}); break; // go left
                     case GLFW_KEY_U: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
                     case GLFW_KEY_Y: {
@@ -73,16 +80,16 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
                     default: return;
                     }
                 },
-                [&](const engine::TimeElapsed &dt) { m_logics.gameUpdated.publish(world, dt); },
+                [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics.movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                    m_logics->movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
                 },
                 [&](auto) {},
             },
@@ -168,37 +175,37 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 
     ImGui::Checkbox("Spam next floor", &spamNextFloor);
 
-    if (ImGui::Button("Next floor") || spamNextFloor) m_logics.onFloorChange.publish(world);
+    if (ImGui::Button("Next floor") || spamNextFloor) m_logics->onFloorChange.publish(world);
 
     ImGui::SliderInt(
-        "Min room size", &m_logics.m_map_generation_params.minRoomSize, 0, m_logics.m_map_generation_params.maxRoomSize);
+        "Min room size", &m_logics->m_map_generation_params.minRoomSize, 0, m_logics->m_map_generation_params.maxRoomSize);
     ImGui::SliderInt(
-        "Max room size", &m_logics.m_map_generation_params.maxRoomSize, m_logics.m_map_generation_params.minRoomSize, 50);
+        "Max room size", &m_logics->m_map_generation_params.maxRoomSize, m_logics->m_map_generation_params.minRoomSize, 50);
     ImGui::Separator();
 
     // Assuming std::size_t is uint32_t
-    ImGui::InputScalar("Min room count", ImGuiDataType_U32, &m_logics.m_map_generation_params.minRoomCount);
-    ImGui::InputScalar("Max room count", ImGuiDataType_U32, &m_logics.m_map_generation_params.maxRoomCount);
+    ImGui::InputScalar("Min room count", ImGuiDataType_U32, &m_logics->m_map_generation_params.minRoomCount);
+    ImGui::InputScalar("Max room count", ImGuiDataType_U32, &m_logics->m_map_generation_params.maxRoomCount);
     ImGui::Text("note: actual room count may be smaller if there is not enough space");
     ImGui::Separator();
 
-    ImGui::DragInt("Max dungeon width", &m_logics.m_map_generation_params.maxDungeonWidth, 0, 500);
-    ImGui::DragInt("Max dungeon height", &m_logics.m_map_generation_params.maxDungeonHeight, 0, 500);
+    ImGui::DragInt("Max dungeon width", &m_logics->m_map_generation_params.maxDungeonWidth, 0, 500);
+    ImGui::DragInt("Max dungeon height", &m_logics->m_map_generation_params.maxDungeonHeight, 0, 500);
     ImGui::Separator();
 
     ImGui::SliderInt(
         "Min corridor width",
-        &m_logics.m_map_generation_params.minCorridorWidth,
+        &m_logics->m_map_generation_params.minCorridorWidth,
         0,
-        m_logics.m_map_generation_params.maxCorridorWidth);
+        m_logics->m_map_generation_params.maxCorridorWidth);
     ImGui::SliderInt(
         "Max corridor width",
-        &m_logics.m_map_generation_params.maxCorridorWidth,
-        m_logics.m_map_generation_params.minCorridorWidth,
+        &m_logics->m_map_generation_params.maxCorridorWidth,
+        m_logics->m_map_generation_params.minCorridorWidth,
         50);
     ImGui::Separator();
 
-    ImGui::SliderFloat("Enemy per block", &m_logics.m_map_generation_params.mobDensity, 0, 1);
+    ImGui::SliderFloat("Enemy per block", &m_logics->m_map_generation_params.mobDensity, 0, 1);
 
     ImGui::End();
 }
@@ -209,7 +216,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
 #ifndef NDEBUG
     if (holder.instance->isShowingDebugInfo()) {
-        m_debugConsole.draw();
+        m_debugConsole->draw();
         ImGui::ShowDemoWindow();
     }
 #endif
@@ -232,7 +239,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             m_camera.setCenter(glm::vec2(13, 22));
             m_camera.setViewportSize(glm::vec2(109, 64));
 
-            m_logics.onFloorChange.publish(world);
+            m_logics->onFloorChange.publish(world);
 
             setState(State::IN_GAME);
         }
