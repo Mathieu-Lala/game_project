@@ -80,9 +80,29 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     }
                 },
                 [&](const engine::TimeElapsed &dt) { m_logics.gameUpdated.publish(world, dt); },
+                [&](const engine::Pressed<engine::JoystickButton> &joy) { 
+                    if (joy.source.button == engine::Joystick::Buttons::ACTION_BOTTOM) {
+                        auto &spell = world.get<SpellSlots>(player).spells[0];
+                        if (!spell.has_value()) return;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                    } else if (joy.source.button == engine::Joystick::Buttons::ACTION_RIGHT) {
+                        auto &spell = world.get<SpellSlots>(player).spells[1];
+                        if (!spell.has_value()) return;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                    }
+                },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
-                    auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics.movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                    if (joy.source.axis == engine::Joystick::Axis::LSX || joy.source.axis == engine::Joystick::Axis::LSY) {
+                        auto joystick = holder.instance->getJoystick(joy.source.id);
+                        m_logics.movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                    }
+                    else if (joy.source.axis == engine::Joystick::Axis::RSX || joy.source.axis == engine::Joystick::Axis::RSY) {
+                        std::cout << "Camera joystick" << std::endl;
+                    }
                 },
                 [&](auto) {},
             },
