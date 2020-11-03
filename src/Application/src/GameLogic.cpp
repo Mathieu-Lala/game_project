@@ -42,7 +42,7 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
 {
     for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
         auto &pos = world.get<engine::d3::Position>(i);
-        //auto &vel = world.get<engine::d2::Velocity>(i);
+        // auto &vel = world.get<engine::d2::Velocity>(i);
         auto &view_range = world.get<ViewRange>(i);
 
         const auto player_pos = world.get<engine::d3::Position>(m_game.player);

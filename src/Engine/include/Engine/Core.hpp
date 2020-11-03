@@ -16,8 +16,13 @@
 
 namespace engine {
 
-class Window;
+namespace api {
+
 class Game;
+
+} // namespace api
+
+class Window;
 class JoystickManager;
 class Shader;
 class AudioManager;
@@ -68,8 +73,8 @@ public:
         return m_window;
     }
 
-    template<std::derived_from<Game> UserDefinedGame, typename... Args>
-    auto game(Args &&... args) -> std::unique_ptr<Game> &
+    template<std::derived_from<api::Game> UserDefinedGame, typename... Args>
+    auto game(Args &&... args) -> std::unique_ptr<api::Game> &
     {
         if (m_game != nullptr) { return m_game; }
 
@@ -114,7 +119,7 @@ public:
 #ifndef NDEBUG
     [[nodiscard]] constexpr auto isShowingDebugInfo() noexcept -> bool { return m_show_debug_info; }
 #endif
-    auto getJoystick(int id) -> std::optional<Joystick *const>; 
+    auto getJoystick(int id) -> std::optional<Joystick *const>;
 
 private:
     static auto get() noexcept -> std::unique_ptr<Core> &;
@@ -134,7 +139,7 @@ private:
     // World
     //
 
-    std::unique_ptr<Game> m_game{nullptr};
+    std::unique_ptr<api::Game> m_game{nullptr};
 
     entt::registry m_world;
 

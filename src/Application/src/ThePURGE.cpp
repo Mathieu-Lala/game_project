@@ -22,14 +22,12 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge()
-{
-}
+game::ThePurge::ThePurge() {}
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
-auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void {
-
+auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void
+{
     static auto holder = engine::Core::Holder{};
 
     m_nextFloorSeed = static_cast<std::uint32_t>(std::time(nullptr));
@@ -62,7 +60,7 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_O:
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
-                        break;                                                                     // player stop
+                        break;                                                                      // player stop
                     case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break;  // go top
                     case GLFW_KEY_K: m_logics->movement.publish(world, player, {0.0, -0.1}); break; // go bottom
                     case GLFW_KEY_L: m_logics->movement.publish(world, player, {0.1, 0.0}); break;  // go right
@@ -89,7 +87,8 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics->movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                    m_logics->movement.publish(
+                        world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
                 },
                 [&](auto) {},
             },

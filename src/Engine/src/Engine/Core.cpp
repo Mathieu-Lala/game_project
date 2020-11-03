@@ -27,7 +27,7 @@
 #include "Engine/Graphics/Window.hpp"
 #include "Engine/Event/JoystickManager.hpp"
 #include "Engine/Options.hpp"
-#include "Engine/Game.hpp"
+#include "Engine/api/Game.hpp"
 #include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Core.hpp"
 

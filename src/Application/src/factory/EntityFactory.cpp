@@ -181,9 +181,9 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     auto player = world.create();
 
     player = DataConfigLoader::loadPlayerConfigFile(
-        holder.instance->settings().data_folder + "config/player.json", world, player);
+        holder.instance->settings().data_folder + "db/player.json", world, player);
     DataConfigLoader::loadClassConfigFile(
-        holder.instance->settings().data_folder + "config/classes.json", world, player, Classes::FARMER);
+        holder.instance->settings().data_folder + "db/classes.json", world, player, Classes::FARMER);
 
     return player;
 }
