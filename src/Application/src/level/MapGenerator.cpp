@@ -7,10 +7,9 @@
 #include "factory/EntityFactory.hpp"
 #include "level/MapData.hpp"
 
-// todo : move this in Core ?
+// todo : move this in Core
 static std::default_random_engine random_engine{};
 
-// Generate random int in the interval [min; max[
 template<std::integral T>
 static auto randRange(T min, T max)
 {

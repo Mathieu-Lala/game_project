@@ -9,6 +9,8 @@
 #include <Engine/Event/Event.hpp>
 #include <Engine/Settings.hpp>
 #include <Engine/audio/AudioManager.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/Core.hpp>
 
 #include "classes/ClassFactory.hpp"
@@ -16,7 +18,7 @@
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
 
-using namespace std::chrono_literals; // ms ..
+using namespace std::chrono_literals;
 
 auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filename, entt::registry &world, entt::entity &player)
     -> entt::entity

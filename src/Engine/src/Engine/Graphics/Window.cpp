@@ -9,6 +9,8 @@
 #include "Engine/Event/JoystickManager.hpp"
 #include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Settings.hpp"           // note : should not require this header here
+#include "Engine/component/Color.hpp"
+#include "Engine/component/Texture.hpp"
 #include "Engine/Core.hpp"
 
 engine::Window *engine::Window::s_instance{nullptr};
@@ -57,6 +59,8 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
         spdlog::info("Engine::Window Fullscreen");
         setFullscreen(true);
     }
+
+    ::glViewport(0, 0, m_size.x, m_size.y);
 }
 
 engine::Window::~Window()
@@ -94,7 +98,6 @@ auto engine::Window::getNextEvent() -> std::optional<Event>
 
 auto engine::Window::isFullscreen() -> bool { return ::glfwGetWindowMonitor(m_handle) != nullptr; }
 
-// todo : trigger and engine::Event instead
 auto engine::Window::setFullscreen(bool fullscreen) -> void
 {
     if (isFullscreen() == fullscreen) return;
@@ -149,7 +152,10 @@ auto engine::Window::render() -> void { ::glfwSwapBuffers(m_handle); }
 
 auto engine::Window::setActive() -> void { ::glfwMakeContextCurrent(m_handle); }
 
-auto engine::Window::setSize(glm::ivec2 &&size) -> void { ::glfwSetWindowSize(m_handle, size.x, size.y); }
+auto engine::Window::setSize(glm::ivec2 &&size) -> void {
+    ::glfwSetWindowSize(m_handle, size.x, size.y);
+    ::glViewport(0, 0, size.x, size.y);
+}
 
 auto engine::Window::setPosition(glm::ivec2 &&pos) -> void { ::glfwSetWindowPos(m_handle, pos.x, pos.y); }
 

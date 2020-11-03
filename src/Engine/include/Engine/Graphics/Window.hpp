@@ -70,10 +70,6 @@ private:
     ::GLFWwindow *m_handle{nullptr};
     ::ImGuiContext *m_ui_context{nullptr};
 
-    //
-    // Events
-    //
-
     std::vector<Event> m_events;
 
     static auto callback_eventClose(GLFWwindow *window) -> void;
@@ -88,8 +84,6 @@ private:
 
     static auto callback_eventMouseMoved(GLFWwindow *window, double x, double y) -> void;
 };
-
-// defined in Window.cpp
 
 template<>
 auto Window::applyEvent(const Pressed<MouseButton> &) -> void;

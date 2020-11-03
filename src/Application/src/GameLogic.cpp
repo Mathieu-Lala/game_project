@@ -4,6 +4,8 @@
 #include <Engine/Event/Event.hpp>
 #include <Engine/audio/AudioManager.hpp>
 #include <Engine/Settings.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
@@ -42,7 +44,6 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
 {
     for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
         auto &pos = world.get<engine::d3::Position>(i);
-        // auto &vel = world.get<engine::d2::Velocity>(i);
         auto &view_range = world.get<ViewRange>(i);
 
         const auto player_pos = world.get<engine::d3::Position>(m_game.player);
@@ -50,7 +51,6 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
 
         static bool chasing = false; // tmp : true if the boss is chasing the player
 
-        // if the enemy is close enough
         if (glm::length(diff) <= view_range.range) {
             world.replace<engine::d2::Velocity>(i, diff.x, diff.y);
 
@@ -83,18 +83,20 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
 
 auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
+
     world.view<game::SpellSlots>().each([&](SpellSlots &slots) {
         for (auto &spell : slots.spells) {
             if (!spell.has_value()) continue;
+            auto &cd = spell.value().cd;
+            if (!cd.is_in_cooldown) continue;
 
-            if (spell->current_cooldown > 0ms) {
-                spell->current_cooldown -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-
-                // it's <= to still print the message even if the cooldown arrive directly at 0
-                if (spell->current_cooldown <= 0ms) {
-                    spell->current_cooldown = 0ms;
-                    spdlog::warn("attack is up !");
-                }
+            if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
+                cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+            } else {
+                cd.remaining_cooldown = 0ms;
+                cd.is_in_cooldown = false;
+                spdlog::warn("attack is up !");
             }
         }
     });
@@ -145,9 +147,20 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 {
     static engine::Core::Holder holder{};
 
-    // todo : handle collision terrain and spell
+    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
+        const auto &spell_pos = world.get<engine::d3::Position>(spell);
+        const auto &spell_box = world.get<engine::d2::HitboxFloat>(spell);
 
-    // todo : spell (fireball) should destroy on collide
+        for (auto &wall : world.view<entt::tag<"wall"_hs>>()) {
+            const auto &wall_pos = world.get<engine::d3::Position>(wall);
+            const auto &wall_box = world.get<engine::d2::HitboxSolid>(wall);
+
+            if (engine::d2::overlapped<engine::d2::WITH_EDGE>(spell_box, spell_pos, wall_box, wall_pos)) {
+                world.destroy(spell);
+                continue;
+            }
+        }
+    }
 
     const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source) {
         auto &entity_pos = world.get<engine::d3::Position>(entity);
@@ -161,7 +174,8 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
 
-            holder.instance->setScreenshake(true, 300ms);
+            if (world.has<entt::tag<"player"_hs>>(entity))
+                holder.instance->setScreenshake(true, 300ms);
 
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
@@ -171,11 +185,13 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
         }
     };
 
-    auto check_collision_spell = [&world, &apply_damage]<engine::d2::HitboxType T>(
-                                     entt::entity spell, entt::entity source, const engine::d2::Hitbox<T> &hitbox) {
-        auto &spell_pos = world.get<engine::d3::Position>(spell);
+    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
 
+        const auto &source = world.get<engine::Source>(spell).source;
         if (!world.valid(source)) return;
+
+        auto &spell_pos = world.get<engine::d3::Position>(spell);
+        const auto &hitbox = world.get<engine::d2::HitboxFloat>(spell);
 
         if (world.has<entt::tag<"player"_hs>>(source)) {
             for (auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
@@ -185,14 +201,6 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             for (auto &player : world.view<entt::tag<"player"_hs>>()) {
                 apply_damage(player, spell, hitbox, spell_pos, source);
             }
-        }
-    };
-
-    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
-        if (world.has<engine::d2::HitboxFloat>(spell)) {
-            check_collision_spell(spell, world.get<engine::Source>(spell).source, world.get<engine::d2::HitboxFloat>(spell));
-        } else if (world.has<engine::d2::HitboxSolid>(spell)) {
-            check_collision_spell(spell, world.get<engine::Source>(spell).source, world.get<engine::d2::HitboxSolid>(spell));
         }
     }
 
@@ -234,7 +242,6 @@ auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine
     const auto doorUsageSystem = [&](const KeyPicker &keypicker, const engine::d3::Position &playerPos) {
         if (!keypicker.hasKey) return;
 
-        // would be cool if : && playerPos.hasVisionOn(doorPosition);
         if (engine::d3::distance(doorPosition, playerPos) < kDoorInteractionRange) onFloorChange.publish(world);
     };
 
@@ -264,8 +271,8 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
 
         // todo : send signal instead
         auto &level = world.get<Level>(killer);
-        // todo : move this as component or something
-        level.current_xp += world.has<entt::tag<"boss"_hs>>(killed) ? 5u : 1u;
+        level.current_xp += world.has<entt::tag<"boss"_hs>>(killed) ? 5u : 1u; // todo : move this as component or something
+
         if (level.current_xp >= level.xp_require) {
             level.current_level++;
             level.current_xp = 0;
@@ -286,9 +293,10 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
 auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)
     -> void
 {
-    if (spell.current_cooldown == 0ms) {
-        SpellFactory::create(spell.id, world, caster, direction);
-        spell.current_cooldown = spell.cooldown_duration;
+    if (!spell.cd.is_in_cooldown) {
+        SpellFactory::create(spell.id, world, caster, glm::normalize(direction));
+        spell.cd.remaining_cooldown = spell.cd.cooldown;
+        spell.cd.is_in_cooldown = true;
     }
 }
 

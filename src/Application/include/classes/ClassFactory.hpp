@@ -7,7 +7,7 @@
 
 namespace game {
 
-class ClassFactory {
+class /*[[deprecated]]*/ ClassFactory {
 public:
     ClassFactory(
         Classes cl,

@@ -4,7 +4,7 @@
 
 #include <entt/entt.hpp>
 
-#include "Engine/component/Color.hpp" // note : this include is optional in this context
+// #include "Engine/component/Color.hpp" // note : this include is optional in this context
 
 namespace engine {
 

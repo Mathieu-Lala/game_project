@@ -99,8 +99,6 @@ public:
     auto setScreenshake(bool, std::chrono::milliseconds = {}) -> void;
 
 
-    // note : getter
-
     auto window() noexcept -> std::unique_ptr<Window> & { return m_window; }
 
     [[nodiscard]] auto getEventMode() const noexcept { return m_eventMode; }
@@ -135,17 +133,9 @@ private:
     // note : for now the engine support only one window
     std::unique_ptr<Window> m_window{nullptr};
 
-    //
-    // World
-    //
-
     std::unique_ptr<api::Game> m_game{nullptr};
 
     entt::registry m_world;
-
-    //
-    // Event Handling
-    //
 
     EventMode m_eventMode{EventMode::RECORD};
 
@@ -156,12 +146,9 @@ private:
 
     [[nodiscard]] auto getElapsedTime() noexcept -> std::chrono::nanoseconds;
 
+    auto tickOnce(const TimeElapsed &) -> void;
 
     std::unique_ptr<JoystickManager> m_joystickManager;
-
-    //
-    // Resources
-    //
 
     CacheColor m_colors;
     CacheTexture m_textures;
@@ -178,7 +165,7 @@ private:
     auto debugDrawDisplayOptions() -> void;
 #endif
 
-    std::uint32_t m_displayMode = 4; // GL_TRIANGLES
+    std::uint32_t m_displayMode = 4; // note : = GL_TRIANGLES
 };
 
 template<>
