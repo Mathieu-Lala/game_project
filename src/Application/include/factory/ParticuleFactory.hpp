@@ -1,6 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
+#include <glm/vec2.hpp>
 
 #include "component/Particule.hpp"
 

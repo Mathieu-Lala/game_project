@@ -1,6 +1,12 @@
 #include <cmath>
 #include <numbers>
 
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
+#include <Engine/helpers/DrawableFactory.hpp>
+#include <Engine/Core.hpp>
+
+#include "component/all.hpp"
 #include "factory/ParticuleFactory.hpp"
 #include "factory/EntityFactory.hpp"
 
