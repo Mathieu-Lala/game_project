@@ -68,7 +68,7 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> C
 
         database[id] = Class{
             .id = id,
-            .name = data["name"].get<std::string>(),
+            .name = name,
             .description = data["desc"].get<std::string>(),
             .spells = spells,
 

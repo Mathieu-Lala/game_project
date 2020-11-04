@@ -142,6 +142,6 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
             game.getLogics().onPlayerBuyClass.publish(world, player, classData);
 
         } catch (const std::runtime_error &e) {
-            throw std::runtime_error(fmt::format("{}\nusage: buyclass id", e.what()));
+            throw std::runtime_error(fmt::format("{}\nusage: buyClass id", e.what()));
         }
     };

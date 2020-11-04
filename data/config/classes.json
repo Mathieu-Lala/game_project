@@ -1,27 +1,23 @@
 {
   "farmer": {
-    "name": "Farmer",
     "desc": "Farmer description",
     "maxHealth": 10,
     "damage": 1,
     "spells": [ 0, 2 ]
   },
   "soldier": {
-    "name": "Soldier",
     "desc": "Soldier description",
     "maxHealth": 20,
     "damage": 5,
     "spells": []
   },
   "shooter": {
-    "name": "Shooter",
     "desc": "Shooter description",
     "maxHealth": 15,
     "damage": 20,
     "spells": []
   },
   "sorcerer": {
-    "name": "Sorcerer",
     "desc": "Sorcerer description",
     "maxHealth": 25,
     "damage": 15,
