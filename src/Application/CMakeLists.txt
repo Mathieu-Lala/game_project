@@ -1,12 +1,12 @@
 add_library(
   ThePURGE STATIC # MODULE
-#  src/main.cpp
   src/ThePURGE.cpp
   src/GameLogic.cpp
   src/level/LevelTilemapBuilder.cpp
   src/level/MapGenerator.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
+  src/factory/ParticuleFactory.cpp
   src/classes/ClassFactory.cpp
   src/DataConfigLoader.cpp
   src/console/DebugConsole.cpp
