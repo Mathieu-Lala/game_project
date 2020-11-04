@@ -6,12 +6,14 @@
 #include <Engine/Settings.hpp>
 #include <Engine/component/Color.hpp>
 #include <Engine/component/Texture.hpp>
+#include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 #include "factory/EntityFactory.hpp"
 #include "factory/SpellFactory.hpp"
+#include "factory/ParticuleFactory.hpp"
 
 using namespace std::chrono_literals;
 
@@ -25,6 +27,7 @@ game::GameLogic::GameLogic(ThePurge &game) :
     sinkGameUpdated.connect<&GameLogic::effect>(*this);
     sinkGameUpdated.connect<&GameLogic::enemies_try_attack>(*this);
     sinkGameUpdated.connect<&GameLogic::update_lifetime>(*this);
+    sinkGameUpdated.connect<&GameLogic::update_particule>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
     sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
 
@@ -174,8 +177,11 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
 
-            if (world.has<entt::tag<"player"_hs>>(entity))
+            if (world.has<entt::tag<"player"_hs>>(entity)) {
                 holder.instance->setScreenshake(true, 300ms);
+                ParticuleFactory::create<Particule::HITMARKER>(world,
+                    {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0});
+            }
 
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
@@ -221,6 +227,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
         });
 }
 
+// note : this should be in Core
 auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
     for (auto &i : world.view<Lifetime>()) {
@@ -230,6 +237,28 @@ auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeE
             lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
         } else {
             world.destroy(i);
+        }
+    }
+}
+
+auto game::GameLogic::update_particule(entt::registry &world, const engine::TimeElapsed &dt) -> void
+{
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
+    for (const auto &i : world.view<Particule>()) {
+        switch (world.get<Particule>(i).id) {
+            case Particule::HITMARKER: {
+                auto &color = world.get<engine::Color>(i);
+                const auto r = engine::Color::r(color);
+                const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+                const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+                engine::DrawableFactory::fix_color(world, i, {r, g, b});
+
+                auto &vel = world.get<engine::d2::Velocity>(i);
+                vel.x += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+                vel.y += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+            } break;
+            default:
+                break;
         }
     }
 }
