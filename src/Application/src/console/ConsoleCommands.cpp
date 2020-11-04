@@ -13,7 +13,9 @@ game::CommandHandler::CommandHandler() :
         {"setSpell", cmd_setSpell},
         {"addXp", cmd_addXp},
         {"addLevel", cmd_addLevel},
-        {"setMusicVolume", cmd_setMusicVolume}}
+        {"setMusicVolume", cmd_setMusicVolume},
+        {"buyClass", cmd_buyClass},
+    }
 {
 }
 
@@ -124,5 +126,22 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setMusicVolume =
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setMusicVolume volume\n\tvolume : [0; 2]", e.what()));
+        }
+    };
+
+game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
+    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args) {
+        try {
+            if (args.size() != 1) throw std::runtime_error("Wrong argument count");
+
+            const auto classId = static_cast<Class::ID>(lexicalCast<int>(args[0]));
+            const auto player = game.player;
+
+            const auto &classData = game.getClassDatabase().at(classId);
+
+            game.getLogics().onPlayerBuyClass.publish(world, player, classData);
+
+        } catch (const std::runtime_error &e) {
+            throw std::runtime_error(fmt::format("{}\nusage: buyclass id", e.what()));
         }
     };

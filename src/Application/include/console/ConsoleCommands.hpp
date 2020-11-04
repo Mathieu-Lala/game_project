@@ -27,6 +27,7 @@ private:
     static handler_t cmd_addXp;
     static handler_t cmd_addLevel;
     static handler_t cmd_setMusicVolume;
+    static handler_t cmd_buyClass;
 
 private:
     const std::unordered_map<std::string, handler_t> m_commands;

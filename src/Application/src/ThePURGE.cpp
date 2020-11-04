@@ -20,11 +20,11 @@
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
+#include "DataConfigLoader.hpp"
+
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge()
-{
-}
+game::ThePurge::ThePurge()  {}
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
@@ -41,6 +41,8 @@ auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void {
     m_dungeonMusic->setVolume(0.1f).setLoop(true);
 
     m_debugConsole->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
+
+    m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "config/classes.json");
 
     setState(State::LOADING);
 }
@@ -227,20 +229,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         // note : this block could be launch in a future
         if (ImGui::Button("Start the game")) {
-            holder.instance->getAudioManager()
-                .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
-                ->setVolume(0.2f)
-                .play();
-            m_dungeonMusic->play();
-
-            player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-
-            // default camera value to see the generated terrain properly
-            m_camera.setCenter(glm::vec2(13, 22));
-            m_camera.setViewportSize(glm::vec2(109, 64));
-
-            m_logics->onFloorChange.publish(world);
-
+            m_logics->onGameStarted.publish(world);
             setState(State::IN_GAME);
         }
 

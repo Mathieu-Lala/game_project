@@ -7,7 +7,6 @@ add_executable(
   src/level/MapGenerator.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
-  src/classes/ClassFactory.cpp
   src/DataConfigLoader.cpp
   src/console/DebugConsole.cpp
   src/console/ConsoleCommands.cpp

@@ -11,7 +11,6 @@
 #include <Engine/audio/AudioManager.hpp>
 #include <Engine/Core.hpp>
 
-#include "classes/ClassFactory.hpp"
 #include "DataConfigLoader.hpp"
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
@@ -48,34 +47,39 @@ auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filenam
     return player;
 }
 
-auto game::DataConfigLoader::loadClassConfigFile(
-    const std::string_view filename, [[maybe_unused]] entt::registry &world, [[maybe_unused]] entt::entity &player, Classes cl)
-    -> void
+auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> ClassDatabase
 {
-    spdlog::info("Create a new Class from the file: " + std::string(filename.data()));
+    spdlog::info("Loading class database file: '{}'", path.data());
 
-    std::ifstream file(filename.data());
+    std::ifstream file(path.data());
 
     if (!file.is_open()) { spdlog::error("Can't open the given file"); }
-    nlohmann::json data = nlohmann::json::parse(file);
+    nlohmann::json classes = nlohmann::json::parse(file);
 
-    nlohmann::json classRoot = [cl, &data]() {
-        switch (cl) {
-        case Classes::FARMER: return data["farmer"];
-        case Classes::SHOOTER: return data["shooter"];
-        case Classes::SOLDIER: return data["soldier"];
-        case Classes::SORCERER: return data["sorcerer"];
-        default: std::abort();
-        }
-    }();
 
-    world.emplace<ClassFactory>(
-        player, cl, classRoot["desc"], classRoot["cooldown"], classRoot["range"], classRoot["damage"], classRoot["isRanged"]);
+    ClassDatabase database;
 
-    for (auto i = 0ul; auto &spellId : classRoot["spellsId"])
-        world.get<SpellSlots>(player).spells[i++] = Spell::create(static_cast<SpellFactory::ID>(spellId.get<int>()));
+    for (Class::ID id = 0; const auto &[name, data] : classes.items()) {
+        std::vector<SpellFactory::ID> spells;
+        spdlog::info("debug : {} : {}\n---", name, data.dump());
 
-    spdlog::info("{} class successfully created", classRoot["name"]);
+        for (const auto &spell : data["spells"])
+                spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>()));
+
+        database[id] = Class{
+            .id = id,
+            .name = data["name"].get<std::string>(),
+            .description = data["desc"].get<std::string>(),
+            .spells = spells,
+
+            .maxHealth = data["maxHealth"].get<float>(),
+            .damage = data["damage"].get<float>(),
+        };
+
+        id++;
+    }
+
+    return database;
 }
 
 void game::DataConfigLoader::reloadFiles() { std::cout << "Reload all files" << std::endl; }
