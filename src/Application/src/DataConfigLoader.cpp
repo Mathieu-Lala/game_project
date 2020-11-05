@@ -61,8 +61,6 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
     classes::Database database;
 
     for (Class::ID id = 0; const auto &[name, data] : jsonData.items()) {
-        spdlog::info("debug : {} : {}\n---", name, data.dump());
-
         std::vector<SpellFactory::ID> spells;
         for (const auto &spell : data["spells"]) spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>()));
 

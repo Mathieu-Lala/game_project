@@ -58,19 +58,14 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
         try {
             if (args.size() != 2) throw std::runtime_error("Wrong argument count");
 
-            [[maybe_unused]] auto idx = lexicalCast<int>(args[0]);
-            [[maybe_unused]] auto spell = lexicalCast<int>(args[0]);
+            auto idx = lexicalCast<int>(args[0]);
+            auto spellId = lexicalCast<int>(args[1]);
 
             if (idx < 0 || idx > 4) throw std::runtime_error(fmt::format("Wrong index : {}", args[0]));
 
-            throw std::runtime_error("Not implemented : require PR #62");
-
-            (void) game;
-            (void) world;
-            // auto player = game.player;
-            // auto &spellSlots = world.get<SpellSlots>(player);
-            // spellSlots.spell[idx] = Spell(spell)
-
+            auto player = game.player;
+            auto &spellSlots = world.get<SpellSlots>(player);
+            spellSlots.spells[idx] = Spell::create(static_cast<SpellFactory::ID>(spellId));
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setSpell index spell_id", e.what()));
