@@ -4,7 +4,7 @@
     "maxHealth": 10,
     "damage": 1,
     "spells": [ 0, 2 ],
-    "childrenClass": [ 1, 2, 3 ]
+    "childrenClass": [ "soldier", "shooter", "sorcerer" ]
   },
   "soldier": {
     "desc": "Soldier description",

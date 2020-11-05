@@ -47,7 +47,7 @@ public:
     auto getLogics() -> GameLogic & { return *m_logics; }
     auto getMusic() -> std::shared_ptr<engine::Sound> { return m_dungeonMusic; }
 
-    auto getClassDatabase() -> const ClassDatabase & { return m_classDatabase; }
+    auto getClassDatabase() -> const classes::Database & { return m_classDatabase; }
     auto getCamera() -> engine::Camera & { return m_camera; }
 
 private:
@@ -69,7 +69,7 @@ private:
 
     std::unique_ptr<DebugConsole> m_debugConsole;
 
-    ClassDatabase m_classDatabase;
+    classes::Database m_classDatabase;
 };
 
 } // namespace game

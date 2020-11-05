@@ -48,26 +48,23 @@ auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filenam
 }
 
 
-auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> ClassDatabase
+auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> classes::Database
 {
     spdlog::info("Loading class database file: '{}'", path.data());
 
     std::ifstream file(path.data());
 
     if (!file.is_open()) { spdlog::error("Can't open the given file"); }
-    nlohmann::json classes = nlohmann::json::parse(file);
+    nlohmann::json jsonData = nlohmann::json::parse(file);
 
 
-    ClassDatabase database;
+    classes::Database database;
 
-    for (Class::ID id = 0; const auto &[name, data] : classes.items()) {
+    for (Class::ID id = 0; const auto &[name, data] : jsonData.items()) {
         spdlog::info("debug : {} : {}\n---", name, data.dump());
 
         std::vector<SpellFactory::ID> spells;
         for (const auto &spell : data["spells"]) spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>()));
-
-        std::vector<Class::ID> children;
-        for (const auto &child : data["childrenClass"]) children.push_back(static_cast<Class::ID>(child.get<int>()));
 
         database[id] = Class{
             .id = id,
@@ -77,10 +74,20 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> C
 
             .maxHealth = data["maxHealth"].get<float>(),
             .damage = data["damage"].get<float>(),
-            .childrenClass = children,
         };
 
         id++;
+    }
+
+    for (auto &[id, dbClass] : database) {
+        for (const auto &child : jsonData[dbClass.name]["childrenClass"]) {
+            auto c = classes::getByName(database, child);
+
+            if (!c)
+                spdlog::warn("Unknown class '{}'. Ignoring", child);
+            else
+                dbClass.childrenClass.push_back(c.value()->id);
+        }
     }
 
     return database;

@@ -57,7 +57,7 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
     m_game.getMusic()->play();
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    onPlayerBuyClass.publish(world, m_game.player, m_game.getClassDatabase().at(kStarterClassId));
+    onPlayerBuyClass.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
 
     // default camera value to see the generated terrain properly
     m_game.getCamera().setCenter(glm::vec2(13, 22));
