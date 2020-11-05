@@ -7,6 +7,8 @@
 #include <Engine/Event/Event.hpp>
 #include <Engine/audio/AudioManager.hpp>
 #include <Engine/Settings.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/Core.hpp>
 
 #include <Engine/helpers/ImGui.hpp>
@@ -22,14 +24,12 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge()
-{
-}
+game::ThePurge::ThePurge() {}
 
 auto game::ThePurge::onDestroy(entt::registry &) -> void {}
 
-auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void {
-
+auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void
+{
     static auto holder = engine::Core::Holder{};
 
     m_nextFloorSeed = static_cast<std::uint32_t>(std::time(nullptr));
@@ -53,7 +53,6 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
         std::visit(
             engine::overloaded{
                 [&](const engine::Pressed<engine::Key> &key) {
-                    // not really working perfectly
                     switch (key.source.key) {
                     case GLFW_KEY_UP: m_camera.move({0, 1}); break;
                     case GLFW_KEY_RIGHT: m_camera.move({1, 0}); break;
@@ -62,7 +61,7 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_O:
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
-                        break;                                                                     // player stop
+                        break;                                                                      // player stop
                     case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break;  // go top
                     case GLFW_KEY_K: m_logics->movement.publish(world, player, {0.0, -0.1}); break; // go bottom
                     case GLFW_KEY_L: m_logics->movement.publish(world, player, {0.1, 0.0}); break;  // go right
@@ -89,7 +88,8 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics->movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                    m_logics->movement.publish(
+                        world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
                 },
                 [&](auto) {},
             },
@@ -183,9 +183,8 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
         "Max room size", &m_logics->m_map_generation_params.maxRoomSize, m_logics->m_map_generation_params.minRoomSize, 50);
     ImGui::Separator();
 
-    // Assuming std::size_t is uint32_t
-    ImGui::InputScalar("Min room count", ImGuiDataType_U32, &m_logics->m_map_generation_params.minRoomCount);
-    ImGui::InputScalar("Max room count", ImGuiDataType_U32, &m_logics->m_map_generation_params.maxRoomCount);
+    ImGui::InputScalar("Min room count", ImGuiDataType_U64, &m_logics->m_map_generation_params.minRoomCount);
+    ImGui::InputScalar("Max room count", ImGuiDataType_U64, &m_logics->m_map_generation_params.maxRoomCount);
     ImGui::Text("note: actual room count may be smaller if there is not enough space");
     ImGui::Separator();
 

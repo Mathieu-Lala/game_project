@@ -16,8 +16,13 @@
 
 namespace engine {
 
-class Window;
+namespace api {
+
 class Game;
+
+} // namespace api
+
+class Window;
 class JoystickManager;
 class Shader;
 class AudioManager;
@@ -68,8 +73,8 @@ public:
         return m_window;
     }
 
-    template<std::derived_from<Game> UserDefinedGame, typename... Args>
-    auto game(Args &&... args) -> std::unique_ptr<Game> &
+    template<std::derived_from<api::Game> UserDefinedGame, typename... Args>
+    auto game(Args &&... args) -> std::unique_ptr<api::Game> &
     {
         if (m_game != nullptr) { return m_game; }
 
@@ -94,8 +99,6 @@ public:
     auto setScreenshake(bool, std::chrono::milliseconds = {}) -> void;
 
 
-    // note : getter
-
     auto window() noexcept -> std::unique_ptr<Window> & { return m_window; }
 
     [[nodiscard]] auto getEventMode() const noexcept { return m_eventMode; }
@@ -114,7 +117,7 @@ public:
 #ifndef NDEBUG
     [[nodiscard]] constexpr auto isShowingDebugInfo() noexcept -> bool { return m_show_debug_info; }
 #endif
-    auto getJoystick(int id) -> std::optional<Joystick *const>; 
+    auto getJoystick(int id) -> std::optional<Joystick *const>;
 
 private:
     static auto get() noexcept -> std::unique_ptr<Core> &;
@@ -130,17 +133,9 @@ private:
     // note : for now the engine support only one window
     std::unique_ptr<Window> m_window{nullptr};
 
-    //
-    // World
-    //
-
-    std::unique_ptr<Game> m_game{nullptr};
+    std::unique_ptr<api::Game> m_game{nullptr};
 
     entt::registry m_world;
-
-    //
-    // Event Handling
-    //
 
     EventMode m_eventMode{EventMode::RECORD};
 
@@ -151,12 +146,9 @@ private:
 
     [[nodiscard]] auto getElapsedTime() noexcept -> std::chrono::nanoseconds;
 
+    auto tickOnce(const TimeElapsed &) -> void;
 
     std::unique_ptr<JoystickManager> m_joystickManager;
-
-    //
-    // Resources
-    //
 
     CacheColor m_colors;
     CacheTexture m_textures;
@@ -173,7 +165,7 @@ private:
     auto debugDrawDisplayOptions() -> void;
 #endif
 
-    std::uint32_t m_displayMode = 4; // GL_TRIANGLES
+    std::uint32_t m_displayMode = 4; // note : = GL_TRIANGLES
 };
 
 template<>

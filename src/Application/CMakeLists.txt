@@ -1,6 +1,6 @@
-add_executable(
-  app
-  src/main.cpp
+add_library(
+  ThePURGE STATIC # MODULE
+#  src/main.cpp
   src/ThePURGE.cpp
   src/GameLogic.cpp
   src/level/LevelTilemapBuilder.cpp
@@ -13,12 +13,12 @@ add_executable(
   src/console/ConsoleCommands.cpp
   src/models/SpellDatabase.cpp)
 
-target_link_libraries(app PRIVATE engine)
+target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 
-target_include_directories(app PRIVATE include)
+target_include_directories(ThePURGE PUBLIC include) # note : should be private
 
 # note : maybe not the best solution because the assets might be heavy
 add_custom_command(
-  TARGET app
+  TARGET ThePURGE
   POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/out/data)

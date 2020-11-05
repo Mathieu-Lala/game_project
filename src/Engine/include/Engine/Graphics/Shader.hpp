@@ -3,7 +3,7 @@
 #include <string_view>
 #include <string>
 
-#include <glm/mat4x4.hpp>
+#include <glm/matrix.hpp>
 
 namespace engine {
 
@@ -22,22 +22,20 @@ public:
 
     auto use() -> void;
 
-    // note : this could be templated
-    auto uploadUniformMat4(const std::string &name, const glm::mat4 &mat) -> void;
-
     template<typename T>
-    auto setUniform(const std::string_view, std::decay_t<T>) -> void;
+    auto setUniform(const std::string_view, T) -> void;
 
 private:
     std::uint32_t ID;
-
-    // std::string debug_vertexCode;
 };
 
 template<>
-auto Shader::setUniform<bool>(const std::string_view, bool) -> void;
+auto Shader::setUniform(const std::string_view, bool) -> void;
 
 template<>
-auto Shader::setUniform<float>(const std::string_view, float) -> void;
+auto Shader::setUniform(const std::string_view, float) -> void;
+
+template<>
+auto Shader::setUniform(const std::string_view, glm::mat4) -> void;
 
 } // namespace engine
