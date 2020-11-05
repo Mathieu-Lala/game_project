@@ -134,14 +134,20 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
-            const auto classId = static_cast<Class::ID>(lexicalCast<int>(args[0]));
+            const auto className = lexicalCast<std::string>(args[0]);
             const auto player = game.player;
 
-            const auto &classData = game.getClassDatabase().at(classId);
+            const auto &classData = classes::getByName(game.getClassDatabase(), className);
 
-            game.getLogics().onPlayerBuyClass.publish(world, player, classData);
+            if (!classData) {
+                std::stringstream names;
+                for (const auto [_, data] : game.getClassDatabase()) names << data.name << ", ";
+                throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
+            }
+
+            game.getLogics().onPlayerBuyClass.publish(world, player, *classData.value());
 
         } catch (const std::runtime_error &e) {
-            throw std::runtime_error(fmt::format("{}\nusage: buyClass id", e.what()));
+            throw std::runtime_error(fmt::format("{}\nusage: buyClass name", e.what()));
         }
     };
