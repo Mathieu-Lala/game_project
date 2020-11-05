@@ -214,7 +214,7 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
-    static auto holder = engine::Core::Holder{};
+    [[maybe_unused]] static auto holder = engine::Core::Holder{};
 
 #ifndef NDEBUG
     if (holder.instance->isShowingDebugInfo()) {

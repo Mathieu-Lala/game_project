@@ -19,6 +19,8 @@ struct Class {
 
     float maxHealth;
     float damage;
+
+    std::vector<ID> childrenClass;
 };
 
 } // namespace game

@@ -91,15 +91,20 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
         std::stringstream spellsId;
         for (const auto &spell : newClass.spells) spellsId << spell << ", ";
 
+        std::stringstream childrens;
+        for (const auto &child : newClass.childrenClass) childrens << m_game.getClassDatabase().at(child).name << ", ";
+
         spdlog::info(
             "Applied class '{}' to player. Stats are now : \n"
             "\tDamage : {:.3}\n"
             "\tMax health : {:.3}\n"
-            "\tAdded spells {}",    
+            "\tAdded spells {}\n"
+            "\tNew available classes : {}",    
             newClass.name,
             newClass.damage,
             newClass.maxHealth,
-            spellsId.str());
+            spellsId.str(),
+            childrens.str());
     }
 }
 

@@ -3,24 +3,29 @@
     "desc": "Farmer description",
     "maxHealth": 10,
     "damage": 1,
-    "spells": [ 0, 2 ]
+    "spells": [ 0, 2 ],
+    "childrenClass": [ 1, 2, 3 ]
   },
   "soldier": {
     "desc": "Soldier description",
     "maxHealth": 20,
     "damage": 5,
-    "spells": []
+    "spells": [],
+    "childrenClass": []
+
   },
   "shooter": {
     "desc": "Shooter description",
     "maxHealth": 15,
     "damage": 20,
-    "spells": []
+    "spells": [],
+    "childrenClass": []
   },
   "sorcerer": {
     "desc": "Sorcerer description",
     "maxHealth": 25,
     "damage": 15,
-    "spells": []
+    "spells": [],
+    "childrenClass": []
   }
 }
