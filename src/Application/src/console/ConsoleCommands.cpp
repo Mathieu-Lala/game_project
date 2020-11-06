@@ -69,7 +69,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
 
             auto player = game.player;
             auto &spellSlots = world.get<SpellSlots>(player);
-            spellSlots.spells[idx] = Spell::create(static_cast<SpellFactory::ID>(spellId));
+            spellSlots.spells[static_cast<std::size_t>(idx)] = Spell::create(static_cast<SpellFactory::ID>(spellId));
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setSpell index spell_id", e.what()));
@@ -170,7 +170,6 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
             const auto className = lexicalCast<std::string>(args[0]);
-            const auto player = game.player;
 
             const auto &classData = classes::getByName(game.getClassDatabase(), className);
 
