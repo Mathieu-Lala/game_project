@@ -26,7 +26,8 @@ public:
     enum class State {
         LOADING,
         IN_GAME,
-        GAME_OVER
+        GAME_OVER,
+        IN_INVENTORY
     };
 
     auto onCreate(entt::registry &world) -> void final;

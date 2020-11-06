@@ -1,6 +1,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <stb_image.h>
 #include <Engine/Graphics/third_party.hpp>
 #include <Engine/Graphics/Shader.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
@@ -61,8 +62,11 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_O:
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
-                        break;                                                                      // player stop
-                    case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break;  // go top
+                        break;                                                                     // player stop
+                    case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break; // go top
+                    case GLFW_KEY_P:
+                        if (m_state == State::IN_GAME) setState(State::IN_INVENTORY);
+                        break;                                                                      // go top
                     case GLFW_KEY_K: m_logics->movement.publish(world, player, {0.0, -0.1}); break; // go bottom
                     case GLFW_KEY_L: m_logics->movement.publish(world, player, {0.1, 0.0}); break;  // go right
                     case GLFW_KEY_J: m_logics->movement.publish(world, player, {-0.1, 0.0}); break; // go left
@@ -98,7 +102,6 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
         if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
     }
 }
-
 void game::ThePurge::displaySoundDebugGui()
 {
     static auto holder = engine::Core::Holder{};
@@ -209,6 +212,26 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
     ImGui::End();
 }
 
+static GLuint createtexture(const std::string &fullpath)
+{
+    int w, h, channel;
+    auto image = stbi_load(fullpath.c_str(), &w, &h, &channel, 4);
+
+    if (!image) { throw std::runtime_error("Failed to load image " + fullpath + " : " + stbi_failure_reason()); }
+
+    GLuint id;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    stbi_image_free(image);
+
+    return id;
+}
+
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
@@ -246,32 +269,38 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         ImGui::End();
     } else if (m_state == State::IN_GAME) {
         {
+            // Creating background
+            static const std::string path = std::string("data/textures/InfoHud.png");
+            static GLuint texture = createtexture(path);
             const auto infoHealth = world.get<Health>(player);
             const auto HP = infoHealth.current / infoHealth.max;
 
-            const auto level = world.get<Level>(player);
             const auto Atk = world.get<AttackDamage>(player);
+            const auto level = world.get<Level>(player);
             const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
             KeyPicker keyPicker = world.get<KeyPicker>(player);
-
-            // todo : style because this is not a debug window HUD
-            ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x / 10, 10));
-            ImGui::SetNextWindowSize(ImVec2(400, 200));
             ImGui::Begin(
                 "Info Player",
                 nullptr,
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+            ImVec2 size = ImGui::GetWindowSize();
+            ImGui::Image((void *) (intptr_t)(texture), ImVec2(size.x - 30, size.y - 10));
+            ImGui::SetCursorPos(ImVec2(ImGui::GetItemRectMin().x + 40, ImGui::GetItemRectMin().y + size.y / 7));
             ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), fmt::format("{}/{}", infoHealth.current, infoHealth.max).data());
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::Text("HP");
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::Text("XP");
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             helper::ImGui::Text("Level: {}", level.current_level);
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             helper::ImGui::Text("Speed: {}", 1);
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             helper::ImGui::Text("Atk: {}", Atk.damage);
-
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             if (keyPicker.hasKey) helper::ImGui::Text("You have the key");
             ImGui::End();
 
@@ -327,6 +356,87 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         }
 
         ImGui::End();
+    }
+    else if (m_state == State::IN_INVENTORY) {
+        {
+            //const auto comp = world.get<Class>(player);
+            static std::string activeDescription = "";
+            static std::vector<std::string> activeClasses; // to test
+            std::map<std::string, int> Description;
+            const std::vector<std::string> Tier1 = {"Soldier", "Shooter", "Sorcerer"};
+            Description.insert(std::make_pair("Soldier", 6));
+            Description.insert(std::make_pair("Shooter", 5));
+            Description.insert(std::make_pair("Sorcerer", 7));
+            const std::vector<std::string> Tier2 = {"Warrior", "TOnk", "Archer", "Gunner", "Mage", "Healer"};
+            Description.insert(std::make_pair("Warrior", 9));
+            Description.insert(std::make_pair("TOnk", 8));
+            Description.insert(std::make_pair("Archer", 1));
+            Description.insert(std::make_pair("Gunner", 2));
+            Description.insert(std::make_pair("Healer", 3));
+            Description.insert(std::make_pair("Mage", 4));
+            std::vector<std::vector<std::string>> classes = {Tier1, Tier2};
+            static std::vector<GLuint> Texture = {
+                createtexture(std::string("data/textures/InfoHud.png")),
+                createtexture(std::string("data/textures/CPoint.PNG")),
+                createtexture(std::string("data/textures/plus.png")),
+                createtexture(std::string("data/textures/validate.png"))};
+            static std::vector<GLuint> DescriptionTex = {
+                createtexture(std::string("data/textures/farmer_des.PNG")),
+                createtexture(std::string("data/textures/archer_des.PNG")),
+                createtexture(std::string("data/textures/gunner_des.PNG")),
+                createtexture(std::string("data/textures/healer_des.PNG")),
+                createtexture(std::string("data/textures/mage_des.PNG")),
+                createtexture(std::string("data/textures/shooter_des.PNG")),
+                createtexture(std::string("data/textures/soldier_des.PNG")),
+                createtexture(std::string("data/textures/sorcerer_des.PNG")),
+                createtexture(std::string("data/textures/tank_des.PNG")),
+                createtexture(std::string("data/textures/warrior_des.PNG"))};
+            ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x, m_camera.getViewportSize().y));
+            ImVec2 size = ImVec2(1000.0f, 1000.0f);
+            ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
+            ImGui::Begin(
+                "Evolution Panel",
+                nullptr,
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
+                    | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+            size = ImGui::GetWindowSize();
+            ImGui::Image((void *) (intptr_t)(Texture[0]), ImVec2(size.x - 30, size.y - 10));
+            ImGui::SetCursorPos(ImVec2(0, 0));
+            if (activeDescription != "") {
+                ImGui::SetCursorPos(
+                    ImVec2(ImGui::GetCursorPosX() + +(size.x / 2) - (344 / 2), ImGui::GetCursorPosY() + 199 / 2));
+                ImGui::Image((void *) (intptr_t)(DescriptionTex[Description[activeDescription]]), ImVec2(344, 199));
+                if (std::find(activeClasses.begin(), activeClasses.end(), activeDescription) != activeClasses.end()) {
+                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + (size.x / 2) - 45, ImGui::GetCursorPosY()));
+                    ImGui::Image((void *) (intptr_t)(Texture[3]), ImVec2(50, 50));
+                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + (size.x / 2) - 65, ImGui::GetCursorPosY()));
+                    ImGui::Text("Already added");
+                } else {
+                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + (size.x / 2) - 60, ImGui::GetCursorPosY()));
+                    if (ImGui::Button("Add The Competence")) { activeClasses.push_back(activeDescription); }
+                }
+            }
+            ImGui::SetCursorPos(ImVec2(size.x / 2 - 17 * 5, size.y / 2));
+            helper::ImGui::Text("Point de comp: {}", 0); // rendre dynamique le nombre de point de comp
+            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() - 5));
+            ImGui::Image((void *) (intptr_t)(Texture[1]), ImVec2(20, 20));
+            for (int i = 0; i < classes.size(); i++) {
+                for (int count = 0; count < classes[i].size(); count++) {
+                    bool check = false;
+                    if (count == 0) helper::ImGui::Text("Tier {}:", i + 1);
+                    if (std::find(activeClasses.begin(), activeClasses.end(), classes[i][count]) != activeClasses.end())
+                        check = true;
+                    if (count == 0)
+                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + (size.x / 3), ImGui::GetCursorPosY()));
+                    if (helper::ImGui::ButtonUse(
+                            classes[i][count], check, ImVec4{0, 1.0f, 0, 1.0f}, ImVec4{1.0f, 0, 0, 1.0f}))
+                        activeDescription = classes[i][count];
+                    if (count != classes[i].size() - 1) ImGui::SameLine(0.0f, (ImGui::GetStyle().ItemInnerSpacing.x));
+                }
+            }
+            ImGui::End();
+        }
     }
 }
 
