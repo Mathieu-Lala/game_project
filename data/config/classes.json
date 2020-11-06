@@ -1,6 +1,7 @@
 {
   "farmer": {
     "desc": "Farmer description",
+    "icon":  "icons/farmer.png",
     "maxHealth": 10,
     "damage": 1,
     "spells": [ 0, 2 ],
@@ -8,6 +9,7 @@
   },
   "soldier": {
     "desc": "Soldier description",
+    "icon": "icons/soldier.png",
     "maxHealth": 20,
     "damage": 5,
     "spells": [],
@@ -16,6 +18,7 @@
   },
   "shooter": {
     "desc": "Shooter description",
+    "icon": "icons/shooter.png",
     "maxHealth": 15,
     "damage": 20,
     "spells": [],
@@ -23,6 +26,7 @@
   },
   "sorcerer": {
     "desc": "Sorcerer description",
+    "icon": "icons/sorcerer.png",
     "maxHealth": 25,
     "damage": 15,
     "spells": [],

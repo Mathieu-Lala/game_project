@@ -30,6 +30,7 @@ private:
     static handler_t cmd_setMusicVolume;
     static handler_t cmd_buyClass;
     static handler_t cmd_getClasses;
+    static handler_t cmd_getClassInfo;
 
 private:
     const std::unordered_map<std::string, handler_t> m_commands;

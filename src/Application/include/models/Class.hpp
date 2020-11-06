@@ -14,6 +14,7 @@ struct Class {
     ID id;
     std::string name;
     std::string description;
+    std::string iconPath;
 
     std::vector<SpellFactory::ID> spells;
 

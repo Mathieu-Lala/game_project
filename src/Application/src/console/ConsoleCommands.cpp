@@ -18,6 +18,7 @@ game::CommandHandler::CommandHandler() :
         {"setMusicVolume", cmd_setMusicVolume},
         {"buyClass", cmd_buyClass},
         {"getClasses", cmd_getClasses},
+        {"getClassInfo", cmd_getClassInfo},
     }
 {
 }
@@ -161,4 +162,51 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClasses =
         for (auto id : classes) names << game.getClassDatabase().at(id).name << ", ";
 
         console.info("Player has {} classes : {}", classes.size(), names.str());
+    };
+
+game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
+    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &console) {
+        try {
+            if (args.size() != 1) throw std::runtime_error("Wrong argument count");
+
+            const auto className = lexicalCast<std::string>(args[0]);
+            const auto player = game.player;
+
+            const auto &classData = classes::getByName(game.getClassDatabase(), className);
+
+            if (!classData) {
+                std::stringstream names;
+                for (const auto [_, data] : game.getClassDatabase()) names << data.name << ", ";
+                throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
+            }
+
+            const auto &data = *(classData.value());
+
+            std::stringstream spellNames;
+            for (const auto &id : data.spells) spellNames << id << ", ";
+
+            std::stringstream childrenClassesNames;
+            for (const auto &id : data.childrenClass) childrenClassesNames << game.getClassDatabase().at(id).name << ", ";
+
+            console.info(
+                "Class {} :\n"
+                "\tid : {}\n"
+                "\tdescription : {}\n"
+                "\ticon : {}\n"
+                "\tspells : {}\n"
+                "\tmax health : {}\n"
+                "\tdamage : {}\n"
+                "\tchildren classes : {}",
+                data.name,
+                data.id,
+                data.description,
+                data.iconPath,
+                spellNames.str(),
+                data.maxHealth,
+                data.damage,
+                childrenClassesNames.str());
+
+        } catch (const std::runtime_error &e) {
+            throw std::runtime_error(fmt::format("{}\nusage: getClassInfo name", e.what()));
+        }
     };
