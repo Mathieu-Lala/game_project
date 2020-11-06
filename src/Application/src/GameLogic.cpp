@@ -74,6 +74,7 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
 
     health.max = newClass.maxHealth;
     if (health.current > health.max) health.current = health.max;
+    world.get<Classes>(player).ids.push_back(newClass.id);
 
 
     // TODO: actual spell selection ?
@@ -99,7 +100,7 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
             "\tDamage : {:.3}\n"
             "\tMax health : {:.3}\n"
             "\tAdded spells {}\n"
-            "\tNew available classes : {}",    
+            "\tNew available classes : {}",
             newClass.name,
             newClass.damage,
             newClass.maxHealth,

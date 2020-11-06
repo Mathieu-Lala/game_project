@@ -10,10 +10,11 @@
 namespace game {
 
 class ThePurge;
+class DebugConsole;
 
 class CommandHandler {
 public:
-    using handler_t = std::function<void(entt::registry &world, ThePurge &, std::vector<std::string> &&args)>;
+    using handler_t = std::function<void(entt::registry &world, ThePurge &, std::vector<std::string> &&args, DebugConsole &)>;
 
     CommandHandler();
 
@@ -28,6 +29,7 @@ private:
     static handler_t cmd_addLevel;
     static handler_t cmd_setMusicVolume;
     static handler_t cmd_buyClass;
+    static handler_t cmd_getClasses;
 
 private:
     const std::unordered_map<std::string, handler_t> m_commands;

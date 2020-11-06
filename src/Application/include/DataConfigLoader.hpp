@@ -10,11 +10,7 @@
 namespace game {
 
 struct DataConfigLoader {
-    static auto loadPlayerConfigFile(const std::string_view, entt::registry &, entt::entity &) -> entt::entity;
-
     static auto loadClassDatabase(const std::string_view path) -> classes::Database;
-
-    auto reloadFiles() -> void;
 };
 
 } // namespace game

@@ -10,7 +10,7 @@ add_executable(
   src/DataConfigLoader.cpp
   src/console/DebugConsole.cpp
   src/console/ConsoleCommands.cpp
-  src/models/SpellDatabase.cpp "src/models/ClassDatabase.cpp")
+  src/models/SpellDatabase.cpp "src/models/ClassDatabase.cpp" "include/component/Classes.hpp")
 
 target_link_libraries(app PRIVATE engine)
 
