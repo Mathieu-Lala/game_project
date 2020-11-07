@@ -54,9 +54,9 @@ if [[ $(uname -a) =~ "Linux" ]]; then
     if [ "$CI" ]; then
         echo "not working :)"
     else
-        cd ./build/$build_type/$arch/out && ./app $extra_arg && cd -
+        cd ./build/$build_type/$arch/out && ./engine_main $extra_arg && cd -
     fi
 else
     echo "not working :)"
-    # cd ./build/$build_type/out/$build_type && ./app.exe && cd -
+    # cd ./build/$build_type/out/$build_type && ./engine_main.exe && cd -
 fi

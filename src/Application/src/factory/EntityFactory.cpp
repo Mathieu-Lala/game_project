@@ -1,5 +1,7 @@
-#include <Engine/Core.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
+#include <Engine/Core.hpp>
 
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
@@ -98,6 +100,7 @@ auto game::EntityFactory::create<game::EntityFactory::WALL>(entt::registry &worl
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/wall.jpg");
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
     world.emplace<entt::tag<"terrain"_hs>>(e);
+    world.emplace<entt::tag<"wall"_hs>>(e);
     return e;
 }
 
@@ -150,8 +153,8 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
     world.emplace<entt::tag<"enemy"_hs>>(e);
     world.emplace<entt::tag<"boss"_hs>>(e);
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_ENEMY>());
-    world.emplace<engine::d2::Velocity>(e, 0.01 * (std::rand() & 1), 0.01 * (std::rand() & 1));
-    world.emplace<engine::d2::Scale>(e, size.x, size.y); // 3 3
+    world.emplace<engine::d2::Velocity>(e, (std::rand() & 1) ? -0.05 : 0.05, (std::rand() & 1) ? -0.05 : 0.05);
+    world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::d2::HitboxSolid>(e, 3.0, 3.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     world.emplace<game::ViewRange>(e, 10.0f);

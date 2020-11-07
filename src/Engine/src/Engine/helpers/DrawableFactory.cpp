@@ -38,7 +38,6 @@ auto engine::DrawableFactory::rectangle() -> Drawable
     ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, out.EBO);
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // position attribute
     ::glGenBuffers(1, &out.VBO);
 
     ::glBindBuffer(GL_ARRAY_BUFFER, out.VBO);

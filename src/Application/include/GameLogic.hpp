@@ -23,18 +23,16 @@ public:
 
     GameLogic(ThePurge &game);
 
-    // Init movement signal player
     entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> movement;
     entt::sink<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> sinkMovement{movement};
 
-    // entityLogic signal loop
     entt::sigh<void(entt::registry &)> onGameStarted;
     entt::sink<void(entt::registry &)> sinkOnGameStarted{onGameStarted};
 
     entt::sigh<void(entt::registry &, entt::entity player, const Class &)> onPlayerBuyClass;
     entt::sink<void(entt::registry &, entt::entity player, const Class &)> sinkOnPlayerBuyClass{onPlayerBuyClass};
 
-
+    // entityLogic signal loop
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
     entt::sink<void(entt::registry &, const engine::TimeElapsed &)> sinkGameUpdated{gameUpdated};
 

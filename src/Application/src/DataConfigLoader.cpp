@@ -9,13 +9,15 @@
 #include <Engine/Event/Event.hpp>
 #include <Engine/Settings.hpp>
 #include <Engine/audio/AudioManager.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/Core.hpp>
 
 #include "DataConfigLoader.hpp"
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
 
-using namespace std::chrono_literals; // ms ..
+using namespace std::chrono_literals;
 
 auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> classes::Database
 {

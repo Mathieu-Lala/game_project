@@ -5,7 +5,7 @@
 namespace game {
 
 // todo : see @Engine/component/cooldown
-struct AttackCooldown {
+struct /*[[deprecated]]*/ AttackCooldown {
     bool is_in_cooldown;
 
     std::chrono::milliseconds cooldown;

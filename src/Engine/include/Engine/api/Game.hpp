@@ -8,6 +8,8 @@
 
 namespace engine {
 
+namespace api {
+
 class Game {
 public:
     virtual ~Game() = default;
@@ -38,5 +40,7 @@ public:
     virtual auto getBackgroundColor() const noexcept -> glm::vec3 = 0;
 
 };
+
+} // namespace api
 
 } // namespace engine

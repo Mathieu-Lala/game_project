@@ -10,8 +10,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-// #include <stb_image.h>
-
 #include "Engine/helpers/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
 #include "Engine/component/Position.hpp"
@@ -21,13 +19,14 @@
 #include "Engine/component/Hitbox.hpp"
 #include "Engine/component/Color.hpp"
 #include "Engine/component/Spritesheet.hpp"
+#include "Engine/component/Texture.hpp"
 
 #include "Engine/Event/Event.hpp"
 #include "Engine/Graphics/Shader.hpp"
 #include "Engine/Graphics/Window.hpp"
 #include "Engine/Event/JoystickManager.hpp"
 #include "Engine/Options.hpp"
-#include "Engine/Game.hpp"
+#include "Engine/api/Game.hpp"
 #include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Core.hpp"
 
@@ -35,6 +34,8 @@
 #include "Engine/helpers/ImGui.hpp"
 
 #include "Engine/Graphics/third_party.hpp" // note : only for DisplayMode
+
+using namespace std::chrono_literals;
 
 engine::Core *engine::Core::s_instance{nullptr};
 
@@ -65,15 +66,13 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
     IMGUI_CHECKVERSION();
 
     m_joystickManager = std::make_unique<JoystickManager>();
-
-    // ::stbi_set_flip_vertically_on_load(true);
 }
 
 engine::Core::~Core()
 {
     ::glfwTerminate();
 
-    // otherwise we have a final error message at the end
+    // note : otherwise we have a final error message at the end
     ::glfwSetErrorCallback(nullptr);
 
     spdlog::info("Engine::Core destroyed");
@@ -132,7 +131,6 @@ auto engine::Core::getNextEvent() -> Event
         auto event = m_eventsPlayback.front();
         m_eventsPlayback.erase(m_eventsPlayback.begin());
 
-        // apply the event to the engine
         std::visit(
             overloaded{
                 [&](const ResizeWindow &e) {
@@ -146,7 +144,6 @@ auto engine::Core::getNextEvent() -> Event
                     m_window->setCursorPosition({m.source.x, m.source.y});
                 },
                 [&](const auto &e) { m_window->applyEvent(e); },
-                // todo : add fullscreen
             },
             event);
         return event;
@@ -165,8 +162,6 @@ auto engine::Core::main(int argc, char **argv) -> int
         logger->info("logger created");
 #endif
 
-        // 1. Parse the program argument
-
         Options opt{argc, argv};
 
 #ifndef NDEBUG
@@ -175,12 +170,6 @@ auto engine::Core::main(int argc, char **argv) -> int
 
         opt.write_to_file(opt.settings.config_path + ".last");
 
-        // 2. Initialize the Engine / Window / Game
-
-        std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
-        if (opt.settings.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
-
-        this->window(glm::ivec2{opt.settings.window_width, opt.settings.window_height}, VERSION, windowProperty);
 
 #ifndef NDEBUG
         if (!opt.options[Options::REPLAY_PATH]->empty()) {
@@ -193,7 +182,10 @@ auto engine::Core::main(int argc, char **argv) -> int
         m_settings = std::move(opt.settings);
     }
 
-    // 3. Start of the application
+    std::uint16_t windowProperty = engine::Window::Property::DEFAULT;
+    if (m_settings.fullscreen) windowProperty |= engine::Window::Property::FULLSCREEN;
+
+    this->window(glm::ivec2{m_settings.window_width, m_settings.window_height}, VERSION, windowProperty);
 
     if (m_window == nullptr || m_game == nullptr) { return 1; }
 
@@ -207,13 +199,11 @@ auto engine::Core::main(int argc, char **argv) -> int
     // todo : add max size buffer ?
     std::vector<Event> eventsProcessed{TimeElapsed{}};
 
-    m_game->onCreate(m_world);
-
-    using namespace std::chrono_literals;
-
     auto screenshake = m_world.create();
     m_world.emplace<entt::tag<"screenshake"_hs>>(screenshake);
     m_world.emplace<engine::Cooldown>(screenshake, false, 500ms, 0ms);
+
+    m_game->onCreate(m_world);
 
     while (isRunning()) {
         const auto event = getNextEvent();
@@ -229,22 +219,41 @@ auto engine::Core::main(int argc, char **argv) -> int
 
         // todo : remove me ?
         bool timeElapsed = false;
-        bool keyPressed = false;
 
-        // note : engine related
+        static constexpr auto time_to_string = [](std::time_t now) -> std::string {
+            const auto tp = std::localtime(&now);
+            char buffer[32];
+            return std::strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", tp) ? buffer : "1970-01-01_00:00:00";
+        };
+
         std::visit(
             overloaded{
-                [&]([[maybe_unused]] const OpenWindow &) {
-                    m_lastTick = std::chrono::steady_clock::now();
-                    ::glViewport(0, 0, static_cast<int>(m_window->getSize().x), static_cast<int>(m_window->getSize().y));
-                },
+                [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
                 [&]([[maybe_unused]] const CloseWindow &) {
                     m_window->close();
                     this->close();
                 },
-                [&](const ResizeWindow &e) { ::glViewport(0, 0, e.width, e.height); }, // todo : move this in camera ? or window ?
+                [&](const ResizeWindow &e) {
+                    m_window->setSize({e.width, e.height});
+                },
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
-                [&]([[maybe_unused]] const Pressed<Key> &) { keyPressed = true; },
+                [&]([[maybe_unused]] const Pressed<Key> &) {
+                    // todo : abstract glfw keyboard
+                    switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
+                    case GLFW_KEY_ESCAPE: this->close(); break;
+#ifndef NDEBUG
+                    case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
+#endif
+                    case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
+                    case GLFW_KEY_F12: {
+                        std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
+                        const auto file = fmt::format(
+                            m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
+                        if (!m_window->screenshot(file)) { spdlog::warn("failed to take a screenshot: {}", file); }
+                    } break;
+                    default: break;
+                    }
+                },
                 [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
                 [&](const Disconnected<Joystick> &j) { m_joystickManager->remove(j.source); },
                 [&](const Moved<JoystickAxis> &j) { m_joystickManager->update(j); },
@@ -253,203 +262,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                 []([[maybe_unused]] const auto &) {}},
             event);
 
-        static constexpr auto time_to_string = [](std::time_t now) -> std::string {
-            const auto tp = std::localtime(&now);
-            char buffer[32];
-            return std::strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", tp) ? buffer : "1970-01-01_00:00:00";
-        };
-
-        if (keyPressed) {
-            // todo : abstract glfw keyboard
-            const auto keyEvent = std::get<Pressed<Key>>(event);
-            if (keyEvent.source.key == GLFW_KEY_ESCAPE) this->close();
-#ifndef NDEBUG
-            if (keyEvent.source.key == GLFW_KEY_F1) m_show_debug_info = !m_show_debug_info;
-#endif
-            if (keyEvent.source.key == GLFW_KEY_F11) m_window->setFullscreen(!m_window->isFullscreen());
-            if (keyEvent.source.key == GLFW_KEY_F12) {
-                std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
-                const auto file = fmt::format(m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
-                if (!m_window->screenshot(file)) { spdlog::warn("failed to take a screenshot: {}", file); }
-            }
-        }
-
-        // note : should note draw at every frame = heavy
-        if (timeElapsed) {
-            const auto t = std::get<TimeElapsed>(event);
-            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
-
-            // should have only one entity cooldown
-            m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
-                if (!cd.is_in_cooldown) return;
-
-                if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
-                    cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
-                } else {
-                    cd.remaining_cooldown = std::chrono::milliseconds(0);
-                    cd.is_in_cooldown = false;
-                    setScreenshake(false);
-                }
-            });
-
-            // check if the spritesheet need to update the texture
-            m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
-                if (!sprite.speed.is_in_cooldown) return;
-
-                if (std::chrono::milliseconds{elapsed} < sprite.speed.remaining_cooldown) {
-                    sprite.speed.remaining_cooldown -= std::chrono::milliseconds{elapsed};
-                } else {
-                    sprite.speed.remaining_cooldown = std::chrono::milliseconds(0);
-                    sprite.speed.is_in_cooldown = false;
-                }
-            });
-
-            // update and reset the cooldown of the spritesheet
-            for (auto &i : m_world.view<Spritesheet>()) {
-                auto &sprite = m_world.get<Spritesheet>(i);
-                if (sprite.speed.is_in_cooldown) continue;
-                sprite.speed.is_in_cooldown = true;
-                sprite.speed.remaining_cooldown = sprite.speed.cooldown;
-                sprite.current_frame++;
-                sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations[sprite.current_animation].size());
-
-                auto &texture = m_world.get<Texture>(i);
-
-                DrawableFactory::fix_texture(
-                    m_world,
-                    i,
-                    m_settings.data_folder + sprite.file,
-                    {static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].x)
-                         / static_cast<float>(texture.width),
-                     static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].y)
-                         / static_cast<float>(texture.height),
-                     sprite.width / static_cast<float>(texture.width),
-                     sprite.height / static_cast<float>(texture.height)});
-            }
-
-            m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
-                vel.x += acc.x;
-                vel.y += acc.y;
-
-                // todo : add max velocity
-            });
-
-            // todo : exclude the d2::Hitbox on this system
-            //            m_world.view<d3::Position, d2::Velocity>().each(
-            //                [&elapsed](auto &pos, auto &vel) {
-            //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
-            //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
-            //                });
-
-            m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel) {
-                pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
-                pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
-            });
-
-            for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
-                auto &moving_pos = m_world.get<d3::Position>(moving);
-                auto &moving_vel = m_world.get<d2::Velocity>(moving);
-                auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
-
-                const auto new_pos = d3::Position{
-                    moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                    moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                    moving_pos.z};
-
-                bool collide = false;
-
-                d3::Position others_pos;
-                d2::HitboxSolid others_hitbox;
-
-                for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
-                    if (moving == others) continue;
-
-                    others_pos = m_world.get<d3::Position>(others);
-                    others_hitbox = m_world.get<d2::HitboxSolid>(others);
-
-                    if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, new_pos, others_hitbox, others_pos)) {
-                        // spdlog::warn("{} and {} are colliding !", moving, others);
-                        collide = true;
-                        break;
-                    }
-                }
-
-                if (!collide) {
-                    moving_pos = new_pos;
-                } else {
-                    moving_vel = {0.0f, 0.0f};
-#ifdef COLLISION_EXPERIMENTAL
-                    if (!d2::overlapped<d2::WITHOUT_EDGE>(
-                            moving_hitbox, d3::Position{new_pos.x, moving_pos.x, 0}, others_hitbox, others_pos)) {
-                        moving_vel.y = 0;
-                    } else if (!d2::overlapped<d2::WITHOUT_EDGE>(
-                                   moving_hitbox, d3::Position{moving_pos.y, new_pos.y, 0}, others_hitbox, others_pos)) {
-                        moving_vel.x = 0;
-                    }
-#endif
-                }
-            }
-
-#ifdef MODE_EPILEPTIC // change the color at every frame
-            for (const auto &i : m_world.view<Drawable, Color>()) {
-                auto &color = m_world.get<Color>(i);
-                const auto r = std::clamp(Color::r(color) - 0.01f, 0.0f, 1.0f);
-                const auto g = std::clamp(Color::g(color) - 0.01f, 0.0f, 1.0f);
-                const auto b = std::clamp(Color::b(color) - 0.01f, 0.0f, 1.0f);
-                DrawableFactory::fix_color(m_world, i, {r ? r : 1.0f, g ? g : 1.0f, b ? b : 1.0f});
-            }
-#endif
-
-            m_window->draw([&] {
-                m_game->drawUserInterface(m_world);
-
-#ifndef NDEBUG
-                if (isShowingDebugInfo()) {
-                    debugDrawJoystick();
-                    debugDrawDisplayOptions();
-                }
-#endif
-
-                ImGui::Render();
-
-                const auto background = m_game->getBackgroundColor();
-
-                ::glClearColor(background.r, background.g, background.b, 1.00f);
-                ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-                // todo : add rendering
-                // texture and no color
-                // no texture and no color
-
-                static std::decay_t<decltype(elapsed)> tmp = 0; // note : elapsed time since the start of the app
-                tmp += elapsed;
-
-                m_shader_colored->use();
-                m_shader_colored->setUniform<float>("time", static_cast<float>(tmp));
-                m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<Texture>)
-                    .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
-                        auto model = glm::dmat4(1.0);
-                        model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
-                        model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
-                        m_shader_colored->uploadUniformMat4("model", model);
-                        ::glBindVertexArray(drawable.VAO);
-                        ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-                    });
-
-                m_shader_colored_textured->use();
-                m_shader_colored_textured->setUniform<float>("time", static_cast<float>(tmp));
-                m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale>().each(
-                    [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
-                        auto model = glm::dmat4(1.0);
-                        model = glm::translate(model, glm::dvec3{pos.x, pos.y, pos.z});
-                        model = glm::scale(model, glm::dvec3{scale.x, scale.y, 1.0});
-                        m_shader_colored_textured->uploadUniformMat4("model", model);
-                        ::glBindTexture(GL_TEXTURE_2D, texture.texture);
-                        ::glBindVertexArray(drawable.VAO);
-                        ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
-                    });
-            });
-        }
+        if (timeElapsed) { this->tickOnce(std::get<TimeElapsed>(event)); }
 
         m_game->onUpdate(m_world, event);
     }
@@ -471,10 +284,187 @@ auto engine::Core::main(int argc, char **argv) -> int
     return 0;
 }
 
+auto engine::Core::tickOnce(const TimeElapsed &t) -> void
+{
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
+
+    // should have only one entity cooldown
+    m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
+        if (!cd.is_in_cooldown) return;
+
+        if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
+            cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+        } else {
+            cd.remaining_cooldown = std::chrono::milliseconds(0);
+            cd.is_in_cooldown = false;
+            setScreenshake(false);
+        }
+    });
+
+    // check if the spritesheet need to update the texture
+    m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
+        if (!sprite.speed.is_in_cooldown) return;
+
+        if (std::chrono::milliseconds{elapsed} < sprite.speed.remaining_cooldown) {
+            sprite.speed.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+        } else {
+            sprite.speed.remaining_cooldown = std::chrono::milliseconds(0);
+            sprite.speed.is_in_cooldown = false;
+        }
+    });
+
+    // update and reset the cooldown of the spritesheet
+    for (auto &i : m_world.view<Spritesheet>()) {
+        auto &sprite = m_world.get<Spritesheet>(i);
+        if (sprite.speed.is_in_cooldown) continue;
+        sprite.speed.is_in_cooldown = true;
+        sprite.speed.remaining_cooldown = sprite.speed.cooldown;
+        sprite.current_frame++;
+        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations[sprite.current_animation].size());
+
+        auto &texture = m_world.get<Texture>(i);
+
+        DrawableFactory::fix_texture(
+            m_world,
+            i,
+            m_settings.data_folder + sprite.file,
+            {static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].x)
+                 / static_cast<float>(texture.width),
+             static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].y)
+                 / static_cast<float>(texture.height),
+             sprite.width / static_cast<float>(texture.width),
+             sprite.height / static_cast<float>(texture.height)});
+    }
+
+    m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
+        vel.x += acc.x;
+        vel.y += acc.y;
+
+        // todo : add max velocity
+    });
+
+    // todo : exclude the d2::Hitbox on this system
+    //            m_world.view<d3::Position, d2::Velocity>().each(
+    //                [&elapsed](auto &pos, auto &vel) {
+    //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
+    //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+    //                });
+
+    m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel) {
+        pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+        pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+    });
+
+    for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
+        auto &moving_pos = m_world.get<d3::Position>(moving);
+        auto &moving_vel = m_world.get<d2::Velocity>(moving);
+        auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
+
+        const auto new_pos = d3::Position{
+            moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+            moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+            moving_pos.z};
+
+        bool collide = false;
+
+        d3::Position others_pos;
+        d2::HitboxSolid others_hitbox;
+
+        for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
+            if (moving == others) continue;
+
+            others_pos = m_world.get<d3::Position>(others);
+            others_hitbox = m_world.get<d2::HitboxSolid>(others);
+
+            if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, new_pos, others_hitbox, others_pos)) {
+                collide = true;
+                break;
+            }
+        }
+
+        if (!collide) {
+            moving_pos = new_pos;
+        } else {
+            moving_vel = {0.0f, 0.0f};
+#ifdef COLLISION_EXPERIMENTAL
+            if (!d2::overlapped<d2::WITHOUT_EDGE>(
+                    moving_hitbox, d3::Position{new_pos.x, moving_pos.x, 0}, others_hitbox, others_pos)) {
+                moving_vel.y = 0;
+            } else if (!d2::overlapped<d2::WITHOUT_EDGE>(
+                           moving_hitbox, d3::Position{moving_pos.y, new_pos.y, 0}, others_hitbox, others_pos)) {
+                moving_vel.x = 0;
+            }
+#endif
+        }
+    }
+
+#ifdef MODE_EPILEPTIC // change the color at every frame
+    for (const auto &i : m_world.view<Drawable, Color>()) {
+        auto &color = m_world.get<Color>(i);
+        const auto r = std::clamp(Color::r(color) - 0.01f, 0.0f, 1.0f);
+        const auto g = std::clamp(Color::g(color) - 0.01f, 0.0f, 1.0f);
+        const auto b = std::clamp(Color::b(color) - 0.01f, 0.0f, 1.0f);
+        DrawableFactory::fix_color(m_world, i, {r ? r : 1.0f, g ? g : 1.0f, b ? b : 1.0f});
+    }
+#endif
+
+    m_window->draw([&] {
+        m_game->drawUserInterface(m_world);
+
+#ifndef NDEBUG
+        if (isShowingDebugInfo()) {
+            debugDrawJoystick();
+            debugDrawDisplayOptions();
+        }
+#endif
+
+        ImGui::Render();
+
+        const auto background = m_game->getBackgroundColor();
+
+        ::glClearColor(background.r, background.g, background.b, 1.00f);
+        ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // todo : add rendering
+        // texture and no color
+        // no texture and no color
+
+        static std::decay_t<decltype(elapsed)> tmp = 0; // note : elapsed time since the start of the app
+        tmp += elapsed;
+
+        m_shader_colored->use();
+        m_shader_colored->setUniform<float>("time", static_cast<float>(tmp));
+        m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<Texture>)
+            .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
+                auto model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
+                model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
+                m_shader_colored->setUniform("model", model);
+                ::glBindVertexArray(drawable.VAO);
+                ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+            });
+
+        m_shader_colored_textured->use();
+        m_shader_colored_textured->setUniform<float>("time", static_cast<float>(tmp));
+        m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale>().each(
+            [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
+                auto model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
+                model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
+                m_shader_colored_textured->setUniform("model", model);
+                ::glBindTexture(GL_TEXTURE_2D, texture.texture);
+                ::glBindVertexArray(drawable.VAO);
+                ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+            });
+    });
+}
+
 auto engine::Core::updateView(const glm::mat4 &view) -> void
 {
-    m_shader_colored->uploadUniformMat4("viewProj", view);
-    m_shader_colored_textured->uploadUniformMat4("viewProj", view);
+    m_shader_colored->use();
+    m_shader_colored->setUniform("viewProj", view);
+    m_shader_colored_textured->use();
+    m_shader_colored_textured->setUniform("viewProj", view);
 }
 
 auto engine::Core::setScreenshake(bool value, std::chrono::milliseconds delay) -> void

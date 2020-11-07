@@ -3,7 +3,7 @@
 #include <memory>
 
 #include <Engine/Event/Event.hpp>
-#include <Engine/Game.hpp>
+#include <Engine/api/Game.hpp>
 #include <Engine/Graphics/Shader.hpp>
 #include <Engine/Camera.hpp>
 #include <Engine/audio/Sound.hpp>
@@ -20,7 +20,7 @@ namespace game {
 
 class GameLogic;
 
-class ThePurge : public engine::Game {
+class ThePurge : public engine::api::Game {
 public:
     ThePurge();
 

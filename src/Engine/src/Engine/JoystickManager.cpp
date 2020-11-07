@@ -5,6 +5,8 @@
 #include "Engine/Graphics/Shader.hpp"    // note : should not require this header here
 #include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Settings.hpp"           // note : should not require this header here
+#include "Engine/component/Color.hpp"
+#include "Engine/component/Texture.hpp"
 #include "Engine/Core.hpp"
 
 engine::JoystickManager *engine::JoystickManager::s_instance{nullptr};

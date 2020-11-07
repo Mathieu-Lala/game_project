@@ -2,7 +2,9 @@
 #include <spdlog/spdlog.h>
 #include <sstream>
 
-#include "Engine/Core.hpp"
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
+#include <Engine/Core.hpp>
 
 game::DebugConsole::DebugConsole(ThePurge &game) : m_game(game)
 {
