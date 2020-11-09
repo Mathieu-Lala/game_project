@@ -107,7 +107,8 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](auto) {},
             },
             e);
-
+        auto &pos = world.get<engine::d3::Position>(player);
+        m_camera.setCenter({pos.x, pos.y});
         if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
     }
 }
@@ -250,7 +251,8 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
             // default camera value to see the generated terrain properly
             m_camera.setCenter(glm::vec2(13, 22));
-            m_camera.setViewportSize(glm::vec2(109, 64));
+            // m_camera.setViewportSize(glm::vec2(109, 64));
+            m_camera.setViewportSize(glm::vec2(50, 35));
 
             m_logics.onFloorChange.publish(world);
 
