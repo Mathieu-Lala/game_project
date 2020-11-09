@@ -81,45 +81,22 @@ auto engine::Shader::fromFile(const std::string_view vFile, const std::string_vi
 auto engine::Shader::use() -> void { ::glUseProgram(ID); }
 
 template<>
-auto engine::Shader::setUniform<bool>(const std::string_view name, bool v) -> void
+auto engine::Shader::setUniform(const std::string_view name, bool v) -> void
 {
-    if (const auto location = glGetUniformLocation(ID, name.data()); location != -1)
+    if (const auto location = ::glGetUniformLocation(ID, name.data()); location != -1)
         ::glUniform1ui(location, v);
 }
 
 template<>
-auto engine::Shader::setUniform<float>(const std::string_view name, float v) -> void
+auto engine::Shader::setUniform(const std::string_view name, float v) -> void
 {
-    if (const auto location = glGetUniformLocation(ID, name.data()); location != -1)
+    if (const auto location = ::glGetUniformLocation(ID, name.data()); location != -1)
         ::glUniform1f(location, v);
 }
 
-auto engine::Shader::uploadUniformMat4(const std::string &name, const ::glm::mat4 &mat) -> void
+template<>
+auto engine::Shader::setUniform(const std::string_view name, glm::mat4 mat) -> void
 {
-    use();
-
-    if (const auto location = glGetUniformLocation(ID, name.c_str()); location != -1)
+    if (const auto location = ::glGetUniformLocation(ID, name.data()); location != -1)
         ::glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
-    else {
-        spdlog::warn("Could not find uniform '{}' in ID : {}", name, ID);
-
-        GLint count;
-        ::glGetProgramiv(ID, GL_ACTIVE_UNIFORMS, &count);
-
-        if (auto err = glGetError(); err != GL_NO_ERROR) {
-            spdlog::error("Error {} : {}", err, ::glewGetErrorString(err));
-            return;
-        }
-        spdlog::warn("Active Uniforms: {}", count);
-
-        GLsizei length;
-        std::array<char, 16ul> gl_name;
-        for (int i = 0; i < count; i++) {
-            GLint size;
-            GLenum type;
-            ::glGetActiveUniform(
-                ID, static_cast<GLuint>(i), static_cast<GLsizei>(gl_name.size()), &length, &size, &type, gl_name.data());
-            spdlog::warn("  Uniform {} Type: {} Name: {}", i, type, gl_name.data());
-        }
-    }
 }

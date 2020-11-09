@@ -11,6 +11,7 @@
 
 #include "component/all.hpp"
 #include "level/MapGenerator.hpp"
+#include "models/Class.hpp"
 
 namespace game {
 
@@ -22,9 +23,14 @@ public:
 
     GameLogic(ThePurge &game);
 
-    // Init movement signal player
     entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> movement;
     entt::sink<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> sinkMovement{movement};
+
+    entt::sigh<void(entt::registry &)> onGameStarted;
+    entt::sink<void(entt::registry &)> sinkOnGameStarted{onGameStarted};
+
+    entt::sigh<void(entt::registry &, entt::entity player, const Class &)> onPlayerBuyClass;
+    entt::sink<void(entt::registry &, entt::entity player, const Class &)> sinkOnPlayerBuyClass{onPlayerBuyClass};
 
     // entityLogic signal loop
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
@@ -41,6 +47,10 @@ public:
 
 
     auto move(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void;
+
+    auto on_game_started(entt::registry &world) -> void;
+
+    auto apply_class_to_player(entt::registry &world, entt::entity player, const Class &) -> void;
 
     auto ai_pursue(entt::registry &world, const engine::TimeElapsed &dt) -> void;
     auto update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void;

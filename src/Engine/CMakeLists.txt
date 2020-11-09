@@ -21,7 +21,7 @@ target_compile_definitions(glfw_imgui_impl PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 configure_file(include/Engine/details/Version.hpp.in include/Engine/details/Version.hpp @ONLY)
 
 add_library(
-  engine STATIC
+  engine_core STATIC
   src/Engine/Core.cpp
   src/Engine/Graphics/Window.cpp
   src/Engine/Graphics/Image.cpp
@@ -37,10 +37,10 @@ add_library(
   src/Engine/audio/AudioFileBuffer.cpp
   src/Engine/widgets/ImGuiConsole.cpp)
 
-target_include_directories(engine PUBLIC include ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}
-                                         ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(engine_core PUBLIC include ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}
+                                              ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_link_libraries(
-  engine
+  engine_core
   PUBLIC project_options
          project_warnings
          project_pch
@@ -56,5 +56,9 @@ target_link_libraries(
          CONAN_PKG::openal)
 
 if(MSVC)
-  target_compile_definitions(engine PUBLIC NOMINMAX)
+  target_compile_definitions(engine_core PUBLIC NOMINMAX)
 endif()
+
+add_executable(engine_main src/Engine/main.cpp)
+target_link_libraries(engine_main PRIVATE engine_core ThePURGE)
+# note : should not link with ThePURGE, but load it at runtime

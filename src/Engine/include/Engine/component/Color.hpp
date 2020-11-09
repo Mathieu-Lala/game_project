@@ -8,7 +8,6 @@
 namespace engine {
 
 struct Color {
-    // array of value normalized between 0.0 and 1.0
     std::array<float, 12ul> vertices{};
     std::uint32_t VBO{0u};
 

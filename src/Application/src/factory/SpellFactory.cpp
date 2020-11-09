@@ -1,8 +1,10 @@
 #include <chrono>
 #include <spdlog/spdlog.h>
 
-#include <Engine/Core.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
+#include <Engine/Core.hpp>
 
 #include "component/all.hpp"
 #include "factory/SpellFactory.hpp"
@@ -28,7 +30,7 @@ auto game::SpellFactory::create<game::SpellFactory::STICK_ATTACK>(
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
-    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x / 2.0, caster_pos.y + direction.y / 2.0, -1.0);
+    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
     world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
     world.emplace<engine::Source>(spell, caster);
@@ -54,17 +56,21 @@ auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &wo
     holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_cast.wav")->play();
 
     const auto &caster_pos = world.get<engine::d3::Position>(caster);
+    const auto &attack_damage = world.get<game::AttackDamage>(caster);
+
+    // note : should be in db.json
+    static constexpr auto speed = 5.0;
 
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
     world.emplace<game::Lifetime>(spell, 2000ms);
-    world.emplace<game::AttackDamage>(spell, 15.0f);
+    world.emplace<game::AttackDamage>(spell, attack_damage.damage * 1.5f);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, {0.6, 0.6, 1});
-    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x / 2.0, caster_pos.y + direction.y / 2.0, -1.0);
-    world.emplace<engine::d2::Velocity>(spell, direction.x * 2.0, direction.y * 2.0);
+    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0); // note : why -1
+    world.emplace<engine::d2::Velocity>(spell, direction.x * speed , direction.y * speed);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
-    world.emplace<engine::d2::HitboxSolid>(spell, 0.7, 0.7);
+    world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
     world.emplace<engine::Source>(spell, caster);
     spdlog::info("done");
     return spell;

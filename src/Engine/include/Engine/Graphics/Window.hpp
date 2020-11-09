@@ -58,6 +58,8 @@ public:
 
     auto setFullscreen(bool fullscreen) -> void;
 
+    bool screenshot(const std::string_view filename);
+
 private:
     static Window *s_instance;
 
@@ -67,10 +69,6 @@ private:
     ::GLFWmonitor *m_monitor{nullptr};
     ::GLFWwindow *m_handle{nullptr};
     ::ImGuiContext *m_ui_context{nullptr};
-
-    //
-    // Events
-    //
 
     std::vector<Event> m_events;
 
@@ -86,8 +84,6 @@ private:
 
     static auto callback_eventMouseMoved(GLFWwindow *window, double x, double y) -> void;
 };
-
-// defined in Window.cpp
 
 template<>
 auto Window::applyEvent(const Pressed<MouseButton> &) -> void;

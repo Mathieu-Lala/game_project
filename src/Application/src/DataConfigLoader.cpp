@@ -9,73 +9,57 @@
 #include <Engine/Event/Event.hpp>
 #include <Engine/Settings.hpp>
 #include <Engine/audio/AudioManager.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/Core.hpp>
 
-#include "classes/ClassFactory.hpp"
 #include "DataConfigLoader.hpp"
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
 
-using namespace std::chrono_literals; // ms ..
+using namespace std::chrono_literals;
 
-auto game::DataConfigLoader::loadPlayerConfigFile(const std::string_view filename, entt::registry &world, entt::entity &player)
-    -> entt::entity
+auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> classes::Database
 {
-    static auto holder = engine::Core::Holder{};
+    spdlog::info("Loading class database file: '{}'", path.data());
 
-    spdlog::info("Create a new Player from the file: " + std::string(filename.data()));
-
-    std::ifstream file(filename.data());
+    std::ifstream file(path.data());
 
     if (!file.is_open()) { spdlog::error("Can't open the given file"); }
-    nlohmann::json data = nlohmann::json::parse(file);
+    nlohmann::json jsonData = nlohmann::json::parse(file);
 
-    world.emplace<entt::tag<"player"_hs>>(player);
-    world.emplace<engine::d3::Position>(player, 0.0, 0.0, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
-    world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
-    world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-    world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
-    world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
-    world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
-    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + "textures/player.jpeg");
-    world.emplace<Health>(player, float(data["stats"]["hp"]), float(data["stats"]["hp"]));
-    world.emplace<AttackDamage>(player, data["stats"]["atk"]);
-    world.emplace<Level>(player, 0u, 0u, 10u);
-    world.emplace<KeyPicker>(player);
-    world.emplace<SpellSlots>(player);
 
-    return player;
-}
+    classes::Database database;
 
-auto game::DataConfigLoader::loadClassConfigFile(
-    const std::string_view filename, [[maybe_unused]] entt::registry &world, [[maybe_unused]] entt::entity &player, Classes cl)
-    -> void
-{
-    spdlog::info("Create a new Class from the file: " + std::string(filename.data()));
+    for (Class::ID id = 0; const auto &[name, data] : jsonData.items()) {
+        std::vector<SpellFactory::ID> spells;
+        for (const auto &spell : data["spells"]) spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>()));
 
-    std::ifstream file(filename.data());
+        database[id] = Class{
+            .id = id,
+            .name = name,
+            .description = data["desc"].get<std::string>(),
+            .iconPath = data["icon"],
+            .spells = spells,
 
-    if (!file.is_open()) { spdlog::error("Can't open the given file"); }
-    nlohmann::json data = nlohmann::json::parse(file);
+            .maxHealth = data["maxHealth"].get<float>(),
+            .damage = data["damage"].get<float>(),
+            .childrenClass = {},
+        };
 
-    nlohmann::json classRoot = [cl, &data]() {
-        switch (cl) {
-        case Classes::FARMER: return data["farmer"];
-        case Classes::SHOOTER: return data["shooter"];
-        case Classes::SOLDIER: return data["soldier"];
-        case Classes::SORCERER: return data["sorcerer"];
-        default: std::abort();
+        id++;
+    }
+
+    for (auto &[id, dbClass] : database) {
+        for (const auto &child : jsonData[dbClass.name]["childrenClass"]) {
+            auto c = classes::getByName(database, child);
+
+            if (!c)
+                spdlog::warn("Unknown class '{}'. Ignoring", child);
+            else
+                dbClass.childrenClass.push_back(c.value()->id);
         }
-    }();
+    }
 
-    world.emplace<ClassFactory>(
-        player, cl, classRoot["desc"], classRoot["cooldown"], classRoot["range"], classRoot["damage"], classRoot["isRanged"]);
-
-    for (auto i = 0ul; auto &spellId : classRoot["spellsId"])
-        world.get<SpellSlots>(player).spells[i++] = Spell::create(static_cast<SpellFactory::ID>(spellId.get<int>()));
-
-    spdlog::info("{} class successfully created", classRoot["name"]);
+    return database;
 }
-
-void game::DataConfigLoader::reloadFiles() { std::cout << "Reload all files" << std::endl; }

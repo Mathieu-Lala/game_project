@@ -1,4 +1,5 @@
 #include <spdlog/spdlog.h>
+#include <stb_image_write.h>
 
 #include "Engine/Graphics/third_party.hpp"
 
@@ -8,6 +9,8 @@
 #include "Engine/Event/JoystickManager.hpp"
 #include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Settings.hpp"           // note : should not require this header here
+#include "Engine/component/Color.hpp"
+#include "Engine/component/Texture.hpp"
 #include "Engine/Core.hpp"
 
 engine::Window *engine::Window::s_instance{nullptr};
@@ -56,6 +59,8 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
         spdlog::info("Engine::Window Fullscreen");
         setFullscreen(true);
     }
+
+    ::glViewport(0, 0, m_size.x, m_size.y);
 }
 
 engine::Window::~Window()
@@ -93,7 +98,6 @@ auto engine::Window::getNextEvent() -> std::optional<Event>
 
 auto engine::Window::isFullscreen() -> bool { return ::glfwGetWindowMonitor(m_handle) != nullptr; }
 
-// todo : trigger and engine::Event instead
 auto engine::Window::setFullscreen(bool fullscreen) -> void
 {
     if (isFullscreen() == fullscreen) return;
@@ -110,6 +114,35 @@ auto engine::Window::setFullscreen(bool fullscreen) -> void
     }
 }
 
+bool engine::Window::screenshot(const std::string_view filename)
+{
+    GLint viewport[4];
+
+    ::glGetIntegerv(GL_VIEWPORT, viewport);
+    const auto &x = viewport[0];
+    const auto &y = viewport[1];
+    const auto &width = viewport[2];
+    const auto &height = viewport[3];
+
+    constexpr auto CHANNEL = 4ul;
+    std::vector<char> pixels(static_cast<std::size_t>(width * height) * CHANNEL);
+
+    ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    ::glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+    std::array<char, CHANNEL> pixel;
+    for (auto j = 0; j < height / 2; ++j)
+        for (auto i = 0; i < width; ++i) {
+            const auto top = static_cast<std::size_t>(i + j * width) * pixel.size();
+            const auto bottom = static_cast<std::size_t>(i + (height - j - 1) * width) * pixel.size();
+
+            std::memcpy(pixel.data(),           pixels.data() + top,    pixel.size());
+            std::memcpy(pixels.data() + top,    pixels.data() + bottom, pixel.size());
+            std::memcpy(pixels.data() + bottom, pixel.data(),           pixel.size());
+        }
+
+    return !!::stbi_write_png(filename.data(), width, height, 4, pixels.data(), 0);
+}
 
 auto engine::Window::isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
 
@@ -119,7 +152,10 @@ auto engine::Window::render() -> void { ::glfwSwapBuffers(m_handle); }
 
 auto engine::Window::setActive() -> void { ::glfwMakeContextCurrent(m_handle); }
 
-auto engine::Window::setSize(glm::ivec2 &&size) -> void { ::glfwSetWindowSize(m_handle, size.x, size.y); }
+auto engine::Window::setSize(glm::ivec2 &&size) -> void {
+    ::glfwSetWindowSize(m_handle, size.x, size.y);
+    ::glViewport(0, 0, size.x, size.y);
+}
 
 auto engine::Window::setPosition(glm::ivec2 &&pos) -> void { ::glfwSetWindowPos(m_handle, pos.x, pos.y); }
 

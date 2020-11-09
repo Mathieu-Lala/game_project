@@ -11,7 +11,6 @@ DISABLE_WARNING_POP
 // Default viewport ranges from -1 to +1
 engine::Camera::Camera() { setViewportSize(glm::ivec2{2, 2}); }
 
-
 auto engine::Camera::setCenter(::glm::vec2 point) -> void
 {
     m_pos.x = point.x;

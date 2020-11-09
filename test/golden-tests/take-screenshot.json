@@ -1,0 +1,64 @@
+[
+    {
+        "TimeElapsed": {
+            "elapsed": {
+                "nanoseconds": 0
+            }
+        }
+    },
+    {
+        "OpenWindow": null
+    },
+    {
+        "MoveWindow": {
+            "x": 0,
+            "y": 0
+        }
+    },
+    {
+        "TimeElapsed": {
+            "elapsed": {
+                "nanoseconds": 1000000
+            }
+        }
+    },
+    {
+        "Pressed": {
+            "source": {
+                "MouseButton": {
+                    "button": 0,
+                    "mouse": {
+                        "Mouse": {
+                            "x": 938.0,
+                            "y": 531.0
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        "TimeElapsed": {
+            "elapsed": {
+                "nanoseconds": 1000000
+            }
+        }
+    },
+    {
+        "Pressed": {
+            "source": {
+                "Key": {
+                    "alt": false,
+                    "control": false,
+                    "key": 301,
+                    "scancode": 96,
+                    "shift": false,
+                    "system": false
+                }
+            }
+        }
+    },
+    {
+        "CloseWindow": null
+    }
+]

@@ -6,7 +6,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${CMAKE_BUILD_TYPE}' as none was specified.")
 endif()
 
-message(STATUS "The build configuration is'${CMAKE_BUILD_TYPE}'.")
+message(STATUS "The build configuration is '${CMAKE_BUILD_TYPE}'.")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -27,3 +27,5 @@ option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+
+set(CMAKE_DEBUG_POSTFIX "-d")

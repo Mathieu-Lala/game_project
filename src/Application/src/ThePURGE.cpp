@@ -7,6 +7,8 @@
 #include <Engine/Event/Event.hpp>
 #include <Engine/audio/AudioManager.hpp>
 #include <Engine/Settings.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/Core.hpp>
 
 #include <Engine/helpers/ImGui.hpp>
@@ -20,23 +22,32 @@
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
+#include "DataConfigLoader.hpp"
+
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() :
-    m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr))), m_logics{*this}, m_debugConsole(*this)
+game::ThePurge::ThePurge() {}
+
+auto game::ThePurge::onDestroy(entt::registry &) -> void {}
+
+auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
+
+    m_nextFloorSeed = static_cast<std::uint32_t>(std::time(nullptr));
+    m_logics = std::make_unique<GameLogic>(*this);
+    m_debugConsole = std::make_unique<DebugConsole>(*this);
 
     m_dungeonMusic =
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
     m_dungeonMusic->setVolume(0.1f).setLoop(true);
 
-    m_debugConsole.info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
+    m_debugConsole->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
+
+    m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "config/classes.json");
+
+    setState(State::LOADING);
 }
-
-auto game::ThePurge::onDestroy(entt::registry &) -> void {}
-
-auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void { setState(State::LOADING); }
 
 auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
@@ -46,7 +57,6 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
         std::visit(
             engine::overloaded{
                 [&](const engine::Pressed<engine::Key> &key) {
-                    // not really working perfectly
                     switch (key.source.key) {
                     case GLFW_KEY_UP: m_camera.move({0, 1}); break;
                     case GLFW_KEY_RIGHT: m_camera.move({1, 0}); break;
@@ -55,17 +65,17 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_O:
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
-                        break;                                                                     // player stop
-                    case GLFW_KEY_I: m_logics.movement.publish(world, player, {0.0, 0.1}); break;  // go top
-                    case GLFW_KEY_K: m_logics.movement.publish(world, player, {0.0, -0.1}); break; // go bottom
-                    case GLFW_KEY_L: m_logics.movement.publish(world, player, {0.1, 0.0}); break;  // go right
-                    case GLFW_KEY_J: m_logics.movement.publish(world, player, {-0.1, 0.0}); break; // go left
+                        break;                                                                      // player stop
+                    case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break;  // go top
+                    case GLFW_KEY_K: m_logics->movement.publish(world, player, {0.0, -0.1}); break; // go bottom
+                    case GLFW_KEY_L: m_logics->movement.publish(world, player, {0.1, 0.0}); break;  // go right
+                    case GLFW_KEY_J: m_logics->movement.publish(world, player, {-0.1, 0.0}); break; // go left
                     case GLFW_KEY_U: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
                     case GLFW_KEY_Y: {
@@ -73,36 +83,17 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
                     default: return;
                     }
                 },
-                [&](const engine::TimeElapsed &dt) { m_logics.gameUpdated.publish(world, dt); },
-                [&](const engine::Pressed<engine::JoystickButton> &joy) { 
-                    if (joy.source.button == engine::Joystick::Buttons::ACTION_BOTTOM) {
-                        auto &spell = world.get<SpellSlots>(player).spells[0];
-                        if (!spell.has_value()) return;
-
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                    } else if (joy.source.button == engine::Joystick::Buttons::ACTION_RIGHT) {
-                        auto &spell = world.get<SpellSlots>(player).spells[1];
-                        if (!spell.has_value()) return;
-
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics.castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                    }
-                },
+                [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
-                    if (joy.source.axis == engine::Joystick::Axis::LSX || joy.source.axis == engine::Joystick::Axis::LSY) {
-                        auto joystick = holder.instance->getJoystick(joy.source.id);
-                        m_logics.movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
-                    }
-                    else if (joy.source.axis == engine::Joystick::Axis::RSX || joy.source.axis == engine::Joystick::Axis::RSY) {
-                        std::cout << "Camera joystick" << std::endl;
-                    }
+                    auto joystick = holder.instance->getJoystick(joy.source.id);
+                    m_logics->movement.publish(
+                        world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
                 },
                 [&](auto) {},
             },
@@ -189,48 +180,47 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
 
     ImGui::Checkbox("Spam next floor", &spamNextFloor);
 
-    if (ImGui::Button("Next floor") || spamNextFloor) m_logics.onFloorChange.publish(world);
+    if (ImGui::Button("Next floor") || spamNextFloor) m_logics->onFloorChange.publish(world);
 
     ImGui::SliderInt(
-        "Min room size", &m_logics.m_map_generation_params.minRoomSize, 0, m_logics.m_map_generation_params.maxRoomSize);
+        "Min room size", &m_logics->m_map_generation_params.minRoomSize, 0, m_logics->m_map_generation_params.maxRoomSize);
     ImGui::SliderInt(
-        "Max room size", &m_logics.m_map_generation_params.maxRoomSize, m_logics.m_map_generation_params.minRoomSize, 50);
+        "Max room size", &m_logics->m_map_generation_params.maxRoomSize, m_logics->m_map_generation_params.minRoomSize, 50);
     ImGui::Separator();
 
-    // Assuming std::size_t is uint32_t
-    ImGui::InputScalar("Min room count", ImGuiDataType_U32, &m_logics.m_map_generation_params.minRoomCount);
-    ImGui::InputScalar("Max room count", ImGuiDataType_U32, &m_logics.m_map_generation_params.maxRoomCount);
+    ImGui::InputScalar("Min room count", ImGuiDataType_U64, &m_logics->m_map_generation_params.minRoomCount);
+    ImGui::InputScalar("Max room count", ImGuiDataType_U64, &m_logics->m_map_generation_params.maxRoomCount);
     ImGui::Text("note: actual room count may be smaller if there is not enough space");
     ImGui::Separator();
 
-    ImGui::DragInt("Max dungeon width", &m_logics.m_map_generation_params.maxDungeonWidth, 0, 500);
-    ImGui::DragInt("Max dungeon height", &m_logics.m_map_generation_params.maxDungeonHeight, 0, 500);
+    ImGui::DragInt("Max dungeon width", &m_logics->m_map_generation_params.maxDungeonWidth, 0, 500);
+    ImGui::DragInt("Max dungeon height", &m_logics->m_map_generation_params.maxDungeonHeight, 0, 500);
     ImGui::Separator();
 
     ImGui::SliderInt(
         "Min corridor width",
-        &m_logics.m_map_generation_params.minCorridorWidth,
+        &m_logics->m_map_generation_params.minCorridorWidth,
         0,
-        m_logics.m_map_generation_params.maxCorridorWidth);
+        m_logics->m_map_generation_params.maxCorridorWidth);
     ImGui::SliderInt(
         "Max corridor width",
-        &m_logics.m_map_generation_params.maxCorridorWidth,
-        m_logics.m_map_generation_params.minCorridorWidth,
+        &m_logics->m_map_generation_params.maxCorridorWidth,
+        m_logics->m_map_generation_params.minCorridorWidth,
         50);
     ImGui::Separator();
 
-    ImGui::SliderFloat("Enemy per block", &m_logics.m_map_generation_params.mobDensity, 0, 1);
+    ImGui::SliderFloat("Enemy per block", &m_logics->m_map_generation_params.mobDensity, 0, 1);
 
     ImGui::End();
 }
 
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
-    static auto holder = engine::Core::Holder{};
+    [[maybe_unused]] static auto holder = engine::Core::Holder{};
 
 #ifndef NDEBUG
     if (holder.instance->isShowingDebugInfo()) {
-        m_debugConsole.draw();
+        m_debugConsole->draw();
         ImGui::ShowDemoWindow();
     }
 #endif
@@ -241,21 +231,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         // note : this block could be launch in a future
         if (ImGui::Button("Start the game")) {
-            holder.instance->getAudioManager()
-                .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
-                ->setVolume(0.2f)
-                .play();
-            m_dungeonMusic->play();
-
-            player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-
-            // default camera value to see the generated terrain properly
-            m_camera.setCenter(glm::vec2(13, 22));
-            // m_camera.setViewportSize(glm::vec2(109, 64));
-            m_camera.setViewportSize(glm::vec2(50, 35));
-
-            m_logics.onFloorChange.publish(world);
-
+            m_logics->onGameStarted.publish(world);
             setState(State::IN_GAME);
         }
 

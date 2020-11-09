@@ -1,7 +1,9 @@
 #pragma once
 
+#include <memory>
+
 #include <Engine/Event/Event.hpp>
-#include <Engine/Game.hpp>
+#include <Engine/api/Game.hpp>
 #include <Engine/Graphics/Shader.hpp>
 #include <Engine/Camera.hpp>
 #include <Engine/audio/Sound.hpp>
@@ -12,20 +14,17 @@
 
 #include "level/MapGenerator.hpp"
 #include "GameLogic.hpp"
+#include "models/ClassDatabase.hpp"
 
 namespace game {
 
 class GameLogic;
 
-class ThePurge : public engine::Game {
+class ThePurge : public engine::api::Game {
 public:
     ThePurge();
 
-    enum class State {
-        LOADING,
-        IN_GAME,
-        GAME_OVER
-    };
+    enum class State { LOADING, IN_GAME, GAME_OVER };
 
     auto onCreate(entt::registry &world) -> void final;
 
@@ -45,8 +44,11 @@ public:
         return m_state == State::GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};
     }
 
-    auto getLogics() -> GameLogic & { return m_logics; }
+    auto getLogics() -> GameLogic & { return *m_logics; }
     auto getMusic() -> std::shared_ptr<engine::Sound> { return m_dungeonMusic; }
+
+    auto getClassDatabase() -> const classes::Database & { return m_classDatabase; }
+    auto getCamera() -> engine::Camera & { return m_camera; }
 
 private:
     auto goToNextFloor(entt::registry &world) -> void;
@@ -61,11 +63,13 @@ private:
 
     engine::Camera m_camera; // note : should be in engine::Core
 
-    GameLogic m_logics;
+    std::unique_ptr<GameLogic> m_logics;
 
     std::shared_ptr<engine::Sound> m_dungeonMusic;
 
-    DebugConsole m_debugConsole;
+    std::unique_ptr<DebugConsole> m_debugConsole;
+
+    classes::Database m_classDatabase;
 };
 
 } // namespace game

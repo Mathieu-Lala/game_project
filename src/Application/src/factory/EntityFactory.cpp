@@ -1,5 +1,7 @@
-#include <Engine/Core.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
+#include <Engine/Core.hpp>
 
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
@@ -98,6 +100,7 @@ auto game::EntityFactory::create<game::EntityFactory::WALL>(entt::registry &worl
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/wall.jpg");
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
     world.emplace<entt::tag<"terrain"_hs>>(e);
+    world.emplace<entt::tag<"wall"_hs>>(e);
     return e;
 }
 
@@ -150,8 +153,8 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
     world.emplace<entt::tag<"enemy"_hs>>(e);
     world.emplace<entt::tag<"boss"_hs>>(e);
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_ENEMY>());
-    world.emplace<engine::d2::Velocity>(e, 0.01 * (std::rand() & 1), 0.01 * (std::rand() & 1));
-    world.emplace<engine::d2::Scale>(e, size.x, size.y); // 3 3
+    world.emplace<engine::d2::Velocity>(e, (std::rand() & 1) ? -0.05 : 0.05, (std::rand() & 1) ? -0.05 : 0.05);
+    world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::d2::HitboxSolid>(e, 3.0, 3.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     world.emplace<game::ViewRange>(e, 10.0f);
@@ -180,10 +183,21 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
 
     auto player = world.create();
 
-    player = DataConfigLoader::loadPlayerConfigFile(
-        holder.instance->settings().data_folder + "config/player.json", world, player);
-    DataConfigLoader::loadClassConfigFile(
-        holder.instance->settings().data_folder + "config/classes.json", world, player, Classes::FARMER);
+    world.emplace<entt::tag<"player"_hs>>(player);
+    world.emplace<engine::d3::Position>(player, 0.0, 0.0, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
+    world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
+    world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
+    world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
+    world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
+    world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
+    engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
+    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + "textures/player.jpeg");
+    world.emplace<Health>(player, 1.f, 1.f);
+    world.emplace<AttackDamage>(player, 0.f);
+    world.emplace<Level>(player, 0u, 0u, 10u);
+    world.emplace<KeyPicker>(player);
+    world.emplace<SpellSlots>(player);
+    world.emplace<Classes>(player);
 
     return player;
 }

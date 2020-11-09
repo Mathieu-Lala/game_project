@@ -5,12 +5,13 @@
 #include <Engine/audio/AudioManager.hpp> // note : should not require this header here
 #include <Engine/Graphics/Window.hpp>    // note : should not require this header here
 #include <Engine/Settings.hpp>           // note : should not require this header here
+#include <Engine/component/Color.hpp>
+#include <Engine/component/Texture.hpp>
 #include <Engine/Core.hpp>
 
-#include "GameLogic.hpp" // note : should not require this header here
+// tmp
 #include "ThePURGE.hpp"
 
-// todo : move the main in the engine and not the application
 int main(int argc, char **argv)
 try {
     auto holder = engine::Core::Holder::init();
