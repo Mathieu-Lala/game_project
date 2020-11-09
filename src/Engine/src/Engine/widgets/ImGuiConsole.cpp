@@ -93,6 +93,7 @@ void engine::widget::ImGuiConsole::draw(bool *p_open)
             },
             static_cast<void *>(this))) {
         execute_command(trim(m_input_buffer.data()).value_or("syntax error"));
+        m_input_buffer[0] = '\0';
         reclaim_focus = true;
     }
 

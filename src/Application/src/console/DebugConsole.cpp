@@ -12,10 +12,6 @@ game::DebugConsole::DebugConsole(ThePurge &game) : m_game(game)
     m_console.setCommandAutoCompletion(m_commands.getCommands());
 }
 
-void game::DebugConsole::info(const std::string_view str) { m_console.logAdd(str); }
-void game::DebugConsole::warn(const std::string_view str) { m_console.logAdd("[warn] {}", str); }
-void game::DebugConsole::error(const std::string_view str) { m_console.logAdd("[error] {}", str); }
-
 void game::DebugConsole::handleCmd(const std::string_view line)
 {
     static engine::Core::Holder holder{};
@@ -42,7 +38,7 @@ void game::DebugConsole::handleCmd(const std::string_view line)
     }
 
     try {
-        handler(holder.instance->getWorld(), m_game, std::move(args));
+        handler(holder.instance->getWorld(), m_game, std::move(args), *this);
     } catch (const std::exception &e) {
         error(e.what());
     }

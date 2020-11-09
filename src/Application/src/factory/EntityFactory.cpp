@@ -183,10 +183,21 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
 
     auto player = world.create();
 
-    player =
-        DataConfigLoader::loadPlayerConfigFile(holder.instance->settings().data_folder + "db/player.json", world, player);
-    DataConfigLoader::loadClassConfigFile(
-        holder.instance->settings().data_folder + "db/classes.json", world, player, Classes::FARMER);
+    world.emplace<entt::tag<"player"_hs>>(player);
+    world.emplace<engine::d3::Position>(player, 0.0, 0.0, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
+    world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
+    world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
+    world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
+    world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
+    world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
+    engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
+    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + "textures/player.jpeg");
+    world.emplace<Health>(player, 1.f, 1.f);
+    world.emplace<AttackDamage>(player, 0.f);
+    world.emplace<Level>(player, 0u, 0u, 10u);
+    world.emplace<KeyPicker>(player);
+    world.emplace<SpellSlots>(player);
+    world.emplace<Classes>(player);
 
     return player;
 }

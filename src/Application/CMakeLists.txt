@@ -7,11 +7,10 @@ add_library(
   src/level/MapGenerator.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
-  src/classes/ClassFactory.cpp
   src/DataConfigLoader.cpp
   src/console/DebugConsole.cpp
   src/console/ConsoleCommands.cpp
-  src/models/SpellDatabase.cpp)
+  src/models/SpellDatabase.cpp "src/models/ClassDatabase.cpp" "include/component/Classes.hpp")
 
 target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 
