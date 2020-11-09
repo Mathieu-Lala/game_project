@@ -20,3 +20,4 @@
 #include "component/Effect.hpp"
 #include "component/KeyPicker.hpp"
 #include "component/SpellSlots.hpp"
+#include "component/Classes.hpp"

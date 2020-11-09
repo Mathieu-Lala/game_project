@@ -14,6 +14,7 @@
 
 #include "level/MapGenerator.hpp"
 #include "GameLogic.hpp"
+#include "models/ClassDatabase.hpp"
 
 namespace game {
 
@@ -51,6 +52,9 @@ public:
     auto getLogics() -> GameLogic & { return *m_logics; }
     auto getMusic() -> std::shared_ptr<engine::Sound> { return m_dungeonMusic; }
 
+    auto getClassDatabase() -> const classes::Database & { return m_classDatabase; }
+    auto getCamera() -> engine::Camera & { return m_camera; }
+
 private:
     auto goToNextFloor(entt::registry &world) -> void;
 
@@ -69,6 +73,8 @@ private:
     std::shared_ptr<engine::Sound> m_dungeonMusic;
 
     std::unique_ptr<DebugConsole> m_debugConsole;
+
+    classes::Database m_classDatabase;
 };
 
 } // namespace game

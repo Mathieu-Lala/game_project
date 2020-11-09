@@ -14,6 +14,14 @@ inline void Text(std::string_view format, Param &&... param)
     ::ImGui::TextUnformatted(fmt::format(format, std::forward<Param>(param)...).c_str());
 }
 
+inline bool Button(std::string id, ImVec4 selectedColor) { 
+    bool pressed;
+    ::ImGui::PushStyleColor(ImGuiCol_Button, selectedColor);
+    pressed =::ImGui::Button(id.c_str());
+    ::ImGui::PopStyleColor(1);
+    return pressed;
+}
+
 } // namespace ImGui
 
 } // namespace helper

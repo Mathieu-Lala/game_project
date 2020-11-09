@@ -23,6 +23,8 @@
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
+#include "DataConfigLoader.hpp"
+
 using namespace std::chrono_literals;
 
 game::ThePurge::ThePurge() {}
@@ -43,6 +45,8 @@ auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     m_debugConsole->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 
+    m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "db/classes.json");
+
     setState(State::LOADING);
 }
 
@@ -62,11 +66,9 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_O:
                         world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
                         world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
-                        break;                                                                     // player stop
-                    case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break; // go top
-                    case GLFW_KEY_P:
-                        if (m_state == State::IN_GAME) setState(State::IN_INVENTORY);
-                        break;                                                                      // go top
+                        break;                                                                      // player stop
+                    case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break;  // go top
+                    case GLFW_KEY_P: setState(State::IN_INVENTORY); break;                          // go top
                     case GLFW_KEY_K: m_logics->movement.publish(world, player, {0.0, -0.1}); break; // go bottom
                     case GLFW_KEY_L: m_logics->movement.publish(world, player, {0.1, 0.0}); break;  // go right
                     case GLFW_KEY_J: m_logics->movement.publish(world, player, {-0.1, 0.0}); break; // go left
@@ -100,6 +102,18 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
             e);
 
         if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
+    } else if (m_state == State::IN_INVENTORY) {
+        std::visit(
+            engine::overloaded{
+                [&](const engine::Pressed<engine::Key> &key) {
+                    switch (key.source.key) {
+                    case GLFW_KEY_P: setState(State::IN_GAME); break;
+                    default: return;
+                    }
+                },
+                [&](auto) {},
+            },
+            e);
     }
 }
 void game::ThePurge::displaySoundDebugGui()
@@ -234,7 +248,7 @@ static GLuint createtexture(const std::string &fullpath)
 
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
-    static auto holder = engine::Core::Holder{};
+    [[maybe_unused]] static auto holder = engine::Core::Holder{};
 
 #ifndef NDEBUG
     if (holder.instance->isShowingDebugInfo()) {
@@ -249,20 +263,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 
         // note : this block could be launch in a future
         if (ImGui::Button("Start the game")) {
-            holder.instance->getAudioManager()
-                .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
-                ->setVolume(0.2f)
-                .play();
-            m_dungeonMusic->play();
-
-            player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-
-            // default camera value to see the generated terrain properly
-            m_camera.setCenter(glm::vec2(13, 22));
-            m_camera.setViewportSize(glm::vec2(109, 64));
-
-            m_logics->onFloorChange.publish(world);
-
+            m_logics->onGameStarted.publish(world);
             setState(State::IN_GAME);
         }
 
@@ -356,41 +357,19 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         }
 
         ImGui::End();
-    }
-    else if (m_state == State::IN_INVENTORY) {
+    } else if (m_state == State::IN_INVENTORY) {
         {
-            //const auto comp = world.get<Class>(player);
-            static std::string activeDescription = "";
-            static std::vector<std::string> activeClasses; // to test
-            std::map<std::string, int> Description;
-            const std::vector<std::string> Tier1 = {"Soldier", "Shooter", "Sorcerer"};
-            Description.insert(std::make_pair("Soldier", 6));
-            Description.insert(std::make_pair("Shooter", 5));
-            Description.insert(std::make_pair("Sorcerer", 7));
-            const std::vector<std::string> Tier2 = {"Warrior", "TOnk", "Archer", "Gunner", "Mage", "Healer"};
-            Description.insert(std::make_pair("Warrior", 9));
-            Description.insert(std::make_pair("TOnk", 8));
-            Description.insert(std::make_pair("Archer", 1));
-            Description.insert(std::make_pair("Gunner", 2));
-            Description.insert(std::make_pair("Healer", 3));
-            Description.insert(std::make_pair("Mage", 4));
-            std::vector<std::vector<std::string>> classes = {Tier1, Tier2};
+            const auto &boughtClasses = world.get<Classes>(player).ids;
+
+            // const auto comp = world.get<Class>(player);
+            static auto test = classes::getStarterClass(m_classDatabase);
+            static std::optional<Class> selectedClass;
+            static int infoAdd;
             static std::vector<GLuint> Texture = {
                 createtexture(std::string("data/textures/InfoHud.png")),
                 createtexture(std::string("data/textures/CPoint.PNG")),
                 createtexture(std::string("data/textures/plus.png")),
                 createtexture(std::string("data/textures/validate.png"))};
-            static std::vector<GLuint> DescriptionTex = {
-                createtexture(std::string("data/textures/farmer_des.PNG")),
-                createtexture(std::string("data/textures/archer_des.PNG")),
-                createtexture(std::string("data/textures/gunner_des.PNG")),
-                createtexture(std::string("data/textures/healer_des.PNG")),
-                createtexture(std::string("data/textures/mage_des.PNG")),
-                createtexture(std::string("data/textures/shooter_des.PNG")),
-                createtexture(std::string("data/textures/soldier_des.PNG")),
-                createtexture(std::string("data/textures/sorcerer_des.PNG")),
-                createtexture(std::string("data/textures/tank_des.PNG")),
-                createtexture(std::string("data/textures/warrior_des.PNG"))};
             ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x, m_camera.getViewportSize().y));
             ImVec2 size = ImVec2(1000.0f, 1000.0f);
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
@@ -401,39 +380,78 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
                     | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
             size = ImGui::GetWindowSize();
             ImGui::Image((void *) (intptr_t)(Texture[0]), ImVec2(size.x - 30, size.y - 10));
-            ImGui::SetCursorPos(ImVec2(0, 0));
-            if (activeDescription != "") {
-                ImGui::SetCursorPos(
-                    ImVec2(ImGui::GetCursorPosX() + +(size.x / 2) - (344 / 2), ImGui::GetCursorPosY() + 199 / 2));
-                ImGui::Image((void *) (intptr_t)(DescriptionTex[Description[activeDescription]]), ImVec2(344, 199));
-                if (std::find(activeClasses.begin(), activeClasses.end(), activeDescription) != activeClasses.end()) {
-                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + (size.x / 2) - 45, ImGui::GetCursorPosY()));
-                    ImGui::Image((void *) (intptr_t)(Texture[3]), ImVec2(50, 50));
-                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + (size.x / 2) - 65, ImGui::GetCursorPosY()));
-                    ImGui::Text("Already added");
+            ImGui::SetCursorPos(ImVec2(0, 200));
+            if (selectedClass.has_value()) {
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x/3 + 9, ImGui::GetCursorPosY()));
+                helper::ImGui::Text("Class Name: {}", selectedClass->name);
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
+                helper::ImGui::Text("Class description: {}", selectedClass->description);
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
+                if (infoAdd == 1)
+                    ImGui::Text("Already Buyed");
+                else if (infoAdd == 2) {
+                    if (ImGui::Button("Add class")) {
+                        m_logics->onPlayerBuyClass.publish(world, player, selectedClass.value());
+                        infoAdd = 1;
+                    }
                 } else {
-                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + (size.x / 2) - 60, ImGui::GetCursorPosY()));
-                    if (ImGui::Button("Add The Competence")) { activeClasses.push_back(activeDescription); }
+                    ImGui::Text("You can't buy it yet");
                 }
             }
-            ImGui::SetCursorPos(ImVec2(size.x / 2 - 17 * 5, size.y / 2));
+            // Competences
+            ImGui::SetCursorPos(ImVec2(size.x / 2 - 17 * ImGui::GetFontSize()/2, size.y / 2));
             helper::ImGui::Text("Point de comp: {}", 0); // rendre dynamique le nombre de point de comp
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() - 5));
             ImGui::Image((void *) (intptr_t)(Texture[1]), ImVec2(20, 20));
-            for (int i = 0; i < classes.size(); i++) {
-                for (int count = 0; count < classes[i].size(); count++) {
-                    bool check = false;
-                    if (count == 0) helper::ImGui::Text("Tier {}:", i + 1);
-                    if (std::find(activeClasses.begin(), activeClasses.end(), classes[i][count]) != activeClasses.end())
-                        check = true;
-                    if (count == 0)
-                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + (size.x / 3), ImGui::GetCursorPosY()));
-                    if (helper::ImGui::ButtonUse(
-                            classes[i][count], check, ImVec4{0, 1.0f, 0, 1.0f}, ImVec4{1.0f, 0, 0, 1.0f}))
-                        activeDescription = classes[i][count];
-                    if (count != classes[i].size() - 1) ImGui::SameLine(0.0f, (ImGui::GetStyle().ItemInnerSpacing.x));
+
+            // Classes tree
+            ImGui::SetCursorPos(ImVec2(
+                ImGui::GetCursorPosX() + size.x / 2 - (12 + test.name.length()) * ImGui::GetFontSize(),
+                ImGui::GetCursorPosY() + 30));
+            helper::ImGui::Text("class Name: {}", test.name);
+
+            std::vector<Class::ID> currentLine;
+            std::vector<Class::ID> nextLine;
+            std::vector<Class::ID> buyableClasses;
+            int tier = 0;
+
+            nextLine.push_back(classes::getStarterClass(m_classDatabase).id);
+
+            while (!nextLine.empty()) {
+                ++tier;
+                currentLine.clear();
+                std::swap(currentLine, nextLine);
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
+                helper::ImGui::Text("Tier : {}", tier);
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
+                for (const auto currentId : currentLine) {
+                    const auto &currentClass = m_classDatabase[currentId];
+
+                    bool bought = std::find(boughtClasses.begin(), boughtClasses.end(), currentId) != boughtClasses.end();
+                    bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
+                    if (bought) {
+                        buyableClasses.insert(
+                            buyableClasses.end(), currentClass.childrenClass.begin(), currentClass.childrenClass.end());
+                        if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(0, 1, 0 , 0.5))) { 
+                            selectedClass = currentClass;
+                            infoAdd = 1;
+                        }
+                    } else if (buyable) {
+                        if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(1, 1, 0, 0.5))) {
+                            selectedClass = currentClass;
+                            infoAdd = 2;
+                        }
+                    } else {
+                        if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(1, 0, 0, 0.5))) {
+                            selectedClass = currentClass;
+                            infoAdd = 3;
+                        }
+                    }
+                    ImGui::SameLine();
+                    nextLine.insert(nextLine.end(), currentClass.childrenClass.begin(), currentClass.childrenClass.end());
                 }
+                ImGui::Text(""); // ImGui::NextLine()
             }
             ImGui::End();
         }
