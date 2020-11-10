@@ -21,3 +21,4 @@
 #include "component/KeyPicker.hpp"
 #include "component/SpellSlots.hpp"
 #include "component/Classes.hpp"
+#include "component/SkillPoint.hpp"

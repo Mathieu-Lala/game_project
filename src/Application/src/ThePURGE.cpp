@@ -360,6 +360,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
     } else if (m_state == State::IN_INVENTORY) {
         {
             const auto &boughtClasses = world.get<Classes>(player).ids;
+            const auto skillPoints = world.get<SkillPoint>(player).count;
 
             // const auto comp = world.get<Class>(player);
             static auto test = classes::getStarterClass(m_classDatabase);
@@ -382,25 +383,29 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::Image((void *) (intptr_t)(Texture[0]), ImVec2(size.x - 30, size.y - 10));
             ImGui::SetCursorPos(ImVec2(0, 200));
             if (selectedClass.has_value()) {
-                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x/3 + 9, ImGui::GetCursorPosY()));
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3 + 9, ImGui::GetCursorPosY()));
                 helper::ImGui::Text("Class Name: {}", selectedClass->name);
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                 helper::ImGui::Text("Class description: {}", selectedClass->description);
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                 if (infoAdd == 1)
-                    ImGui::Text("Already Buyed");
+                    ImGui::Text("Already bought");
                 else if (infoAdd == 2) {
-                    if (ImGui::Button("Add class")) {
-                        m_logics->onPlayerBuyClass.publish(world, player, selectedClass.value());
-                        infoAdd = 1;
-                    }
+                    if (skillPoints > 0) {
+                        if (ImGui::Button("Add class")) {
+                            m_logics->onPlayerBuyClass.publish(world, player, selectedClass.value());
+                            infoAdd = 1;
+                        }
+                    } else
+                        helper::ImGui::Button("No skill point", ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+
                 } else {
                     ImGui::Text("You can't buy it yet");
                 }
             }
             // Competences
-            ImGui::SetCursorPos(ImVec2(size.x / 2 - 17 * ImGui::GetFontSize()/2, size.y / 2));
-            helper::ImGui::Text("Point de comp: {}", 0); // rendre dynamique le nombre de point de comp
+            ImGui::SetCursorPos(ImVec2(size.x / 2 - 17 * ImGui::GetFontSize() / 2, size.y / 2));
+            helper::ImGui::Text("Point de comp: {}", skillPoints); // rendre dynamique le nombre de point de comp
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() - 5));
             ImGui::Image((void *) (intptr_t)(Texture[1]), ImVec2(20, 20));
@@ -429,11 +434,12 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
                     const auto &currentClass = m_classDatabase[currentId];
 
                     bool bought = std::find(boughtClasses.begin(), boughtClasses.end(), currentId) != boughtClasses.end();
-                    bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
+                    bool buyable =
+                        std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
                     if (bought) {
                         buyableClasses.insert(
                             buyableClasses.end(), currentClass.childrenClass.begin(), currentClass.childrenClass.end());
-                        if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(0, 1, 0 , 0.5))) { 
+                        if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(0, 1, 0, 0.5))) {
                             selectedClass = currentClass;
                             infoAdd = 1;
                         }
