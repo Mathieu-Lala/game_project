@@ -44,7 +44,7 @@ auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     m_debugConsole->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 
-    m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "config/classes.json");
+    m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "db/classes.json");
 
     setState(State::LOADING);
 }
