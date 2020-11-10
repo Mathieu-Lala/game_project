@@ -20,9 +20,21 @@ public:
 
     auto clear() -> void { m_console.logClear(); }
 
-    auto info(const std::string_view str) -> void;
-    auto warn(const std::string_view str) -> void;
-    auto error(const std::string_view str) -> void;
+    template<typename... Args>
+    void info(const std::string_view fmt, Args &&... args)
+    {
+        m_console.logAdd(fmt, std::forward<Args>(args)...);
+    }
+    template<typename... Args>
+    void warn(const std::string_view fmt, Args &&... args)
+    {
+        m_console.logAdd(fmt::format("[warn] {}", fmt), std::forward<Args>(args)...);
+    }
+    template<typename... Args>
+    void error(const std::string_view fmt, Args &&... args)
+    {
+        m_console.logAdd(fmt::format("[error] {}", fmt), std::forward<Args>(args)...);
+    }
 
     auto handleCmd(const std::string_view cmd) -> void;
 

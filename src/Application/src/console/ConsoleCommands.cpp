@@ -1,9 +1,11 @@
 #include <spdlog/spdlog.h>
-#include "console/ArgParsingUtils.hpp"
-
 #include <Engine/audio/Sound.hpp>
 
+
+#include "console/ArgParsingUtils.hpp"
 #include "console/ConsoleCommands.hpp"
+#include "console/DebugConsole.hpp"
+
 #include "component/all.hpp"
 #include "ThePURGE.hpp"
 
@@ -13,7 +15,11 @@ game::CommandHandler::CommandHandler() :
         {"setSpell", cmd_setSpell},
         {"addXp", cmd_addXp},
         {"addLevel", cmd_addLevel},
-        {"setMusicVolume", cmd_setMusicVolume}}
+        {"setMusicVolume", cmd_setMusicVolume},
+        {"buyClass", cmd_buyClass},
+        {"getClasses", cmd_getClasses},
+        {"getClassInfo", cmd_getClassInfo},
+    }
 {
 }
 
@@ -31,7 +37,7 @@ std::vector<std::string> game::CommandHandler::getCommands() const
 }
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_kill =
-    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args) {
+    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -52,23 +58,18 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_kill =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
-    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args) {
+    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 2) throw std::runtime_error("Wrong argument count");
 
-            [[maybe_unused]] auto idx = lexicalCast<int>(args[0]);
-            [[maybe_unused]] auto spell = lexicalCast<int>(args[0]);
+            auto idx = lexicalCast<int>(args[0]);
+            auto spellId = lexicalCast<int>(args[1]);
 
             if (idx < 0 || idx > 4) throw std::runtime_error(fmt::format("Wrong index : {}", args[0]));
 
-            throw std::runtime_error("Not implemented : require PR #62");
-
-            (void) game;
-            (void) world;
-            // auto player = game.player;
-            // auto &spellSlots = world.get<SpellSlots>(player);
-            // spellSlots.spell[idx] = Spell(spell)
-
+            auto player = game.player;
+            auto &spellSlots = world.get<SpellSlots>(player);
+            spellSlots.spells[static_cast<std::size_t>(idx)] = Spell::create(static_cast<SpellFactory::ID>(spellId));
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setSpell index spell_id", e.what()));
@@ -76,7 +77,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_addXp =
-    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args) {
+    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -96,7 +97,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addXp =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_addLevel =
-    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args) {
+    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -114,7 +115,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addLevel =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_setMusicVolume =
-    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args) {
+    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -124,5 +125,87 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setMusicVolume =
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setMusicVolume volume\n\tvolume : [0; 2]", e.what()));
+        }
+    };
+
+game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
+    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
+        try {
+            if (args.size() != 1) throw std::runtime_error("Wrong argument count");
+
+            const auto className = lexicalCast<std::string>(args[0]);
+            const auto player = game.player;
+
+            const auto &classData = classes::getByName(game.getClassDatabase(), className);
+
+            if (!classData) {
+                std::stringstream names;
+                for (const auto [_, data] : game.getClassDatabase()) names << data.name << ", ";
+                throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
+            }
+
+            game.getLogics().onPlayerBuyClass.publish(world, player, *classData.value());
+
+        } catch (const std::runtime_error &e) {
+            throw std::runtime_error(fmt::format("{}\nusage: buyClass name", e.what()));
+        }
+    };
+
+game::CommandHandler::handler_t game::CommandHandler::cmd_getClasses =
+    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &console) {
+        if (args.size() != 0) throw std::runtime_error("Wrong argument count");
+
+        const auto &classes = world.get<Classes>(game.player).ids;
+
+        std::stringstream names;
+
+        for (auto id : classes) names << game.getClassDatabase().at(id).name << ", ";
+
+        console.info("Player has {} classes : {}", classes.size(), names.str());
+    };
+
+game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
+    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &console) {
+        try {
+            if (args.size() != 1) throw std::runtime_error("Wrong argument count");
+
+            const auto className = lexicalCast<std::string>(args[0]);
+
+            const auto &classData = classes::getByName(game.getClassDatabase(), className);
+
+            if (!classData) {
+                std::stringstream names;
+                for (const auto [_, data] : game.getClassDatabase()) names << data.name << ", ";
+                throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
+            }
+
+            const auto &data = *(classData.value());
+
+            std::stringstream spellNames;
+            for (const auto &id : data.spells) spellNames << id << ", ";
+
+            std::stringstream childrenClassesNames;
+            for (const auto &id : data.childrenClass) childrenClassesNames << game.getClassDatabase().at(id).name << ", ";
+
+            console.info(
+                "Class {} :\n"
+                "\tid : {}\n"
+                "\tdescription : {}\n"
+                "\ticon : {}\n"
+                "\tspells : {}\n"
+                "\tmax health : {}\n"
+                "\tdamage : {}\n"
+                "\tchildren classes : {}",
+                data.name,
+                data.id,
+                data.description,
+                data.iconPath,
+                spellNames.str(),
+                data.maxHealth,
+                data.damage,
+                childrenClassesNames.str());
+
+        } catch (const std::runtime_error &e) {
+            throw std::runtime_error(fmt::format("{}\nusage: getClassInfo name", e.what()));
         }
     };

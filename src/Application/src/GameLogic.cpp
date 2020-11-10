@@ -1,4 +1,5 @@
 #include <spdlog/spdlog.h>
+#include <sstream>
 
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Event/Event.hpp>
@@ -15,12 +16,19 @@
 #include "factory/SpellFactory.hpp"
 #include "factory/ParticuleFactory.hpp"
 
+#include "models/ClassDatabase.hpp"
+
 using namespace std::chrono_literals;
 
 game::GameLogic::GameLogic(ThePurge &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
+
+    sinkOnGameStarted.connect<&GameLogic::on_game_started>(*this);
+
+    sinkOnPlayerBuyClass.connect<&GameLogic::apply_class_to_player>(*this);
+
 
     sinkGameUpdated.connect<&GameLogic::ai_pursue>(*this);
     sinkGameUpdated.connect<&GameLogic::cooldown>(*this);
@@ -41,6 +49,69 @@ auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity 
     -> void
 {
     world.get<engine::d2::Acceleration>(player) = accel;
+}
+
+auto game::GameLogic::on_game_started(entt::registry &world) -> void
+{
+    static auto holder = engine::Core::Holder{};
+
+    holder.instance->getAudioManager()
+        .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
+        ->setVolume(0.2f)
+        .play();
+    m_game.getMusic()->play();
+
+    m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
+    onPlayerBuyClass.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+
+    // default camera value to see the generated terrain properly
+    m_game.getCamera().setCenter(glm::vec2(13, 22));
+    m_game.getCamera().setViewportSize(glm::vec2(109, 64));
+
+    onFloorChange.publish(world);
+}
+
+auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity player, const Class &newClass) -> void
+{
+    world.get<AttackDamage>(player).damage = newClass.damage;
+
+    auto &health = world.get<Health>(player);
+
+    health.max = newClass.maxHealth;
+    if (health.current > health.max) health.current = health.max;
+    world.get<Classes>(player).ids.push_back(newClass.id);
+
+
+    // TODO: actual spell selection ?
+
+    for (const auto &spell : newClass.spells)
+        for (auto &slot : world.get<SpellSlots>(player).spells) {
+            if (slot.has_value()) continue;
+
+            slot = Spell::create(spell);
+            break;
+        }
+
+
+    { // Logging
+        std::stringstream spellsId;
+        for (const auto &spell : newClass.spells) spellsId << spell << ", ";
+
+        std::stringstream childrens;
+        for (const auto &child : newClass.childrenClass) childrens << m_game.getClassDatabase().at(child).name << ", ";
+
+        spdlog::info(
+            "Applied class '{}' to player. Stats are now : \n"
+            "\tDamage : {:.3}\n"
+            "\tMax health : {:.3}\n"
+            "\tAdded spells {}\n"
+            "\tNew available classes : {}",
+            newClass.name,
+            newClass.damage,
+            newClass.maxHealth,
+            spellsId.str(),
+            childrens.str());
+    }
 }
 
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
