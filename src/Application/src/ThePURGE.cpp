@@ -94,13 +94,34 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics->movement.publish(
-                        world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                    m_logics->movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
                 },
+                [&](const engine::Pressed<engine::JoystickButton> &joy) { 
+                    switch (joy.source.button) {
+                    case engine::Joystick::ACTION_RIGHT: {
+                        auto &spell = world.get<SpellSlots>(player).spells[0];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    case engine::Joystick::ACTION_BOTTOM: {
+                        auto &spell = world.get<SpellSlots>(player).spells[1];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    default: return;
+                    }
+                },               
                 [&](auto) {},
             },
             e);
-
+        auto &pos = world.get<engine::d3::Position>(player);
+        m_camera.setCenter({pos.x, pos.y});
         if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
     } else if (m_state == State::IN_INVENTORY) {
         std::visit(
