@@ -416,8 +416,9 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[1]))), ImVec2(20, 20));
 
             // Classes tree
+            int length = static_cast<int>(size.x / 2 - (12 + test.name.length()) * ImGui::GetFontSize());
             ImGui::SetCursorPos(ImVec2(
-                ImGui::GetCursorPosX() + size.x / 2 - (12 + test.name.length()) * ImGui::GetFontSize(),
+                ImGui::GetCursorPosX() + length,
                 ImGui::GetCursorPosY() + 30));
             helper::ImGui::Text("class Name: {}", test.name);
 
@@ -462,7 +463,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
                     ImGui::SameLine();
                     nextLine.insert(nextLine.end(), currentClass.childrenClass.begin(), currentClass.childrenClass.end());
                 }
-                ImGui::Text(""); // ImGui::NextLine()
+                ImGui::Text(" "); // ImGui::NextLine()
             }
             ImGui::End();
         }
