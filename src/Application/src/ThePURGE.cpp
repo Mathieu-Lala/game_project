@@ -94,6 +94,27 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     auto joystick = holder.instance->getJoystick(joy.source.id);
                     m_logics->movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
                 },
+                [&](const engine::Pressed<engine::JoystickButton> &joy) { 
+                    switch (joy.source.button) {
+                    case engine::Joystick::ACTION_RIGHT: {
+                        auto &spell = world.get<SpellSlots>(player).spells[0];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    case engine::Joystick::ACTION_BOTTOM: {
+                        auto &spell = world.get<SpellSlots>(player).spells[1];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    default: return;
+                    }
+                },               
                 [&](auto) {},
             },
             e);
