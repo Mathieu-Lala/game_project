@@ -416,7 +416,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[1]))), ImVec2(20, 20));
 
             // Classes tree
-            float length = static_cast<float>(size.x / 2 - (12.0f + test.name.length()) * ImGui::GetFontSize());
+            float length = size.x / 2 - (12.0f + static_cast<float>(test.name.length())) * ImGui::GetFontSize();
             ImGui::SetCursorPos(ImVec2(
                 ImGui::GetCursorPosX() + length,
                 ImGui::GetCursorPosY() + 30));
