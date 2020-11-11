@@ -24,7 +24,12 @@ class ThePurge : public engine::api::Game {
 public:
     ThePurge();
 
-    enum class State { LOADING, IN_GAME, GAME_OVER };
+    enum class State {
+        LOADING,
+        IN_GAME,
+        GAME_OVER,
+        IN_INVENTORY
+    };
 
     auto onCreate(entt::registry &world) -> void final;
 
