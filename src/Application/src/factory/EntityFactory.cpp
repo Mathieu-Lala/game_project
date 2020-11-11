@@ -209,6 +209,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<KeyPicker>(player);
     world.emplace<SpellSlots>(player);
     world.emplace<Classes>(player);
+    world.emplace<SkillPoint>(player, 0);
 
     return player;
 }

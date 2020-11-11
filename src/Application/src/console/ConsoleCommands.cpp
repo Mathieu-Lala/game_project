@@ -85,11 +85,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addXp =
 
             auto player = game.player;
 
-            auto &level = world.get<Level>(player);
-
-            level.current_xp += amount;
-            level.current_level += static_cast<std::uint32_t>(std::floor(level.current_xp / level.xp_require));
-            level.current_xp = level.current_xp % level.xp_require;
+            game.getLogics().addXp(world, player, amount);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: addXp xp", e.what()));
@@ -101,13 +97,14 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addLevel =
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
-            const auto amount = lexicalCast<std::uint32_t>(args[0]);
+            auto amount = lexicalCast<std::uint32_t>(args[0]);
 
             auto player = game.player;
 
             auto &level = world.get<Level>(player);
 
-            level.current_level += amount;
+            while (amount--)
+                game.getLogics().addXp(world, player, level.xp_require);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: addLevel level", e.what()));

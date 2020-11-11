@@ -1,7 +1,7 @@
 {
   "farmer": {
     "desc": "Farmer description",
-    "icon":  "icons/farmer.png",
+    "icon": "icons/farmer.png",
     "maxHealth": 10,
     "damage": 1,
     "spells": [ 0, 2 ],
@@ -29,6 +29,14 @@
     "icon": "icons/sorcerer.png",
     "maxHealth": 25,
     "damage": 15,
+    "spells": [],
+    "childrenClass": [ "tOnk"]
+  },
+  "tOnk": {
+    "desc": "TOnk description",
+    "icon": "icons/tonk.png",
+    "maxHealth": 9999999,
+    "damage": 1,
     "spells": [],
     "childrenClass": []
   }
