@@ -275,7 +275,6 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             static GLuint texture = createtexture(path);
             const auto infoHealth = world.get<Health>(player);
             const auto HP = infoHealth.current / infoHealth.max;
-
             const auto Atk = world.get<AttackDamage>(player);
             const auto level = world.get<Level>(player);
             const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
@@ -382,14 +381,20 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             size = ImGui::GetWindowSize();
             ImGui::Image((void *) (intptr_t)(Texture[0]), ImVec2(size.x - 30, size.y - 10));
             ImGui::SetCursorPos(ImVec2(0, 200));
+            ImVec2 next;
             if (selectedClass.has_value()) {
+                ImVec2 icon = ImVec2(ImGui::GetCursorPosX() + size.x / 3 + 9, ImGui::GetCursorPosY());
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3 + 9, ImGui::GetCursorPosY()));
                 helper::ImGui::Text("Class Name: {}", selectedClass->name);
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                 helper::ImGui::Text("Class description: {}", selectedClass->description);
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
-                if (infoAdd == 1)
+                if (infoAdd == 1) {
                     ImGui::Text("Already bought");
+                    next = ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY());
+                    ImGui::SetCursorPos(ImVec2(icon.x - 50, icon.y));
+                    ImGui::Image((void *) (intptr_t)(Texture[3]), ImVec2(50, 50));
+                }
                 else if (infoAdd == 2) {
                     if (skillPoints > 0) {
                         if (ImGui::Button("Add class")) {
