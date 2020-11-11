@@ -285,7 +285,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
             ImVec2 size = ImGui::GetWindowSize();
-            ImGui::Image((void *) (intptr_t)(texture), ImVec2(size.x - 30, size.y - 10));
+            ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((texture))), ImVec2(size.x - 30, size.y - 10));
             ImGui::SetCursorPos(ImVec2(ImGui::GetItemRectMin().x + 40, ImGui::GetItemRectMin().y + size.y / 7));
             ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), fmt::format("{}/{}", infoHealth.current, infoHealth.max).data());
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
@@ -379,7 +379,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
             size = ImGui::GetWindowSize();
-            ImGui::Image((void *) (intptr_t)(Texture[0]), ImVec2(size.x - 30, size.y - 10));
+            ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[0]))), ImVec2(size.x - 30, size.y - 10));
             ImGui::SetCursorPos(ImVec2(0, 200));
             ImVec2 next;
             if (selectedClass.has_value()) {
@@ -393,7 +393,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
                     ImGui::Text("Already bought");
                     next = ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY());
                     ImGui::SetCursorPos(ImVec2(icon.x - 50, icon.y));
-                    ImGui::Image((void *) (intptr_t)(Texture[3]), ImVec2(50, 50));
+                    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[3]))), ImVec2(50, 50));
                 }
                 else if (infoAdd == 2) {
                     if (skillPoints > 0) {
@@ -413,7 +413,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             helper::ImGui::Text("Point de comp: {}", skillPoints); // rendre dynamique le nombre de point de comp
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() - 5));
-            ImGui::Image((void *) (intptr_t)(Texture[1]), ImVec2(20, 20));
+            ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[1]))), ImVec2(20, 20));
 
             // Classes tree
             ImGui::SetCursorPos(ImVec2(
