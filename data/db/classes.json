@@ -1,35 +1,41 @@
 {
-  "farmer": {
-    "name": "Farmer",
-    "desc": "Farmer description",
-    "cooldown": 2,
-    "range": 2,
-    "damage": 10,
-    "isRanged": false,
-    "spellsId": [ 0, 2 ]
-  },
-  "soldier": {
-    "name": "Soldier",
-    "desc": "Soldier description",
-    "cooldown": 3,
-    "range": 2,
-    "damage": 15,
-    "isRanged": false
-  },
-  "shooter": {
-    "name": "Shooter",
-    "desc": "Shooter description",
-    "cooldown": 3,
-    "range": 5,
-    "damage": 15,
-    "isRanged": true
-  },
-  "sorcerer": {
-    "name": "Sorcerer",
-    "desc": "Sorcerer description",
-    "cooldown": 3,
-    "range": 5,
-    "damage": 15,
-    "isRanged": true
-  }
+    "farmer": {
+        "desc": "Farmer description",
+        "icon": "icons/farmer.png",
+        "maxHealth": 10,
+        "damage": 1,
+        "spells": [
+            0,
+            2
+        ],
+        "childrenClass": [
+            "soldier",
+            "shooter",
+            "sorcerer"
+        ]
+    },
+    "soldier": {
+        "desc": "Soldier description",
+        "icon": "icons/soldier.png",
+        "maxHealth": 20,
+        "damage": 5,
+        "spells": [],
+        "childrenClass": []
+    },
+    "shooter": {
+        "desc": "Shooter description",
+        "icon": "icons/shooter.png",
+        "maxHealth": 15,
+        "damage": 20,
+        "spells": [],
+        "childrenClass": []
+    },
+    "sorcerer": {
+        "desc": "Sorcerer description",
+        "icon": "icons/sorcerer.png",
+        "maxHealth": 25,
+        "damage": 15,
+        "spells": [],
+        "childrenClass": []
+    }
 }
