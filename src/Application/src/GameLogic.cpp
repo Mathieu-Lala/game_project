@@ -66,7 +66,7 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
 
     // default camera value to see the generated terrain properly
     m_game.getCamera().setCenter(glm::vec2(13, 22));
-    m_game.getCamera().setViewportSize(glm::vec2(109, 64));
+    m_game.getCamera().setViewportSize(glm::vec2(25, 17));
 
     onFloorChange.publish(world);
 }
