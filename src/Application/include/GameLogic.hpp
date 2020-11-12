@@ -32,6 +32,9 @@ public:
     entt::sigh<void(entt::registry &, entt::entity player, const Class &)> onPlayerBuyClass;
     entt::sink<void(entt::registry &, entt::entity player, const Class &)> sinkOnPlayerBuyClass{onPlayerBuyClass};
 
+    entt::sigh<void(entt::registry &, entt::entity player)> onPlayerLevelUp;
+    entt::sink<void(entt::registry &, entt::entity player)> sinkOnPlayerLevelUp{onPlayerLevelUp};
+
     // entityLogic signal loop
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
     entt::sink<void(entt::registry &, const engine::TimeElapsed &)> sinkGameUpdated{gameUpdated};
@@ -51,6 +54,9 @@ public:
     auto on_game_started(entt::registry &world) -> void;
 
     auto apply_class_to_player(entt::registry &world, entt::entity player, const Class &) -> void;
+    auto on_class_bought(entt::registry &world, entt::entity player, const Class &) -> void;
+
+    auto on_player_level_up(entt::registry &world, entt::entity player) -> void;
 
     auto ai_pursue(entt::registry &world, const engine::TimeElapsed &dt) -> void;
 
@@ -73,6 +79,7 @@ public:
 
     auto goToTheNextFloor(entt::registry &world) -> void;
 
+    auto addXp(entt::registry &world, entt::entity player, std::uint32_t xp) -> void;
 
     FloorGenParam m_map_generation_params;
     std::uint32_t m_nextFloorSeed;

@@ -1,41 +1,43 @@
 {
-    "farmer": {
-        "desc": "Farmer description",
-        "icon": "icons/farmer.png",
-        "maxHealth": 10,
-        "damage": 1,
-        "spells": [
-            0,
-            2
-        ],
-        "childrenClass": [
-            "soldier",
-            "shooter",
-            "sorcerer"
-        ]
-    },
-    "soldier": {
-        "desc": "Soldier description",
-        "icon": "icons/soldier.png",
-        "maxHealth": 20,
-        "damage": 5,
-        "spells": [],
-        "childrenClass": []
-    },
-    "shooter": {
-        "desc": "Shooter description",
-        "icon": "icons/shooter.png",
-        "maxHealth": 15,
-        "damage": 20,
-        "spells": [],
-        "childrenClass": []
-    },
-    "sorcerer": {
-        "desc": "Sorcerer description",
-        "icon": "icons/sorcerer.png",
-        "maxHealth": 25,
-        "damage": 15,
-        "spells": [],
-        "childrenClass": []
-    }
+  "farmer": {
+    "desc": "Farmer description",
+    "icon": "icons/farmer.png",
+    "maxHealth": 10,
+    "damage": 1,
+    "spells": [ 0, 2 ],
+    "childrenClass": [ "soldier", "shooter", "sorcerer" ]
+  },
+  "soldier": {
+    "desc": "Soldier description",
+    "icon": "icons/soldier.png",
+    "maxHealth": 20,
+    "damage": 5,
+    "spells": [],
+    "childrenClass": []
+
+  },
+  "shooter": {
+    "desc": "Shooter description",
+    "icon": "icons/shooter.png",
+    "maxHealth": 15,
+    "damage": 20,
+    "spells": [],
+    "childrenClass": []
+  },
+  "sorcerer": {
+    "desc": "Sorcerer description",
+    "icon": "icons/sorcerer.png",
+    "maxHealth": 25,
+    "damage": 15,
+    "spells": [],
+    "childrenClass": [ "tOnk"]
+  },
+  "tOnk": {
+    "desc": "TOnk description",
+    "icon": "icons/tonk.png",
+    "maxHealth": 9999999,
+    "damage": 1,
+    "spells": [],
+    "childrenClass": []
+  }
 }

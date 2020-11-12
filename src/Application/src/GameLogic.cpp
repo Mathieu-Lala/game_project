@@ -28,7 +28,8 @@ game::GameLogic::GameLogic(ThePurge &game) :
     sinkOnGameStarted.connect<&GameLogic::on_game_started>(*this);
 
     sinkOnPlayerBuyClass.connect<&GameLogic::apply_class_to_player>(*this);
-
+    sinkOnPlayerBuyClass.connect<&GameLogic::on_class_bought>(*this);
+    sinkOnPlayerLevelUp.connect<&GameLogic::on_player_level_up>(*this);
 
     sinkGameUpdated.connect<&GameLogic::ai_pursue>(*this);
     sinkGameUpdated.connect<&GameLogic::cooldown>(*this);
@@ -62,7 +63,7 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
     m_game.getMusic()->play();
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    onPlayerBuyClass.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+    apply_class_to_player(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
 
     // default camera value to see the generated terrain properly
     m_game.getCamera().setCenter(glm::vec2(13, 22));
@@ -112,6 +113,14 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
             spellsId.str(),
             childrens.str());
     }
+}
+
+auto game::GameLogic::on_class_bought(entt::registry &world, entt::entity player, const Class &) -> void {
+    world.get<SkillPoint>(player).count--;
+}
+
+auto game::GameLogic::on_player_level_up(entt::registry &world, entt::entity player) -> void {
+    world.get<SkillPoint>(player).count++;
 }
 
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
@@ -369,14 +378,11 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
                                 : holder.instance->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
-        // todo : send signal instead
-        auto &level = world.get<Level>(killer);
-        level.current_xp += world.has<entt::tag<"boss"_hs>>(killed) ? 5u : 1u; // todo : move this as component or something
-
-        if (level.current_xp >= level.xp_require) {
-            level.current_level++;
-            level.current_xp = 0;
-        }
+        // todo : move xp dropped as component or something
+        if (world.has<entt::tag<"boss"_hs>>(killed))
+            addXp(world, killer, 5);
+        else
+            addXp(world, killer, 1);
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);
@@ -418,5 +424,20 @@ auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void
 
         pos.x = data.spawn.x + data.spawn.w * 0.5;
         pos.y = data.spawn.y + data.spawn.h * 0.5;
+    }
+}
+
+auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uint32_t xp) -> void
+{
+    auto &level = world.get<Level>(player);
+
+    level.current_xp += xp;
+
+    while (level.current_xp >= level.xp_require) {
+        level.current_xp -= level.xp_require;
+        level.xp_require = static_cast<std::uint32_t>(std::ceil(level.xp_require * 1.2));
+        level.current_level++;
+
+        onPlayerLevelUp.publish(world, player);
     }
 }
