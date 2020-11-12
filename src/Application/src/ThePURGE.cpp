@@ -1,6 +1,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <stb_image.h>
 #include <Engine/Graphics/third_party.hpp>
 #include <Engine/Graphics/Shader.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
@@ -69,6 +70,8 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_L: world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS; break; // go right
                     case GLFW_KEY_J: world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS; break; // go left
 
+                    case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
+
                     case GLFW_KEY_U: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
                         if (!spell.has_value()) break;
@@ -100,17 +103,49 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics->movement.publish(
-                        world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                    m_logics->movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                },
+                [&](const engine::Pressed<engine::JoystickButton> &joy) { 
+                    switch (joy.source.button) {
+                    case engine::Joystick::ACTION_RIGHT: {
+                        auto &spell = world.get<SpellSlots>(player).spells[0];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    case engine::Joystick::ACTION_BOTTOM: {
+                        auto &spell = world.get<SpellSlots>(player).spells[1];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    default: return;
+                    }
+                },               
+                [&](auto) {},
+            },
+            e);
+        auto &pos = world.get<engine::d3::Position>(player);
+        m_camera.setCenter({pos.x, pos.y});
+        if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
+    } else if (m_state == State::IN_INVENTORY) {
+        std::visit(
+            engine::overloaded{
+                [&](const engine::Pressed<engine::Key> &key) {
+                    switch (key.source.key) {
+                    case GLFW_KEY_P: setState(State::IN_GAME); break;
+                    default: return;
+                    }
                 },
                 [&](auto) {},
             },
             e);
-
-        if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
     }
 }
-
 void game::ThePurge::displaySoundDebugGui()
 {
     static auto holder = engine::Core::Holder{};
@@ -221,6 +256,26 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
     ImGui::End();
 }
 
+static GLuint createtexture(const std::string &fullpath)
+{
+    int w, h, channel;
+    auto image = stbi_load(fullpath.c_str(), &w, &h, &channel, 4);
+
+    if (!image) { throw std::runtime_error("Failed to load image " + fullpath + " : " + stbi_failure_reason()); }
+
+    GLuint id;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    stbi_image_free(image);
+
+    return id;
+}
+
 auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 {
     [[maybe_unused]] static auto holder = engine::Core::Holder{};
@@ -245,32 +300,37 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         ImGui::End();
     } else if (m_state == State::IN_GAME) {
         {
+            // Creating background
+            static const std::string path = std::string("data/textures/InfoHud.png");
+            static GLuint texture = createtexture(path);
             const auto infoHealth = world.get<Health>(player);
             const auto HP = infoHealth.current / infoHealth.max;
-
-            const auto level = world.get<Level>(player);
             const auto Atk = world.get<AttackDamage>(player);
+            const auto level = world.get<Level>(player);
             const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
             KeyPicker keyPicker = world.get<KeyPicker>(player);
-
-            // todo : style because this is not a debug window HUD
-            ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x / 10, 10));
-            ImGui::SetNextWindowSize(ImVec2(400, 200));
             ImGui::Begin(
                 "Info Player",
                 nullptr,
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+            ImVec2 size = ImGui::GetWindowSize();
+            ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((texture))), ImVec2(size.x - 30, size.y - 10));
+            ImGui::SetCursorPos(ImVec2(ImGui::GetItemRectMin().x + 40, ImGui::GetItemRectMin().y + size.y / 7));
             ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), fmt::format("{}/{}", infoHealth.current, infoHealth.max).data());
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::Text("HP");
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
             ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::Text("XP");
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             helper::ImGui::Text("Level: {}", level.current_level);
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             helper::ImGui::Text("Speed: {}", 1);
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             helper::ImGui::Text("Atk: {}", Atk.damage);
-
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
             if (keyPicker.hasKey) helper::ImGui::Text("You have the key");
             ImGui::End();
 
@@ -326,6 +386,117 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
         }
 
         ImGui::End();
+    } else if (m_state == State::IN_INVENTORY) {
+        {
+            const auto &boughtClasses = world.get<Classes>(player).ids;
+            const auto skillPoints = world.get<SkillPoint>(player).count;
+
+            // const auto comp = world.get<Class>(player);
+            static auto test = classes::getStarterClass(m_classDatabase);
+            static std::optional<Class> selectedClass;
+            static int infoAdd;
+            static std::vector<GLuint> Texture = {
+                createtexture(std::string("data/textures/InfoHud.png")),
+                createtexture(std::string("data/textures/CPoint.PNG")),
+                createtexture(std::string("data/textures/plus.png")),
+                createtexture(std::string("data/textures/validate.png"))};
+            ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x, m_camera.getViewportSize().y));
+            ImVec2 size = ImVec2(1000.0f, 1000.0f);
+            ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
+            ImGui::Begin(
+                "Evolution Panel",
+                nullptr,
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
+                    | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+            size = ImGui::GetWindowSize();
+            ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[0]))), ImVec2(size.x - 30, size.y - 10));
+            ImGui::SetCursorPos(ImVec2(0, 200));
+            ImVec2 next;
+            if (selectedClass.has_value()) {
+                ImVec2 icon = ImVec2(ImGui::GetCursorPosX() + size.x / 3 + 9, ImGui::GetCursorPosY());
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3 + 9, ImGui::GetCursorPosY()));
+                helper::ImGui::Text("Class Name: {}", selectedClass->name);
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
+                helper::ImGui::Text("Class description: {}", selectedClass->description);
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
+                if (infoAdd == 1) {
+                    ImGui::Text("Already bought");
+                    next = ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY());
+                    ImGui::SetCursorPos(ImVec2(icon.x - 50, icon.y));
+                    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[3]))), ImVec2(50, 50));
+                }
+                else if (infoAdd == 2) {
+                    if (skillPoints > 0) {
+                        if (ImGui::Button("Add class")) {
+                            m_logics->onPlayerBuyClass.publish(world, player, selectedClass.value());
+                            infoAdd = 1;
+                        }
+                    } else
+                        helper::ImGui::Button("No skill point", ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+
+                } else {
+                    ImGui::Text("You can't buy it yet");
+                }
+            }
+            // Competences
+            ImGui::SetCursorPos(ImVec2(size.x / 2 - 17 * ImGui::GetFontSize() / 2, size.y / 2));
+            helper::ImGui::Text("Point de comp: {}", skillPoints); // rendre dynamique le nombre de point de comp
+            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() - 5));
+            ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[1]))), ImVec2(20, 20));
+
+            // Classes tree
+            float length = size.x / 2 - (12.0f + static_cast<float>(test.name.length())) * ImGui::GetFontSize();
+            ImGui::SetCursorPos(ImVec2(
+                ImGui::GetCursorPosX() + length,
+                ImGui::GetCursorPosY() + 30));
+            helper::ImGui::Text("class Name: {}", test.name);
+
+            std::vector<Class::ID> currentLine;
+            std::vector<Class::ID> nextLine;
+            std::vector<Class::ID> buyableClasses;
+            int tier = 0;
+
+            nextLine.push_back(classes::getStarterClass(m_classDatabase).id);
+
+            while (!nextLine.empty()) {
+                ++tier;
+                currentLine.clear();
+                std::swap(currentLine, nextLine);
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
+                helper::ImGui::Text("Tier : {}", tier);
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
+                for (const auto currentId : currentLine) {
+                    const auto &currentClass = m_classDatabase[currentId];
+
+                    bool bought = std::find(boughtClasses.begin(), boughtClasses.end(), currentId) != boughtClasses.end();
+                    bool buyable =
+                        std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
+                    if (bought) {
+                        buyableClasses.insert(
+                            buyableClasses.end(), currentClass.childrenClass.begin(), currentClass.childrenClass.end());
+                        if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(0, 1, 0, 0.5))) {
+                            selectedClass = currentClass;
+                            infoAdd = 1;
+                        }
+                    } else if (buyable) {
+                        if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(1, 1, 0, 0.5))) {
+                            selectedClass = currentClass;
+                            infoAdd = 2;
+                        }
+                    } else {
+                        if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(1, 0, 0, 0.5))) {
+                            selectedClass = currentClass;
+                            infoAdd = 3;
+                        }
+                    }
+                    ImGui::SameLine();
+                    nextLine.insert(nextLine.end(), currentClass.childrenClass.begin(), currentClass.childrenClass.end());
+                }
+                ImGui::Text(" "); // ImGui::NextLine()
+            }
+            ImGui::End();
+        }
     }
 }
 

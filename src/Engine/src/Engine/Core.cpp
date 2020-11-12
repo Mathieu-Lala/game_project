@@ -13,6 +13,7 @@
 #include "Engine/helpers/overloaded.hpp"
 #include "Engine/component/Drawable.hpp"
 #include "Engine/component/Position.hpp"
+#include "Engine/component/Rotation.hpp"
 #include "Engine/component/Scale.hpp"
 #include "Engine/component/Velocity.hpp"
 #include "Engine/component/Acceleration.hpp"
@@ -431,10 +432,11 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         m_shader_colored->use();
         m_shader_colored->setUniform<float>("time", static_cast<float>(tmp));
-        m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<Texture>)
-            .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
+        m_world.view<Drawable, Color, d3::Position, d2::Scale, d2::Rotation>(entt::exclude<Texture>)
+            .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale, auto &rot) {
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
+                model = glm::rotate(model, static_cast<float>(rot.angle), glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored->setUniform("model", model);
                 ::glBindVertexArray(drawable.VAO);
@@ -443,10 +445,11 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         m_shader_colored_textured->use();
         m_shader_colored_textured->setUniform<float>("time", static_cast<float>(tmp));
-        m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale>().each(
-            [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
+        m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale, d2::Rotation>().each(
+            [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale, auto &rot) {
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
+                model = glm::rotate(model, static_cast<float>(rot.angle), glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored_textured->setUniform("model", model);
                 ::glBindTexture(GL_TEXTURE_2D, texture.texture);

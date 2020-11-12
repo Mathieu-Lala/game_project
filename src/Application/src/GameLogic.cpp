@@ -7,12 +7,14 @@
 #include <Engine/Settings.hpp>
 #include <Engine/component/Color.hpp>
 #include <Engine/component/Texture.hpp>
+#include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 #include "factory/EntityFactory.hpp"
 #include "factory/SpellFactory.hpp"
+#include "factory/ParticuleFactory.hpp"
 
 #include "models/ClassDatabase.hpp"
 
@@ -26,13 +28,15 @@ game::GameLogic::GameLogic(ThePurge &game) :
     sinkOnGameStarted.connect<&GameLogic::on_game_started>(*this);
 
     sinkOnPlayerBuyClass.connect<&GameLogic::apply_class_to_player>(*this);
-
+    sinkOnPlayerBuyClass.connect<&GameLogic::on_class_bought>(*this);
+    sinkOnPlayerLevelUp.connect<&GameLogic::on_player_level_up>(*this);
 
     sinkGameUpdated.connect<&GameLogic::ai_pursue>(*this);
     sinkGameUpdated.connect<&GameLogic::cooldown>(*this);
     sinkGameUpdated.connect<&GameLogic::effect>(*this);
     sinkGameUpdated.connect<&GameLogic::enemies_try_attack>(*this);
     sinkGameUpdated.connect<&GameLogic::update_lifetime>(*this);
+    sinkGameUpdated.connect<&GameLogic::update_particule>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
     sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
 
@@ -59,11 +63,11 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
     m_game.getMusic()->play();
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    onPlayerBuyClass.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+    apply_class_to_player(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
 
     // default camera value to see the generated terrain properly
     m_game.getCamera().setCenter(glm::vec2(13, 22));
-    m_game.getCamera().setViewportSize(glm::vec2(109, 64));
+    m_game.getCamera().setViewportSize(glm::vec2(25, 17));
 
     onFloorChange.publish(world);
 }
@@ -111,11 +115,18 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
     }
 }
 
+auto game::GameLogic::on_class_bought(entt::registry &world, entt::entity player, const Class &) -> void {
+    world.get<SkillPoint>(player).count--;
+}
+
+auto game::GameLogic::on_player_level_up(entt::registry &world, entt::entity player) -> void {
+    world.get<SkillPoint>(player).count++;
+}
+
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
         auto &pos = world.get<engine::d3::Position>(i);
-        //auto &vel = world.get<engine::d2::Velocity>(i);
         auto &view_range = world.get<ViewRange>(i);
 
         const auto player_pos = world.get<engine::d3::Position>(m_game.player);
@@ -246,8 +257,11 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             entity_health.current -= spell_damage.damage;
             spdlog::warn("player took damage");
 
-            if (world.has<entt::tag<"player"_hs>>(entity))
+            if (world.has<entt::tag<"player"_hs>>(entity)) {
                 holder.instance->setScreenshake(true, 300ms);
+                ParticuleFactory::create<Particule::HITMARKER>(world,
+                    {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0});
+            }
 
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
@@ -293,6 +307,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
         });
 }
 
+// note : this should be in Core
 auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
     for (auto &i : world.view<Lifetime>()) {
@@ -302,6 +317,28 @@ auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeE
             lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
         } else {
             world.destroy(i);
+        }
+    }
+}
+
+auto game::GameLogic::update_particule(entt::registry &world, const engine::TimeElapsed &dt) -> void
+{
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
+    for (const auto &i : world.view<Particule>()) {
+        switch (world.get<Particule>(i).id) {
+            case Particule::HITMARKER: {
+                auto &color = world.get<engine::Color>(i);
+                const auto r = engine::Color::r(color);
+                const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+                const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+                engine::DrawableFactory::fix_color(world, i, {r, g, b});
+
+                auto &vel = world.get<engine::d2::Velocity>(i);
+                vel.x += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+                vel.y += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+            } break;
+            default:
+                break;
         }
     }
 }
@@ -341,14 +378,11 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
                                 : holder.instance->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
-        // todo : send signal instead
-        auto &level = world.get<Level>(killer);
-        level.current_xp += world.has<entt::tag<"boss"_hs>>(killed) ? 5u : 1u; // todo : move this as component or something
-
-        if (level.current_xp >= level.xp_require) {
-            level.current_level++;
-            level.current_xp = 0;
-        }
+        // todo : move xp dropped as component or something
+        if (world.has<entt::tag<"boss"_hs>>(killed))
+            addXp(world, killer, 5);
+        else
+            addXp(world, killer, 1);
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);
@@ -390,5 +424,20 @@ auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void
 
         pos.x = data.spawn.x + data.spawn.w * 0.5;
         pos.y = data.spawn.y + data.spawn.h * 0.5;
+    }
+}
+
+auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uint32_t xp) -> void
+{
+    auto &level = world.get<Level>(player);
+
+    level.current_xp += xp;
+
+    while (level.current_xp >= level.xp_require) {
+        level.current_xp -= level.xp_require;
+        level.xp_require = static_cast<std::uint32_t>(std::ceil(level.xp_require * 1.2));
+        level.current_level++;
+
+        onPlayerLevelUp.publish(world, player);
     }
 }

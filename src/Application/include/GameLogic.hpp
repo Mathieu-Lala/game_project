@@ -32,6 +32,9 @@ public:
     entt::sigh<void(entt::registry &, entt::entity player, const Class &)> onPlayerBuyClass;
     entt::sink<void(entt::registry &, entt::entity player, const Class &)> sinkOnPlayerBuyClass{onPlayerBuyClass};
 
+    entt::sigh<void(entt::registry &, entt::entity player)> onPlayerLevelUp;
+    entt::sink<void(entt::registry &, entt::entity player)> sinkOnPlayerLevelUp{onPlayerLevelUp};
+
     // entityLogic signal loop
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
     entt::sink<void(entt::registry &, const engine::TimeElapsed &)> sinkGameUpdated{gameUpdated};
@@ -51,21 +54,32 @@ public:
     auto on_game_started(entt::registry &world) -> void;
 
     auto apply_class_to_player(entt::registry &world, entt::entity player, const Class &) -> void;
+    auto on_class_bought(entt::registry &world, entt::entity player, const Class &) -> void;
+
+    auto on_player_level_up(entt::registry &world, entt::entity player) -> void;
 
     auto ai_pursue(entt::registry &world, const engine::TimeElapsed &dt) -> void;
-    auto update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void;
-    auto cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void;
-    auto enemies_try_attack(entt::registry &world, const engine::TimeElapsed &dt) -> void;
-    auto check_collision(entt::registry &world, const engine::TimeElapsed &dt) -> void;
-    auto effect(entt::registry &world, const engine::TimeElapsed &dt) -> void;
-    auto exit_door_interraction(entt::registry &, const engine::TimeElapsed &dt) -> void;
-    auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
+    auto update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+    auto update_particule(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+
+    auto cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+
+    auto enemies_try_attack(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+
+    auto check_collision(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+
+    auto effect(entt::registry &world, const engine::TimeElapsed &dt) -> void;
+
+    auto exit_door_interraction(entt::registry &, const engine::TimeElapsed &dt) -> void;
+
+    auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
     auto cast_attack(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;
 
     auto goToTheNextFloor(entt::registry &world) -> void;
 
+    auto addXp(entt::registry &world, entt::entity player, std::uint32_t xp) -> void;
 
     FloorGenParam m_map_generation_params;
     std::uint32_t m_nextFloorSeed;
