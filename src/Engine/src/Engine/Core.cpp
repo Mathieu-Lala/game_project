@@ -376,40 +376,18 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
             other_hitbox = m_world.get<d2::HitboxSolid>(others);
 
             if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, pred_pos, other_hitbox, other_pos)) {
-                const auto self_pred_x1 = pred_pos.x - moving_hitbox.width / 2.0;
-                const auto self_pred_x2 = pred_pos.x + moving_hitbox.width / 2.0;
-                const auto self_pred_y1 = pred_pos.y - moving_hitbox.height / 2.0;
-                const auto self_pred_y2 = pred_pos.y + moving_hitbox.height / 2.0;
 
-                const auto self_x1 = moving_pos.x - moving_hitbox.width / 2.0;
-                const auto self_x2 = moving_pos.x + moving_hitbox.width / 2.0;
-                const auto self_y1 = moving_pos.y - moving_hitbox.height / 2.0;
-                const auto self_y2 = moving_pos.y + moving_hitbox.height / 2.0;
-
-                const auto other_x1 = other_pos.x - other_hitbox.width / 2.0;
-                const auto other_x2 = other_pos.x + other_hitbox.width / 2.0;
-                const auto other_y1 = other_pos.y - other_hitbox.height / 2.0;
-                const auto other_y2 = other_pos.y + other_hitbox.height / 2.0;
-
-                if (!(self_x1 < other_x2) && (self_pred_x1 < other_x2)) {
+                auto xDiff = other_pos.x - pred_pos.x;
+                auto xLastDiff = other_pos.x - moving_pos.x;
+                auto xMinSpace = (moving_hitbox.width + other_hitbox.width) / 2;
+                if (std::abs(xDiff) < xMinSpace && std::abs(xLastDiff) >= xMinSpace)
                     actual_tick_velocity.x = 0;
-                    moving_pos.x =
-                        other_pos.x + (other_hitbox.width / 2) + (moving_hitbox.width / 2);
-                } else if (!(self_x2 > other_x1) && (self_pred_x2 > other_x1)) {
-                    actual_tick_velocity.x = 0;
-                    moving_pos.x =
-                        other_pos.x - (other_hitbox.width / 2) - (moving_hitbox.width / 2);
-                }
 
-                if (!(self_y1 < other_y2) && (self_pred_y1 < other_y2)) {
+                auto yDiff = other_pos.y - pred_pos.y;
+                auto yLastDiff = other_pos.y - moving_pos.y;
+                auto yMinSpace = (moving_hitbox.height + other_hitbox.height) / 2;
+                if (std::abs(yDiff) < yMinSpace && std::abs(yLastDiff) >= yMinSpace)
                     actual_tick_velocity.y = 0;
-                    moving_pos.y =
-                        other_pos.y + (other_hitbox.height / 2) + (moving_hitbox.height / 2);
-                } else if (!(self_y2 > other_y1) && (self_pred_y2 > other_y1)) {
-                    actual_tick_velocity.y = 0;
-                    moving_pos.y =
-                        other_pos.y - (other_hitbox.height / 2) - (moving_hitbox.height / 2);
-                }
             }
         }
 
