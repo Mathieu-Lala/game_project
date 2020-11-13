@@ -53,6 +53,7 @@ auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void
 auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
     static auto holder = engine::Core::Holder{};
+    constexpr auto kDebugKeyboardPlayerMS = 15;
 
     if (m_state == State::IN_GAME) {
         std::visit(
@@ -63,15 +64,14 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_RIGHT: m_camera.move({1, 0}); break;
                     case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
                     case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
-                    case GLFW_KEY_O:
-                        world.get<engine::d2::Acceleration>(player) = {0.0, 0.0};
-                        world.get<engine::d2::Velocity>(player) = {0.0, 0.0};
-                        break;                                                                      // player stop
-                    case GLFW_KEY_I: m_logics->movement.publish(world, player, {0.0, 0.1}); break;  // go top
-                    case GLFW_KEY_P: setState(State::IN_INVENTORY); break;                          // go top
-                    case GLFW_KEY_K: m_logics->movement.publish(world, player, {0.0, -0.1}); break; // go bottom
-                    case GLFW_KEY_L: m_logics->movement.publish(world, player, {0.1, 0.0}); break;  // go right
-                    case GLFW_KEY_J: m_logics->movement.publish(world, player, {-0.1, 0.0}); break; // go left
+
+                    case GLFW_KEY_I: world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS; break; // go top
+                    case GLFW_KEY_K: world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS; break; // go bottom
+                    case GLFW_KEY_L: world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS; break; // go right
+                    case GLFW_KEY_J: world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS; break; // go left
+
+                    case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
+
                     case GLFW_KEY_U: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
                         if (!spell.has_value()) break;
@@ -88,6 +88,15 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
+                    default: return;
+                    }
+                },
+                [&](const engine::Released<engine::Key> &key) {
+                    switch (key.source.key) {
+                    case GLFW_KEY_I: world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS; break; // Stop going top
+                    case GLFW_KEY_K: world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS; break; // Stop going bottom
+                    case GLFW_KEY_L: world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS; break; // Stop going right
+                    case GLFW_KEY_J: world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS; break; // Stop going left
                     default: return;
                     }
                 },

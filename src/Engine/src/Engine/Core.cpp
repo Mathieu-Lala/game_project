@@ -360,43 +360,40 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         auto &moving_pos = m_world.get<d3::Position>(moving);
         auto &moving_vel = m_world.get<d2::Velocity>(moving);
         auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
+        d2::Velocity actual_tick_velocity = moving_vel;
 
-        const auto new_pos = d3::Position{
+        const auto pred_pos = d3::Position{
             moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
             moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
             moving_pos.z};
 
-        bool collide = false;
-
-        d3::Position others_pos;
-        d2::HitboxSolid others_hitbox;
+        d3::Position other_pos;
+        d2::HitboxSolid other_hitbox;
 
         for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
             if (moving == others) continue;
 
-            others_pos = m_world.get<d3::Position>(others);
-            others_hitbox = m_world.get<d2::HitboxSolid>(others);
+            other_pos = m_world.get<d3::Position>(others);
+            other_hitbox = m_world.get<d2::HitboxSolid>(others);
 
-            if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, new_pos, others_hitbox, others_pos)) {
-                collide = true;
-                break;
+            if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, pred_pos, other_hitbox, other_pos)) {
+
+                auto xDiff = other_pos.x - pred_pos.x;
+                auto xLastDiff = other_pos.x - moving_pos.x;
+                auto xMinSpace = (moving_hitbox.width + other_hitbox.width) / 2;
+                if (std::abs(xDiff) < xMinSpace && std::abs(xLastDiff) >= xMinSpace)
+                    actual_tick_velocity.x = 0;
+
+                auto yDiff = other_pos.y - pred_pos.y;
+                auto yLastDiff = other_pos.y - moving_pos.y;
+                auto yMinSpace = (moving_hitbox.height + other_hitbox.height) / 2;
+                if (std::abs(yDiff) < yMinSpace && std::abs(yLastDiff) >= yMinSpace)
+                    actual_tick_velocity.y = 0;
             }
         }
 
-        if (!collide) {
-            moving_pos = new_pos;
-        } else {
-            moving_vel = {0.0f, 0.0f};
-#ifdef COLLISION_EXPERIMENTAL
-            if (!d2::overlapped<d2::WITHOUT_EDGE>(
-                    moving_hitbox, d3::Position{new_pos.x, moving_pos.x, 0}, others_hitbox, others_pos)) {
-                moving_vel.y = 0;
-            } else if (!d2::overlapped<d2::WITHOUT_EDGE>(
-                           moving_hitbox, d3::Position{moving_pos.y, new_pos.y, 0}, others_hitbox, others_pos)) {
-                moving_vel.x = 0;
-            }
-#endif
-        }
+        moving_pos.x += actual_tick_velocity.x * static_cast<d2::Velocity::type>(elapsed) * 0.001;
+        moving_pos.y += actual_tick_velocity.y * static_cast<d2::Velocity::type>(elapsed) * 0.001;
     }
 
 #ifdef MODE_EPILEPTIC // change the color at every frame

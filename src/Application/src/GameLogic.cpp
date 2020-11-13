@@ -240,7 +240,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 
             if (engine::d2::overlapped<engine::d2::WITH_EDGE>(spell_box, spell_pos, wall_box, wall_pos)) {
                 world.destroy(spell);
-                continue;
+                break;
             }
         }
     }
