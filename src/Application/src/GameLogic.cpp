@@ -78,8 +78,8 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
 
     auto &health = world.get<Health>(player);
 
+    health.current += newClass.maxHealth - health.max;
     health.max = newClass.maxHealth;
-    if (health.current > health.max) health.current = health.max;
     world.get<Classes>(player).ids.push_back(newClass.id);
 
 
