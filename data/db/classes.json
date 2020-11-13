@@ -1,5 +1,6 @@
 {
   "farmer": {
+    "starter" :  true,
     "desc": "Farmer description",
     "icon": "icons/farmer.png",
     "maxHealth": 10,
