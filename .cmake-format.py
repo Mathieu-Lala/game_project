@@ -4,8 +4,7 @@
 with section("parse"):
 
   # Specify structure for custom cmake functions
-  additional_commands = { 'foo': { 'flags': ['BAR', 'BAZ'],
-             'kwargs': {'DEPENDS': '*', 'HEADERS': '*', 'SOURCES': '*'}}}
+  additional_commands = {}
 
   # Override configurations per-command where available
   override_spec = {}

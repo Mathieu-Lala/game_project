@@ -9,12 +9,12 @@
 
 namespace game {
 
-class ThePurge;
+class ThePURGE;
 class DebugConsole;
 
 class CommandHandler {
 public:
-    using handler_t = std::function<void(entt::registry &world, ThePurge &, std::vector<std::string> &&args, DebugConsole &)>;
+    using handler_t = std::function<void(entt::registry &world, ThePURGE &, std::vector<std::string> &&args, DebugConsole &)>;
 
     CommandHandler();
 

@@ -20,9 +20,9 @@ namespace game {
 
 class GameLogic;
 
-class ThePurge : public engine::api::Game {
+class ThePURGE : public engine::api::Game {
 public:
-    ThePurge();
+    ThePURGE();
 
     enum class State {
         LOADING,
@@ -54,6 +54,8 @@ public:
 
     auto getClassDatabase() -> const classes::Database & { return m_classDatabase; }
     auto getCamera() -> engine::Camera & { return m_camera; }
+
+    auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
 private:
     auto goToNextFloor(entt::registry &world) -> void;

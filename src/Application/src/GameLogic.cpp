@@ -11,6 +11,7 @@
 #include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
+#include "screen/MainMenu.hpp"
 #include "ThePURGE.hpp"
 #include "factory/EntityFactory.hpp"
 #include "factory/SpellFactory.hpp"
@@ -20,7 +21,7 @@
 
 using namespace std::chrono_literals;
 
-game::GameLogic::GameLogic(ThePurge &game) :
+game::GameLogic::GameLogic(ThePURGE &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
@@ -366,7 +367,7 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
             .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
             ->play();
 
-        m_game.setState(ThePurge::State::GAME_OVER);
+        m_game.setState(ThePURGE::State::GAME_OVER);
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         spdlog::warn("!! entity killed : dropping xp !!");
 

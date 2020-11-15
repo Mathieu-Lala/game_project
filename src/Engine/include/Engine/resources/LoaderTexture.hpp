@@ -4,8 +4,6 @@
 
 #include <entt/entt.hpp>
 
-// #include "Engine/component/Texture.hpp" // note : this include is optional in this context
-
 namespace engine {
 
 struct Texture;

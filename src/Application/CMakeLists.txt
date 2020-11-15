@@ -7,7 +7,6 @@ add_library(
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
   src/factory/ParticuleFactory.cpp
-  # src/classes/ClassFactory.cpp
   src/DataConfigLoader.cpp
   src/console/DebugConsole.cpp
   src/console/ConsoleCommands.cpp

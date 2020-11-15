@@ -1,11 +1,12 @@
 #pragma once
 
 #include <sstream>
-#include <fmt/format.h>
 #include <string_view>
 #include <vector>
 
-#define TYPE2STR(T) #T
+#include <fmt/format.h>
+
+// #define TYPE2STR(T) #T
 
 template<typename T>
 T lexicalCast(const std::string &str)

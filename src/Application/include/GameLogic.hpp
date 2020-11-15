@@ -15,13 +15,13 @@
 
 namespace game {
 
-class ThePurge;
+class ThePURGE;
 
 class GameLogic {
 public:
-    ThePurge &m_game;
+    ThePURGE &m_game;
 
-    GameLogic(ThePurge &game);
+    GameLogic(ThePURGE &game);
 
     entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> movement;
     entt::sink<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> sinkMovement{movement};
