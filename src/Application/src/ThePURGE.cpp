@@ -68,10 +68,18 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
                     case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
 
-                    case GLFW_KEY_I: world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS; break; // go top
-                    case GLFW_KEY_K: world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS; break; // go bottom
-                    case GLFW_KEY_L: world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS; break; // go right
-                    case GLFW_KEY_J: world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS; break; // go left
+                    case GLFW_KEY_I:
+                        world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS;
+                        break; // go top
+                    case GLFW_KEY_K:
+                        world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS;
+                        break; // go bottom
+                    case GLFW_KEY_L:
+                        world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS;
+                        break; // go right
+                    case GLFW_KEY_J:
+                        world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS;
+                        break; // go left
 
                     case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
 
@@ -96,17 +104,29 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 },
                 [&](const engine::Released<engine::Key> &key) {
                     switch (key.source.key) {
-                    case GLFW_KEY_I: world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS; break; // Stop going top
-                    case GLFW_KEY_K: world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS; break; // Stop going bottom
-                    case GLFW_KEY_L: world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS; break; // Stop going right
-                    case GLFW_KEY_J: world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS; break; // Stop going left
+                    case GLFW_KEY_I:
+                        world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS;
+                        break; // Stop going top
+                    case GLFW_KEY_K:
+                        world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS;
+                        break; // Stop going bottom
+                    case GLFW_KEY_L:
+                        world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS;
+                        break; // Stop going right
+                    case GLFW_KEY_J:
+                        world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS;
+                        break; // Stop going left
                     default: return;
                     }
                 },
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics->movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
+                    m_logics->movement.publish(
+                        world,
+                        player,
+                        {(static_cast<double>((*joystick)->axes[0]) / 10.0),
+                         -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
                     switch (joy.source.button) {
@@ -271,11 +291,9 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 #endif
 
     if (m_state == State::LOADING) {
-
         MainMenu::draw(*this, world);
 
     } else if (m_state == State::IN_GAME) {
-
         UserStatistics::draw(*this, world);
 
 #ifndef NDEBUG
@@ -338,11 +356,10 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
             static auto test = classes::getStarterClass(m_classDatabase);
             static std::optional<Class> selectedClass;
             static int infoAdd;
-            static std::vector<GLuint> Texture = {
-                engine::DrawableFactory::createtexture("data/textures/InfoHud.png"),
-                engine::DrawableFactory::createtexture("data/textures/CPoint.PNG"),
-                engine::DrawableFactory::createtexture("data/textures/plus.png"),
-                engine::DrawableFactory::createtexture("data/textures/validate.png")};
+            static std::vector<GLuint> Texture = {engine::DrawableFactory::createtexture("data/textures/InfoHud.png"),
+                                                  engine::DrawableFactory::createtexture("data/textures/CPoint.PNG"),
+                                                  engine::DrawableFactory::createtexture("data/textures/plus.png"),
+                                                  engine::DrawableFactory::createtexture("data/textures/validate.png")};
             ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x, m_camera.getViewportSize().y));
             ImVec2 size = ImVec2(1000.0f, 1000.0f);
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
@@ -367,8 +384,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                     next = ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY());
                     ImGui::SetCursorPos(ImVec2(icon.x - 50, icon.y));
                     ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[3]))), ImVec2(50, 50));
-                }
-                else if (infoAdd == 2) {
+                } else if (infoAdd == 2) {
                     if (skillPoints > 0) {
                         if (ImGui::Button("Add class")) {
                             m_logics->onPlayerBuyClass.publish(world, player, selectedClass.value());
@@ -390,9 +406,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
             // Classes tree
             float length = size.x / 2 - (12.0f + static_cast<float>(test.name.length())) * ImGui::GetFontSize();
-            ImGui::SetCursorPos(ImVec2(
-                ImGui::GetCursorPosX() + length,
-                ImGui::GetCursorPosY() + 30));
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + length, ImGui::GetCursorPosY() + 30));
             helper::ImGui::Text("class Name: {}", test.name);
 
             std::vector<Class::ID> currentLine;

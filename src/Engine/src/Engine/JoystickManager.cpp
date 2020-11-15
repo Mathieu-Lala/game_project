@@ -9,6 +9,8 @@
 #include "Engine/component/Texture.hpp"
 #include "Engine/Core.hpp"
 
+#include "Engine/helpers/macro.hpp"
+
 engine::JoystickManager *engine::JoystickManager::s_instance{nullptr};
 
 engine::JoystickManager::JoystickManager()
@@ -34,7 +36,7 @@ auto engine::JoystickManager::add(const Joystick &j) -> void
     if (!get(j.id).has_value())
         m_joysticks.push_back(j);
     else
-        [[unlikely]] { spdlog::warn("engine::JoystickManager Trying to add an already existing joystick"); }
+        UNLIKELY { spdlog::warn("engine::JoystickManager Trying to add an already existing joystick"); }
 }
 
 auto engine::JoystickManager::get(int id) -> std::optional<Joystick *const>
@@ -59,7 +61,7 @@ auto engine::JoystickManager::remove(const Joystick &j) -> void
         it != m_joysticks.end()) {
         m_joysticks.erase(it);
     } else
-        [[unlikely]] { spdlog::warn("engine::JoystickManager Trying to remove an none existing joystick"); }
+        UNLIKELY { spdlog::warn("engine::JoystickManager Trying to remove an none existing joystick"); }
 }
 
 auto engine::JoystickManager::update(const Moved<JoystickAxis> &j) -> void

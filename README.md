@@ -46,11 +46,11 @@ Application version 0.1.9
 
 * Unix systems
 
-    * g++>=10
+    * g++>=10 || clang>=12
     * cmake>=3.13
     * python>=3.0
 
-* Windows
+* Visual Studio Extension
 
     * Visual Studio 2019>=16.7
     * Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
@@ -133,6 +133,8 @@ See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cma
 ![Dependencies](doc/conan_dependencies.png)
 
 ## Testing
+
+[![codecov](https://codecov.io/gh/Mathieu-Lala/game_project/branch/develop/graph/badge.svg?token=E43G3XKG01)](https://codecov.io/gh/Mathieu-Lala/game_project)
 
 * [CI](https://en.wikipedia.org/wiki/Continuous_integration)
 

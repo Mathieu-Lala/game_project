@@ -210,11 +210,10 @@ auto engine::Core::main(int argc, char **argv) -> int
         const auto event = getNextEvent();
 
         std::visit(
-            overloaded{
-                [](TimeElapsed &prev, const TimeElapsed &next) { prev.elapsed += next.elapsed; },
-                [&]([[maybe_unused]] const auto &, [[maybe_unused]] const std::monostate &) {},
-                // event in playback mode will be saved twice = bad !
-                [&]([[maybe_unused]] const auto &, const auto &next) { eventsProcessed.push_back(next); }},
+            overloaded{[](TimeElapsed &prev, const TimeElapsed &next) { prev.elapsed += next.elapsed; },
+                       [&]([[maybe_unused]] const auto &, [[maybe_unused]] const std::monostate &) {},
+                       // event in playback mode will be saved twice = bad !
+                       [&]([[maybe_unused]] const auto &, const auto &next) { eventsProcessed.push_back(next); }},
             eventsProcessed.back(),
             event);
 
@@ -228,39 +227,40 @@ auto engine::Core::main(int argc, char **argv) -> int
         };
 
         std::visit(
-            overloaded{
-                [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
-                [&]([[maybe_unused]] const CloseWindow &) {
-                    m_window->close();
-                    this->close();
-                },
-                [&](const ResizeWindow &e) {
-                    m_window->setSize({e.width, e.height});
-                },
-                [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
-                [&]([[maybe_unused]] const Pressed<Key> &) {
-                    // todo : abstract glfw keyboard
-                    switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
-                    case GLFW_KEY_ESCAPE: this->close(); break;
+            overloaded{[&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
+                       [&]([[maybe_unused]] const CloseWindow &) {
+                           m_window->close();
+                           this->close();
+                       },
+                       [&](const ResizeWindow &e) {
+                           m_window->setSize({e.width, e.height});
+                       },
+                       [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
+                       [&]([[maybe_unused]] const Pressed<Key> &) {
+                           // todo : abstract glfw keyboard
+                           switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
+                           case GLFW_KEY_ESCAPE: this->close(); break;
 #ifndef NDEBUG
-                    case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
+                           case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
 #endif
-                    case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
-                    case GLFW_KEY_F12: {
-                        std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
-                        const auto file = fmt::format(
-                            m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
-                        if (!m_window->screenshot(file)) { spdlog::warn("failed to take a screenshot: {}", file); }
-                    } break;
-                    default: break;
-                    }
-                },
-                [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
-                [&](const Disconnected<Joystick> &j) { m_joystickManager->remove(j.source); },
-                [&](const Moved<JoystickAxis> &j) { m_joystickManager->update(j); },
-                [&](const Pressed<JoystickButton> &j) { m_joystickManager->update(j); },
-                [&](const Released<JoystickButton> &j) { m_joystickManager->update(j); },
-                []([[maybe_unused]] const auto &) {}},
+                           case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
+                           case GLFW_KEY_F12: {
+                               std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
+                               const auto file = fmt::format(
+                                   m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
+                               if (!m_window->screenshot(file)) {
+                                   spdlog::warn("failed to take a screenshot: {}", file);
+                               }
+                           } break;
+                           default: break;
+                           }
+                       },
+                       [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
+                       [&](const Disconnected<Joystick> &j) { m_joystickManager->remove(j.source); },
+                       [&](const Moved<JoystickAxis> &j) { m_joystickManager->update(j); },
+                       [&](const Pressed<JoystickButton> &j) { m_joystickManager->update(j); },
+                       [&](const Released<JoystickButton> &j) { m_joystickManager->update(j); },
+                       []([[maybe_unused]] const auto &) {}},
             event);
 
         if (timeElapsed) { this->tickOnce(std::get<TimeElapsed>(event)); }
@@ -362,10 +362,10 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
         d2::Velocity actual_tick_velocity = moving_vel;
 
-        const auto pred_pos = d3::Position{
-            moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-            moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-            moving_pos.z};
+        const auto pred_pos =
+            d3::Position{moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                         moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                         moving_pos.z};
 
         d3::Position other_pos;
         d2::HitboxSolid other_hitbox;
@@ -377,18 +377,15 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
             other_hitbox = m_world.get<d2::HitboxSolid>(others);
 
             if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, pred_pos, other_hitbox, other_pos)) {
-
                 auto xDiff = other_pos.x - pred_pos.x;
                 auto xLastDiff = other_pos.x - moving_pos.x;
                 auto xMinSpace = (moving_hitbox.width + other_hitbox.width) / 2;
-                if (std::abs(xDiff) < xMinSpace && std::abs(xLastDiff) >= xMinSpace)
-                    actual_tick_velocity.x = 0;
+                if (std::abs(xDiff) < xMinSpace && std::abs(xLastDiff) >= xMinSpace) actual_tick_velocity.x = 0;
 
                 auto yDiff = other_pos.y - pred_pos.y;
                 auto yLastDiff = other_pos.y - moving_pos.y;
                 auto yMinSpace = (moving_hitbox.height + other_hitbox.height) / 2;
-                if (std::abs(yDiff) < yMinSpace && std::abs(yLastDiff) >= yMinSpace)
-                    actual_tick_velocity.y = 0;
+                if (std::abs(yDiff) < yMinSpace && std::abs(yLastDiff) >= yMinSpace) actual_tick_velocity.y = 0;
             }
         }
 
@@ -538,7 +535,7 @@ auto engine::Core::debugDrawJoystick() -> void
             helper::ImGui::Text(
                 "{} = {}",
                 magic_enum::enum_name(magic_enum::enum_cast<Joystick::Axis>(n).value()).data(),
-                double{joy.axes[n]});
+                static_cast<double>(joy.axes[n]));
         }
         ImGui::EndChild();
     });
