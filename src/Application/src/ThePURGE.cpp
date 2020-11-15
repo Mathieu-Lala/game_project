@@ -20,6 +20,9 @@
 
 #include "factory/EntityFactory.hpp"
 
+#include "screen/MainMenu.hpp"
+#include "widgets/UserStatistics.hpp"
+
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 
@@ -27,11 +30,11 @@
 
 using namespace std::chrono_literals;
 
-game::ThePurge::ThePurge() {}
+game::ThePURGE::ThePURGE() {}
 
-auto game::ThePurge::onDestroy(entt::registry &) -> void {}
+auto game::ThePURGE::onDestroy(entt::registry &) -> void {}
 
-auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void
+auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
 
@@ -50,7 +53,7 @@ auto game::ThePurge::onCreate([[maybe_unused]] entt::registry &world) -> void
     setState(State::LOADING);
 }
 
-auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> void
+auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
     static auto holder = engine::Core::Holder{};
     constexpr auto kDebugKeyboardPlayerMS = 15;
@@ -105,7 +108,7 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     auto joystick = holder.instance->getJoystick(joy.source.id);
                     m_logics->movement.publish(world, player, {((*joystick)->axes[0] / 10.0f), -((*joystick)->axes[1] / 10.0f)});
                 },
-                [&](const engine::Pressed<engine::JoystickButton> &joy) { 
+                [&](const engine::Pressed<engine::JoystickButton> &joy) {
                     switch (joy.source.button) {
                     case engine::Joystick::ACTION_RIGHT: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
@@ -125,7 +128,7 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     }
                     default: return;
                     }
-                },               
+                },
                 [&](auto) {},
             },
             e);
@@ -146,7 +149,7 @@ auto game::ThePurge::onUpdate(entt::registry &world, const engine::Event &e) -> 
             e);
     }
 }
-void game::ThePurge::displaySoundDebugGui()
+void game::ThePURGE::displaySoundDebugGui()
 {
     static auto holder = engine::Core::Holder{};
 
@@ -214,7 +217,7 @@ void game::ThePurge::displaySoundDebugGui()
     ImGui::End();
 }
 
-auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
+auto game::ThePURGE::mapGenerationOverlayTick(entt::registry &world) -> void
 {
     static bool spamNextFloor = false;
 
@@ -256,27 +259,7 @@ auto game::ThePurge::mapGenerationOverlayTick(entt::registry &world) -> void
     ImGui::End();
 }
 
-static GLuint createtexture(const std::string &fullpath)
-{
-    int w, h, channel;
-    auto image = stbi_load(fullpath.c_str(), &w, &h, &channel, 4);
-
-    if (!image) { throw std::runtime_error("Failed to load image " + fullpath + " : " + stbi_failure_reason()); }
-
-    GLuint id;
-    glGenTextures(1, &id);
-    glBindTexture(GL_TEXTURE_2D, id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    stbi_image_free(image);
-
-    return id;
-}
-
-auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
+auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 {
     [[maybe_unused]] static auto holder = engine::Core::Holder{};
 
@@ -288,57 +271,17 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
 #endif
 
     if (m_state == State::LOADING) {
-        // todo : style because this is not a debug window
-        ImGui::Begin("Menu loading", nullptr, ImGuiWindowFlags_NoDecoration);
 
-        // note : this block could be launch in a future
-        if (ImGui::Button("Start the game")) {
-            m_logics->onGameStarted.publish(world);
-            setState(State::IN_GAME);
-        }
+        MainMenu::draw(*this, world);
 
-        ImGui::End();
     } else if (m_state == State::IN_GAME) {
-        {
-            // Creating background
-            static const std::string path = std::string("data/textures/InfoHud.png");
-            static GLuint texture = createtexture(path);
-            const auto infoHealth = world.get<Health>(player);
-            const auto HP = infoHealth.current / infoHealth.max;
-            const auto Atk = world.get<AttackDamage>(player);
-            const auto level = world.get<Level>(player);
-            const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
-            KeyPicker keyPicker = world.get<KeyPicker>(player);
-            ImGui::Begin(
-                "Info Player",
-                nullptr,
-                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
-                    | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
-            ImVec2 size = ImGui::GetWindowSize();
-            ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((texture))), ImVec2(size.x - 30, size.y - 10));
-            ImGui::SetCursorPos(ImVec2(ImGui::GetItemRectMin().x + 40, ImGui::GetItemRectMin().y + size.y / 7));
-            ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), fmt::format("{}/{}", infoHealth.current, infoHealth.max).data());
-            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-            ImGui::Text("HP");
-            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-            ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
-            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-            ImGui::Text("XP");
-            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-            helper::ImGui::Text("Level: {}", level.current_level);
-            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-            helper::ImGui::Text("Speed: {}", 1);
-            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-            helper::ImGui::Text("Atk: {}", Atk.damage);
-            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-            if (keyPicker.hasKey) helper::ImGui::Text("You have the key");
-            ImGui::End();
 
+        UserStatistics::draw(*this, world);
 
-            mapGenerationOverlayTick(world);
-        }
 #ifndef NDEBUG
         if (holder.instance->isShowingDebugInfo()) {
+            mapGenerationOverlayTick(world);
+
             ImGui::Begin("Camera");
             if (ImGui::Button("Reset")) m_camera = engine::Camera();
 
@@ -396,10 +339,10 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
             static std::optional<Class> selectedClass;
             static int infoAdd;
             static std::vector<GLuint> Texture = {
-                createtexture(std::string("data/textures/InfoHud.png")),
-                createtexture(std::string("data/textures/CPoint.PNG")),
-                createtexture(std::string("data/textures/plus.png")),
-                createtexture(std::string("data/textures/validate.png"))};
+                engine::DrawableFactory::createtexture("data/textures/InfoHud.png"),
+                engine::DrawableFactory::createtexture("data/textures/CPoint.PNG"),
+                engine::DrawableFactory::createtexture("data/textures/plus.png"),
+                engine::DrawableFactory::createtexture("data/textures/validate.png")};
             ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x, m_camera.getViewportSize().y));
             ImVec2 size = ImVec2(1000.0f, 1000.0f);
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
@@ -500,7 +443,7 @@ auto game::ThePurge::drawUserInterface(entt::registry &world) -> void
     }
 }
 
-auto game::ThePurge::goToNextFloor(entt::registry &world) -> void
+auto game::ThePURGE::goToNextFloor(entt::registry &world) -> void
 {
     world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });

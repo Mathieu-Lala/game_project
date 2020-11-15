@@ -10,11 +10,11 @@
 
 namespace game {
 
-class ThePurge;
+class ThePURGE;
 
 class DebugConsole {
 public:
-    explicit DebugConsole(ThePurge &game);
+    explicit DebugConsole(ThePURGE &game);
 
     auto draw() -> void { m_console.draw(); }
 
@@ -42,7 +42,7 @@ private:
     engine::widget::ImGuiConsole m_console;
     CommandHandler m_commands;
 
-    ThePurge &m_game;
+    ThePURGE &m_game;
 };
 
 } // namespace game
