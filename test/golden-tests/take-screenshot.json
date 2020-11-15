@@ -23,14 +23,31 @@
         }
     },
     {
+        "Moved": {
+            "source": {
+                "Mouse": {
+                    "x": 898.0,
+                    "y": 526.0
+                }
+            }
+        }
+    },
+    {
+        "TimeElapsed": {
+            "elapsed": {
+                "nanoseconds": 2000000
+            }
+        }
+    },
+    {
         "Pressed": {
             "source": {
                 "MouseButton": {
                     "button": 0,
                     "mouse": {
                         "Mouse": {
-                            "x": 938.0,
-                            "y": 531.0
+                            "x": 898.0,
+                            "y": 526.0
                         }
                     }
                 }
@@ -40,7 +57,35 @@
     {
         "TimeElapsed": {
             "elapsed": {
-                "nanoseconds": 1000000
+                "nanoseconds": 2000000
+            }
+        }
+    },
+    {
+        "TimeElapsed": {
+            "elapsed": {
+                "nanoseconds": 2000000
+            }
+        }
+    },
+    {
+        "TimeElapsed": {
+            "elapsed": {
+                "nanoseconds": 2000000
+            }
+        }
+    },
+    {
+        "TimeElapsed": {
+            "elapsed": {
+                "nanoseconds": 2000000
+            }
+        }
+    },
+    {
+        "TimeElapsed": {
+            "elapsed": {
+                "nanoseconds": 2000000
             }
         }
     },
