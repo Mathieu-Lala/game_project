@@ -96,12 +96,26 @@ $> ./tools/install.sh
         >
       </a>
     </td>
+    <td>
+      <a href="https://travis-ci.com/github/Mathieu-Lala/game_project">
+        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=master"
+          alt="not found"
+        >
+      </a>
+    </td>
   </tr>
   <tr>
     <td>develop (latest)</td>
     <td>
       <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Adevelop">
         <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop"
+          alt="not found"
+        >
+      </a>
+    </td>
+    <td>
+      <a href="https://travis-ci.com/github/Mathieu-Lala/game_project">
+        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=develop"
           alt="not found"
         >
       </a>

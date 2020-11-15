@@ -2,12 +2,16 @@ language: cpp
 
 dist: focal
 
+cache:
+  directories:
+    - /home/travis/.conan
+
 matrix:
   include:
     - name: "Linux (GCC compiler)"
       os: linux
       compiler: gcc
-      env: OS=linux COMPILER=gcc GCC_VERSION=10
+      env: OS=linux COMPILER=gcc GCC_VERSION=10 CODECOV_TOKEN="30f26de8-86d2-4287-82de-3b14d6ee60fb"
       addons:
         apt:
           sources:
