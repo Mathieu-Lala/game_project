@@ -27,6 +27,8 @@ matrix:
             - python3-setuptools
 #            - uuid-dev
           update: true
+      after_script:
+        - bash <(curl -s https://codecov.io/bash)
     - name: "Linux (Clang compiler)"
       os: linux
       compiler: clang
@@ -78,9 +80,16 @@ before_install:
   - pip3 install gil
  # - gil update
 
+install:
+  - ./tools/install.sh
+  # Fail if we can't run Conan.
+  - conan --version
+
 # Build scripts
 script:
-  - echo "hello world"
+  - ./tools/generate.sh -- -DENABLE_COVERAGE:BOOL=TRUE -DENABLE_TESTING:BOOL=TRUE
+  - ./tools/build.sh
+  - ctest -j2
 
 # Don't send notifications on success
 notifications:
