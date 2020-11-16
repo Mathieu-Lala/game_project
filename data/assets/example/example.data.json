@@ -5,7 +5,7 @@
         "height": 165,
         "speed": 50,
         "animations": {
-            "hold": [
+            "chase": [
                 {
                     "x": 440,
                     "y": 330
