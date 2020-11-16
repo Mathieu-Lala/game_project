@@ -149,7 +149,6 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
                         engine::d3::Position{in_between.x, in_between.y, 0.0f},
                         wall_hitbox,
                         wall_pos)) {
-                    spdlog::info("{}, ", i);
                     return false;
                 }
             }
