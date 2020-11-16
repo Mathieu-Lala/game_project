@@ -34,7 +34,7 @@ if [[ $(uname -a) =~ "Ubuntu" ]]; then
     sudo apt install -y gcc-10 g++-10 pkg-config python3-pip
 fi
 
-python3 -m pip install --upgrade pip --user
+python3 -m pip install --upgrade pip setuptools --user
 if [ -f requirements.txt ]; then pip install -r requirements.txt --user; fi
 
 export PATH="$PATH:$HOME/.local/bin"

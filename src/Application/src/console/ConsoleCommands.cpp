@@ -137,7 +137,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
 
             if (!classData) {
                 std::stringstream names;
-                for (const auto [_, data] : game.getClassDatabase()) names << data.name << ", ";
+                for (const auto &[_, data] : game.getClassDatabase()) names << data.name << ", ";
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
             }
 
@@ -156,7 +156,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClasses =
 
         std::stringstream names;
 
-        for (auto id : classes) names << game.getClassDatabase().at(id).name << ", ";
+        for (auto &id : classes) names << game.getClassDatabase().at(id).name << ", ";
 
         console.info("Player has {} classes : {}", classes.size(), names.str());
     };
@@ -172,7 +172,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
 
             if (!classData) {
                 std::stringstream names;
-                for (const auto [_, data] : game.getClassDatabase()) names << data.name << ", ";
+                for (const auto &[_, data] : game.getClassDatabase()) names << data.name << ", ";
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
             }
 

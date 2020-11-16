@@ -1,3 +1,5 @@
-fuzz test
-
 setup codecov
+
+add others pipeline (appveyor/azure/circleci/travis/...)
+
+run pipeline in docker
