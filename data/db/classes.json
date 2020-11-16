@@ -4,7 +4,7 @@
     "icon":  "icons/farmer.png",
     "maxHealth": 10,
     "damage": 1,
-    "spells": [ 0, 2 ],
+    "spells": [0],
     "childrenClass": [ "soldier", "shooter", "sorcerer" ]
   },
   "soldier": {
@@ -12,7 +12,7 @@
     "icon": "icons/soldier.png",
     "maxHealth": 20,
     "damage": 5,
-    "spells": [],
+    "spells": [1],
     "childrenClass": []
 
   },
@@ -21,7 +21,7 @@
     "icon": "icons/shooter.png",
     "maxHealth": 15,
     "damage": 20,
-    "spells": [],
+    "spells": [3],
     "childrenClass": []
   },
   "sorcerer": {
@@ -29,7 +29,7 @@
     "icon": "icons/sorcerer.png",
     "maxHealth": 25,
     "damage": 15,
-    "spells": [],
+    "spells": [2],
     "childrenClass": []
   }
 }
