@@ -46,11 +46,11 @@ Application version 0.1.9
 
 * Unix systems
 
-    * g++>=10
+    * g++>=10 || clang>=12
     * cmake>=3.13
     * python>=3.0
 
-* Windows
+* Visual Studio Extension
 
     * Visual Studio 2019>=16.7
     * Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
@@ -96,12 +96,26 @@ $> ./tools/install.sh
         >
       </a>
     </td>
+    <td>
+      <a href="https://travis-ci.com/github/Mathieu-Lala/game_project">
+        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=master"
+          alt="not found"
+        >
+      </a>
+    </td>
   </tr>
   <tr>
     <td>develop (latest)</td>
     <td>
       <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Adevelop">
         <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop"
+          alt="not found"
+        >
+      </a>
+    </td>
+    <td>
+      <a href="https://travis-ci.com/github/Mathieu-Lala/game_project">
+        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=develop"
           alt="not found"
         >
       </a>
@@ -133,6 +147,8 @@ See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cma
 ![Dependencies](doc/conan_dependencies.png)
 
 ## Testing
+
+[![codecov](https://codecov.io/gh/Mathieu-Lala/game_project/branch/develop/graph/badge.svg?token=E43G3XKG01)](https://codecov.io/gh/Mathieu-Lala/game_project)
 
 * [CI](https://en.wikipedia.org/wiki/Continuous_integration)
 
