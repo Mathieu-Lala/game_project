@@ -3,6 +3,7 @@
 
 #include <Engine/component/Color.hpp>
 #include <Engine/component/Texture.hpp>
+#include <Engine/component/Rotation.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
@@ -31,6 +32,7 @@ auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTAK>(
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
+    world.emplace<engine::d2::Rotation>(spell, 0.f);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
     world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
     world.emplace<engine::Source>(spell, caster);
@@ -88,6 +90,7 @@ auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &wo
     engine::DrawableFactory::fix_color(world, spell, {0.6, 0.6, 1});
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0); // note : why -1
     world.emplace<engine::d2::Velocity>(spell, direction.x * speed , direction.y * speed);
+    world.emplace<engine::d2::Rotation>(spell, 0.f);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
     world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
     world.emplace<engine::Source>(spell, caster);

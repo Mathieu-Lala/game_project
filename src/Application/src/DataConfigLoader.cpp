@@ -31,12 +31,14 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
 
     classes::Database database;
 
-    for (Class::ID id = 0; const auto &[name, data] : jsonData.items()) {
+    for (Class::ID id = 1; const auto &[name, data] : jsonData.items()) {
         std::vector<SpellFactory::ID> spells;
         for (const auto &spell : data["spells"]) spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>()));
 
-        database[id] = Class{
-            .id = id,
+        Class::ID currentId = data.value("starter", false) ? static_cast<Class::ID>(0) : id++;
+        
+        database[currentId] = Class{
+            .id = currentId,
             .name = name,
             .description = data["desc"].get<std::string>(),
             .iconPath = data["icon"],
@@ -46,8 +48,6 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
             .damage = data["damage"].get<float>(),
             .childrenClass = {},
         };
-
-        id++;
     }
 
     for (auto &[id, dbClass] : database) {

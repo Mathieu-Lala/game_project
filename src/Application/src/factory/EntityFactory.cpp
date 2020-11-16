@@ -1,5 +1,6 @@
 #include <Engine/component/Color.hpp>
 #include <Engine/component/Texture.hpp>
+#include <Engine/component/Rotation.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
@@ -15,6 +16,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
@@ -31,6 +33,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {0.5, 1, 0.5});
@@ -47,6 +50,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
@@ -63,6 +67,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
@@ -77,6 +82,7 @@ auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
 {
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {0.75, 0.25, 0.25});
@@ -94,6 +100,7 @@ auto game::EntityFactory::create<game::EntityFactory::WALL>(entt::registry &worl
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
@@ -110,6 +117,7 @@ auto game::EntityFactory::create<game::EntityFactory::DEBUG_TILE>(
 {
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 0});
@@ -127,6 +135,7 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(entt::registry &wor
     world.emplace<entt::tag<"enemy"_hs>>(e);
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_ENEMY>());
     world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::d2::HitboxSolid>(e, 1.0, 1.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
@@ -154,6 +163,7 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
     world.emplace<entt::tag<"boss"_hs>>(e);
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_ENEMY>());
     world.emplace<engine::d2::Velocity>(e, (std::rand() & 1) ? -0.05 : 0.05, (std::rand() & 1) ? -0.05 : 0.05);
+    world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::d2::HitboxSolid>(e, 3.0, 3.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
@@ -186,6 +196,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<entt::tag<"player"_hs>>(player);
     world.emplace<engine::d3::Position>(player, 0.0, 0.0, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
     world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
+    world.emplace<engine::d2::Rotation>(player, 0.f);
     world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
     world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
     world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
@@ -198,6 +209,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<KeyPicker>(player);
     world.emplace<SpellSlots>(player);
     world.emplace<Classes>(player);
+    world.emplace<SkillPoint>(player, 0);
 
     return player;
 }
@@ -211,8 +223,9 @@ auto game::EntityFactory::create<game::EntityFactory::KEY>(entt::registry &world
     auto key = world.create();
     world.emplace<entt::tag<"key"_hs>>(key);
     world.emplace<engine::d2::HitboxFloat>(key);
-    world.emplace<engine::d2::Scale>(key, size.x, size.y);
     world.emplace<engine::d3::Position>(key, pos.x, pos.y, get_z_layer<LAYER_PLAYER>());
+    world.emplace<engine::d2::Rotation>(key, 0.f);
+    world.emplace<engine::d2::Scale>(key, size.x, size.y);
     world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
     engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "textures/key.png");

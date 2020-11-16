@@ -86,7 +86,7 @@ auto engine::load_wav(
         return nullptr;
     }
 
-    auto data = new char[size];
+    auto data = new char[static_cast<std::size_t>(size)];
 
     in.read(data, size);
 

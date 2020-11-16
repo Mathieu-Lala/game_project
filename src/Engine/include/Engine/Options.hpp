@@ -70,7 +70,7 @@ struct Options {
         options[REPLAY_PATH] = app.add_option("--replay-path", settings.replay_path, "Path of the events to replay.");
         options[REPLAY_DATA] = app.add_option("--replay-data", settings.replay_data, "Json events to replay.");
         options[DATA_FOLDER] = app.add_option("--data", settings.data_folder, "Path of the data folder.", true);
-        options[OUTPUT_FOLDER] = app.add_option("--output-folder", settings.data_folder, "Path of the generated output.", true);
+        options[OUTPUT_FOLDER] = app.add_option("--output-folder", settings.output_folder, "Path of the generated output.", true);
 
         if (const auto res = [&]() -> std::optional<int> {
                 CLI11_PARSE(app, argc, argv);

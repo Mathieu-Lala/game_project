@@ -7,22 +7,27 @@ Keimyung University - Mobile Game Development - 2020 Fall Semester
 
 This project is a video game for PC. See the [Game Design Document](doc/GDD_ten_page.pdf) for more details.
 
-This repository contains the source code of the game and his engine.
+This repository contains the source code of the [game](src/Application) and his [engine](src/Engine).
 
 ## Usage
 
 ```sh
 $> ./tools/launch.sh -- --help
-ThePURGE 0.2.22
-Usage: ./app [OPTIONS]
+ThePURGE 0.2.40
+Usage: ./engine_main [OPTIONS]
 
 Options:
   -h,--help                   Print this help message and exit
   --version                   Print the version number and exit.
-  --config=app.ini            Read an ini file
+  --config=data/config/app.ini
+                              Read an ini file
   --fullscreen BOOLEAN=1      Launch the window in fullscreen mode.
+  --window-width UINT=1024    Width of the window.
+  --window-height UINT=768    Height of the window.
   --replay-path TEXT          Path of the events to replay.
-  --data TEXT                 Path of the data folder
+  --replay-data TEXT          Json events to replay.
+  --data TEXT=data/           Path of the data folder.
+  --output-folder TEXT=data/  Path of the generated output.
 ```
 
 ## Screenshots
@@ -41,21 +46,24 @@ Application version 0.1.9
 
 * Unix systems
 
-    * g++>=10
-    * cmake>=3.13.0
-    * python>=3.8
+    * g++>=10 || clang>=12
+    * cmake>=3.13
+    * python>=3.0
 
-* Windows
+* Visual Studio Extension
 
     * Visual Studio 2019>=16.7
     * Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
-    * python>=3.8
+    * python>=3.0
 
 The build **require** an internet connection (download of dependencies if missing).
 
 ```sh
 # Cloning the repository
 $> git clone git@github.com:Mathieu-Lala/game_project.git
+
+# Go in the project
+$> cd game_project
 
 # Installing the required environment (partial)
 $> ./tools/install.sh
@@ -84,7 +92,14 @@ $> ./tools/install.sh
     <td>
       <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Amaster">
         <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=master"
-          alt="Build status not found"
+          alt="not found"
+        >
+      </a>
+    </td>
+    <td>
+      <a href="https://travis-ci.com/github/Mathieu-Lala/game_project">
+        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=master"
+          alt="not found"
         >
       </a>
     </td>
@@ -94,7 +109,14 @@ $> ./tools/install.sh
     <td>
       <a href="https://github.com/Mathieu-Lala/game_project/actions?query=branch%3Adevelop">
         <img src="https://github.com/Mathieu-Lala/game_project/workflows/C++%20CMake%20Build/badge.svg?branch=develop"
-          alt="Build status not found"
+          alt="not found"
+        >
+      </a>
+    </td>
+    <td>
+      <a href="https://travis-ci.com/github/Mathieu-Lala/game_project">
+        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=develop"
+          alt="not found"
         >
       </a>
     </td>
@@ -114,15 +136,29 @@ $> ./tools/install.sh
     $> ./tools/launch.sh
     ```
 
+* Visual Studio
+
+See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160).
+
 ### Package Manager
 
-[conan](https://conan.io/) - [documentation](https://docs.conan.io/en/latest/)
+[conan](https://conan.io/) - [documentation](https://docs.conan.io/en/1.31/)
 
 ![Dependencies](doc/conan_dependencies.png)
 
 ## Testing
 
-Not deployed yet.
+[![codecov](https://codecov.io/gh/Mathieu-Lala/game_project/branch/develop/graph/badge.svg?token=E43G3XKG01)](https://codecov.io/gh/Mathieu-Lala/game_project)
+
+* [CI](https://en.wikipedia.org/wiki/Continuous_integration)
+
+  1. [Github](https://github.com/Mathieu-Lala/game_project/actions)
+
+* [Unit tests](https://en.wikipedia.org/wiki/Unit_testing)
+
+* [Golden tests](https://en.wikipedia.org/wiki/Software_testing#Output_comparison_testing)
+
+* [Formatting](https://en.wikipedia.org/wiki/Programming_style)
 
 ## Acknowledgement
 

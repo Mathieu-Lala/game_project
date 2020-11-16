@@ -1,12 +1,12 @@
 #include <spdlog/spdlog.h>
 #include <Engine/audio/Sound.hpp>
+#include <Engine/helpers/Parser.hpp>
 
-
-#include "console/ArgParsingUtils.hpp"
 #include "console/ConsoleCommands.hpp"
 #include "console/DebugConsole.hpp"
 
 #include "component/all.hpp"
+#include "screen/MainMenu.hpp"
 #include "ThePURGE.hpp"
 
 game::CommandHandler::CommandHandler() :
@@ -37,7 +37,7 @@ std::vector<std::string> game::CommandHandler::getCommands() const
 }
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_kill =
-    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
+    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -58,7 +58,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_kill =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
-    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
+    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 2) throw std::runtime_error("Wrong argument count");
 
@@ -77,7 +77,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_addXp =
-    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
+    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -85,11 +85,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addXp =
 
             auto player = game.player;
 
-            auto &level = world.get<Level>(player);
-
-            level.current_xp += amount;
-            level.current_level += static_cast<std::uint32_t>(std::floor(level.current_xp / level.xp_require));
-            level.current_xp = level.current_xp % level.xp_require;
+            game.getLogics().addXp(world, player, amount);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: addXp xp", e.what()));
@@ -97,17 +93,18 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addXp =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_addLevel =
-    [](entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
+    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
-            const auto amount = lexicalCast<std::uint32_t>(args[0]);
+            auto amount = lexicalCast<std::uint32_t>(args[0]);
 
             auto player = game.player;
 
             auto &level = world.get<Level>(player);
 
-            level.current_level += amount;
+            while (amount--)
+                game.getLogics().addXp(world, player, level.xp_require);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: addLevel level", e.what()));
@@ -115,7 +112,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addLevel =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_setMusicVolume =
-    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
+    []([[maybe_unused]] entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -129,7 +126,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setMusicVolume =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
-    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &) {
+    []([[maybe_unused]] entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -140,7 +137,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
 
             if (!classData) {
                 std::stringstream names;
-                for (const auto [_, data] : game.getClassDatabase()) names << data.name << ", ";
+                for (const auto &[_, data] : game.getClassDatabase()) names << data.name << ", ";
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
             }
 
@@ -152,20 +149,20 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_getClasses =
-    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &console) {
+    []([[maybe_unused]] entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &console) {
         if (args.size() != 0) throw std::runtime_error("Wrong argument count");
 
         const auto &classes = world.get<Classes>(game.player).ids;
 
         std::stringstream names;
 
-        for (auto id : classes) names << game.getClassDatabase().at(id).name << ", ";
+        for (auto &id : classes) names << game.getClassDatabase().at(id).name << ", ";
 
         console.info("Player has {} classes : {}", classes.size(), names.str());
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
-    []([[maybe_unused]] entt::registry &world, ThePurge &game, std::vector<std::string> &&args, DebugConsole &console) {
+    []([[maybe_unused]] entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &console) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -175,7 +172,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
 
             if (!classData) {
                 std::stringstream names;
-                for (const auto [_, data] : game.getClassDatabase()) names << data.name << ", ";
+                for (const auto &[_, data] : game.getClassDatabase()) names << data.name << ", ";
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
             }
 

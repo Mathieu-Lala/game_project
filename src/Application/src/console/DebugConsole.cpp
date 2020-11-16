@@ -6,10 +6,10 @@
 #include <Engine/component/Texture.hpp>
 #include <Engine/Core.hpp>
 
-game::DebugConsole::DebugConsole(ThePurge &game) : m_game(game)
+game::DebugConsole::DebugConsole(ThePURGE &game) : m_game(game)
 {
     m_console.setCommandHandler([this](const std::string_view cmd) { handleCmd(cmd); });
-    m_console.setCommandAutoCompletion(m_commands.getCommands());
+    m_console.setCommands(m_commands.getCommands());
 }
 
 void game::DebugConsole::handleCmd(const std::string_view line)

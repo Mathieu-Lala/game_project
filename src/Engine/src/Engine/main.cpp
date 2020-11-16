@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 try {
     auto holder = engine::Core::Holder::init();
 
-    holder.instance->game<game::ThePurge>();
+    holder.instance->game<game::ThePURGE>();
 
     return holder.instance->main(argc, argv);
 
