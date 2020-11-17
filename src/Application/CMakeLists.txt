@@ -11,7 +11,7 @@ add_library(
   src/console/DebugConsole.cpp
   src/console/ConsoleCommands.cpp
   src/models/SpellDatabase.cpp
-  src/models/ClassDatabase.cpp)
+  src/models/ClassDatabase.cpp "include/component/Facing.hpp")
 
 target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 

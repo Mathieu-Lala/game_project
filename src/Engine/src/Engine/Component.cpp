@@ -49,7 +49,8 @@ auto engine::Texture::ctor(const std::string_view path, const std::array<float, 
         .width = 0,
         .height = 0,
         .channels = 0,
-        .px = nullptr
+        .px = nullptr,
+        .mirrored = false,
     };
     // clang-format on
 

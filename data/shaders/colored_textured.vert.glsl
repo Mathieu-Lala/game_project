@@ -13,10 +13,16 @@ uniform mat4 viewProj;
 uniform bool shake;
 uniform float time;
 
+uniform bool mirrored;
+
 void main()
 {
     OutColor = aColor;
-    TexCoord = vec2(aTexCoord.x, aTexCoord.y);
+    if (mirrored)
+        TexCoord = vec2(-aTexCoord.x , aTexCoord.y);
+    else
+        TexCoord = vec2(aTexCoord.x , aTexCoord.y);
+
     gl_Position = viewProj * model * vec4(aPos, 1.0f);
     if (shake) {
         float strength = 0.01;

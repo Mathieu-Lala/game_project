@@ -1,3 +1,5 @@
+#include <string>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -10,13 +12,13 @@
 #include <Engine/Settings.hpp>
 #include <Engine/component/Color.hpp>
 #include <Engine/component/Texture.hpp>
+#include <Engine/component/Spritesheet.hpp>
 #include <Engine/Core.hpp>
 
 #include <Engine/helpers/ImGui.hpp>
 
 #include "level/LevelTilemapBuilder.hpp"
 #include "level/MapGenerator.hpp"
-#include "factory/EntityFactory.hpp"
 
 #include "factory/EntityFactory.hpp"
 
@@ -27,6 +29,8 @@
 #include "ThePURGE.hpp"
 
 #include "DataConfigLoader.hpp"
+
+#include "component/Facing.hpp"
 
 using namespace std::chrono_literals;
 
@@ -129,6 +133,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                          -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
+
                     switch (joy.source.button) {
                     case engine::Joystick::ACTION_RIGHT: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
@@ -154,7 +159,8 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
             e);
         auto &pos = world.get<engine::d3::Position>(player);
         m_camera.setCenter({pos.x, pos.y});
-        if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
+        if (m_camera.isUpdated()) holder.instance->updateView(m_camera.getViewProjMatrix());
+
     } else if (m_state == State::IN_INVENTORY) {
         std::visit(
             engine::overloaded{
@@ -356,10 +362,11 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
             static auto test = classes::getStarterClass(m_classDatabase);
             static std::optional<Class> selectedClass;
             static int infoAdd;
-            static std::vector<GLuint> Texture = {engine::DrawableFactory::createtexture("data/textures/InfoHud.png"),
-                                                  engine::DrawableFactory::createtexture("data/textures/CPoint.PNG"),
-                                                  engine::DrawableFactory::createtexture("data/textures/plus.png"),
-                                                  engine::DrawableFactory::createtexture("data/textures/validate.png")};
+            static std::vector<GLuint> Texture = {
+                engine::DrawableFactory::createtexture("data/textures/InfoHud.png"),
+                engine::DrawableFactory::createtexture("data/textures/CPoint.PNG"),
+                engine::DrawableFactory::createtexture("data/textures/plus.png"),
+                engine::DrawableFactory::createtexture("data/textures/validate.png")};
             ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x, m_camera.getViewportSize().y));
             ImVec2 size = ImVec2(1000.0f, 1000.0f);
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));

@@ -94,7 +94,7 @@ auto engine::DrawableFactory::fix_texture(
         entt::hashed_string{
             fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}", filepath, clip[0], clip[1], clip[2], clip[3]).data()},
         filepath,
-        std::move(clip));
+        clip);
     if (handle) {
         ::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO);
         ::glBufferData(

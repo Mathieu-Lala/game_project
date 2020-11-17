@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/zombie_enrage.png",
+        "file": "/assets/enemie/zombie_enrage.png",
         "width": 300,
         "height": 260,
         "speed": 25,

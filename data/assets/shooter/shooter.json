@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/shooter_champ.png",
+        "file": "/assets/shooter/shooter_champ.png",
         "width": 450,
         "height": 565,
         "speed": 50,
