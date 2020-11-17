@@ -7,7 +7,7 @@ namespace game {
 
 struct SpellFactory {
     enum ID {
-        SHOVEL_ATTAK,
+        SHOVEL_ATTACK,
         SWORD_ATTACK,
         FIREBALL,
         PIERCING_ARROW
@@ -23,7 +23,7 @@ struct SpellFactory {
     case ID::id: create<ID::id>(std::forward<Args>(args)...); break;
 
         switch (spell) {
-            MAP_SPELL(SHOVEL_ATTAK);
+            MAP_SPELL(SHOVEL_ATTACK);
             MAP_SPELL(SWORD_ATTACK);
             MAP_SPELL(FIREBALL);
             MAP_SPELL(PIERCING_ARROW);
@@ -38,10 +38,10 @@ struct SpellFactory {
     template<>        \
     auto SpellFactory::create<SpellFactory::ID::id>(entt::registry &, entt::entity, const glm::dvec2 &)->entt::entity
 
-DECL_SPEC(SHOVEL_ATTAK);
+DECL_SPEC(SHOVEL_ATTACK);
 DECL_SPEC(SWORD_ATTACK);
 DECL_SPEC(FIREBALL);
-DECL_TYPE(PIERCING_ARROW);
+DECL_SPEC(PIERCING_ARROW);
 
 #undef DECL_SPEC
 

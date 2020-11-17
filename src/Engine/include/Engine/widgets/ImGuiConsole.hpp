@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstring>
-
+#include <optional>
 #include <vector>
 
 #include <fmt/format.h>

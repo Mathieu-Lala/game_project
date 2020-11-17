@@ -13,7 +13,7 @@
 using namespace std::chrono_literals;
 
 template<>
-auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTAK>(
+auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTACK>(
     entt::registry &world, entt::entity caster, const glm::dvec2 &direction) -> entt::entity
 {
     static engine::Core::Holder holder{};
@@ -40,7 +40,7 @@ auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTAK>(
 }
 
 template<>
-auto game::SpellFactory::create<game::SpellFactory::SWORD_ATTACK>(entt::registry &, entt::entity, const glm::dvec2 &)
+auto game::SpellFactory::create<game::SpellFactory::SWORD_ATTACK>(entt::registry &world, entt::entity caster, const glm::dvec2 &direction)
     -> entt::entity
 {
     static engine::Core::Holder holder{};
@@ -50,7 +50,7 @@ auto game::SpellFactory::create<game::SpellFactory::SWORD_ATTACK>(entt::registry
     const auto &caster_pos = world.get<engine::d3::Position>(caster);
     const auto &attack_damage = world.get<game::AttackDamage>(caster);
 
-    auto color = world.has<entt::tag<"enemy"_hs>>(caster) ? glm::vec{0, 1, 0} : glm::vec3{1, 1, 0.5};
+    auto color = world.has<entt::tag<"enemy"_hs>>(caster) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 0.5};
     
     holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_cast.wav")->play();
     const auto spell = world.create();

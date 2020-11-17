@@ -147,7 +147,7 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(entt::registry &wor
     world.emplace<Health>(e, 50.0f, 50.0f);
 
     auto &slots = world.emplace<SpellSlots>(e);
-    slots.spells[0] = Spell::create(SpellFactory::STICK_ATTACK);
+    slots.spells[0] = Spell::create(SpellFactory::SHOVEL_ATTACK);
 
     return e;
 }
