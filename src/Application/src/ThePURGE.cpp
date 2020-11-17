@@ -58,6 +58,22 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
     static auto holder = engine::Core::Holder{};
     constexpr auto kDebugKeyboardPlayerMS = 15;
 
+    const auto spell_map = []<typename T>(T k)
+    {
+        struct SpellMap {
+            int key;
+            std::size_t id;
+        };
+        if constexpr (std::is_same<T, engine::Joystick::Buttons>::value) {
+            const auto map =
+                std::to_array<SpellMap>({{engine::Joystick::ACTION_RIGHT, 0}, {engine::Joystick::ACTION_BOTTOM, 1}});
+            return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+        } else { // todo : should be engine::Keyboard::Key
+            const auto map = std::to_array<SpellMap>({{GLFW_KEY_U, 0}, {GLFW_KEY_Y, 1}});
+            return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+        }
+    };
+
     if (m_state == State::IN_GAME) {
         std::visit(
             engine::overloaded{
@@ -83,22 +99,16 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
                     case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
 
-                    case GLFW_KEY_U: {
-                        auto &spell = world.get<SpellSlots>(player).spells[0];
-                        if (!spell.has_value()) break;
-
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                        break;
-                    }
+                    case GLFW_KEY_U:
                     case GLFW_KEY_Y: {
-                        auto &spell = world.get<SpellSlots>(player).spells[1];
+                        const auto id = spell_map(key.source.key);
+
+                        auto &spell = world.get<SpellSlots>(player).spells[id];
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
                         m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                        break;
-                    }
+                    } break;
                     default: return;
                     }
                 },
@@ -130,22 +140,16 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
                     switch (joy.source.button) {
-                    case engine::Joystick::ACTION_RIGHT: {
-                        auto &spell = world.get<SpellSlots>(player).spells[0];
-                        if (!spell.has_value()) break;
-
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                        break;
-                    }
+                    case engine::Joystick::ACTION_RIGHT:
                     case engine::Joystick::ACTION_BOTTOM: {
-                        auto &spell = world.get<SpellSlots>(player).spells[1];
+                        const auto id = spell_map(joy.source.button);
+
+                        auto &spell = world.get<SpellSlots>(player).spells[id];
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
                         m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                        break;
-                    }
+                    } break;
                     default: return;
                     }
                 },
@@ -463,11 +467,11 @@ auto game::ThePURGE::goToNextFloor(entt::registry &world) -> void
     world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
 
-    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
-    m_nextFloorSeed = data.nextFloorSeed;
+    const auto map = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
+    m_nextFloorSeed = map.nextFloorSeed;
 
     auto &pos = world.get<engine::d3::Position>(player);
 
-    pos.x = data.spawn.x + data.spawn.w * 0.5;
-    pos.y = data.spawn.y + data.spawn.h * 0.5;
+    pos.x = map.spawn.x + map.spawn.w * 0.5;
+    pos.y = map.spawn.y + map.spawn.h * 0.5;
 }

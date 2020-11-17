@@ -1,12 +1,19 @@
 {
   "farmer": {
-    "starter" :  true,
+    "starter": true,
     "desc": "Farmer description",
     "icon": "icons/farmer.png",
     "maxHealth": 10,
     "damage": 1,
-    "spells": [ 0, 2 ],
-    "childrenClass": [ "soldier", "shooter", "sorcerer" ]
+    "spells": [
+      0,
+      2
+    ],
+    "childrenClass": [
+      "soldier",
+      "shooter",
+      "sorcerer"
+    ]
   },
   "soldier": {
     "desc": "Soldier description",
@@ -15,7 +22,6 @@
     "damage": 5,
     "spells": [],
     "childrenClass": []
-
   },
   "shooter": {
     "desc": "Shooter description",
@@ -31,7 +37,9 @@
     "maxHealth": 25,
     "damage": 15,
     "spells": [],
-    "childrenClass": [ "tOnk"]
+    "childrenClass": [
+      "tOnk"
+    ]
   },
   "tOnk": {
     "desc": "TOnk description",
