@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/shooter_anim.png",
+        "file": "/assets/shooter/shooter_anim.png",
         "width": 466,
         "height": 133,
         "speed": 50,

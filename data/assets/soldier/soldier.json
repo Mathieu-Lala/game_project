@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/soldier_champ.png",
+        "file": "/assets/soldier/soldier_champ.png",
         "width": 300,
         "height": 265,
         "speed": 50,

@@ -40,6 +40,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::update_particule>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
     sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
+    sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
@@ -116,11 +117,13 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
     }
 }
 
-auto game::GameLogic::on_class_bought(entt::registry &world, entt::entity player, const Class &) -> void {
+auto game::GameLogic::on_class_bought(entt::registry &world, entt::entity player, const Class &) -> void
+{
     world.get<SkillPoint>(player).count--;
 }
 
-auto game::GameLogic::on_player_level_up(entt::registry &world, entt::entity player) -> void {
+auto game::GameLogic::on_player_level_up(entt::registry &world, entt::entity player) -> void
+{
     world.get<SkillPoint>(player).count++;
 }
 
@@ -260,8 +263,8 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 
             if (world.has<entt::tag<"player"_hs>>(entity)) {
                 holder.instance->setScreenshake(true, 300ms);
-                ParticuleFactory::create<Particule::HITMARKER>(world,
-                    {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0});
+                ParticuleFactory::create<Particule::HITMARKER>(
+                    world, {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0});
             }
 
             holder.instance->getAudioManager()
@@ -273,7 +276,6 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
     };
 
     for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
-
         const auto &source = world.get<engine::Source>(spell).source;
         if (!world.valid(source)) return;
 
@@ -327,19 +329,18 @@ auto game::GameLogic::update_particule(entt::registry &world, const engine::Time
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
     for (const auto &i : world.view<Particule>()) {
         switch (world.get<Particule>(i).id) {
-            case Particule::HITMARKER: {
-                auto &color = world.get<engine::Color>(i);
-                const auto r = engine::Color::r(color);
-                const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
-                const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
-                engine::DrawableFactory::fix_color(world, i, {r, g, b});
+        case Particule::HITMARKER: {
+            auto &color = world.get<engine::Color>(i);
+            const auto r = engine::Color::r(color);
+            const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+            const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+            engine::DrawableFactory::fix_color(world, i, {r, g, b});
 
-                auto &vel = world.get<engine::d2::Velocity>(i);
-                vel.x += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
-                vel.y += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
-            } break;
-            default:
-                break;
+            auto &vel = world.get<engine::d2::Velocity>(i);
+            vel.x += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+            vel.y += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+        } break;
+        default: break;
         }
     }
 }
@@ -356,6 +357,43 @@ auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine
     };
 
     world.view<KeyPicker, engine::d3::Position>().each(doorUsageSystem);
+}
+
+auto game::GameLogic::player_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    const auto &vel = world.get<engine::d2::Velocity>(m_game.player);
+    const auto &facing = world.get<Facing>(m_game.player);
+    auto &sp = world.get<engine::Spritesheet>(m_game.player);
+
+    bool isFacingLeft;
+    if (vel.x < 0)
+        isFacingLeft = true;
+    else if (vel.x > 0)
+        isFacingLeft = false;
+    else if (facing.dir.x < 0)
+        isFacingLeft = true;
+    else
+        isFacingLeft = false;
+
+    std::string anim;
+
+    auto isMoving = vel.x != 0 || vel.y != 0;
+
+    if (isMoving)
+        if (isFacingLeft)
+            anim = "run_left";
+        else
+            anim = "run_right";
+    else
+        if (isFacingLeft)
+            anim = "hold_left";
+        else
+            anim = "hold_right";
+
+    if (sp.current_animation != anim) {
+        sp.current_animation = anim;
+        sp.current_frame = 0;
+    }
 }
 
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void

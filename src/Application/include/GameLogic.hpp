@@ -73,6 +73,8 @@ public:
 
     auto exit_door_interraction(entt::registry &, const engine::TimeElapsed &dt) -> void;
 
+    auto player_anim_update(entt::registry &, const engine::TimeElapsed &dt) -> void;
+
     auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
     auto cast_attack(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;

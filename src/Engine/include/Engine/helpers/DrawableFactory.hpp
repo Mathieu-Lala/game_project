@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <array>
+#include <stdexcept>
 
 #include <glm/vec3.hpp>
 
