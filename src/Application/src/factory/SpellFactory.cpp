@@ -31,6 +31,10 @@ auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTACK>(
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
+    auto &sp = world.emplace<engine::Spritesheet>(
+        spell,
+        engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/fireball/fireball.data.json"));
+    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
     world.emplace<engine::d2::Rotation>(spell, 0.f);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
@@ -59,6 +63,10 @@ auto game::SpellFactory::create<game::SpellFactory::SWORD_ATTACK>(entt::registry
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
+    auto &sp = world.emplace<engine::Spritesheet>(
+        spell,
+        engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/fireball/fireball.data.json"));
+    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
     world.emplace<engine::d2::Rotation>(spell, 0.f);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
@@ -124,6 +132,10 @@ auto game::SpellFactory::create<game::SpellFactory::PIERCING_ARROW>(entt::regist
     world.emplace<game::AttackDamage>(spell, attack_damage.damage * 1.25f);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, {0.6, 0, 0.3});
+    auto &sp = world.emplace<engine::Spritesheet>(
+        spell,
+        engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/fireball/fireball.data.json"));
+    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0); // note : why -1
     world.emplace<engine::d2::Velocity>(spell, direction.x * speed , direction.y * speed);
     world.emplace<engine::d2::Rotation>(spell, 0.f);

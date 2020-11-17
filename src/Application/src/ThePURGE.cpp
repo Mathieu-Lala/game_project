@@ -69,18 +69,17 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
 
                     case GLFW_KEY_I:
-                        world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS;
+                        m_logics->movement.publish(world, player, Direction::UP);
                         break; // go top
                     case GLFW_KEY_K:
-                        world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS;
+                        m_logics->movement.publish(world, player, Direction::DOWN);
                         break; // go bottom
                     case GLFW_KEY_L:
-                        world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS;
+                        m_logics->movement.publish(world, player, Direction::RIGHT);
                         break; // go right
                     case GLFW_KEY_J:
-                        world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS;
+                        m_logics->movement.publish(world, player, Direction::LEFT);
                         break; // go left
-
                     case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
 
                     case GLFW_KEY_U: {
@@ -93,6 +92,22 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     }
                     case GLFW_KEY_Y: {
                         auto &spell = world.get<SpellSlots>(player).spells[1];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    case GLFW_KEY_T: {
+                        auto &spell = world.get<SpellSlots>(player).spells[2];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    case GLFW_KEY_R: {
+                        auto &spell = world.get<SpellSlots>(player).spells[3];
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
@@ -122,15 +137,40 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics->movement.publish(
-                        world,
-                        player,
-                        {(static_cast<double>((*joystick)->axes[0]) / 10.0),
-                         -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
+                    if ((*joystick)->axes[0] >= 0.2)
+                        m_logics->movement.publish(world, player, Direction::RIGHT);
+                    else if ((*joystick)->axes[0] <= -0.2)
+                        m_logics->movement.publish(world, player, Direction::LEFT);
+                    else
+                        world.get<engine::d2::Velocity>(player).x = 0;
+
+                    if ((*joystick)->axes[1] >= 0.2)
+                        m_logics->movement.publish(world, player, Direction::DOWN);
+                    else if ((*joystick)->axes[1] <= -0.2)
+                        m_logics->movement.publish(world, player, Direction::UP);
+                    else
+                        world.get<engine::d2::Velocity>(player).y = 0;
+
+                if ((*joystick)->axes[4] >= 0) {
+                    auto &spell = world.get<SpellSlots>(player).spells[2];
+                    if (!spell.has_value()) return;
+
+                    auto &vel = world.get<engine::d2::Velocity>(player);
+                    m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                    return;
+                }
+                if ((*joystick)->axes[5] >= 0) {
+                    auto &spell = world.get<SpellSlots>(player).spells[3];
+                    if (!spell.has_value()) return;
+
+                    auto &vel = world.get<engine::d2::Velocity>(player);
+                    m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                    return;
+                }
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
                     switch (joy.source.button) {
-                    case engine::Joystick::ACTION_RIGHT: {
+                    case engine::Joystick::LS: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
                         if (!spell.has_value()) break;
 
@@ -138,24 +178,8 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
-                    case engine::Joystick::ACTION_BOTTOM: {
+                    case engine::Joystick::RS: {
                         auto &spell = world.get<SpellSlots>(player).spells[1];
-                        if (!spell.has_value()) break;
-
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                        break;
-                    }
-                    case engine::Joystick::ACTION_LEFT: {
-                        auto &spell = world.get<SpellSlots>(player).spells[2];
-                        if (!spell.has_value()) break;
-
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                        break;
-                    }
-                    case engine::Joystick::ACTION_TOP: {
-                        auto &spell = world.get<SpellSlots>(player).spells[3];
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
