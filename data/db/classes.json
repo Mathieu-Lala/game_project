@@ -5,7 +5,7 @@
     "icon": "icons/farmer.png",
     "maxHealth": 10,
     "damage": 1,
-    "spells": [ 0, 2 ],
+    "spells": [ 0 ],
     "childrenClass": [ "soldier", "shooter", "sorcerer" ]
   },
   "soldier": {
@@ -13,7 +13,7 @@
     "icon": "icons/soldier.png",
     "maxHealth": 20,
     "damage": 5,
-    "spells": [],
+    "spells": [ 1 ],
     "childrenClass": []
 
   },
@@ -30,7 +30,7 @@
     "icon": "icons/sorcerer.png",
     "maxHealth": 25,
     "damage": 15,
-    "spells": [],
+    "spells": [ 2 ],
     "childrenClass": [ "tOnk"]
   },
   "tOnk": {
