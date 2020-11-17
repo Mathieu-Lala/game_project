@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/shooter/shooter.png",
+        "file": "/anims/classes/shooter/shooter_spritesheet.png",
         "width": 450,
         "height": 575,
         "speed": 50,

@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/fireball/fireball.spritesheet.png",
+        "file": "/anims/spells/fireball/fireball.spritesheet.png",
         "width": 256,
         "height": 256,
         "speed": 60,

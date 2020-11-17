@@ -3,7 +3,7 @@
     "starter" : true,
     "desc": "Farmer description",
     "icon": "icons/farmer.png",
-    "assetGraph": "assets/farmer/farmer.data.json",
+    "assetGraph": "anims/classes/farmer/farmer.data.json",
     "maxHealth": 10,
     "damage": 1,
     "spells": [ 0, 2 ],
@@ -12,7 +12,7 @@
   "soldier": {
     "desc": "Soldier description",
     "icon": "icons/soldier.png",
-    "assetGraph": "assets/soldier/soldier.data.json",
+    "assetGraph": "anims/classes/soldier/soldier.data.json",
     "maxHealth": 20,
     "damage": 5,
     "spells": [],
@@ -22,7 +22,7 @@
   "shooter": {
     "desc": "Shooter description",
     "icon": "icons/shooter.png",
-    "assetGraph": "assets/shooter/shooter.data.json",
+    "assetGraph": "anims/classes/shooter/shooter.data.json",
     "maxHealth": 15,
     "damage": 20,
     "spells": [],
@@ -31,7 +31,7 @@
   "sorcerer": {
     "desc": "Sorcerer description",
     "icon": "icons/sorcerer.png",
-    "assetGraph": "assets/sorcerer/sorcerer.data.json",
+    "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
     "maxHealth": 25,
     "damage": 15,
     "spells": [],

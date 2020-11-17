@@ -177,7 +177,7 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
 
     // todo : add cache
     auto &sp = world.emplace<engine::Spritesheet>(
-        e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/example/example.data.json"));
+        e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/enemies/boss/example.data.json"));
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + sp.file);
 
     [[maybe_unused]] auto &slots = world.emplace<SpellSlots>(e);
