@@ -31,18 +31,9 @@
   "sorcerer": {
     "desc": "Sorcerer description",
     "icon": "icons/sorcerer.png",
-    "assetGraph": "TBA",
+    "assetGraph": "assets/sorcerer/sorcerer.data.json",
     "maxHealth": 25,
     "damage": 15,
-    "spells": [],
-    "childrenClass": [ "tOnk" ]
-  },
-  "tOnk": {
-    "desc": "TOnk description",
-    "icon": "icons/tonk.png",
-    "assetGraph": "TBA",
-    "maxHealth": 9999999,
-    "damage": 1,
     "spells": [],
     "childrenClass": []
   }

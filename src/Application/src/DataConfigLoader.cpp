@@ -45,6 +45,7 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
             .assetGraphPath = data["assetGraph"],
             .spells = spells,
 
+
             .maxHealth = data["maxHealth"].get<float>(),
             .damage = data["damage"].get<float>(),
             .childrenClass = {},
