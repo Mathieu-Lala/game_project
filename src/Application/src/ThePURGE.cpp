@@ -133,6 +133,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                          -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
+
                     switch (joy.source.button) {
                     case engine::Joystick::ACTION_RIGHT: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
