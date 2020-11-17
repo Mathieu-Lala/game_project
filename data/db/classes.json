@@ -3,6 +3,7 @@
     "starter" : true,
     "desc": "Farmer description",
     "icon": "icons/farmer.png",
+    "assetGraph": "assets/farmer/farmer.data.json",
     "maxHealth": 10,
     "damage": 1,
     "spells": [ 0, 2 ],
@@ -11,6 +12,7 @@
   "soldier": {
     "desc": "Soldier description",
     "icon": "icons/soldier.png",
+    "assetGraph": "TBA",
     "maxHealth": 20,
     "damage": 5,
     "spells": [],
@@ -20,6 +22,7 @@
   "shooter": {
     "desc": "Shooter description",
     "icon": "icons/shooter.png",
+    "assetGraph": "assets/shooter/shooter.data.json",
     "maxHealth": 15,
     "damage": 20,
     "spells": [],
@@ -28,14 +31,16 @@
   "sorcerer": {
     "desc": "Sorcerer description",
     "icon": "icons/sorcerer.png",
+    "assetGraph": "TBA",
     "maxHealth": 25,
     "damage": 15,
     "spells": [],
-    "childrenClass": [ "tOnk"]
+    "childrenClass": [ "tOnk" ]
   },
   "tOnk": {
     "desc": "TOnk description",
     "icon": "icons/tonk.png",
+    "assetGraph": "TBA",
     "maxHealth": 9999999,
     "damage": 1,
     "spells": [],
