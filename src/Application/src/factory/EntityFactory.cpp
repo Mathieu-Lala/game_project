@@ -144,7 +144,7 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(entt::registry &wor
     world.emplace<ViewRange>(e, 10.0f);
     world.emplace<AttackRange>(e, 3.0f);
     world.emplace<AttackDamage>(e, 20.0f);
-    world.emplace<Health>(e, 50.0f, 50.0f);
+    world.emplace<Health>(e, 1.0f, 1.0f);
 
     auto &slots = world.emplace<SpellSlots>(e);
     slots.spells[0] = Spell::create(SpellFactory::STICK_ATTACK);
@@ -172,7 +172,7 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
     world.emplace<game::AttackCooldown>(e, false, 2000ms, 0ms);
     world.emplace<game::Effect>(e, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
     world.emplace<game::AttackDamage>(e, 15.0f);
-    world.emplace<Health>(e, 500.0f, 500.0f);
+    world.emplace<Health>(e, 10.0f, 10.0f);
     engine::DrawableFactory::fix_color(world, e, {0.95f, 0.95f, 0.95f});
     // todo : add cache
     auto &sp = world.emplace<engine::Spritesheet>(

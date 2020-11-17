@@ -121,17 +121,36 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 },
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
-                    auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics->movement.publish(
-                        world,
-                        player,
-                        {(static_cast<double>((*joystick)->axes[0]) / 10.0),
-                         -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
+                    switch (joy.source.axis) {
+                        case engine::Joystick::LST: {
+                            auto &spell = world.get<SpellSlots>(player).spells[2];
+                            if (!spell.has_value()) break;
+                            auto &vel = world.get<engine::d2::Velocity>(player);
+                            m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                            break;
+                        }
+                        case engine::Joystick::RST: {
+                            auto &spell = world.get<SpellSlots>(player).spells[3];
+                            if (!spell.has_value()) break;
+                            auto &vel = world.get<engine::d2::Velocity>(player);
+                            m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                            break;
+                        }
+                        default: {
+                            auto joystick = holder.instance->getJoystick(joy.source.id);
+                            m_logics->movement.publish(
+                                world,
+                                player,
+                                {(static_cast<double>((*joystick)->axes[0]) / 10.0),
+                                 -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
+                            break;
+                        }
+                    }
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
                     switch (joy.source.button) {
                     case engine::Joystick::CENTER2: setState(State::IN_INVENTORY); break;
-                    case engine::Joystick::LST: {
+                    case engine::Joystick::LS: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
                         if (!spell.has_value()) break;
 
@@ -139,7 +158,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
-                    case engine::Joystick::RST: {
+                    case engine::Joystick::RS: {
                         auto &spell = world.get<SpellSlots>(player).spells[1];
                         if (!spell.has_value()) break;
 
@@ -278,26 +297,6 @@ void game::ThePURGE::displaySoundDebugGui()
     ImGui::End();
 }
 
-static GLuint createtexture(const std::string &fullpath)
-{
-    int w, h, channel;
-    auto image = stbi_load(fullpath.c_str(), &w, &h, &channel, 4);
-
-    if (!image) { throw std::runtime_error("Failed to load image " + fullpath + " : " + stbi_failure_reason()); }
-
-    GLuint id;
-    glGenTextures(1, &id);
-    glBindTexture(GL_TEXTURE_2D, id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    stbi_image_free(image);
-
-    return id;
-}
-
 auto game::ThePURGE::mapGenerationOverlayTick(entt::registry &world) -> void
 {
     static bool spamNextFloor = false;
@@ -356,6 +355,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
     } else if (m_state == State::IN_GAME) {
         UserStatistics::draw(*this, world);
+        
 
 #ifndef NDEBUG
         if (holder.instance->isShowingDebugInfo()) {
@@ -409,26 +409,28 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
         ImGui::End();
     } else if (m_state == State::IN_INVENTORY) {
+        UserStatistics::draw(*this, world);
         {
             const auto &boughtClasses = world.get<Classes>(player).ids;
             const auto skillPoints = world.get<SkillPoint>(player).count;
 
             // const auto comp = world.get<Class>(player);
+            static bool choosetrigger = false;
             static auto test = classes::getStarterClass(m_classDatabase);
             static std::optional<Class> selectedClass;
             static int spellmapped = 0;
             static int infoAdd;
             static std::string chosenTrig = "";
             static std::vector<GLuint> Texture = {
-                createtexture(std::string("data/textures/InfoHud.png")),
-                createtexture(std::string("data/textures/CPoint.PNG")),
-                createtexture(std::string("data/textures/validate.png")),
-                createtexture(std::string("data/textures/controller/LB.png")),
-                createtexture(std::string("data/textures/controller/LT.png")),
-                createtexture(std::string("data/textures/controller/RT.png")),
-                createtexture(std::string("data/textures/controller/RB.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/InfoHud.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/CPoint.PNG")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/validate.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/LB.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/LT.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/RT.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/RB.png")),
             };
-            ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x, m_camera.getViewportSize().y));
+            ImGui::SetNextWindowPos(ImVec2(m_camera.getCenter().x + 500.0f, 0.0f));
             ImVec2 size = ImVec2(1000.0f, 1000.0f);
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
             ImGui::Begin(
@@ -485,7 +487,12 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                         if (chosenTrig != "") {
                             if (ImGui::Button("Validate")) {
-                                spell.spells[triggerValue] = Spell::create(selectedClass.value().spells[0]);
+                                choosetrigger = false;
+                                auto NewSpell = Spell::create(selectedClass.value().spells[0]);
+                                for (int i = 0; i < spell.spells.size(); i++) { 
+                                    if (NewSpell.id == spell.spells[i].value().id) { spell.spells[i].value() = {}; } //CRASH ICI QUAND TENTATIVE DE METTRE UN SLOT DE SPELL VIDE
+                                }
+                                spell.spells[triggerValue] = NewSpell;
                                 spellmapped++;
                             }
                         }
@@ -498,15 +505,27 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                     ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[2]))), ImVec2(50, 50));
                 } else if (infoAdd == 2) {
                     if (skillPoints > 0) {
+                        if (choosetrigger == true) {
+                            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
+                            ImGui::Text("You haven't choose a trigger for the spell");
+                        }
                         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                         if (ImGui::Button("Add class")) {
                             m_logics->onPlayerBuyClass.publish(world, player, selectedClass.value());
                             infoAdd = 1;
+                            if (choosetrigger == false) {
+                                spellmapped++;
+                                choosetrigger = true;
+                            } else
+                                spellmapped = spellmapped + 2;
                         }
-                    } else
+                    } else {
+                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY() + 10));
                         helper::ImGui::Button("No skill point", ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+                    }
 
                 } else {
+                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                     ImGui::Text("You can't buy it yet");
                 }
             }
@@ -548,7 +567,6 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                         if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(0, 1, 0, 0.5))) {
                             selectedClass = currentClass;
                             infoAdd = 1;
-                            spellmapped++;
                         }
                     } else if (buyable) {
                         if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(1, 1, 0, 0.5))) {
