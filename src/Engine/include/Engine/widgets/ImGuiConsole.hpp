@@ -3,6 +3,7 @@
 #include <cstring>
 #include <optional>
 #include <vector>
+#include <optional>
 
 #include <fmt/format.h>
 

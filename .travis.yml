@@ -2,9 +2,9 @@ language: cpp
 
 dist: focal
 
-cache:
-  directories:
-    - /home/travis/.conan
+#cache:
+#  directories:
+#    - /home/travis/.conan
 
 matrix:
   include:
@@ -63,7 +63,6 @@ before_install:
 #  - if [ "$OS" == "osx" ]; then brew install doxygen; fi
 #  - if [ "$OS" == "osx" ]; then brew install graphviz; fi
   - cmake --version
-#  - export doxygen=yes
   - git config --global user.name "Travis CI"
   - git config --global user.email "travis@travis-ci.org"
   - git config --global push.default simple
