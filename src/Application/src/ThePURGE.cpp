@@ -146,6 +146,22 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
+                    case engine::Joystick::ACTION_LEFT: {
+                        auto &spell = world.get<SpellSlots>(player).spells[2];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
+                    case engine::Joystick::ACTION_TOP: {
+                        auto &spell = world.get<SpellSlots>(player).spells[3];
+                        if (!spell.has_value()) break;
+
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        break;
+                    }
                     default: return;
                     }
                 },
