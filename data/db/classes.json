@@ -12,7 +12,7 @@
   "soldier": {
     "desc": "Soldier description",
     "icon": "icons/soldier.png",
-    "assetGraph": "TBA",
+    "assetGraph": "assets/soldier/soldier.data.json",
     "maxHealth": 20,
     "damage": 5,
     "spells": [],
