@@ -41,6 +41,9 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
     ::glfwSwapInterval(1);
     ::glEnable(GL_DEPTH_TEST);
 
+    ::glEnable(GL_BLEND);
+    ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     s_instance = this;
 
     ::glfwSetWindowCloseCallback(m_handle, callback_eventClose);

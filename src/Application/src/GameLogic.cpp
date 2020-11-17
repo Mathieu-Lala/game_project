@@ -129,41 +129,57 @@ auto game::GameLogic::on_player_level_up(entt::registry &world, entt::entity pla
 
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
+    const auto pursue = [&world](entt::entity entity, entt::entity target, engine::d2::Velocity &out) {
+        const auto &pos = world.get<engine::d3::Position>(entity);
+        const auto &view_range = world.get<ViewRange>(entity);
+
+        const auto &target_pos = world.get<engine::d3::Position>(target);
+        const auto diff = glm::vec2{target_pos.x - pos.x, target_pos.y - pos.y};
+
+        if (glm::length(diff) > view_range.range) return false;
+
+        for (float i = 0.0f; i != 10.0f; i++) {
+            const auto in_between =
+                glm::vec2{static_cast<float>(pos.x) + i * diff.x / 10.0f, static_cast<float>(pos.y) + i * diff.y / 10.0f};
+            for (const auto &wall : world.view<entt::tag<"wall"_hs>>()) {
+                const auto &wall_pos = world.get<engine::d3::Position>(wall);
+                const auto &wall_hitbox = world.get<engine::d2::HitboxSolid>(wall);
+
+                if (engine::d2::overlapped<engine::d2::WITHOUT_EDGE>(
+                        engine::d2::HitboxSolid{0.01, 0.01},
+                        engine::d3::Position{in_between.x, in_between.y, 0.0f},
+                        wall_hitbox,
+                        wall_pos)) {
+                    return false;
+                }
+            }
+        }
+
+        out = {diff.x, diff.y};
+
+        return true;
+    };
+
     for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
-        auto &pos = world.get<engine::d3::Position>(i);
-        auto &view_range = world.get<ViewRange>(i);
+        auto &vel = world.get<engine::d2::Velocity>(i);
+        if (pursue(i, m_game.player, vel)) {
 
-        const auto player_pos = world.get<engine::d3::Position>(m_game.player);
-        const glm::vec2 diff = {player_pos.x - pos.x, player_pos.y - pos.y};
-
-        static bool chasing = false; // tmp : true if the boss is chasing the player
-
-        if (glm::length(diff) <= view_range.range) {
-            world.replace<engine::d2::Velocity>(i, diff.x, diff.y);
-
-            if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
-                if (chasing) continue;
-
+            if (world.has<engine::Spritesheet>(i)) {
                 auto &sp = world.get<engine::Spritesheet>(i);
-                sp.current_animation = "hold";
-                sp.current_frame = 0;
-
-                chasing = true;
+                sp.current_frame = sp.current_animation == "chase" ? sp.current_frame : 0;
+                sp.current_animation = "chase";
             }
 
         } else {
-            // todo : make the enemy move randomly
-            world.replace<engine::d2::Velocity>(i, 0.0f, 0.0f);
 
-            if (world.has<entt::tag<"boss"_hs>>(i)) { // tmp
-                if (!chasing) continue;
+            world.replace<engine::d2::Velocity>(i, (std::rand() & 1) ? -0.05 : 0.05, (std::rand() & 1) ? -0.05 : 0.05);
 
+            if (world.has<engine::Spritesheet>(i)) {
                 auto &sp = world.get<engine::Spritesheet>(i);
+                sp.current_frame = sp.current_animation == "default" ? sp.current_frame : 0;
                 sp.current_animation = "default";
-                sp.current_frame = 0;
-
-                chasing = false;
             }
+
         }
     }
 }
