@@ -6,7 +6,12 @@
 namespace game {
 
 struct SpellFactory {
-    enum ID { STICK_ATTACK, SWORD_ATTACK, FIREBALL };
+    enum ID {
+        SHOVEL_ATTACK,
+        SWORD_ATTACK,
+        FIREBALL,
+        PIERCING_ARROW
+    };
 
     template<ID>
     static auto create(entt::registry &, entt::entity caster, const glm::dvec2 &direction) -> entt::entity;
@@ -18,9 +23,10 @@ struct SpellFactory {
     case ID::id: create<ID::id>(std::forward<Args>(args)...); break;
 
         switch (spell) {
-            MAP_SPELL(STICK_ATTACK);
+            MAP_SPELL(SHOVEL_ATTACK);
             MAP_SPELL(SWORD_ATTACK);
             MAP_SPELL(FIREBALL);
+            MAP_SPELL(PIERCING_ARROW);
 
         default: assert(false && "unknown spell. Did you forget to map the enum value to factory function ?");
         }
@@ -32,9 +38,10 @@ struct SpellFactory {
     template<>        \
     auto SpellFactory::create<SpellFactory::ID::id>(entt::registry &, entt::entity, const glm::dvec2 &)->entt::entity
 
-DECL_SPEC(STICK_ATTACK);
+DECL_SPEC(SHOVEL_ATTACK);
 DECL_SPEC(SWORD_ATTACK);
 DECL_SPEC(FIREBALL);
+DECL_SPEC(PIERCING_ARROW);
 
 #undef DECL_SPEC
 

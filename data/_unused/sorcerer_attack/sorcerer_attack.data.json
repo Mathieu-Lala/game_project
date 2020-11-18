@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/sorcerer/sorcerer_anim.png",
+        "file": "/anims/spells/sorcerer_attack/sorcerer_attack.png",
         "width": 377,
         "height": 312,
         "speed": 100,

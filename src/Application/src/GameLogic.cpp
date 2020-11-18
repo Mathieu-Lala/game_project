@@ -25,6 +25,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
+    sinkJoystickMovement.connect<&GameLogic::joystickMove>(*this);
 
     sinkOnGameStarted.connect<&GameLogic::on_game_started>(*this);
 
@@ -49,8 +50,21 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkOnFloorChange.connect<&GameLogic::goToTheNextFloor>(*this);
 }
 
-auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel)
+auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir)
     -> void
+{
+    constexpr auto kDebugKeyboardPlayerMS = 15;
+
+    switch(dir) {
+    case Direction::UP: world.get<engine::d2::Velocity>(player).y = kDebugKeyboardPlayerMS; break;
+    case Direction::DOWN: world.get<engine::d2::Velocity>(player).y = -kDebugKeyboardPlayerMS; break;
+    case Direction::RIGHT: world.get<engine::d2::Velocity>(player).x = kDebugKeyboardPlayerMS; break;
+    case Direction::LEFT: world.get<engine::d2::Velocity>(player).x = -kDebugKeyboardPlayerMS; break;
+    default: break;
+    }
+}
+
+auto game::GameLogic::joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
 {
     world.get<engine::d2::Acceleration>(player) = accel;
 }

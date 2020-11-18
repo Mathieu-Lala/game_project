@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/soldier/soldier_attack.png",
+        "file": "/anims/spells/soldier_attack/soldier_attack.png",
         "width": 480,
         "height": 200,
         "speed": 50,
