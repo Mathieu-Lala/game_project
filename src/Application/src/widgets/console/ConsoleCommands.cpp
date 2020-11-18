@@ -2,8 +2,8 @@
 #include <Engine/audio/Sound.hpp>
 #include <Engine/helpers/Parser.hpp>
 
-#include "console/ConsoleCommands.hpp"
-#include "console/DebugConsole.hpp"
+#include "widgets/console/ConsoleCommands.hpp"
+#include "widgets/console/DebugConsole.hpp"
 
 #include "component/all.hpp"
 #include "screen/MainMenu.hpp"
@@ -176,9 +176,9 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                 std::stringstream spellNames;
                 for (const auto &id : data->spells) spellNames << id << ", ";
 
-                std::stringstream childrenClassesNames;
-                for (const auto &id : data->childrenClass)
-                    childrenClassesNames << game.getClassDatabase().at(id).name << ", ";
+                std::stringstream childrenesNames;
+                for (const auto &id : data->children)
+                    childrenesNames << game.getClassDatabase().at(id).name << ", ";
 
                 console.info(
                     "Class {} :\n"
@@ -198,7 +198,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                     spellNames.str(),
                     data->maxHealth,
                     data->damage,
-                    childrenClassesNames.str());
+                    childrenesNames.str());
             }
 
         } catch (const std::runtime_error &e) {

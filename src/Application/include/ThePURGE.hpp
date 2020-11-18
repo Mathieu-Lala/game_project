@@ -10,7 +10,7 @@
 
 #include "component/all.hpp"
 
-#include "console/DebugConsole.hpp"
+#include "widgets/console/DebugConsole.hpp"
 
 #include "level/MapGenerator.hpp"
 #include "GameLogic.hpp"
@@ -60,7 +60,6 @@ public:
 private:
     // auto goToNextFloor(entt::registry &world) -> void;
 
-    auto mapGenerationOverlayTick(entt::registry &world) -> void;
     auto displaySoundDebugGui() -> void;
 
     State m_state{State::LOADING};

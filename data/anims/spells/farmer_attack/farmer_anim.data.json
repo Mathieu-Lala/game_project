@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/farmer/farmer_anim.png",
+        "file": "/anims/spells/farmer_attack/farmer_anim.png",
         "width": 300,
         "height": 300,
         "speed": 50,

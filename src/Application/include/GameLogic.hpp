@@ -17,6 +17,13 @@ namespace game {
 
 class ThePURGE;
 
+enum class Direction {
+    UP,
+    LEFT,
+    DOWN,
+    RIGHT
+};
+
 class GameLogic {
 public:
     ThePURGE &m_game;
@@ -36,7 +43,9 @@ private:
 
 public: // signals
 
-    entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> movement;
+    // note : should have only one signal : onUserMove, or something like that
+    entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> joystickMovement;
+    entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir)> movement;
 
     entt::sigh<void(entt::registry &)> onGameStarted;
 
@@ -55,7 +64,10 @@ public: // signals
 private: // slots
 
     decltype(movement)::sink_type sinkMovement{movement};
-    auto move(entt::registry &, entt::entity &, const engine::d2::Acceleration &) -> void;
+    auto move(entt::registry &, entt::entity &, const Direction &) -> void;
+
+    decltype(joystickMovement)::sink_type sinkJoystickMovement{joystickMovement};
+    auto joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void;
 
     decltype(onGameStarted)::sink_type sinkOnGameStarted{onGameStarted};
     auto on_game_started(entt::registry &) -> void;

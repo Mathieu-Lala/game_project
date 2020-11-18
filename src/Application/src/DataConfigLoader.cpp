@@ -47,14 +47,14 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
             .spells = spells,
             .maxHealth = data["maxHealth"].get<float>(),
             .damage = data["damage"].get<float>(),
-            .childrenClass = {},
+            .children = {},
         };
     }
 
     for (auto &[id, dbClass] : database) {
-        for (const auto &child : jsonData[dbClass.name]["childrenClass"]) {
+        for (const auto &child : jsonData[dbClass.name]["children"]) {
             if (const auto c = classes::getByName(database, child.get<std::string>()); c) {
-                dbClass.childrenClass.push_back(c->id);
+                dbClass.children.push_back(c->id);
             } else
                 UNLIKELY { spdlog::warn("Unknown class '{}'. Ignoring", child); }
         }
@@ -65,7 +65,7 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
 
         spdlog::info(
             "id={} name={} description={} iconPath={} assetGraphPath={} is_starter={} spells={} maxHealth={} damage={} "
-            "childrenClass={}",
+            "children={}",
             classes.id,
             classes.name,
             classes.description,
@@ -75,7 +75,7 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
             "",//classes.spells,
             classes.maxHealth,
             classes.damage,
-            ""//,classes.childrenClass
+            ""//,classes.children
         );
     }
 

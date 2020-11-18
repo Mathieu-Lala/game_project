@@ -1,4 +1,4 @@
-#include "console/DebugConsole.hpp"
+#include "widgets/console/DebugConsole.hpp"
 #include <spdlog/spdlog.h>
 #include <sstream>
 

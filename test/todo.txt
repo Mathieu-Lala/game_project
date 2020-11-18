@@ -1,5 +1,5 @@
-setup codecov
-
-add others pipeline (appveyor/azure/circleci/travis/...)
+add others pipeline (appveyor/azure/circleci/...)
 
 run pipeline in docker
+
+add output size .exe/.dll ...

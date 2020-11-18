@@ -23,7 +23,12 @@
 #include "factory/EntityFactory.hpp"
 
 #include "screen/MainMenu.hpp"
+#include "screen/GameOverMenu.hpp"
+
 #include "widgets/UserStatistics.hpp"
+#include "widgets/DebugTerrainGeneration.hpp"
+#include "widgets/DebugCamera.hpp"
+#include "widgets/DebugAudio.hpp"
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
@@ -74,12 +79,13 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
         if constexpr (std::is_same<T, engine::Joystick::Buttons>::value) {
             const auto map = std::to_array<SpellMap>({{engine::Joystick::LS, 0}, {engine::Joystick::RS, 1}});
             return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+
         } else if constexpr (std::is_same<T, engine::Joystick::Axis>::value) {
             const auto map = std::to_array<SpellMap>({{engine::Joystick::LST, 2}, {engine::Joystick::RST, 3}});
             return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
 
         } else { // todo : should be engine::Keyboard::Key
-            const auto map = std::to_array<SpellMap>({{GLFW_KEY_U, 0}, {GLFW_KEY_Y, 1}});
+            const auto map = std::to_array<SpellMap>({{GLFW_KEY_U, 0}, {GLFW_KEY_Y, 1}, {GLFW_KEY_T, 2}, {GLFW_KEY_R, 3}});
             return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
         }
     };
@@ -94,19 +100,10 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
                     case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
 
-                    case GLFW_KEY_I:
-                        world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS;
-                        break; // go top
-                    case GLFW_KEY_K:
-                        world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS;
-                        break; // go bottom
-                    case GLFW_KEY_L:
-                        world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS;
-                        break; // go right
-                    case GLFW_KEY_J:
-                        world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS;
-                        break; // go left
-
+                    case GLFW_KEY_I: m_logics->movement.publish(world, player, Direction::UP); break;    // go top
+                    case GLFW_KEY_K: m_logics->movement.publish(world, player, Direction::DOWN); break;  // go bottom
+                    case GLFW_KEY_L: m_logics->movement.publish(world, player, Direction::RIGHT); break; // go right
+                    case GLFW_KEY_J: m_logics->movement.publish(world, player, Direction::LEFT); break;  // go left
                     case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
 
                     case GLFW_KEY_U:
@@ -153,11 +150,28 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case engine::Joystick::LSX:
                     case engine::Joystick::LSY: {
                         auto joystick = holder.instance->getJoystick(joy.source.id);
-                        m_logics->movement.publish(
+                        m_logics->joystickMovement.publish(
                             world,
                             player,
                             {(static_cast<double>((*joystick)->axes[engine::Joystick::LSX]) / 10.0),
                              -(static_cast<double>((*joystick)->axes[engine::Joystick::LSY]) / 10.0)});
+                    } break;
+                    case engine::Joystick::Axis::RSX:
+                    case engine::Joystick::Axis::RSY: { // todo : cleaner
+                        auto joystick = holder.instance->getJoystick(joy.source.id);
+
+                        if ((*joystick)->axes[engine::Joystick::Axis::RSX] >= 0) {
+                            auto &spell = world.get<SpellSlots>(player).spells[2];
+                            if (!spell.has_value()) return;
+                            auto &vel = world.get<engine::d2::Velocity>(player);
+                            m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        }
+                        if ((*joystick)->axes[engine::Joystick::Axis::RSY] >= 0) {
+                            auto &spell = world.get<SpellSlots>(player).spells[3];
+                            if (!spell.has_value()) return;
+                            auto &vel = world.get<engine::d2::Velocity>(player);
+                            m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        }
                     } break;
                     default: break;
                     }
@@ -179,9 +193,11 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](auto) {},
             },
             e);
+
         auto &pos = world.get<engine::d3::Position>(player);
         m_camera.setCenter({pos.x, pos.y});
         if (m_camera.isUpdated()) holder.instance->updateView(m_camera.getViewProjMatrix());
+
     } else if (m_state == State::IN_INVENTORY) {
         std::visit(
             engine::overloaded{
@@ -200,6 +216,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](auto) {},
             },
             e);
+
     } else if (m_state == State::GAME_OVER) {
         std::visit(
             engine::overloaded{
@@ -238,116 +255,6 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
     }
 }
 
-void game::ThePURGE::displaySoundDebugGui()
-{
-    static auto holder = engine::Core::Holder{};
-
-    static std::vector<std::shared_ptr<engine::Sound>> sounds;
-
-    ImGui::Begin("Sound debug window");
-
-    if (ImGui::Button("Load Music")) {
-        try {
-            sounds.push_back(holder.instance->getAudioManager().getSound(
-                holder.instance->settings().data_folder + "/sounds/dungeon_music.wav"));
-        } catch (...) {
-        }
-    }
-    if (ImGui::Button("Load Hit sound")) {
-        try {
-            sounds.push_back(
-                holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "/sounds/hit.wav"));
-        } catch (...) {
-        }
-    }
-    ImGui::Separator();
-
-    std::shared_ptr<engine::Sound> toRemove = nullptr;
-
-    int loopId = 0;
-    for (const auto &s : sounds) {
-        ImGui::PushID(loopId++);
-
-        ImGui::Text("Status :");
-        ImGui::SameLine();
-
-        switch (s->getStatus()) {
-        case engine::SoundStatus::INITIAL: ImGui::TextColored(ImVec4(1, 1, 1, 1), "Initial"); break;
-        case engine::SoundStatus::PLAYING: ImGui::TextColored(ImVec4(0.2f, 1, 0.2f, 1), "Playing"); break;
-        case engine::SoundStatus::PAUSED: ImGui::TextColored(ImVec4(1, 1, 0.4f, 1), "Paused"); break;
-        case engine::SoundStatus::STOPPED: ImGui::TextColored(ImVec4(1, 0.2f, 0.2f, 1), "Stopped"); break;
-        }
-
-        if (ImGui::Button("Play")) s->play();
-        if (ImGui::Button("Sop")) s->stop();
-
-        auto speed = s->getSpeed();
-        if (ImGui::SliderFloat("Speed", &speed, 0.5, 2)) s->setSpeed(speed);
-
-        auto volume = s->getVolume();
-        if (ImGui::SliderFloat("Volume", &volume, 0, 5)) s->setVolume(volume);
-
-        auto loop = s->doesLoop();
-        if (ImGui::Checkbox("Loop", &loop)) s->setLoop(loop);
-
-
-        if (ImGui::Button("Forget")) {
-            toRemove = s;
-            s->stop();
-        }
-
-        ImGui::PopID();
-
-        ImGui::Separator();
-    }
-
-    if (toRemove) sounds.erase(std::find(std::begin(sounds), std::end(sounds), toRemove));
-
-    ImGui::End();
-}
-
-auto game::ThePURGE::mapGenerationOverlayTick(entt::registry &world) -> void
-{
-    static bool spamNextFloor = false;
-
-    ImGui::Begin("MapGeneration");
-
-    ImGui::Checkbox("Spam next floor", &spamNextFloor);
-
-    if (ImGui::Button("Next floor") || spamNextFloor) m_logics->onFloorChange.publish(world);
-
-    ImGui::SliderInt(
-        "Min room size", &m_logics->m_map_generation_params.minRoomSize, 0, m_logics->m_map_generation_params.maxRoomSize);
-    ImGui::SliderInt(
-        "Max room size", &m_logics->m_map_generation_params.maxRoomSize, m_logics->m_map_generation_params.minRoomSize, 50);
-    ImGui::Separator();
-
-    ImGui::InputScalar("Min room count", ImGuiDataType_U64, &m_logics->m_map_generation_params.minRoomCount);
-    ImGui::InputScalar("Max room count", ImGuiDataType_U64, &m_logics->m_map_generation_params.maxRoomCount);
-    ImGui::Text("note: actual room count may be smaller if there is not enough space");
-    ImGui::Separator();
-
-    ImGui::DragInt("Max dungeon width", &m_logics->m_map_generation_params.maxDungeonWidth, 0, 500);
-    ImGui::DragInt("Max dungeon height", &m_logics->m_map_generation_params.maxDungeonHeight, 0, 500);
-    ImGui::Separator();
-
-    ImGui::SliderInt(
-        "Min corridor width",
-        &m_logics->m_map_generation_params.minCorridorWidth,
-        0,
-        m_logics->m_map_generation_params.maxCorridorWidth);
-    ImGui::SliderInt(
-        "Max corridor width",
-        &m_logics->m_map_generation_params.maxCorridorWidth,
-        m_logics->m_map_generation_params.minCorridorWidth,
-        50);
-    ImGui::Separator();
-
-    ImGui::SliderFloat("Enemy per block", &m_logics->m_map_generation_params.mobDensity, 0, 1);
-
-    ImGui::End();
-}
-
 auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 {
     [[maybe_unused]] static auto holder = engine::Core::Holder{};
@@ -368,56 +275,17 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
 #ifndef NDEBUG
         if (holder.instance->isShowingDebugInfo()) {
-            mapGenerationOverlayTick(world);
+            widget::TerrainGeneration::draw(*this, world);
+            widget::DebugCamera::draw(m_camera);
+            widget::DebugAudio::draw();
 
-            ImGui::Begin("Camera");
-            if (ImGui::Button("Reset")) m_camera = engine::Camera();
-
-            auto cameraPos = m_camera.getCenter();
-            helper::ImGui::Text("Camera Position ({}, {})", cameraPos.x, cameraPos.y);
-
-            bool pos_updated = false;
-            pos_updated |= ImGui::DragFloat("Camera X", &cameraPos.x);
-            pos_updated |= ImGui::DragFloat("Camera Y", &cameraPos.y);
-
-            if (pos_updated) m_camera.setCenter(cameraPos);
-
-            auto viewPortSize = m_camera.getViewportSize();
-            const auto pos = m_camera.getCenter();
-
-            helper::ImGui::Text("Viewport size ({}, {})", viewPortSize.x, viewPortSize.y);
-            ImGui::Text("Viewport range :");
-            helper::ImGui::Text("   left  : {}", pos.x - viewPortSize.x / 2.0f);
-            helper::ImGui::Text("   right : {}", pos.x + viewPortSize.x / 2.0f);
-            helper::ImGui::Text("   top   : {}", pos.y + viewPortSize.y / 2.0f);
-            helper::ImGui::Text("   bottom: {}", pos.y - viewPortSize.y / 2.0f);
-
-            bool updated = false;
-            updated |= ImGui::DragFloat("Viewport width", &viewPortSize.x, 1.f, 2.f);
-            updated |= ImGui::DragFloat("Viewport height", &viewPortSize.y, 1.f, 2.f);
-
-            if (updated) m_camera.setViewportSize(viewPortSize);
-            ImGui::End();
-
-            displaySoundDebugGui();
+            //displaySoundDebugGui();
         }
 #endif
     } else if (m_state == State::GAME_OVER) {
-        // todo : style because this is not a debug window
-        ImGui::Begin("Menu Game Over", nullptr, ImGuiWindowFlags_NoDecoration);
+        GameOverMenu::draw(*this, world);
 
-        if (ImGui::Button("Your are dead !")) {
-            for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
-            for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
-            for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }
-            for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); }
-            for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
-
-            setState(State::LOADING);
-        }
-
-        ImGui::End();
-    } else if (m_state == State::IN_INVENTORY) {
+    } else if (m_state == State::IN_INVENTORY) { // todo : cleaner
         UserStatistics::draw(*this, world);
 
         const auto &boughtClasses = world.get<Classes>(player).ids;
@@ -571,7 +439,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                 bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
                 if (bought) {
                     buyableClasses.insert(
-                        buyableClasses.end(), currentClass.childrenClass.begin(), currentClass.childrenClass.end());
+                        buyableClasses.end(), currentClass.children.begin(), currentClass.children.end());
                     if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(0, 1, 0, 0.5))) {
                         selectedClass = currentClass;
                         infoAdd = 1;
@@ -588,7 +456,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                     }
                 }
                 ImGui::SameLine();
-                nextLine.insert(nextLine.end(), currentClass.childrenClass.begin(), currentClass.childrenClass.end());
+                nextLine.insert(nextLine.end(), currentClass.children.begin(), currentClass.children.end());
             }
             ImGui::Text(" "); // ImGui::NextLine()
         }

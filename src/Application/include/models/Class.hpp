@@ -23,7 +23,7 @@ struct Class {
     float maxHealth;
     float damage;
 
-    std::vector<EntityFactory::ID> childrenClass;
+    std::vector<EntityFactory::ID> children;
 };
 
 } // namespace game

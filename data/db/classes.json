@@ -9,7 +9,7 @@
     "spells": [
       0
     ],
-    "childrenClass": [
+    "children": [
       "soldier",
       "shooter",
       "sorcerer"
@@ -24,7 +24,7 @@
     "spells": [
       1
     ],
-    "childrenClass": []
+    "children": []
   },
   "shooter": {
     "desc": "Shooter description",
@@ -33,9 +33,9 @@
     "maxHealth": 15,
     "damage": 20,
     "spells": [
-      2
+      3
     ],
-    "childrenClass": []
+    "children": []
   },
   "sorcerer": {
     "desc": "Sorcerer description",
@@ -46,17 +46,6 @@
     "spells": [
       2
     ],
-    "childrenClass": [
-      "tOnk"
-    ]
-  },
-  "tOnk": {
-    "desc": "TOnk description",
-    "icon": "icons/tonk.png",
-    "assetGraph": "anims/classes/soldier/soldier.data.json",
-    "maxHealth": 9999999,
-    "damage": 1,
-    "spells": [],
-    "childrenClass": []
+    "children": []
   }
 }
