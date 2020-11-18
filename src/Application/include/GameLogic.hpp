@@ -76,6 +76,7 @@ private: // slots
     auto check_collision(entt::registry &, const engine::TimeElapsed &) -> void;
     auto effect(entt::registry &, const engine::TimeElapsed &) -> void;
     auto exit_door_interraction(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto boss_anim_update(entt::registry &, const engine::TimeElapsed &) -> void;
     auto player_anim_update(entt::registry &, const engine::TimeElapsed &) -> void;
 
     decltype(castSpell)::sink_type sinkCastSpell{castSpell};

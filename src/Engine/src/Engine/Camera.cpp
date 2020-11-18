@@ -61,8 +61,8 @@ void engine::Camera::recomputeProj()
         +halfVP.x, // right
         -halfVP.y, // bottom
         +halfVP.y, // top
-        10.f,      // zNear
-        -10.f);    // zFar
+        100.f,      // zNear
+        -100.f);    // zFar
     // The zNear and ZFar behavior is weird and cause bug with other values, be careful. Ask Yanis for any questions
 }
 

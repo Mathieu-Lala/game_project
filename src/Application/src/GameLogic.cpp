@@ -41,6 +41,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
     sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
     sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
+    sinkGameUpdated.connect<&GameLogic::boss_anim_update>(*this);
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
@@ -172,22 +173,7 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
 
     for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
         auto &vel = world.get<engine::d2::Velocity>(i);
-        if (pursue(i, m_game.player, vel)) {
-            if (world.has<engine::Spritesheet>(i)) {
-                auto &sp = world.get<engine::Spritesheet>(i);
-                sp.current_frame = sp.current_animation == "chase" ? sp.current_frame : 0;
-                sp.current_animation = "chase";
-            }
-
-        } else {
-            world.replace<engine::d2::Velocity>(i, (std::rand() & 1) ? -0.05 : 0.05, (std::rand() & 1) ? -0.05 : 0.05);
-
-            if (world.has<engine::Spritesheet>(i)) {
-                auto &sp = world.get<engine::Spritesheet>(i);
-                sp.current_frame = sp.current_animation == "default" ? sp.current_frame : 0;
-                sp.current_animation = "default";
-            }
-        }
+        pursue(i, m_game.player, vel);
     }
 }
 
@@ -413,6 +399,45 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
         anim = "hold_right";
 
     if (sp.current_animation != anim) {
+        sp.current_animation = anim;
+        sp.current_frame = 0;
+    }
+}
+
+auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    // we keep it as static to be consister with previous frame on standstill
+    static bool isFacingLeft = false;
+
+    auto queryRes = world.view<entt::tag<"boss"_hs>>();
+
+    if (queryRes.size() == 0) // boss is dead
+        return;
+
+    auto boss = queryRes.front();
+
+    const auto &vel = world.get<engine::d2::Velocity>(boss);
+    auto &sp = world.get<engine::Spritesheet>(boss);
+
+    isFacingLeft = vel.x < 0 || (isFacingLeft && vel.x == 0);
+
+    std::string anim;
+
+    auto isMoving = vel.x != 0 || vel.y != 0;
+
+    if (isMoving)
+        if (isFacingLeft)
+            anim = "run_left";
+        else
+            anim = "run_right";
+    else
+        if (isFacingLeft)
+            anim = "hold_left";
+        else
+            anim = "hold_right";
+
+    if (sp.current_animation != anim) {
+        spdlog::info("Changing anim from {} to {}. Vel is {}, {}", sp.current_animation, anim, vel.x, vel.y);
         sp.current_animation = anim;
         sp.current_frame = 0;
     }
