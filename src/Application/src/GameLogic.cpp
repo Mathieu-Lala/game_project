@@ -76,6 +76,8 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
 
 auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity player, const Class &newClass) -> void
 {
+    static auto holder = engine::Core::Holder{};
+
     world.get<AttackDamage>(player).damage = newClass.damage;
 
     auto &health = world.get<Health>(player);
@@ -94,6 +96,14 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
             slot = Spell::create(spell);
             break;
         }
+
+    auto &sp = world.replace<engine::Spritesheet>(
+        player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + newClass.assetGraphPath));
+
+    // Doesn't really matter, will be overridden by correct one soon enough. Prevent segfault of accessing inexistant "default" animation
+    sp.current_animation = "hold_right"; 
+    
+    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
 
 
     { // Logging

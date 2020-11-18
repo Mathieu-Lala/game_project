@@ -177,7 +177,7 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
 
     // todo : add cache
     auto &sp = world.emplace<engine::Spritesheet>(
-        e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/example/example.data.json"));
+        e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/enemies/boss/example.data.json"));
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + sp.file);
 
     [[maybe_unused]] auto &slots = world.emplace<SpellSlots>(e);
@@ -202,8 +202,6 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<engine::d2::Scale>(player, 1.5, 2.5);
     world.emplace<engine::d2::HitboxSolid>(player, 0.75, 2.0);
     world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
-    world.emplace<Health>(player, 1.f, 1.f);
-    world.emplace<AttackDamage>(player, 0.f);
     world.emplace<Level>(player, 0u, 0u, 10u);
     world.emplace<KeyPicker>(player);
     world.emplace<SpellSlots>(player);
@@ -211,15 +209,13 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<SkillPoint>(player, 0);
     world.emplace<Facing>(player, glm::vec2(1.f, 0.f));
 
-    engine::DrawableFactory::fix_color(world, player, {0.95f, 0.95f, 0.95f});
+    engine::DrawableFactory::fix_color(world, player, {1.0f, 1.0f, 1.0f});
 
-    auto &sp = world.emplace<engine::Spritesheet>(
-        player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/farmer/farmer.data.json"));
-    sp.current_animation = "hold_right";
-    
-    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
-
-
+    // class dependant, see `GameLogic::apply_class_to_player`
+    world.emplace<engine::Spritesheet>(player);
+    world.emplace<Health>(player, 1.f, 1.f);
+    world.emplace<AttackDamage>(player, 0.f);
+    // --
 
     return player;
 }

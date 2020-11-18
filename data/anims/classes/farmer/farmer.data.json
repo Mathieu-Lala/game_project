@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/farmer/farmer_spritesheet.png",
+        "file": "/anims/classes/farmer/farmer_spritesheet.png",
         "width": 500,
         "height": 500,
         "speed": 50,
