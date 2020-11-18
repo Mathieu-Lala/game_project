@@ -14,7 +14,7 @@ game::DebugConsole::DebugConsole(ThePURGE &game) : m_game(game)
 
 void game::DebugConsole::handleCmd(const std::string_view line)
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
 
     std::string cmd;
     std::vector<std::string> args;

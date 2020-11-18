@@ -6,11 +6,9 @@ Libaries:
         physics: ? units ? (https://github.com/mpusz/units)
 
 Static Analyzer:
-    clang-tidy
     include-what-you-use (ubuntu/debian only)
 
 Tests:
-    Undefined Behaviour: Fuzz (ubuntu/debian only)
 
 Documentation:
     Doxygen

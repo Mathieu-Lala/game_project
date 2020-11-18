@@ -44,10 +44,11 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_kill =
             const auto what = lexicalCast<std::string>(args[0]);
 
             if (what == "player") {
-                for (auto &e : world.view<entt::tag<"player"_hs>>()) game.getLogics().entity_killed(world, e, e);
+                for (auto &e : world.view<entt::tag<"player"_hs>>())
+                    game.getLogics().onEntityKilled.publish(world, e, e);
             } else if (what == "boss") {
                 for (auto &e : world.view<entt::tag<"boss"_hs>>())
-                    game.getLogics().entity_killed(world, e, game.player);
+                    game.getLogics().onEntityKilled.publish(world, e, game.player);
 
             } else
                 throw std::runtime_error(fmt::format("Invalid argument {}", what));
@@ -103,8 +104,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addLevel =
 
             auto &level = world.get<Level>(player);
 
-            while (amount--)
-                game.getLogics().addXp(world, player, level.xp_require);
+            while (amount--) game.getLogics().addXp(world, player, level.xp_require);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: addLevel level", e.what()));
@@ -133,15 +133,14 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
             const auto className = lexicalCast<std::string>(args[0]);
             const auto player = game.player;
 
-            const auto &classData = classes::getByName(game.getClassDatabase(), className);
-
-            if (!classData) {
+            if (const auto data = classes::getByName(game.getClassDatabase(), className); data) {
+                game.getLogics().onPlayerBuyClass.publish(world, player, *data);
+            } else {
+                // note : see std::accumulate
                 std::stringstream names;
-                for (const auto &[_, data] : game.getClassDatabase()) names << data.name << ", ";
+                for (const auto &[_, i] : game.getClassDatabase()) { names << i.name << ", "; }
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
             }
-
-            game.getLogics().onPlayerBuyClass.publish(world, player, *classData.value());
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: buyClass name", e.what()));
@@ -168,39 +167,39 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
 
             const auto className = lexicalCast<std::string>(args[0]);
 
-            const auto &classData = classes::getByName(game.getClassDatabase(), className);
-
-            if (!classData) {
+            if (const auto data = classes::getByName(game.getClassDatabase(), className); !data) {
+                // note : see std::accumulate
                 std::stringstream names;
-                for (const auto &[_, data] : game.getClassDatabase()) names << data.name << ", ";
+                for (const auto &[_, i] : game.getClassDatabase()) names << i.name << ", ";
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
+            } else {
+                std::stringstream spellNames;
+                for (const auto &id : data->spells) spellNames << id << ", ";
+
+                std::stringstream childrenClassesNames;
+                for (const auto &id : data->childrenClass)
+                    childrenClassesNames << game.getClassDatabase().at(id).name << ", ";
+
+                console.info(
+                    "Class {} :\n"
+                    "\tid : {}\n"
+                    "\tdescription : {}\n"
+                    "\ticon : {}\n"
+                    "\tgraph asset : {}\n"
+                    "\tspells : {}\n"
+                    "\tmax health : {}\n"
+                    "\tdamage : {}\n"
+                    "\tchildren classes : {}",
+                    data->name,
+                    data->id,
+                    data->description,
+                    data->iconPath,
+                    data->assetGraphPath,
+                    spellNames.str(),
+                    data->maxHealth,
+                    data->damage,
+                    childrenClassesNames.str());
             }
-
-            const auto &data = *(classData.value());
-
-            std::stringstream spellNames;
-            for (const auto &id : data.spells) spellNames << id << ", ";
-
-            std::stringstream childrenClassesNames;
-            for (const auto &id : data.childrenClass) childrenClassesNames << game.getClassDatabase().at(id).name << ", ";
-
-            console.info(
-                "Class {} :\n"
-                "\tid : {}\n"
-                "\tdescription : {}\n"
-                "\ticon : {}\n"
-                "\tspells : {}\n"
-                "\tmax health : {}\n"
-                "\tdamage : {}\n"
-                "\tchildren classes : {}",
-                data.name,
-                data.id,
-                data.description,
-                data.iconPath,
-                spellNames.str(),
-                data.maxHealth,
-                data.damage,
-                childrenClassesNames.str());
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: getClassInfo name", e.what()));

@@ -9,7 +9,7 @@
 
 namespace game {
 
-struct DataConfigLoader {
+struct /* [[deprecated]] */ DataConfigLoader {
     static auto loadClassDatabase(const std::string_view path) -> classes::Database;
 };
 

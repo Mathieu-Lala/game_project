@@ -40,6 +40,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::update_particule>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
     sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
+    sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
@@ -75,6 +76,8 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
 
 auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity player, const Class &newClass) -> void
 {
+    static auto holder = engine::Core::Holder{};
+
     world.get<AttackDamage>(player).damage = newClass.damage;
 
     auto &health = world.get<Health>(player);
@@ -93,6 +96,14 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
             slot = Spell::create(spell);
             break;
         }
+
+    auto &sp = world.replace<engine::Spritesheet>(
+        player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + newClass.assetGraphPath));
+
+    // Doesn't really matter, will be overridden by correct one soon enough. Prevent segfault of accessing inexistant "default" animation
+    sp.current_animation = "hold_right";
+
+    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
 
 
     { // Logging
@@ -162,7 +173,6 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
     for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
         auto &vel = world.get<engine::d2::Velocity>(i);
         if (pursue(i, m_game.player, vel)) {
-
             if (world.has<engine::Spritesheet>(i)) {
                 auto &sp = world.get<engine::Spritesheet>(i);
                 sp.current_frame = sp.current_animation == "chase" ? sp.current_frame : 0;
@@ -170,7 +180,6 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
             }
 
         } else {
-
             world.replace<engine::d2::Velocity>(i, (std::rand() & 1) ? -0.05 : 0.05, (std::rand() & 1) ? -0.05 : 0.05);
 
             if (world.has<engine::Spritesheet>(i)) {
@@ -178,7 +187,6 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
                 sp.current_frame = sp.current_animation == "default" ? sp.current_frame : 0;
                 sp.current_animation = "default";
             }
-
         }
     }
 }
@@ -247,7 +255,7 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
 
 auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
 
     for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
         const auto &spell_pos = world.get<engine::d3::Position>(spell);
@@ -286,7 +294,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
                 .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
                 ->play();
             world.destroy(spell);
-            if (entity_health.current <= 0.0f) { playerKilled.publish(world, entity, source); }
+            if (entity_health.current <= 0.0f) { onEntityKilled.publish(world, entity, source); }
         }
     };
 
@@ -374,9 +382,45 @@ auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine
     world.view<KeyPicker, engine::d3::Position>().each(doorUsageSystem);
 }
 
+auto game::GameLogic::player_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    const auto &vel = world.get<engine::d2::Velocity>(m_game.player);
+    const auto &facing = world.get<Facing>(m_game.player);
+    auto &sp = world.get<engine::Spritesheet>(m_game.player);
+
+    bool isFacingLeft;
+    if (vel.x < 0)
+        isFacingLeft = true;
+    else if (vel.x > 0)
+        isFacingLeft = false;
+    else if (facing.dir.x < 0)
+        isFacingLeft = true;
+    else
+        isFacingLeft = false;
+
+    std::string anim;
+
+    auto isMoving = vel.x != 0 || vel.y != 0;
+
+    if (isMoving)
+        if (isFacingLeft)
+            anim = "run_left";
+        else
+            anim = "run_right";
+    else if (isFacingLeft)
+        anim = "hold_left";
+    else
+        anim = "hold_right";
+
+    if (sp.current_animation != anim) {
+        sp.current_animation = anim;
+        sp.current_frame = 0;
+    }
+}
+
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
 
     if (world.has<entt::tag<"player"_hs>>(killed)) {
         holder.instance->getAudioManager()

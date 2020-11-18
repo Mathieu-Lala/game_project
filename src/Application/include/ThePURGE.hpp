@@ -27,8 +27,8 @@ public:
     enum class State {
         LOADING,
         IN_GAME,
+        IN_INVENTORY,
         GAME_OVER,
-        IN_INVENTORY
     };
 
     auto onCreate(entt::registry &world) -> void final;
@@ -58,7 +58,7 @@ public:
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
 private:
-    auto goToNextFloor(entt::registry &world) -> void;
+    // auto goToNextFloor(entt::registry &world) -> void;
 
     auto mapGenerationOverlayTick(entt::registry &world) -> void;
     auto displaySoundDebugGui() -> void;

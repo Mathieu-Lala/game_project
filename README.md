@@ -98,7 +98,7 @@ $> ./tools/install.sh
     </td>
     <td>
       <a href="https://travis-ci.com/github/Mathieu-Lala/game_project">
-        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=master"
+        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=master&token=5TrxUsuSpQyXNca4sVWA"
           alt="not found"
         >
       </a>
@@ -115,7 +115,7 @@ $> ./tools/install.sh
     </td>
     <td>
       <a href="https://travis-ci.com/github/Mathieu-Lala/game_project">
-        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=develop"
+        <img src="https://api.travis-ci.com/Mathieu-Lala/game_project.svg?branch=develop&token=5TrxUsuSpQyXNca4sVWA"
           alt="not found"
         >
       </a>
@@ -153,6 +153,7 @@ See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cma
 * [CI](https://en.wikipedia.org/wiki/Continuous_integration)
 
   1. [Github](https://github.com/Mathieu-Lala/game_project/actions)
+  1. [Travis](https://travis-ci.com)
 
 * [Unit tests](https://en.wikipedia.org/wiki/Unit_testing)
 

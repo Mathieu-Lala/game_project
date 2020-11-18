@@ -6,7 +6,7 @@
 namespace game {
 
 struct Classes {
-    std::vector<game::Class::ID> ids;
+    std::vector<EntityFactory::ID> ids;
 };
 
 } // namespace game

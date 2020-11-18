@@ -314,6 +314,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         }
     });
 
+
     // update and reset the cooldown of the spritesheet
     for (auto &i : m_world.view<Spritesheet>()) {
         auto &sprite = m_world.get<Spritesheet>(i);
@@ -449,6 +450,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
                 model = glm::rotate(model, static_cast<float>(rot.angle), glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored_textured->setUniform("model", model);
+                m_shader_colored_textured->setUniform("mirrored", texture.mirrored);
                 ::glBindTexture(GL_TEXTURE_2D, texture.texture);
                 ::glBindVertexArray(drawable.VAO);
                 ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);

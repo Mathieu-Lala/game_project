@@ -1,5 +1,6 @@
 #pragma once
 
+#include <magic_enum.hpp>
 #include <entt/entt.hpp>
 #include <glm/vec2.hpp>
 
@@ -7,24 +8,30 @@ namespace game {
 
 struct EntityFactory {
     enum ID {
-        LAYER_DEBUG,
+        ERROR = 0,
 
-        DEBUG_TILE,
+        LAYER_DEBUG = 1,
+        DEBUG_TILE = LAYER_DEBUG * 10,
 
-
-        LAYER_PLAYER,
+        LAYER_PLAYER = 2,
+        FARMER = LAYER_PLAYER * 10,
+        SOLDIER,
+        SHOOTER,
+        SORCERER,
+        TONK,
         PLAYER, // should be named farmer
-        KEY,
+
+        KEY, // should be on a layer above
 
 
-        LAYER_ENEMY,
+        LAYER_ENEMY = 3,
+        ENEMY = LAYER_ENEMY * 10,
         BOSS,
-        ENEMY,
 
 
-        LAYER_TERRAIN,
+        LAYER_TERRAIN = 4,
 
-        FLOOR_NORMAL,
+        FLOOR_NORMAL = LAYER_TERRAIN * 10,
         FLOOR_SPAWN,
         FLOOR_BOSS,
         FLOOR_CORRIDOR,
@@ -33,6 +40,19 @@ struct EntityFactory {
 
         MAX_ID,
     };
+
+    static auto ID_from_string(const std::string_view in) noexcept -> ID
+    {
+        std::string compare{in};
+        std::transform(compare.begin(), compare.end(), compare.begin(), [](auto c) { return std::tolower(c); });
+
+        for (const auto &i : magic_enum::enum_values<ID>()) {
+            auto enum_name = std::string{magic_enum::enum_name(i)};
+            std::transform(enum_name.begin(), enum_name.end(), enum_name.begin(), [](auto c) { return std::tolower(c); });
+            if (compare == enum_name) { return static_cast<ID>(i); }
+        }
+        return LAYER_DEBUG;
+    }
 
     // note : should take a path to a json config instead ... ?
     // todo : normalize arguments , Args...&& ?
@@ -44,7 +64,6 @@ struct EntityFactory {
     {
         return static_cast<double>(id);
     }
-
 };
 
 #define DECL_SPEC(id)                                                                \

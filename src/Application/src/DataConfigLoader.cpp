@@ -28,22 +28,23 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
     if (!file.is_open()) { spdlog::error("Can't open the given file"); }
     nlohmann::json jsonData = nlohmann::json::parse(file);
 
-
     classes::Database database;
 
-    for (Class::ID id = 1; const auto &[name, data] : jsonData.items()) {
+    for (const auto &[name, data] : jsonData.items()) {
         std::vector<SpellFactory::ID> spells;
-        for (const auto &spell : data["spells"]) spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>()));
+        // note : see std::transform
+        for (const auto &spell : data["spells"]) { spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>())); }
 
-        Class::ID currentId = data.value("starter", false) ? static_cast<Class::ID>(0) : id++;
-        
-        database[currentId] = Class{
-            .id = currentId,
+        const auto currentID = EntityFactory::ID_from_string(name);
+
+        database[currentID] = Class{
+            .id = currentID,
             .name = name,
             .description = data["desc"].get<std::string>(),
             .iconPath = data["icon"],
+            .assetGraphPath = data["assetGraph"],
+            .is_starter = data.value("starter", false),
             .spells = spells,
-
             .maxHealth = data["maxHealth"].get<float>(),
             .damage = data["damage"].get<float>(),
             .childrenClass = {},
@@ -52,13 +53,30 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
 
     for (auto &[id, dbClass] : database) {
         for (const auto &child : jsonData[dbClass.name]["childrenClass"]) {
-            auto c = classes::getByName(database, child);
-
-            if (!c)
-                spdlog::warn("Unknown class '{}'. Ignoring", child);
-            else
-                dbClass.childrenClass.push_back(c.value()->id);
+            if (const auto c = classes::getByName(database, child.get<std::string>()); c) {
+                dbClass.childrenClass.push_back(c->id);
+            } else
+                UNLIKELY { spdlog::warn("Unknown class '{}'. Ignoring", child); }
         }
+    }
+
+    for (const auto &[id, classes] : database) {
+        spdlog::info("[{}]", id);
+
+        spdlog::info(
+            "id={} name={} description={} iconPath={} assetGraphPath={} is_starter={} spells={} maxHealth={} damage={} "
+            "childrenClass={}",
+            classes.id,
+            classes.name,
+            classes.description,
+            classes.iconPath,
+            classes.assetGraphPath,
+            classes.is_starter,
+            "",//classes.spells,
+            classes.maxHealth,
+            classes.damage,
+            ""//,classes.childrenClass
+        );
     }
 
     return database;

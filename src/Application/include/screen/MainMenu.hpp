@@ -7,7 +7,6 @@
 namespace game {
 
 struct MainMenu {
-
     static auto draw(ThePURGE &game, entt::registry &world) -> void
     {
         // todo : load the resource in a coroutine here
@@ -22,7 +21,6 @@ struct MainMenu {
 
         ImGui::End();
     }
-
 };
 
 } // namespace game
