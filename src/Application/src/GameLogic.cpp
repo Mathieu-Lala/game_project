@@ -410,7 +410,12 @@ auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::Time
     // we keep it as static to be consister with previous frame on standstill
     static bool isFacingLeft = false;
 
-    auto boss = world.view<entt::tag<"boss"_hs>>().front();
+    auto queryRes = world.view<entt::tag<"boss"_hs>>();
+
+    if (queryRes.size() == 0) // boss is dead
+        return;
+
+    auto boss = queryRes.front();
 
     const auto &vel = world.get<engine::d2::Velocity>(boss);
     auto &sp = world.get<engine::Spritesheet>(boss);
