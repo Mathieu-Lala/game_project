@@ -141,35 +141,36 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     auto joystick = holder.instance->getJoystick(joy.source.id);
-                    if ((*joystick)->axes[0] >= 0.2)
-                        m_logics->movement.publish(world, player, Direction::RIGHT);
-                    else if ((*joystick)->axes[0] <= -0.2)
-                        m_logics->movement.publish(world, player, Direction::LEFT);
-                    else
-                        world.get<engine::d2::Velocity>(player).x = 0;
+                    //if ((*joystick)->axes[0] >= 0.2)
+                    //    m_logics->movement.publish(world, player, Direction::RIGHT);
+                    //else if ((*joystick)->axes[0] <= -0.2)
+                    //    m_logics->movement.publish(world, player, Direction::LEFT);
+                    //else
+                    //    world.get<engine::d2::Velocity>(player).x = 0;
 
-                    if ((*joystick)->axes[1] >= 0.2)
-                        m_logics->movement.publish(world, player, Direction::DOWN);
-                    else if ((*joystick)->axes[1] <= -0.2)
-                        m_logics->movement.publish(world, player, Direction::UP);
-                    else
-                        world.get<engine::d2::Velocity>(player).y = 0;
+                    //if ((*joystick)->axes[1] >= 0.2)
+                    //    m_logics->movement.publish(world, player, Direction::DOWN);
+                    //else if ((*joystick)->axes[1] <= -0.2)
+                    //    m_logics->movement.publish(world, player, Direction::UP);
+                    //else
+                    //    world.get<engine::d2::Velocity>(player).y = 0;
+                    m_logics->joystickMovement.publish(world, player, {(static_cast<double>((*joystick)->axes[0]) / 10.0), -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
 
-                if ((*joystick)->axes[4] >= 0) {
-                    auto &spell = world.get<SpellSlots>(player).spells[2];
-                    if (!spell.has_value()) return;
+                    if ((*joystick)->axes[4] >= 0) {
+                        auto &spell = world.get<SpellSlots>(player).spells[2];
+                        if (!spell.has_value()) return;
 
-                    auto &vel = world.get<engine::d2::Velocity>(player);
-                    m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                    return;
-                }
-                if ((*joystick)->axes[5] >= 0) {
-                    auto &spell = world.get<SpellSlots>(player).spells[3];
-                    if (!spell.has_value()) return;
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        return;
+                    }
+                    if ((*joystick)->axes[5] >= 0) {
+                        auto &spell = world.get<SpellSlots>(player).spells[3];
+                        if (!spell.has_value()) return;
 
-                    auto &vel = world.get<engine::d2::Velocity>(player);
-                    m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                    return;
+                        auto &vel = world.get<engine::d2::Velocity>(player);
+                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        return;
                 }
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {

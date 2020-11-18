@@ -6,7 +6,7 @@
     "assetGraph": "anims/classes/farmer/farmer.data.json",
     "maxHealth": 10,
     "damage": 1,
-    "spells": [0, 1, 2, 3],
+    "spells": [3],
     "childrenClass": [ "soldier", "shooter", "sorcerer" ]
   },
   "soldier": {
@@ -33,7 +33,7 @@
     "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
     "maxHealth": 25,
     "damage": 15,
-    "spells": [],
+    "spells": [2],
     "childrenClass": []
   }
 }
