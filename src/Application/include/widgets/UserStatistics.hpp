@@ -13,10 +13,9 @@ struct UserStatistics {
 
         const auto infoHealth = world.get<Health>(game.player);
         const auto HP = infoHealth.current / infoHealth.max;
-        const auto Atk = world.get<AttackDamage>(game.player);
+        // const auto Atk = world.get<AttackDamage>(game.player);
         const auto level = world.get<Level>(game.player);
         const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
-        const auto keyPicker = world.get<KeyPicker>(game.player);
 
         ImGui::Begin(
             "Info Player",
@@ -34,13 +33,28 @@ struct UserStatistics {
         ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
         ImGui::Text("XP");
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-        helper::ImGui::Text("Level: {}", level.current_level);
-        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-        helper::ImGui::Text("Speed: {}", 1);
-        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-        helper::ImGui::Text("Atk: {}", Atk.damage);
-        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-        if (keyPicker.hasKey) helper::ImGui::Text("You have the key");
+        helper::ImGui::Text("LEVEL {} ~~~ POINT {}", level.current_level, world.get<SkillPoint>(game.player).count);
+        // ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
+        // ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
+        // helper::ImGui::Text("Speed: {}", 1);
+        // ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
+        // helper::ImGui::Text("Atk: {}", Atk.damage);
+
+        for (const auto &i : world.get<SpellSlots>(game.player).spells) {
+            if (i.has_value()) {
+                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
+                ImGui::ProgressBar(
+                    static_cast<float>(i.value().cd.remaining_cooldown.count())
+                        / static_cast<float>(i.value().cd.cooldown.count()),
+                    ImVec2(0.f, 0.f),
+                    fmt::format("{}/{}", i.value().cd.remaining_cooldown.count(), i.value().cd.cooldown.count()).data());
+            }
+        }
+        if (world.get<KeyPicker>(game.player).hasKey) {
+            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
+            helper::ImGui::Text("You have the key");
+        }
+
         ImGui::End();
     }
 };

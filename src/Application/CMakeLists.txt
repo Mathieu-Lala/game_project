@@ -8,10 +8,10 @@ add_library(
   src/factory/SpellFactory.cpp
   src/factory/ParticuleFactory.cpp
   src/DataConfigLoader.cpp
-  src/console/DebugConsole.cpp
-  src/console/ConsoleCommands.cpp
+  src/widgets/console/DebugConsole.cpp
+  src/widgets/console/ConsoleCommands.cpp
   src/models/SpellDatabase.cpp
-  src/models/ClassDatabase.cpp "include/component/Facing.hpp")
+  src/models/ClassDatabase.cpp)
 
 target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 

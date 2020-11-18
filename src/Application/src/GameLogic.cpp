@@ -25,7 +25,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
-    sinkJoystickMovement.connect<&GameLogic::joystickMove>(*this);
+    // sinkJoystickMovement.connect<&GameLogic::joystickMove>(*this);
 
     sinkOnGameStarted.connect<&GameLogic::on_game_started>(*this);
 
@@ -116,8 +116,8 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
         player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + newClass.assetGraphPath));
 
     // Doesn't really matter, will be overridden by correct one soon enough. Prevent segfault of accessing inexistant "default" animation
-    sp.current_animation = "hold_right"; 
-    
+    sp.current_animation = "hold_right";
+
     engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
 
 
@@ -126,7 +126,7 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
         for (const auto &spell : newClass.spells) spellsId << spell << ", ";
 
         std::stringstream childrens;
-        for (const auto &child : newClass.childrenClass) childrens << m_game.getClassDatabase().at(child).name << ", ";
+        for (const auto &child : newClass.children) childrens << m_game.getClassDatabase().at(child).name << ", ";
 
         spdlog::info(
             "Applied class '{}' to player. Stats are now : \n"
@@ -255,7 +255,7 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
 
 auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
 
     for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
         const auto &spell_pos = world.get<engine::d3::Position>(spell);
@@ -294,7 +294,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
                 .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
                 ->play();
             world.destroy(spell);
-            if (entity_health.current <= 0.0f) { playerKilled.publish(world, entity, source); }
+            if (entity_health.current <= 0.0f) { onEntityKilled.publish(world, entity, source); }
         }
     };
 
@@ -407,11 +407,10 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
             anim = "run_left";
         else
             anim = "run_right";
+    else if (isFacingLeft)
+        anim = "hold_left";
     else
-        if (isFacingLeft)
-            anim = "hold_left";
-        else
-            anim = "hold_right";
+        anim = "hold_right";
 
     if (sp.current_animation != anim) {
         sp.current_animation = anim;
@@ -460,7 +459,7 @@ auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::Time
 
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
-    static engine::Core::Holder holder{};
+    static auto holder = engine::Core::Holder{};
 
     if (world.has<entt::tag<"player"_hs>>(killed)) {
         holder.instance->getAudioManager()

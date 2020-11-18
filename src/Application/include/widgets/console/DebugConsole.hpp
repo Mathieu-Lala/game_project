@@ -25,11 +25,13 @@ public:
     {
         m_console.logAdd(fmt, std::forward<Args>(args)...);
     }
+
     template<typename... Args>
     void warn(const std::string_view fmt, Args &&... args)
     {
         m_console.logAdd(fmt::format("[warn] {}", fmt), std::forward<Args>(args)...);
     }
+
     template<typename... Args>
     void error(const std::string_view fmt, Args &&... args)
     {

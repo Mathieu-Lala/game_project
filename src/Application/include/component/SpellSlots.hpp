@@ -10,7 +10,7 @@ namespace game {
 struct SpellSlots {
     std::array<std::optional<Spell>, 4ul> spells;
 
-    inline void removeElem(int pos) { spells[pos] = {}; }
+    // inline void removeElem(int pos) { spells[pos] = {}; }
 };
 
 } // namespace game

@@ -69,4 +69,4 @@ esac
 export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
 
-cmake $argument -j $(nproc) $extra_arg .
+cmake $argument -j $(nproc --ignore=4) $extra_arg .

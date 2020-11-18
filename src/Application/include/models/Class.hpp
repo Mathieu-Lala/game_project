@@ -5,24 +5,25 @@
 #include <vector>
 
 #include "factory/SpellFactory.hpp"
+#include "factory/EntityFactory.hpp"
 
 namespace game {
 
 struct Class {
-    using ID = std::uint8_t;
-
-    ID id;
+    EntityFactory::ID id;
     std::string name;
     std::string description;
     std::string iconPath;
     std::string assetGraphPath;
+
+    bool is_starter = false;
 
     std::vector<SpellFactory::ID> spells;
 
     float maxHealth;
     float damage;
 
-    std::vector<ID> childrenClass;
+    std::vector<EntityFactory::ID> children;
 };
 
 } // namespace game

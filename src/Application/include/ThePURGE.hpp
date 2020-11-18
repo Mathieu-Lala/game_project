@@ -10,7 +10,7 @@
 
 #include "component/all.hpp"
 
-#include "console/DebugConsole.hpp"
+#include "widgets/console/DebugConsole.hpp"
 
 #include "level/MapGenerator.hpp"
 #include "GameLogic.hpp"
@@ -27,8 +27,8 @@ public:
     enum class State {
         LOADING,
         IN_GAME,
+        IN_INVENTORY,
         GAME_OVER,
-        IN_INVENTORY
     };
 
     auto onCreate(entt::registry &world) -> void final;
@@ -58,9 +58,8 @@ public:
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
 private:
-    auto goToNextFloor(entt::registry &world) -> void;
+    // auto goToNextFloor(entt::registry &world) -> void;
 
-    auto mapGenerationOverlayTick(entt::registry &world) -> void;
     auto displaySoundDebugGui() -> void;
 
     State m_state{State::LOADING};

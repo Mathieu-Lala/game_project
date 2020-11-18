@@ -34,13 +34,13 @@ matrix:
     - name: "Linux (Clang compiler)"
       os: linux
       compiler: clang
-      env: OS=linux COMPILER=clang CLANG_VERSION=10
+      env: OS=linux COMPILER=clang CLANG_VERSION=11
       addons:
         apt:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages:
-            - clang-10
+            - clang-11
             - cmake
 #            - doxygen
 #            - graphviz
@@ -48,6 +48,7 @@ matrix:
             - python3
             - python3-pip
             - python3-setuptools
+            - lcov
 #            - uuid-dev
           update: true
     - name: "MacOS"
