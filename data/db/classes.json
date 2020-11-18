@@ -6,7 +6,7 @@
     "assetGraph": "anims/classes/farmer/farmer.data.json",
     "maxHealth": 10,
     "damage": 1,
-    "spells": [ 0, 2 ],
+    "spells": [ 0 ],
     "childrenClass": [ "soldier", "shooter", "sorcerer" ]
   },
   "soldier": {
@@ -15,7 +15,7 @@
     "assetGraph": "anims/classes/soldier/soldier.data.json",
     "maxHealth": 20,
     "damage": 5,
-    "spells": [],
+    "spells": [ 1 ],
     "childrenClass": []
 
   },
@@ -25,7 +25,7 @@
     "assetGraph": "anims/classes/shooter/shooter.data.json",
     "maxHealth": 15,
     "damage": 20,
-    "spells": [],
+    "spells": [ 2 ],
     "childrenClass": []
   },
   "sorcerer": {
@@ -34,7 +34,19 @@
     "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
     "maxHealth": 25,
     "damage": 15,
+<<<<<<< HEAD
+    "spells": [ 2 ],
+    "childrenClass": [ "tOnk" ]
+  },
+  "tOnk": {
+    "desc": "TOnk description",
+    "icon": "icons/tonk.png",
+    "maxHealth": 9999999,
+    "damage": 1,
+    "spells": [ 0 ],
+=======
     "spells": [],
+>>>>>>> b323375f3c4f9aa4d1aae11ec095a4276534a1e6
     "childrenClass": []
   }
 }
