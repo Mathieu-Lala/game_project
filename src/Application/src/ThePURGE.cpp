@@ -125,17 +125,37 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 },
                 [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
-                    auto joystick = holder.instance->getJoystick(joy.source.id);
-                    m_logics->movement.publish(
-                        world,
-                        player,
-                        {(static_cast<double>((*joystick)->axes[0]) / 10.0),
-                         -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
+                    switch (joy.source.axis) {
+                        case engine::Joystick::LST: {
+                            auto &spell = world.get<SpellSlots>(player).spells[2];
+                            if (!spell.has_value()) break;
+                            auto &vel = world.get<engine::d2::Velocity>(player);
+                            m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                            break;
+                        }
+                        case engine::Joystick::RST: {
+                            auto &spell = world.get<SpellSlots>(player).spells[3];
+                            if (!spell.has_value()) break;
+                            auto &vel = world.get<engine::d2::Velocity>(player);
+                            m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                            break;
+                        }
+                        default: {
+                            auto joystick = holder.instance->getJoystick(joy.source.id);
+                            m_logics->movement.publish(
+                                world,
+                                player,
+                                {(static_cast<double>((*joystick)->axes[0]) / 10.0),
+                                 -(static_cast<double>((*joystick)->axes[1]) / 10.0)});
+                            break;
+                        }
+                    }
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
 
                     switch (joy.source.button) {
-                    case engine::Joystick::ACTION_RIGHT: {
+                    case engine::Joystick::CENTER2: setState(State::IN_INVENTORY); break;
+                    case engine::Joystick::LS: {
                         auto &spell = world.get<SpellSlots>(player).spells[0];
                         if (!spell.has_value()) break;
 
@@ -143,7 +163,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
                         break;
                     }
-                    case engine::Joystick::ACTION_BOTTOM: {
+                    case engine::Joystick::RS: {
                         auto &spell = world.get<SpellSlots>(player).spells[1];
                         if (!spell.has_value()) break;
 
@@ -170,11 +190,51 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     default: return;
                     }
                 },
+                [&](const engine::Pressed<engine::JoystickButton> &joy) {
+                    switch (joy.source.button) {
+                    case engine::Joystick::CENTER2: setState(State::IN_GAME); break;
+                    }
+                },
+                [&](auto) {},
+            },
+            e);
+    } else if (m_state == State::GAME_OVER) {
+        std::visit(
+            engine::overloaded{
+                [&](const engine::Pressed<engine::JoystickButton> &joy) {
+                    switch (joy.source.button) {
+                        case engine::Joystick::CENTER2: {
+                            for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
+                            for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
+                            for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }
+                            for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); }
+                            for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
+
+                            setState(State::LOADING);
+                        }
+                    }
+                },
+                [&](auto) {},
+            },
+            e);
+    } else if (m_state == State::LOADING) {
+        std::visit(
+            engine::overloaded{
+                [&](const engine::Pressed<engine::JoystickButton> &joy) {
+                    switch (joy.source.button) {
+                    case engine::Joystick::CENTER2: {
+                        logics()->onGameStarted.publish(world);
+                        setState(ThePURGE::State::IN_GAME);
+                    }
+                    }
+                },
                 [&](auto) {},
             },
             e);
     }
 }
+
+
 void game::ThePURGE::displaySoundDebugGui()
 {
     static auto holder = engine::Core::Holder{};
@@ -301,6 +361,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
     } else if (m_state == State::IN_GAME) {
         UserStatistics::draw(*this, world);
+        
 
 #ifndef NDEBUG
         if (holder.instance->isShowingDebugInfo()) {
@@ -354,21 +415,30 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
         ImGui::End();
     } else if (m_state == State::IN_INVENTORY) {
+        UserStatistics::draw(*this, world);
         {
             const auto &boughtClasses = world.get<Classes>(player).ids;
             const auto skillPoints = world.get<SkillPoint>(player).count;
 
             // const auto comp = world.get<Class>(player);
+            static bool choosetrigger = false;
             static auto test = classes::getStarterClass(m_classDatabase);
             static std::optional<Class> selectedClass;
+            static std::string chosenTrig = "";
+            static int spellmapped = 0;
             static int infoAdd;
             static std::vector<GLuint> Texture = {
                 engine::DrawableFactory::createtexture("data/textures/InfoHud.png"),
                 engine::DrawableFactory::createtexture("data/textures/CPoint.PNG"),
-                engine::DrawableFactory::createtexture("data/textures/plus.png"),
-                engine::DrawableFactory::createtexture("data/textures/validate.png")};
-            ImGui::SetNextWindowPos(ImVec2(m_camera.getViewportSize().x, m_camera.getViewportSize().y));
+                engine::DrawableFactory::createtexture("data/textures/validate.png"),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/LB.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/LT.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/RT.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/RB.png"))
+            };
+
             ImVec2 size = ImVec2(1000.0f, 1000.0f);
+            ImGui::SetNextWindowPos(ImVec2(m_camera.getCenter().x + size.x/2, 0));
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
             ImGui::Begin(
                 "Evolution Panel",
@@ -385,22 +455,86 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                 helper::ImGui::Text("Class Name: {}", selectedClass->name);
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                 helper::ImGui::Text("Class description: {}", selectedClass->description);
-                ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                 if (infoAdd == 1) {
-                    ImGui::Text("Already bought");
+                    static int triggerValue = 5;
+                    std::optional<Classes> lastclass = world.get<Classes>(player);
+                    if (spellmapped % 2 != 0 && lastclass.value().ids.size() > 1
+                        && lastclass.value().ids[lastclass.value().ids.size() - 1] == selectedClass.value().id) {
+                        ImGui::SetCursorPos(ImVec2(
+                            ImGui::GetCursorPosX() + size.x / 3,
+                            ImGui::GetCursorPosY() + 50));
+                        ImGui::Text("Choose Your trigger :");
+                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY() + 10));
+                        auto &spell = world.get<SpellSlots>(player);
+                        if (ImGui::ImageButton(
+                                reinterpret_cast<void *>(static_cast<intptr_t>((Texture[3]))), ImVec2(50, 50))) {
+                            chosenTrig = "LB";
+                            triggerValue = 0;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::ImageButton(
+                                reinterpret_cast<void *>(static_cast<intptr_t>((Texture[4]))), ImVec2(50, 50))) {
+                            chosenTrig = "LT";
+                            triggerValue = 2;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::ImageButton(
+                                reinterpret_cast<void *>(static_cast<intptr_t>((Texture[5]))), ImVec2(50, 50))) {
+                            chosenTrig = "RT";
+                            triggerValue = 3;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::ImageButton(
+                                reinterpret_cast<void *>(static_cast<intptr_t>((Texture[6]))), ImVec2(50, 50))) {
+                            chosenTrig = "RB";
+                            triggerValue = 1;
+                        }
+                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY() + 10));
+                        helper::ImGui::Text("You choosed the trigger: {}", chosenTrig.c_str());
+                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
+                        if (chosenTrig != "" ) {
+                            if (ImGui::Button("Validate")) {
+                                choosetrigger = false;
+                                auto NewSpell = Spell::create(selectedClass.value().spells[0]);
+                                for (int i = 0; i < spell.spells.size(); i++) { 
+                                    if (spell.spells[i].has_value() && NewSpell.id == spell.spells[i].value().id) {
+                                        spell.removeElem(i);
+                                    } 
+                                }
+                                spell.spells[triggerValue] = NewSpell;
+                                spellmapped++;
+                            }
+                        }
+                    } else {
+                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
+                        ImGui::Text("Already bought");
+                    }
                     next = ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY());
                     ImGui::SetCursorPos(ImVec2(icon.x - 50, icon.y));
-                    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[3]))), ImVec2(50, 50));
+                    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((Texture[2]))), ImVec2(50, 50));
                 } else if (infoAdd == 2) {
                     if (skillPoints > 0) {
+                        if (choosetrigger == true) {
+                            ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
+                            ImGui::Text("You haven't choose a trigger for the spell");
+                        }
+                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                         if (ImGui::Button("Add class")) {
                             m_logics->onPlayerBuyClass.publish(world, player, selectedClass.value());
                             infoAdd = 1;
+                            if (choosetrigger == false) {
+                                spellmapped++;
+                                choosetrigger = true;
+                            } else
+                                spellmapped = spellmapped + 2;
                         }
-                    } else
+                    } else {
+                        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY() + 10));
                         helper::ImGui::Button("No skill point", ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+                    }
 
                 } else {
+                    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                     ImGui::Text("You can't buy it yet");
                 }
             }
