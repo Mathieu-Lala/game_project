@@ -1,6 +1,6 @@
 {
   "farmer": {
-    "starter" :  true,
+    "starter" : true,
     "desc": "Farmer description",
     "icon": "icons/farmer.png",
     "maxHealth": 10,
@@ -13,7 +13,7 @@
     "icon": "icons/soldier.png",
     "maxHealth": 20,
     "damage": 5,
-    "spells": [ 0 ],
+    "spells": [ 1 ],
     "childrenClass": []
 
   },

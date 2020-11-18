@@ -1,3 +1,5 @@
+#include <string>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -10,13 +12,13 @@
 #include <Engine/Settings.hpp>
 #include <Engine/component/Color.hpp>
 #include <Engine/component/Texture.hpp>
+#include <Engine/component/Spritesheet.hpp>
 #include <Engine/Core.hpp>
 
 #include <Engine/helpers/ImGui.hpp>
 
 #include "level/LevelTilemapBuilder.hpp"
 #include "level/MapGenerator.hpp"
-#include "factory/EntityFactory.hpp"
 
 #include "factory/EntityFactory.hpp"
 
@@ -27,6 +29,8 @@
 #include "ThePURGE.hpp"
 
 #include "DataConfigLoader.hpp"
+
+#include "component/Facing.hpp"
 
 using namespace std::chrono_literals;
 
@@ -148,6 +152,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     }
                 },
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
+
                     switch (joy.source.button) {
                     case engine::Joystick::CENTER2: setState(State::IN_INVENTORY); break;
                     case engine::Joystick::LS: {
@@ -174,7 +179,8 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
             e);
         auto &pos = world.get<engine::d3::Position>(player);
         m_camera.setCenter({pos.x, pos.y});
-        if (m_camera.isUpdated()) { holder.instance->updateView(m_camera.getViewProjMatrix()); }
+        if (m_camera.isUpdated()) holder.instance->updateView(m_camera.getViewProjMatrix());
+
     } else if (m_state == State::IN_INVENTORY) {
         std::visit(
             engine::overloaded{
@@ -418,20 +424,21 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
             static bool choosetrigger = false;
             static auto test = classes::getStarterClass(m_classDatabase);
             static std::optional<Class> selectedClass;
+            static std::string chosenTrig = "";
             static int spellmapped = 0;
             static int infoAdd;
-            static std::string chosenTrig = "";
             static std::vector<GLuint> Texture = {
-                engine::DrawableFactory::createtexture(std::string("data/textures/InfoHud.png")),
-                engine::DrawableFactory::createtexture(std::string("data/textures/CPoint.PNG")),
-                engine::DrawableFactory::createtexture(std::string("data/textures/validate.png")),
+                engine::DrawableFactory::createtexture("data/textures/InfoHud.png"),
+                engine::DrawableFactory::createtexture("data/textures/CPoint.PNG"),
+                engine::DrawableFactory::createtexture("data/textures/validate.png"),
                 engine::DrawableFactory::createtexture(std::string("data/textures/controller/LB.png")),
                 engine::DrawableFactory::createtexture(std::string("data/textures/controller/LT.png")),
                 engine::DrawableFactory::createtexture(std::string("data/textures/controller/RT.png")),
-                engine::DrawableFactory::createtexture(std::string("data/textures/controller/RB.png")),
+                engine::DrawableFactory::createtexture(std::string("data/textures/controller/RB.png"))
             };
-            ImGui::SetNextWindowPos(ImVec2(m_camera.getCenter().x + 500.0f, 0.0f));
+
             ImVec2 size = ImVec2(1000.0f, 1000.0f);
+            ImGui::SetNextWindowPos(ImVec2(m_camera.getCenter().x + size.x/2, 0));
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
             ImGui::Begin(
                 "Evolution Panel",

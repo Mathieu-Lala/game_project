@@ -1,14 +1,14 @@
 {
     "object": {
-        "file": "/assets/soldier_champ.png",
+        "file": "/assets/farmer/farmer_anim.png",
         "width": 300,
-        "height": 265,
+        "height": 300,
         "speed": 50,
         "animations": {
             "hold": [
                 {
                     "x": 600,
-                    "y": 530
+                    "y": 600
                 }
             ],
             "default": [
@@ -31,6 +31,14 @@
                 {
                     "x": 1200,
                     "y": 0
+                },
+                {
+                    "x": 0,
+                    "y": 300
+                },
+                {
+                    "x": 600,
+                    "y": 300
                 }
             ]
         }

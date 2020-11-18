@@ -23,6 +23,7 @@ struct Texture {
     std::int32_t height;
     std::int32_t channels;
     std::uint8_t *px;
+    bool mirrored;
 
     static auto ctor(const std::string_view path, const std::array<float, 4ul> &) -> Texture;
 

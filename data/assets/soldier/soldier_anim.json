@@ -1,6 +1,6 @@
 {
     "object": {
-        "file": "/assets/soldier_anim.png",
+        "file": "/assets/soldier/soldier_anim.png",
         "width": 480,
         "height": 200,
         "speed": 50,
