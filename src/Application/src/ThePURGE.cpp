@@ -449,7 +449,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                 helper::ImGui::Text("Class description: {}", selectedClass->description);
                 if (infoAdd == 1) {
-                    int triggerValue = 0;
+                    static int triggerValue = 5;
                     std::optional<Classes> lastclass = world.get<Classes>(player);
                     if (spellmapped % 2 != 0 && lastclass.value().ids.size() > 1
                         && lastclass.value().ids[lastclass.value().ids.size() - 1] == selectedClass.value().id) {
@@ -485,12 +485,14 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY() + 10));
                         helper::ImGui::Text("You choosed the trigger: {}", chosenTrig.c_str());
                         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
-                        if (chosenTrig != "") {
+                        if (chosenTrig != "" ) {
                             if (ImGui::Button("Validate")) {
                                 choosetrigger = false;
                                 auto NewSpell = Spell::create(selectedClass.value().spells[0]);
                                 for (int i = 0; i < spell.spells.size(); i++) { 
-                                    if (NewSpell.id == spell.spells[i].value().id) { spell.spells[i].value() = {}; } //CRASH ICI QUAND TENTATIVE DE METTRE UN SLOT DE SPELL VIDE
+                                    if (spell.spells[i].has_value() && NewSpell.id == spell.spells[i].value().id) {
+                                        spell.removeElem(i);
+                                    } 
                                 }
                                 spell.spells[triggerValue] = NewSpell;
                                 spellmapped++;
