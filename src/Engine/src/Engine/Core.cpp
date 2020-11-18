@@ -322,7 +322,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         sprite.speed.is_in_cooldown = true;
         sprite.speed.remaining_cooldown = sprite.speed.cooldown;
         sprite.current_frame++;
-        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations[sprite.current_animation].size());
+        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).size());
 
         auto &texture = m_world.get<Texture>(i);
 
