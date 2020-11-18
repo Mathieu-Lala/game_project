@@ -22,3 +22,4 @@
 #include "component/SpellSlots.hpp"
 #include "component/Classes.hpp"
 #include "component/SkillPoint.hpp"
+#include "component/Facing.hpp"

@@ -40,6 +40,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::update_particule>(*this);
     sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
     sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
+    sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
@@ -83,6 +84,8 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
 
 auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity player, const Class &newClass) -> void
 {
+    static auto holder = engine::Core::Holder{};
+
     world.get<AttackDamage>(player).damage = newClass.damage;
 
     auto &health = world.get<Health>(player);
@@ -101,6 +104,14 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
             slot = Spell::create(spell);
             break;
         }
+
+    auto &sp = world.replace<engine::Spritesheet>(
+        player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + newClass.assetGraphPath));
+
+    // Doesn't really matter, will be overridden by correct one soon enough. Prevent segfault of accessing inexistant "default" animation
+    sp.current_animation = "hold_right"; 
+    
+    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
 
 
     { // Logging
@@ -380,6 +391,43 @@ auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine
     };
 
     world.view<KeyPicker, engine::d3::Position>().each(doorUsageSystem);
+}
+
+auto game::GameLogic::player_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    const auto &vel = world.get<engine::d2::Velocity>(m_game.player);
+    const auto &facing = world.get<Facing>(m_game.player);
+    auto &sp = world.get<engine::Spritesheet>(m_game.player);
+
+    bool isFacingLeft;
+    if (vel.x < 0)
+        isFacingLeft = true;
+    else if (vel.x > 0)
+        isFacingLeft = false;
+    else if (facing.dir.x < 0)
+        isFacingLeft = true;
+    else
+        isFacingLeft = false;
+
+    std::string anim;
+
+    auto isMoving = vel.x != 0 || vel.y != 0;
+
+    if (isMoving)
+        if (isFacingLeft)
+            anim = "run_left";
+        else
+            anim = "run_right";
+    else
+        if (isFacingLeft)
+            anim = "hold_left";
+        else
+            anim = "hold_right";
+
+    if (sp.current_animation != anim) {
+        sp.current_animation = anim;
+        sp.current_frame = 0;
+    }
 }
 
 auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void

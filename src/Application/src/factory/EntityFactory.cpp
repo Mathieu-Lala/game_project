@@ -174,9 +174,10 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
     world.emplace<game::AttackDamage>(e, 15.0f);
     world.emplace<Health>(e, 500.0f, 500.0f);
     engine::DrawableFactory::fix_color(world, e, {0.95f, 0.95f, 0.95f});
+
     // todo : add cache
     auto &sp = world.emplace<engine::Spritesheet>(
-        e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/example/example.data.json"));
+        e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/enemies/boss/example.data.json"));
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + sp.file);
 
     [[maybe_unused]] auto &slots = world.emplace<SpellSlots>(e);
@@ -198,18 +199,23 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
     world.emplace<engine::d2::Rotation>(player, 0.f);
     world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-    world.emplace<engine::d2::Scale>(player, 1.0, 1.0);
-    world.emplace<engine::d2::HitboxSolid>(player, 1.0, 1.0);
+    world.emplace<engine::d2::Scale>(player, 1.5, 2.5);
+    world.emplace<engine::d2::HitboxSolid>(player, 0.75, 2.0);
     world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, player, {0, 0, 1});
-    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + "textures/player.jpeg");
-    world.emplace<Health>(player, 1.f, 1.f);
-    world.emplace<AttackDamage>(player, 0.f);
     world.emplace<Level>(player, 0u, 0u, 10u);
     world.emplace<KeyPicker>(player);
     world.emplace<SpellSlots>(player);
     world.emplace<Classes>(player);
     world.emplace<SkillPoint>(player, 0);
+    world.emplace<Facing>(player, glm::vec2(1.f, 0.f));
+
+    engine::DrawableFactory::fix_color(world, player, {1.0f, 1.0f, 1.0f});
+
+    // class dependant, see `GameLogic::apply_class_to_player`
+    world.emplace<engine::Spritesheet>(player);
+    world.emplace<Health>(player, 1.f, 1.f);
+    world.emplace<AttackDamage>(player, 0.f);
+    // --
 
     return player;
 }

@@ -99,7 +99,7 @@ auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &wo
     engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
     auto &sp = world.emplace<engine::Spritesheet>(
         spell,
-        engine::Spritesheet::from_json(holder.instance->settings().data_folder + "assets/fireball/fireball.data.json"));
+        engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/spells/fireball/fireball.data.json"));
     engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
 
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0); // note : why -1

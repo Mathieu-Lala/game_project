@@ -19,3 +19,4 @@ auto makeSpellDatabase() -> SpellDatabase
 }
 
 } // namespace game
+

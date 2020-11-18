@@ -17,7 +17,7 @@ struct FloorGenParam {
     int maxDungeonWidth = 50;
     int maxDungeonHeight = 50;
 
-    int minCorridorWidth = 2;
+    int minCorridorWidth = 3; // min 3 or player may not fit
     int maxCorridorWidth = 4;
 
 
