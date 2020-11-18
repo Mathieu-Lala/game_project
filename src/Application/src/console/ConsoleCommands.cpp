@@ -189,6 +189,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                 "\tid : {}\n"
                 "\tdescription : {}\n"
                 "\ticon : {}\n"
+                "\tgraph asset : {}\n"
                 "\tspells : {}\n"
                 "\tmax health : {}\n"
                 "\tdamage : {}\n"
@@ -197,6 +198,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                 data.id,
                 data.description,
                 data.iconPath,
+                data.assetGraphPath,
                 spellNames.str(),
                 data.maxHealth,
                 data.damage,

@@ -42,7 +42,9 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
             .name = name,
             .description = data["desc"].get<std::string>(),
             .iconPath = data["icon"],
+            .assetGraphPath = data["assetGraph"],
             .spells = spells,
+
 
             .maxHealth = data["maxHealth"].get<float>(),
             .damage = data["damage"].get<float>(),
