@@ -14,6 +14,7 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     if (tile == TileEnum::NONE) return;
 
     auto size = getTileSize(x, y);
+    //auto size = glm::ivec2(1, 1); // uncomment this line to get proper textures, but massive FPS drops
 
     for (auto clearY = y; clearY < y + size.y; ++clearY) {
         for (auto clearX = x; clearX < x + size.x; ++clearX) {
