@@ -80,12 +80,16 @@ template<>
 auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
     entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
+    static auto holder = engine::Core::Holder{};
+
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {0.75, 0.25, 0.25});
+    engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/door.png");
+
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
     world.emplace<entt::tag<"terrain"_hs>>(e);
     world.emplace<entt::tag<"exit_door"_hs>>(e);
