@@ -31,6 +31,9 @@ struct EntityFactory {
         EXIT_DOOR,
         WALL,
 
+        LAYER_BACKGROUND,
+        BACKGROUND,
+
         MAX_ID,
     };
 
@@ -67,6 +70,9 @@ DECL_SPEC(ENEMY);
 
 DECL_SPEC(PLAYER);
 DECL_SPEC(KEY);
+
+DECL_SPEC(BACKGROUND);
+
 
 #undef DECL_SPEC
 
