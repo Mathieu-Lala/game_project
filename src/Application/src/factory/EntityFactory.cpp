@@ -36,8 +36,8 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {0.5, 1, 0.5});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/spawn.png");
+    engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
