@@ -1,7 +1,15 @@
 #include <spdlog/spdlog.h>
 
-#include "Engine/JoystickManager.hpp"
+#include "Engine/Graphics/third_party.hpp"
+#include "Engine/Event/JoystickManager.hpp"
+#include "Engine/Graphics/Shader.hpp"    // note : should not require this header here
+#include "Engine/audio/AudioManager.hpp" // note : should not require this header here
+#include "Engine/Settings.hpp"           // note : should not require this header here
+#include "Engine/component/Color.hpp"
+#include "Engine/component/Texture.hpp"
 #include "Engine/Core.hpp"
+
+#include "Engine/helpers/macro.hpp"
 
 engine::JoystickManager *engine::JoystickManager::s_instance{nullptr};
 
@@ -14,11 +22,13 @@ engine::JoystickManager::JoystickManager()
 
 auto engine::JoystickManager::getNextEvent() -> std::optional<Event>
 {
-    if (m_events.empty()) { return {}; }
-
-    auto nextEvent = m_events.front();
-    m_events.erase(m_events.begin());
-    return nextEvent;
+    if (m_events.empty()) {
+        return {};
+    } else {
+        auto nextEvent = m_events.front();
+        m_events.erase(m_events.begin());
+        return nextEvent;
+    }
 }
 
 auto engine::JoystickManager::add(const Joystick &j) -> void
@@ -26,7 +36,7 @@ auto engine::JoystickManager::add(const Joystick &j) -> void
     if (!get(j.id).has_value())
         m_joysticks.push_back(j);
     else
-        [[unlikely]] { spdlog::warn("engine::JoystickManager Trying to add an already existing joystick"); }
+        UNLIKELY { spdlog::warn("engine::JoystickManager Trying to add an already existing joystick"); }
 }
 
 auto engine::JoystickManager::get(int id) -> std::optional<Joystick *const>
@@ -34,8 +44,9 @@ auto engine::JoystickManager::get(int id) -> std::optional<Joystick *const>
     if (const auto it = std::find_if(m_joysticks.begin(), m_joysticks.end(), [id](auto &i) { return i.id == id; });
         it != m_joysticks.end()) {
         return &(*it);
+    } else {
+        return {};
     }
-    return {};
 }
 
 auto engine::JoystickManager::poll() -> void
@@ -50,7 +61,7 @@ auto engine::JoystickManager::remove(const Joystick &j) -> void
         it != m_joysticks.end()) {
         m_joysticks.erase(it);
     } else
-        [[unlikely]] { spdlog::warn("engine::JoystickManager Trying to remove an none existing joystick"); }
+        UNLIKELY { spdlog::warn("engine::JoystickManager Trying to remove an none existing joystick"); }
 }
 
 auto engine::JoystickManager::update(const Moved<JoystickAxis> &j) -> void
@@ -84,7 +95,7 @@ auto engine::JoystickManager::each(const std::function<void(const Joystick &)> &
 
 auto engine::JoystickManager::callback_eventJoystickDetection(int id, int event) -> void
 {
-    if (Core::Holder().instance->getEventMode() == Core::RECORD) {
+    if (Core::Holder().instance->getEventMode() == Core::EventMode::RECORD) {
         if (event == GLFW_CONNECTED) {
             s_instance->m_events.emplace_back(Connected<Joystick>{{id}});
         } else if (event == GLFW_DISCONNECTED) {

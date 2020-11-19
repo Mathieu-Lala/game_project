@@ -1,72 +1,88 @@
 #include "level/LevelTilemapBuilder.hpp"
-#include <cassert>
+#include "factory/EntityFactory.hpp"
 
-#include "entity/TileFactory.hpp"
+#include "Engine/component/Rotation.hpp"
 
-auto TilemapBuilder::get(int x, int y) -> TileEnum &
-{
-    assert(x < m_size.x);
-    assert(y < m_size.y);
-
-    return m_tiles[static_cast<std::size_t>(y) * static_cast<std::size_t>(m_size.x) + static_cast<std::size_t>(x)];
-}
-
-void TilemapBuilder::build(entt::registry &world)
+void game::TilemapBuilder::build(entt::registry &world)
 {
     for (auto y = 0; y < m_size.y; ++y) {
         for (auto x = 0; x < m_size.x; ++x) { handleTileBuild(world, x, y); }
     }
 }
 
-void TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
+void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
 {
-    auto tile = get(x, y);
+    const auto tile = at(glm::ivec2{x, y});
     if (tile == TileEnum::NONE) return;
 
-    glm::ivec2 size(1, 1);
+    auto size = getTileSize(x, y);
+    //auto size = glm::ivec2(1, 1); // uncomment this line to get proper textures, but massive FPS drops
 
-    // TODO: investigate why this doesn't work. It used to work before, problem probably comes from camera (?)
-    //auto size = getTileSize(x, y);
+    for (auto clearY = y; clearY < y + size.y; ++clearY) {
+        for (auto clearX = x; clearX < x + size.x; ++clearX) {
+            operator[](glm::ivec2{clearX, clearY}) = TileEnum::NONE;
+        }
+    }
 
-    //for (int clearY = y; clearY < y + size.y; ++clearY) {
-    //    for (int clearX = x; clearX < x + size.x; ++clearX) { get(clearX, clearY) = TileEnum::NONE; }
-    //}
+    glm::vec2 tileSize{static_cast<float>(size.x), static_cast<float>(size.y)};
+    glm::vec2 tilePos{static_cast<float>(x), static_cast<float>(y)};
 
+    tilePos += tileSize / 2.f;
+
+    constexpr auto kPI = 3.1415926535897;
 
     switch (tile) {
-    case TileEnum::FLOOR:
-        TileFactory::Floor(
-            world,
-            m_shader,
-            {static_cast<float>(x), static_cast<float>(y)},
-            {static_cast<float>(size.x), static_cast<float>(size.y)});
+    case TileEnum::FLOOR_NORMAL_ROOM:
+        EntityFactory::create<EntityFactory::FLOOR_NORMAL>(world, tilePos, tileSize);
         break;
-    case TileEnum::WALL:
-        TileFactory::Wall(
-            world,
-            m_shader,
-            {static_cast<float>(x), static_cast<float>(y)},
-            {static_cast<float>(size.x), static_cast<float>(size.y)});
+    case TileEnum::FLOOR_BOSS_ROOM: EntityFactory::create<EntityFactory::FLOOR_BOSS>(world, tilePos, tileSize); break;
+    case TileEnum::FLOOR_CORRIDOR:
+        EntityFactory::create<EntityFactory::FLOOR_CORRIDOR>(world, tilePos, tileSize);
         break;
+    case TileEnum::FLOOR_SPAWN: EntityFactory::create<EntityFactory::FLOOR_SPAWN>(world, tilePos, tileSize); break;
+
+    case TileEnum::EXIT_DOOR_FACING_NORTH: {
+        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
+        world.get<engine::d2::Rotation>(e).angle = kPI;
+        break;
+    }
+    case TileEnum::EXIT_DOOR_FACING_EAST: {
+        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
+        world.get<engine::d2::Rotation>(e).angle = kPI / 2;
+        break;
+    }
+    case TileEnum::EXIT_DOOR_FACING_SOUTH: {
+        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
+        world.get<engine::d2::Rotation>(e).angle = 0;
+        break;
+    }
+    case TileEnum::EXIT_DOOR_FACING_WEST: {
+        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
+        world.get<engine::d2::Rotation>(e).angle = 3 * kPI / 2;
+        break;
+    }
+
+    case TileEnum::DEBUG_TILE: EntityFactory::create<EntityFactory::DEBUG_TILE>(world, tilePos, tileSize); break;
+    case TileEnum::WALL: EntityFactory::create<EntityFactory::WALL>(world, tilePos, tileSize); break;
 
     default: break;
     }
 }
 
-glm::ivec2 TilemapBuilder::getTileSize(int x1, int y1)
+auto game::TilemapBuilder::getTileSize(int x, int y) const -> glm::ivec2
 {
-    auto tile = get(x1, y1);
+    const auto tile = at(glm::ivec2{x, y});
 
-    int x2 = x1 + 1;
-    int y2 = y1 + 1;
+    auto x2 = x + 1;
+    auto y2 = y + 1;
 
-    while (x2 < m_size.x && get(x2, y1) == tile) ++x2;
+    while (x2 < m_size.x && at(glm::ivec2{x2, y}) == tile) ++x2;
 
     while (y2 < m_size.x) {
         bool isEntireLineSame = true;
 
-        for (auto x = x1; x < x2; ++x) {
-            if (get(x, y2) != tile) {
+        for (auto i = x; i < x2; ++i) {
+            if (at(glm::ivec2{i, y2}) != tile) {
                 isEntireLineSame = false;
                 break;
             }
@@ -76,5 +92,5 @@ glm::ivec2 TilemapBuilder::getTileSize(int x1, int y1)
         ++y2;
     }
 
-    return {x2 - x1, y2 - y1};
+    return {x2 - x, y2 - y};
 }

@@ -1,33 +1,47 @@
 #pragma once
 
-#include <memory>
-#include <entt/entt.hpp>
 #include <concepts>
+#include <memory>
+#include <chrono>
+#include <vector>
 
-#include "Engine/Window.hpp"
-#include "Engine/Game.hpp"
-#include "Engine/JoystickManager.hpp"
+#include <entt/entt.hpp>
+#include <glm/matrix.hpp>
+
+#include "Engine/resources/LoaderColor.hpp"
+#include "Engine/resources/LoaderTexture.hpp"
+#include "Engine/Event/Event.hpp"
+#include "Engine/Settings.hpp"
+#include "Engine/audio/AudioManager.hpp"
 
 namespace engine {
 
+namespace api {
+
+class Game;
+
+} // namespace api
+
+class Window;
+class JoystickManager;
+class Shader;
+class AudioManager;
+struct Settings;
+
 class Core {
 private:
-
-    struct hidden_type{};
-
-public:
-
-    struct Holder {
-
-        static
-        auto init() noexcept -> Holder;
-
-        Core *instance = Core::s_instance;
-
+    struct hidden_type {
     };
 
-    explicit
-    Core(hidden_type &&);
+public:
+    // note : an Holder should NEVER be declared as global variable
+    struct Holder {
+        static auto init() noexcept -> Holder;
+
+        Core *instance = Core::s_instance;
+    };
+
+    explicit Core(hidden_type &&);
 
     ~Core();
 
@@ -38,14 +52,18 @@ public:
     Core &operator=(Core &&) = delete;
 
 
-    auto main() -> int;
+    auto main(int argc, char **argv) -> int;
+
 
     auto getNextEvent() -> Event;
 
-    auto window() -> std::unique_ptr<Window> & { return m_window; }
+    auto setPendingEvents(std::vector<Event> &&events) -> void;
 
-    template<typename ...Args>
-    auto window(Args &&...args) -> std::unique_ptr<Window> &
+    auto setPendingEventsFromFile(const std::string_view filepath) -> bool;
+
+
+    template<typename... Args>
+    auto window(Args &&... args) -> std::unique_ptr<Window> &
     {
         if (m_window != nullptr) { return m_window; }
 
@@ -55,98 +73,117 @@ public:
         return m_window;
     }
 
-    template<std::derived_from<Game> UserDefinedGame, typename ...Args>
-    auto game(Args &&...args) -> std::unique_ptr<Game> &
+    template<std::derived_from<api::Game> UserDefinedGame, typename... Args>
+    auto game(Args &&... args) -> std::unique_ptr<api::Game> &
     {
         if (m_game != nullptr) { return m_game; }
 
         m_game = std::make_unique<UserDefinedGame>(std::forward<Args>(args)...);
-        m_game->onCreate(m_world);
 
         return m_game;
     }
 
-    enum EventMode {
+
+    enum class EventMode {
         RECORD,
         PLAYBACK,
     };
 
-    auto getEventMode() const { return m_eventMode; }
+    auto close() noexcept -> void { m_is_running = false; }
 
-    auto setPendingEvents(std::vector<Event> &&events) -> void;
 
-    auto setPendingEventsFromFile(const std::string_view filepath) -> bool;
+    // note : not the best way ..
+    auto updateView(const glm::mat4 &view) -> void;
+
+    // todo : add strength
+    auto setScreenshake(bool, std::chrono::milliseconds = {}) -> void;
+
+
+    auto window() noexcept -> std::unique_ptr<Window> & { return m_window; }
+
+    [[nodiscard]] auto getEventMode() const noexcept { return m_eventMode; }
+
+    [[nodiscard]] auto isRunning() const noexcept -> bool { return m_is_running; }
+
+    template<typename T>
+    auto getCache() noexcept -> entt::resource_cache<T> &;
+
+    auto getAudioManager() noexcept -> AudioManager & { return m_audioManager; }
+
+    auto getWorld() noexcept -> entt::registry & { return m_world; }
+
+    auto settings() const noexcept -> const Settings & { return m_settings; }
+
+#ifndef NDEBUG
+    [[nodiscard]] constexpr auto isShowingDebugInfo() noexcept -> bool { return m_show_debug_info; }
+#endif
+    auto getJoystick(int id) -> std::optional<Joystick *const>;
 
 private:
-
-    static
-    auto get() noexcept -> std::unique_ptr<Core> &;
+    static auto get() noexcept -> std::unique_ptr<Core> &;
 
     static Core *s_instance;
 
-    static
-    auto loadOpenGL() -> void;
+    static auto loadOpenGL() -> void;
+
+    bool m_is_running{true};
+
+    Settings m_settings;
 
     // note : for now the engine support only one window
-    std::unique_ptr<Window> m_window{ nullptr };
+    std::unique_ptr<Window> m_window{nullptr};
 
-//
-// World
-//
-
-    std::unique_ptr<Game> m_game{ nullptr };
+    std::unique_ptr<api::Game> m_game{nullptr};
 
     entt::registry m_world;
 
-//
-// Event Handling
-//
+    EventMode m_eventMode{EventMode::RECORD};
 
-    EventMode m_eventMode{ RECORD };
-
-    // todo : std::pmr::queue instead of vector ? try it with google benchmark
     std::vector<Event> m_eventsPlayback;
 
 
     std::chrono::steady_clock::time_point m_lastTick;
 
-    auto getElapsedTime() -> std::chrono::nanoseconds;
+    [[nodiscard]] auto getElapsedTime() noexcept -> std::chrono::nanoseconds;
 
+    auto tickOnce(const TimeElapsed &) -> void;
 
     std::unique_ptr<JoystickManager> m_joystickManager;
 
+    CacheColor m_colors;
+    CacheTexture m_textures;
+
+    std::unique_ptr<Shader> m_shader_colored;
+    std::unique_ptr<Shader> m_shader_colored_textured;
+
+    AudioManager m_audioManager;
 
 #ifndef NDEBUG
+    bool m_show_debug_info = false;
+
     auto debugDrawJoystick() -> void;
     auto debugDrawDisplayOptions() -> void;
 #endif
 
-    enum DisplayMode {
-        POINTS = GL_POINTS,
-        LINE_STRIP = GL_LINE_STRIP,
-        LINE_LOOP = GL_LINE_LOOP,
-        LINES = GL_LINES,
-        LINE_STRIP_ADJACENCY = GL_LINE_STRIP_ADJACENCY,
-        LINES_ADJACENCY = GL_LINES_ADJACENCY,
-        TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
-        TRIANGLE_FAN = GL_TRIANGLE_FAN,
-        TRIANGLES = GL_TRIANGLES,
-        TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
-        TRIANGLES_ADJACENCY = GL_TRIANGLES_ADJACENCY,
-        PATCHES = GL_PATCHES,
-    };
-
-    DisplayMode m_displayMode = TRIANGLES;
-
+    std::uint32_t m_displayMode = 4; // note : = GL_TRIANGLES
 };
+
+template<>
+auto Core::getCache() noexcept -> entt::resource_cache<Color> &;
+
+template<>
+auto Core::getCache() noexcept -> entt::resource_cache<Texture> &;
 
 } // namespace engine
 
-
 #ifndef NDEBUG
-# define IF_RECORD(...) \
-    do { if (engine::Core::Holder{}.instance->getEventMode() \
-        == engine::Core::EventMode::RECORD) { __VA_ARGS__; } } while(0)
+#    define IF_RECORD(...)                                                                                           \
+        do {                                                                                                         \
+            if (engine::Core::Holder{}.instance->getEventMode() == engine::Core::EventMode::RECORD) { __VA_ARGS__; } \
+        } while (0)
 #else
-# define IF_RECORD(...) do { __VA_ARGS__; } while(0)
+#    define IF_RECORD(...) \
+        do {               \
+            __VA_ARGS__;   \
+        } while (0)
 #endif

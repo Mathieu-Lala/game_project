@@ -1,0 +1,32 @@
+{
+    "object": {
+        "file": "/anims/spells/fireball/fireball.spritesheet.png",
+        "width": 256,
+        "height": 256,
+        "speed": 60,
+        "animations": {
+            "default": [
+                {
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "x": 256,
+                    "y": 0
+                },
+                {
+                    "x": 512,
+                    "y": 0
+                },
+                {
+                    "x": 768,
+                    "y": 0
+                },
+                {
+                    "x": 1024,
+                    "y": 0
+                }
+            ]
+        }
+    }
+}

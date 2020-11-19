@@ -1,5 +1,5 @@
-unit test
+add others pipeline (appveyor/azure/circleci/...)
 
-fuzz test
+run pipeline in docker
 
-benchmarking
+add output size .exe/.dll ...

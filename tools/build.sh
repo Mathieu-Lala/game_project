@@ -6,15 +6,17 @@
 
 build_type=Debug
 arch=x64
+test=false
 
 usage() {
     cat << EOF
-Usage: $0 [-h|--help] [--build_type=Debug] [--arch=x64]
+Usage: $0 [-h|--help] [--build_type=Debug] [--arch=x64] [--test]
 
 Options:
     -h|--help       Display this message.
     --build_type    Set the build type of the CMake project.
     --arch          Set the architecture for the CMake project.
+    --test          Build the test report (.xml)
 EOF
     exit 2
 }
@@ -38,6 +40,10 @@ case $key in
     shift
     shift
     ;;
+    --test)
+    test=true
+    shift
+    ;;
     *)
     shift
     ;;
@@ -52,4 +58,8 @@ if [[ $(uname -a) =~ "Linux" ]]; then
     build_folder="$build_folder/$arch"
 fi
 
-cmake --build $build_folder --config $build_type -j $(nproc)
+cmake --build $build_folder --config $build_type -j $(nproc --ignore=4)
+
+if [[ "$test" == "true" ]]; then
+    cd $build_folder && ctest -j $(nproc --ignore=4)
+fi

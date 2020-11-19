@@ -1,5 +1,6 @@
 option(ENABLE_CACHE "Enable cache if available" OFF)
 if(NOT ENABLE_CACHE)
+  # set(CMAKE_CXX_COMPILER_LAUNCHER "" CACHE STRING "Launcher of the compiler.")
   return()
 endif()
 
@@ -13,14 +14,13 @@ list(FIND CACHE_OPTION_VALUES ${CACHE_OPTION} CACHE_OPTION_INDEX)
 if(${CACHE_OPTION_INDEX} EQUAL -1)
   message(
     STATUS
-      "Using custom compiler cache system: '${CACHE_OPTION}', explicitly supported entries are ${CACHE_OPTION_VALUES}"
-  )
+      "Using custom compiler cache system: '${CACHE_OPTION}', explicitly supported entries are ${CACHE_OPTION_VALUES}")
 endif()
 
 find_program(CACHE_BINARY ${CACHE_OPTION})
 if(CACHE_BINARY)
   message(STATUS "${CACHE_OPTION} found and enabled")
-  set(CMAKE_CXX_COMPILER_LAUNCHER ${CACHE_BINARY})
+  set(CMAKE_CXX_COMPILER_LAUNCHER ${CACHE_BINARY} CACHE STRING "Launcher of the compiler.")
 else()
   message(WARNING "${CACHE_OPTION} is enabled but was not found. Not using it")
 endif()

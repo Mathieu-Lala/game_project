@@ -3,9 +3,7 @@
 namespace game {
 
 struct ViewRange {
-
     float range;
-
 };
 
 } // namespace game

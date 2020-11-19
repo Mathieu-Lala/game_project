@@ -6,15 +6,17 @@
 
 build_type=Debug
 arch=x64
+extra_arg=""
 
 usage() {
     cat << EOF
-Usage: $0 [-h|--help] [--build_type=Debug] [--arch=x64]
+Usage: $0 [-h|--help] [--build_type=Debug] [--arch=x64] -- [CMAKE_OPT]
 
 Options:
     -h|--help       Display this message.
     --build_type    Set the build type of the CMake project.
     --arch          Set the architecture for the CMake project.
+    CMAKE_OPT       Extra options for cmake.
 EOF
     exit 2
 }
@@ -38,6 +40,10 @@ case $key in
     shift
     shift
     ;;
+    --)
+    extra_arg="${*:2}"
+    break
+    ;;
     *)
     shift
     ;;
@@ -55,12 +61,12 @@ case "$(uname)" in
   ;;
 esac
 
-if [[ $(uname -a) =~ "Ubuntu" ]]; then
-  export CC="gcc-10"
-  export CXX="g++-10"
-fi
+#if [[ $(uname -a) =~ "Ubuntu" ]]; then
+#  export CC="gcc-10"
+#  export CXX="g++-10"
+#fi
 
 export PATH="$PATH:$HOME/.local/bin"
 export CONAN_SYSREQUIRES_MODE=enabled
 
-cmake $argument -j $(nproc) -DENABLE_CACHE=ON -DENABLE_PCH=ON .
+cmake $argument -j $(nproc --ignore=4) $extra_arg .

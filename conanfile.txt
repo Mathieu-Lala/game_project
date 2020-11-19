@@ -2,6 +2,7 @@
 # UI API
 imgui/1.78
 
+# Reslove the conflict of dependencies
 opengl/system
 
 # Window / Cursor / Event libary
@@ -19,7 +20,7 @@ nlohmann_json/3.9.0
 # Logging libary, spdlog use {fmt} so we can use CONAN_PKG::fmt
 spdlog/1.6.0
 
-# ECS
+# ECS / cache manager
 entt/3.5.2
 
 # C++ enum helper
@@ -31,14 +32,29 @@ stb/20190512@conan/stable
 # Argument parser (ac, av)
 CLI11/1.9.1@cliutils/stable
 
+# Audio
+openal/1.20.1
+
+# benchmarking
+benchmark/1.5.2@_/_
+
+# units test
+Catch2/2.11.1@catchorg/stable
+
 [options]
-fmt:header_only=True
+# lib shared required to set the path of the .dll for app.exe
+glew:shared=False
+glfw:shared=False
+imgui:shared=False
 spdlog:header_only=True
-docopt.cpp:shared=False
+fmt:header_only=True
 
 [generators]
 cmake
 
 [imports]
+#not working :(
 bin, *.dll -> ../out/
+lib, *.so* -> ../out/
+lib, *.pdb -> ../out/
 lib, *.dylib* -> ../out/
