@@ -25,7 +25,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::move>(*this);
-    //sinkJoystickMovement.connect<&GameLogic::joystickMove>(*this);
+    // sinkJoystickMovement.connect<&GameLogic::joystickMove>(*this);
 
     sinkOnGameStarted.connect<&GameLogic::on_game_started>(*this);
 
@@ -44,6 +44,8 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
     sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
     sinkGameUpdated.connect<&GameLogic::boss_anim_update>(*this);
+
+    sinkAfterGameUpdated.connect<&GameLogic::update_camera>(*this);
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
@@ -433,6 +435,17 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
     }
 }
 
+auto game::GameLogic::update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    static auto holder = engine::Core::Holder{};
+
+    auto player = m_game.player;
+
+    auto &pos = world.get<engine::d3::Position>(player);
+    m_game.getCamera().setCenter({pos.x, pos.y});
+    if (m_game.getCamera().isUpdated()) holder.instance->updateView(m_game.getCamera().getViewProjMatrix());
+}
+
 auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
 {
     // we keep it as static to be consister with previous frame on standstill
@@ -508,6 +521,7 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
         world.destroy(killed);
     }
 }
+
 
 // todo : normalize direction
 auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)

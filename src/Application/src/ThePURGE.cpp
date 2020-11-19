@@ -206,11 +206,6 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](auto) {},
             },
             e);
-
-        auto &pos = world.get<engine::d3::Position>(player);
-        m_camera.setCenter({pos.x, pos.y});
-        if (m_camera.isUpdated()) holder.instance->updateView(m_camera.getViewProjMatrix());
-
     } else if (m_state == State::IN_INVENTORY) {
         std::visit(
             engine::overloaded{
