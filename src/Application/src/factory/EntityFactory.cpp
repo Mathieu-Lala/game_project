@@ -210,6 +210,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<Classes>(player);
     world.emplace<SkillPoint>(player, 0);
     world.emplace<Facing>(player, glm::vec2(1.f, 0.f));
+    world.emplace<ControllerAxis>(player, glm::vec2(0.f, 0.f), glm::vec2(0.f, 0.f));
 
     engine::DrawableFactory::fix_color(world, player, {1.0f, 1.0f, 1.0f});
 

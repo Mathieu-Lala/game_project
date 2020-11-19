@@ -33,6 +33,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkOnPlayerBuyClass.connect<&GameLogic::on_class_bought>(*this);
     sinkOnPlayerLevelUp.connect<&GameLogic::on_player_level_up>(*this);
 
+    sinkGameUpdated.connect<&GameLogic::player_movement_update>(*this);
     sinkGameUpdated.connect<&GameLogic::ai_pursue>(*this);
     sinkGameUpdated.connect<&GameLogic::cooldown>(*this);
     sinkGameUpdated.connect<&GameLogic::effect>(*this);
@@ -44,18 +45,19 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
     sinkGameUpdated.connect<&GameLogic::boss_anim_update>(*this);
 
+    sinkAfterGameUpdated.connect<&GameLogic::update_camera>(*this);
+
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
     sinkGetKilled.connect<&GameLogic::entity_killed>(*this);
     sinkOnFloorChange.connect<&GameLogic::goToTheNextFloor>(*this);
 }
 
-auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir)
-    -> void
+auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir) -> void
 {
     constexpr auto kDebugKeyboardPlayerMS = 15;
 
-    switch(dir) {
+    switch (dir) {
     case Direction::UP: world.get<engine::d2::Velocity>(player).y = kDebugKeyboardPlayerMS; break;
     case Direction::DOWN: world.get<engine::d2::Velocity>(player).y = -kDebugKeyboardPlayerMS; break;
     case Direction::RIGHT: world.get<engine::d2::Velocity>(player).x = kDebugKeyboardPlayerMS; break;
@@ -150,6 +152,21 @@ auto game::GameLogic::on_class_bought(entt::registry &world, entt::entity player
 auto game::GameLogic::on_player_level_up(entt::registry &world, entt::entity player) -> void
 {
     world.get<SkillPoint>(player).count++;
+}
+
+auto game::GameLogic::player_movement_update(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+{
+    constexpr float kSpeed = 10;
+
+    auto player = m_game.player;
+
+    auto &vel = world.get<engine::d2::Velocity>(player);
+    const auto &axis = world.get<ControllerAxis>(player);
+
+    vel.x = axis.movement.x * kSpeed;
+    vel.y = -axis.movement.y * kSpeed;
+
+    spdlog::info("Vel : {}, {}", vel.x, vel.y);
 }
 
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
@@ -418,6 +435,17 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
     }
 }
 
+auto game::GameLogic::update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    static auto holder = engine::Core::Holder{};
+
+    auto player = m_game.player;
+
+    auto &pos = world.get<engine::d3::Position>(player);
+    m_game.getCamera().setCenter({pos.x, pos.y});
+    if (m_game.getCamera().isUpdated()) holder.instance->updateView(m_game.getCamera().getViewProjMatrix());
+}
+
 auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
 {
     // we keep it as static to be consister with previous frame on standstill
@@ -444,11 +472,10 @@ auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::Time
             anim = "run_left";
         else
             anim = "run_right";
+    else if (isFacingLeft)
+        anim = "hold_left";
     else
-        if (isFacingLeft)
-            anim = "hold_left";
-        else
-            anim = "hold_right";
+        anim = "hold_right";
 
     if (sp.current_animation != anim) {
         spdlog::info("Changing anim from {} to {}. Vel is {}, {}", sp.current_animation, anim, vel.x, vel.y);
@@ -494,6 +521,7 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
         world.destroy(killed);
     }
 }
+
 
 // todo : normalize direction
 auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)
