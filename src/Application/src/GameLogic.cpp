@@ -53,15 +53,13 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkOnFloorChange.connect<&GameLogic::goToTheNextFloor>(*this);
 }
 
-auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir) -> void
+auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed) -> void
 {
-    constexpr auto kDebugKeyboardPlayerMS = 15;
-
     switch (dir) {
-    case Direction::UP: world.get<engine::d2::Velocity>(player).y = kDebugKeyboardPlayerMS; break;
-    case Direction::DOWN: world.get<engine::d2::Velocity>(player).y = -kDebugKeyboardPlayerMS; break;
-    case Direction::RIGHT: world.get<engine::d2::Velocity>(player).x = kDebugKeyboardPlayerMS; break;
-    case Direction::LEFT: world.get<engine::d2::Velocity>(player).x = -kDebugKeyboardPlayerMS; break;
+    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
+    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f : 0.0f; break;
+    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1.0f : 0.0f; break;
+    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1.0f : 0.0f; break;
     default: break;
     }
 }
@@ -165,8 +163,6 @@ auto game::GameLogic::player_movement_update(entt::registry &world, [[maybe_unus
 
     vel.x = axis.movement.x * kSpeed;
     vel.y = -axis.movement.y * kSpeed;
-
-    spdlog::info("Vel : {}, {}", vel.x, vel.y);
 }
 
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void

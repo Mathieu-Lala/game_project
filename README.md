@@ -13,7 +13,7 @@ This repository contains the source code of the [game](src/Application) and his 
 
 ```sh
 $> ./tools/launch.sh -- --help
-ThePURGE 0.2.40
+ThePURGE 0.3.0
 Usage: ./engine_main [OPTIONS]
 
 Options:

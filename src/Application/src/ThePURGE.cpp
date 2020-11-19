@@ -68,9 +68,9 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
     static auto holder = engine::Core::Holder{};
-    constexpr auto kDebugKeyboardPlayerMS = 15;
 
-    const auto spell_map = []<typename T>(T k) {
+    const auto spell_map = []<typename T>(T k)
+    {
         struct SpellMap {
             int key;
             std::size_t id;
@@ -99,10 +99,14 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
                     case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
 
-                    case GLFW_KEY_I: m_logics->movement.publish(world, player, Direction::UP); break;    // go top
-                    case GLFW_KEY_K: m_logics->movement.publish(world, player, Direction::DOWN); break;  // go bottom
-                    case GLFW_KEY_L: m_logics->movement.publish(world, player, Direction::RIGHT); break; // go right
-                    case GLFW_KEY_J: m_logics->movement.publish(world, player, Direction::LEFT); break;  // go left
+                    case GLFW_KEY_I: m_logics->movement.publish(world, player, Direction::UP, true); break; // go top
+                    case GLFW_KEY_K:
+                        m_logics->movement.publish(world, player, Direction::DOWN, true);
+                        break; // go bottom
+                    case GLFW_KEY_L:
+                        m_logics->movement.publish(world, player, Direction::RIGHT, true);
+                        break; // go right
+                    case GLFW_KEY_J: m_logics->movement.publish(world, player, Direction::LEFT, true); break; // go left
                     case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
 
                     case GLFW_KEY_U:
@@ -120,18 +124,16 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 },
                 [&](const engine::Released<engine::Key> &key) {
                     switch (key.source.key) {
-                    case GLFW_KEY_I:
-                        world.get<engine::d2::Velocity>(player).y -= kDebugKeyboardPlayerMS;
-                        break; // Stop going top
+                    case GLFW_KEY_I: m_logics->movement.publish(world, player, Direction::UP, false); break; // go top
                     case GLFW_KEY_K:
-                        world.get<engine::d2::Velocity>(player).y += kDebugKeyboardPlayerMS;
-                        break; // Stop going bottom
+                        m_logics->movement.publish(world, player, Direction::DOWN, false);
+                        break; // go bottom
                     case GLFW_KEY_L:
-                        world.get<engine::d2::Velocity>(player).x -= kDebugKeyboardPlayerMS;
-                        break; // Stop going right
+                        m_logics->movement.publish(world, player, Direction::RIGHT, false);
+                        break; // go right
                     case GLFW_KEY_J:
-                        world.get<engine::d2::Velocity>(player).x += kDebugKeyboardPlayerMS;
-                        break; // Stop going left
+                        m_logics->movement.publish(world, player, Direction::LEFT, false);
+                        break; // go left
                     default: return;
                     }
                 },
@@ -155,8 +157,8 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
                         auto &axis = world.get<ControllerAxis>(player).movement;
 
-                        axis.x = static_cast<float>((*joystick)->axes[engine::Joystick::LSX]);
-                        axis.y = static_cast<float>((*joystick)->axes[engine::Joystick::LSY]);
+                        axis.x = (*joystick)->axes[engine::Joystick::LSX];
+                        axis.y = (*joystick)->axes[engine::Joystick::LSY];
 
                     } break;
                     case engine::Joystick::RSX:
@@ -165,27 +167,10 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
                         auto &axis = world.get<ControllerAxis>(player).aiming;
 
-                        axis.x = static_cast<float>((*joystick)->axes[engine::Joystick::RSX]);
-                        axis.y = static_cast<float>((*joystick)->axes[engine::Joystick::RSY]);
+                        axis.x = (*joystick)->axes[engine::Joystick::RSX];
+                        axis.y = (*joystick)->axes[engine::Joystick::RSY];
 
                     } break;
-                    // case engine::Joystick::Axis::LST:
-                    // case engine::Joystick::Axis::RST: { // todo : cleaner
-                    //    auto joystick = holder.instance->getJoystick(joy.source.id);
-
-                    //    if ((*joystick)->axes[engine::Joystick::Axis::LST] >= 0) {
-                    //        auto &spell = world.get<SpellSlots>(player).spells[2];
-                    //        if (!spell.has_value()) return;
-                    //        auto &vel = world.get<engine::d2::Velocity>(player);
-                    //        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                    //    }
-                    //    if ((*joystick)->axes[engine::Joystick::Axis::RST] >= 0) {
-                    //        auto &spell = world.get<SpellSlots>(player).spells[3];
-                    //        if (!spell.has_value()) return;
-                    //        auto &vel = world.get<engine::d2::Velocity>(player);
-                    //        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                    //    }
-                    //} break;
                     default: break;
                     }
                 },
