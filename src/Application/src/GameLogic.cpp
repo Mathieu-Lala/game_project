@@ -197,7 +197,8 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
             }
         }
 
-        out = {diff.x, diff.y};
+        auto result = glm::normalize(diff)* 7.f;
+        out =  {result.x, result.y} ;
 
         return true;
     };
@@ -505,11 +506,13 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
                                 : holder.instance->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
-        // todo : move xp dropped as component or something
-        if (world.has<entt::tag<"boss"_hs>>(killed))
-            addXp(world, killer, 5);
-        else
-            addXp(world, killer, 1);
+        if (world.has<entt::tag<"player"_hs>>(killer)) {
+            // todo : move xp dropped as component or something
+            if (world.has<entt::tag<"boss"_hs>>(killed))
+                addXp(world, killer, 5);
+            else
+                addXp(world, killer, 1);
+        }
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);

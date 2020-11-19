@@ -13,17 +13,17 @@
 #include "ThePURGE.hpp"
 
 int main(int argc, char **argv)
-try {
+/*try*/ {
     auto holder = engine::Core::Holder::init();
 
     holder.instance->game<game::ThePURGE>();
 
     return holder.instance->main(argc, argv);
 
-} catch (const std::exception &e) {
+}/* catch (const std::exception &e) {
     spdlog::error("Caught exception at main level: {}", e.what());
     throw;
 
 } catch (const int code) {
     return code;
-}
+}*/

@@ -12,6 +12,7 @@ struct SpellFactory {
         FIREBALL,
         PIERCING_ARROW,
 
+        ENEMY_ATTACK,
         DEBUG_GIANT_FIREBALL,
     };
 
@@ -25,6 +26,7 @@ struct SpellFactory {
     case ID::id: create<ID::id>(std::forward<Args>(args)...); break;
 
         switch (spell) {
+            MAP_SPELL(ENEMY_ATTACK);
             MAP_SPELL(SHOVEL_ATTACK);
             MAP_SPELL(SWORD_ATTACK);
             MAP_SPELL(FIREBALL);
@@ -42,9 +44,11 @@ struct SpellFactory {
     template<>        \
     auto SpellFactory::create<SpellFactory::ID::id>(entt::registry &, entt::entity, const glm::dvec2 &)->entt::entity
 
+DECL_SPEC(ENEMY_ATTACK);
 DECL_SPEC(SHOVEL_ATTACK);
 DECL_SPEC(SWORD_ATTACK);
 DECL_SPEC(FIREBALL);
+DECL_SPEC(DEBUG_GIANT_FIREBALL);
 DECL_SPEC(PIERCING_ARROW);
 
 #undef DECL_SPEC
