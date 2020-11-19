@@ -149,7 +149,7 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(entt::registry &wor
     world.emplace<Health>(e, 1.0f, 1.0f);
 
     auto &slots = world.emplace<SpellSlots>(e);
-    slots.spells[0] = Spell::create(SpellFactory::SHOVEL_ATTACK);
+    slots.spells[0] = Spell::create(SpellFactory::ENEMY_ATTACK);
 
     return e;
 }
@@ -170,11 +170,11 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
     world.emplace<engine::d2::HitboxSolid>(e, 1.5, 3.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     world.emplace<game::ViewRange>(e, 10.0f);
-    world.emplace<game::AttackRange>(e, 3.0f);
+    world.emplace<game::AttackRange>(e, 5.0f);
     world.emplace<game::AttackCooldown>(e, false, 2000ms, 0ms);
     world.emplace<game::Effect>(e, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
-    world.emplace<game::AttackDamage>(e, 5.0f);
-    world.emplace<Health>(e, 10.0f, 10.0f);
+    world.emplace<game::AttackDamage>(e, 1.0f);
+    world.emplace<Health>(e, 100.0f, 100.0f);
     engine::DrawableFactory::fix_color(world, e, {0.95f, 0.95f, 0.95f});
 
     // todo : add cache

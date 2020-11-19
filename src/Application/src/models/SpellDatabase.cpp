@@ -10,10 +10,11 @@ auto makeSpellDatabase() -> SpellDatabase
 {
     SpellDatabase db;
 
-    db[SpellFactory::ID::SHOVEL_ATTACK] = {2000ms};
-    db[SpellFactory::ID::SWORD_ATTACK] = {2000ms};
-    db[SpellFactory::ID::FIREBALL] = {5000ms};
-    db[SpellFactory::ID::PIERCING_ARROW] = {4000ms};
+    db[SpellFactory::ID::SHOVEL_ATTACK] = {500ms};
+    db[SpellFactory::ID::SWORD_ATTACK] = {500ms};
+    db[SpellFactory::ID::FIREBALL] = {1250ms};
+    db[SpellFactory::ID::ENEMY_ATTACK] = {1000ms};
+    db[SpellFactory::ID::PIERCING_ARROW] = {1000ms};
 
     return db;
 }
