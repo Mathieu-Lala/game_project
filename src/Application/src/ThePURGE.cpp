@@ -70,8 +70,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
     static auto holder = engine::Core::Holder{};
     constexpr auto kDebugKeyboardPlayerMS = 15;
 
-    const auto spell_map = []<typename T>(T k)
-    {
+    const auto spell_map = []<typename T>(T k) {
         struct SpellMap {
             int key;
             std::size_t id;
@@ -136,7 +135,10 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     default: return;
                     }
                 },
-                [&](const engine::TimeElapsed &dt) { m_logics->gameUpdated.publish(world, dt); },
+                [&](const engine::TimeElapsed &dt) {
+                    m_logics->gameUpdated.publish(world, dt);
+                    m_logics->afterGameUpdated.publish(world, dt);
+                },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     switch (joy.source.axis) {
                     case engine::Joystick::LST:
@@ -150,29 +152,40 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case engine::Joystick::LSX:
                     case engine::Joystick::LSY: {
                         auto joystick = holder.instance->getJoystick(joy.source.id);
-                        m_logics->joystickMovement.publish(
-                            world,
-                            player,
-                            {(static_cast<double>((*joystick)->axes[engine::Joystick::LSX]) / 10.0),
-                             -(static_cast<double>((*joystick)->axes[engine::Joystick::LSY]) / 10.0)});
+
+                        auto &axis = world.get<ControllerAxis>(player).movement;
+
+                        axis.x = static_cast<float>((*joystick)->axes[engine::Joystick::LSX]);
+                        axis.y = static_cast<float>((*joystick)->axes[engine::Joystick::LSY]);
+
                     } break;
-                    case engine::Joystick::Axis::RSX:
-                    case engine::Joystick::Axis::RSY: { // todo : cleaner
+                    case engine::Joystick::RSX:
+                    case engine::Joystick::RSY: {
                         auto joystick = holder.instance->getJoystick(joy.source.id);
 
-                        if ((*joystick)->axes[engine::Joystick::Axis::RSX] >= 0) {
-                            auto &spell = world.get<SpellSlots>(player).spells[2];
-                            if (!spell.has_value()) return;
-                            auto &vel = world.get<engine::d2::Velocity>(player);
-                            m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                        }
-                        if ((*joystick)->axes[engine::Joystick::Axis::RSY] >= 0) {
-                            auto &spell = world.get<SpellSlots>(player).spells[3];
-                            if (!spell.has_value()) return;
-                            auto &vel = world.get<engine::d2::Velocity>(player);
-                            m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
-                        }
+                        auto &axis = world.get<ControllerAxis>(player).aiming;
+
+                        axis.x = static_cast<float>((*joystick)->axes[engine::Joystick::RSX]);
+                        axis.y = static_cast<float>((*joystick)->axes[engine::Joystick::RSY]);
+
                     } break;
+                    // case engine::Joystick::Axis::LST:
+                    // case engine::Joystick::Axis::RST: { // todo : cleaner
+                    //    auto joystick = holder.instance->getJoystick(joy.source.id);
+
+                    //    if ((*joystick)->axes[engine::Joystick::Axis::LST] >= 0) {
+                    //        auto &spell = world.get<SpellSlots>(player).spells[2];
+                    //        if (!spell.has_value()) return;
+                    //        auto &vel = world.get<engine::d2::Velocity>(player);
+                    //        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                    //    }
+                    //    if ((*joystick)->axes[engine::Joystick::Axis::RST] >= 0) {
+                    //        auto &spell = world.get<SpellSlots>(player).spells[3];
+                    //        if (!spell.has_value()) return;
+                    //        auto &vel = world.get<engine::d2::Velocity>(player);
+                    //        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                    //    }
+                    //} break;
                     default: break;
                     }
                 },
@@ -279,7 +292,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
             widget::DebugCamera::draw(m_camera);
             widget::DebugAudio::draw();
 
-            //displaySoundDebugGui();
+            // displaySoundDebugGui();
         }
 #endif
     } else if (m_state == State::GAME_OVER) {
@@ -438,8 +451,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                 bool bought = std::find(boughtClasses.begin(), boughtClasses.end(), currentId) != boughtClasses.end();
                 bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
                 if (bought) {
-                    buyableClasses.insert(
-                        buyableClasses.end(), currentClass.children.begin(), currentClass.children.end());
+                    buyableClasses.insert(buyableClasses.end(), currentClass.children.begin(), currentClass.children.end());
                     if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(0, 1, 0, 0.5))) {
                         selectedClass = currentClass;
                         infoAdd = 1;

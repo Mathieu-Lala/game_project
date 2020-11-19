@@ -54,6 +54,7 @@ public: // signals
     entt::sigh<void(entt::registry &, entt::entity player)> onPlayerLevelUp;
 
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
+    entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> afterGameUpdated;
 
     entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell &)> castSpell;
 
@@ -80,6 +81,7 @@ private: // slots
     auto on_player_level_up(entt::registry &, entt::entity) -> void;
 
     decltype(gameUpdated)::sink_type sinkGameUpdated{gameUpdated};
+    auto player_movement_update(entt::registry &, const engine::TimeElapsed &) -> void;
     auto ai_pursue(entt::registry &, const engine::TimeElapsed &) -> void;
     auto enemies_try_attack(entt::registry &, const engine::TimeElapsed &) -> void;
     auto update_lifetime(entt::registry &, const engine::TimeElapsed &) -> void;
@@ -90,6 +92,8 @@ private: // slots
     auto exit_door_interraction(entt::registry &, const engine::TimeElapsed &) -> void;
     auto boss_anim_update(entt::registry &, const engine::TimeElapsed &) -> void;
     auto player_anim_update(entt::registry &, const engine::TimeElapsed &) -> void;
+
+    decltype(afterGameUpdated)::sink_type sinkAfterGameUpdated{afterGameUpdated};
 
     decltype(castSpell)::sink_type sinkCastSpell{castSpell};
     auto cast_attack(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;

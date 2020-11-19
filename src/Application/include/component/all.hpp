@@ -27,3 +27,4 @@
 #include "component/Facing.hpp"
 #include "component/Lifetime.hpp"
 #include "component/Particule.hpp"
+#include "component/ControllerAxis.hpp"
