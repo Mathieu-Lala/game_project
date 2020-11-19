@@ -40,7 +40,7 @@ auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTACK>(
     engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
     world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
-    world.emplace<engine::d2::Scale>(spell, 1, 1);
+    world.emplace<engine::d2::Scale>(spell, 1.0, 1.0);
     world.emplace<engine::d2::HitboxFloat>(spell, 0.2, 0.7);
     world.emplace<engine::Source>(spell, caster);
     return spell;

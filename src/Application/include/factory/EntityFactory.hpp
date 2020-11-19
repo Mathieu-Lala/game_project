@@ -8,7 +8,7 @@ namespace game {
 
 struct EntityFactory {
     enum ID {
-        ERROR = 0,
+        ID_ERROR = 0,
 
         LAYER_DEBUG = 1,
         DEBUG_TILE = LAYER_DEBUG * 10,
@@ -47,11 +47,11 @@ struct EntityFactory {
     static auto ID_from_string(const std::string_view in) noexcept -> ID
     {
         std::string compare{in};
-        std::transform(compare.begin(), compare.end(), compare.begin(), [](auto c) { return std::tolower(c); });
+        std::transform(compare.begin(), compare.end(), compare.begin(), [](auto c) { return static_cast<char>(std::tolower(c)); });
 
         for (const auto &i : magic_enum::enum_values<ID>()) {
             auto enum_name = std::string{magic_enum::enum_name(i)};
-            std::transform(enum_name.begin(), enum_name.end(), enum_name.begin(), [](auto c) { return std::tolower(c); });
+            std::transform(enum_name.begin(), enum_name.end(), enum_name.begin(), [](auto c) { return static_cast<char>(std::tolower(c)); });
             if (compare == enum_name) { return static_cast<ID>(i); }
         }
         return LAYER_DEBUG;
