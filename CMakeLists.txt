@@ -31,6 +31,7 @@ endif()
 add_library(project_warnings INTERFACE)
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
+add_compile_definitions(project_warnings PUBLIC GLM_FORCE_SILENT_WARNINGS)
 
 # Debugging flags
 include(cmake/Sanitizers.cmake)
