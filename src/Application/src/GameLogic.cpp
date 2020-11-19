@@ -274,7 +274,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 {
     static auto holder = engine::Core::Holder{};
 
-    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
+     for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
         const auto &spell_pos = world.get<engine::d3::Position>(spell);
         const auto &spell_box = world.get<engine::d2::HitboxFloat>(spell);
 
@@ -324,11 +324,11 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 
         if (world.has<entt::tag<"player"_hs>>(source)) {
             for (auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
-                apply_damage(enemy, spell, hitbox, spell_pos, source);
+                if (world.valid(spell)) apply_damage(enemy, spell, hitbox, spell_pos, source);
             }
         } else {
             for (auto &player : world.view<entt::tag<"player"_hs>>()) {
-                apply_damage(player, spell, hitbox, spell_pos, source);
+                if (world.valid(spell)) apply_damage(player, spell, hitbox, spell_pos, source);
             }
         }
     }

@@ -19,6 +19,7 @@ game::CommandHandler::CommandHandler() :
         {"buyClass", cmd_buyClass},
         {"getClasses", cmd_getClasses},
         {"getClassInfo", cmd_getClassInfo},
+        {"giantfireball", cmd_giantfireball},
     }
 {
 }
@@ -177,8 +178,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                 for (const auto &id : data->spells) spellNames << id << ", ";
 
                 std::stringstream childrenesNames;
-                for (const auto &id : data->children)
-                    childrenesNames << game.getClassDatabase().at(id).name << ", ";
+                for (const auto &id : data->children) childrenesNames << game.getClassDatabase().at(id).name << ", ";
 
                 console.info(
                     "Class {} :\n"
@@ -204,4 +204,9 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: getClassInfo name", e.what()));
         }
+    };
+
+game::CommandHandler::handler_t game::CommandHandler::cmd_giantfireball =
+    []([[maybe_unused]] entt::registry &world, ThePURGE &game, std::vector<std::string> &&, DebugConsole &) {
+        SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
     };

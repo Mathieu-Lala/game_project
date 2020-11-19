@@ -31,6 +31,7 @@ private:
     static handler_t cmd_buyClass;
     static handler_t cmd_getClasses;
     static handler_t cmd_getClassInfo;
+    static handler_t cmd_giantfireball;
 
     const std::unordered_map<std::string, handler_t> m_commands;
 };
