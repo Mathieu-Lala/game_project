@@ -173,7 +173,7 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
     world.emplace<game::AttackRange>(e, 3.0f);
     world.emplace<game::AttackCooldown>(e, false, 2000ms, 0ms);
     world.emplace<game::Effect>(e, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
-    world.emplace<game::AttackDamage>(e, 15.0f);
+    world.emplace<game::AttackDamage>(e, 5.0f);
     world.emplace<Health>(e, 10.0f, 10.0f);
     engine::DrawableFactory::fix_color(world, e, {0.95f, 0.95f, 0.95f});
 
@@ -184,8 +184,11 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
 
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + sp.file);
 
-    [[maybe_unused]] auto &slots = world.emplace<SpellSlots>(e);
-    // TODO: add some spells
+    auto &slots = world.emplace<SpellSlots>(e);
+
+    // TODO: actual boss spells
+    slots.spells[0] = Spell::create(SpellFactory::ID::SWORD_ATTACK);
+    slots.spells[1] = Spell::create(SpellFactory::ID::PIERCING_ARROW);
 
     return e;
 }

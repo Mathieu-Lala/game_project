@@ -10,7 +10,9 @@ struct SpellFactory {
         SHOVEL_ATTACK,
         SWORD_ATTACK,
         FIREBALL,
-        PIERCING_ARROW
+        PIERCING_ARROW,
+
+        DEBUG_GIANT_FIREBALL,
     };
 
     template<ID>
@@ -27,6 +29,8 @@ struct SpellFactory {
             MAP_SPELL(SWORD_ATTACK);
             MAP_SPELL(FIREBALL);
             MAP_SPELL(PIERCING_ARROW);
+
+            MAP_SPELL(DEBUG_GIANT_FIREBALL);
 
         default: assert(false && "unknown spell. Did you forget to map the enum value to factory function ?");
         }

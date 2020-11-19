@@ -117,6 +117,36 @@ auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &wo
     return spell;
 }
 
+
+template<>
+auto game::SpellFactory::create<game::SpellFactory::DEBUG_GIANT_FIREBALL>(entt::registry &world, entt::entity caster, const glm::dvec2 &)
+    -> entt::entity
+{
+    static auto holder = engine::Core::Holder{};
+
+    spdlog::info("debug Giant fireball");
+
+    const auto spell = world.create();
+    world.emplace<entt::tag<"spell"_hs>>(spell);
+    world.emplace<game::Lifetime>(spell, 2000ms);
+    world.emplace<game::AttackDamage>(spell, 999999.0f);
+    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
+    engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
+    auto &sp = world.emplace<engine::Spritesheet>(
+        spell,
+        engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/spells/fireball/fireball.data.json"));
+    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+
+    world.emplace<engine::d3::Position>(spell, 0.0, 0.0, -1.0); // note : why -1
+    world.emplace<engine::d2::Velocity>(spell, 0.0, 0.0);
+    world.emplace<engine::d2::Rotation>(spell, 0.0);
+    world.emplace<engine::d2::Scale>(spell, 200.0, 200.0);
+    world.emplace<engine::d2::HitboxFloat>(spell, 200.0, 200.0);
+    world.emplace<engine::Source>(spell, caster);
+    return spell;
+}
+
+
 template<>
 auto game::SpellFactory::create<game::SpellFactory::PIERCING_ARROW>(
     entt::registry &world, entt::entity caster, const glm::dvec2 &direction) -> entt::entity
