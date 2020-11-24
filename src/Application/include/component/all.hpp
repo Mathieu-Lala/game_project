@@ -8,6 +8,7 @@
 #include <Engine/component/Hitbox.hpp>
 #include <Engine/component/Source.hpp>
 #include <Engine/component/Spritesheet.hpp>
+#include <Engine/component/Lifetime.hpp>
 
 #include "component/AttackRange.hpp"
 #include "component/AttackDamage.hpp"
@@ -25,6 +26,5 @@
 #include "component/SkillPoint.hpp"
 
 #include "component/Facing.hpp"
-#include "component/Lifetime.hpp"
 #include "component/Particule.hpp"
 #include "component/ControllerAxis.hpp"

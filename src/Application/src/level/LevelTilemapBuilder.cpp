@@ -1,3 +1,5 @@
+#include <numbers>
+
 #include "level/LevelTilemapBuilder.hpp"
 #include "factory/EntityFactory.hpp"
 
@@ -16,7 +18,7 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     if (tile == TileEnum::NONE) return;
 
     auto size = getTileSize(x, y);
-    //auto size = glm::ivec2(1, 1); // uncomment this line to get proper textures, but massive FPS drops
+    // auto size = glm::ivec2(1, 1); // uncomment this line to get proper textures, but massive FPS drops
 
     for (auto clearY = y; clearY < y + size.y; ++clearY) {
         for (auto clearX = x; clearX < x + size.x; ++clearX) {
@@ -28,8 +30,6 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     glm::vec2 tilePos{static_cast<float>(x), static_cast<float>(y)};
 
     tilePos += tileSize / 2.f;
-
-    constexpr auto kPI = 3.1415926535897;
 
     switch (tile) {
     case TileEnum::FLOOR_NORMAL_ROOM:
@@ -43,12 +43,12 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
 
     case TileEnum::EXIT_DOOR_FACING_NORTH: {
         auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
-        world.get<engine::d2::Rotation>(e).angle = kPI;
+        world.get<engine::d2::Rotation>(e).angle = std::numbers::pi_v<double>;
         break;
     }
     case TileEnum::EXIT_DOOR_FACING_EAST: {
         auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
-        world.get<engine::d2::Rotation>(e).angle = kPI / 2;
+        world.get<engine::d2::Rotation>(e).angle = std::numbers::pi_v<double> / 2;
         break;
     }
     case TileEnum::EXIT_DOOR_FACING_SOUTH: {
@@ -58,7 +58,7 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
     }
     case TileEnum::EXIT_DOOR_FACING_WEST: {
         auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
-        world.get<engine::d2::Rotation>(e).angle = 3 * kPI / 2;
+        world.get<engine::d2::Rotation>(e).angle = 3 * std::numbers::pi_v<double> / 2;
         break;
     }
 

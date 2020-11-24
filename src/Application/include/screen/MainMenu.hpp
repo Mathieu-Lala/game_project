@@ -15,7 +15,7 @@ struct MainMenu {
         ImGui::Begin("Menu loading", nullptr, ImGuiWindowFlags_NoDecoration);
 
         if (ImGui::Button("Start the game")) {
-            game.logics()->onGameStarted.publish(world);
+            game.logics()->onGameStart.publish(world);
             game.setState(ThePURGE::State::IN_GAME);
         }
 

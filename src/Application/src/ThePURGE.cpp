@@ -99,14 +99,16 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
                     case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
 
-                    case GLFW_KEY_I: m_logics->movement.publish(world, player, Direction::UP, true); break; // go top
+                    case GLFW_KEY_I: m_logics->onMovement.publish(world, player, Direction::UP, true); break; // go top
                     case GLFW_KEY_K:
-                        m_logics->movement.publish(world, player, Direction::DOWN, true);
+                        m_logics->onMovement.publish(world, player, Direction::DOWN, true);
                         break; // go bottom
                     case GLFW_KEY_L:
-                        m_logics->movement.publish(world, player, Direction::RIGHT, true);
+                        m_logics->onMovement.publish(world, player, Direction::RIGHT, true);
                         break; // go right
-                    case GLFW_KEY_J: m_logics->movement.publish(world, player, Direction::LEFT, true); break; // go left
+                    case GLFW_KEY_J:
+                        m_logics->onMovement.publish(world, player, Direction::LEFT, true);
+                        break; // go left
                     case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
 
                     case GLFW_KEY_U:
@@ -117,29 +119,29 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         if (!spell.has_value()) break;
 
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        m_logics->onSpellCast.publish(world, player, {vel.x, vel.y}, spell.value());
                     } break;
                     default: return;
                     }
                 },
                 [&](const engine::Released<engine::Key> &key) {
                     switch (key.source.key) {
-                    case GLFW_KEY_I: m_logics->movement.publish(world, player, Direction::UP, false); break; // go top
+                    case GLFW_KEY_I: m_logics->onMovement.publish(world, player, Direction::UP, false); break; // go top
                     case GLFW_KEY_K:
-                        m_logics->movement.publish(world, player, Direction::DOWN, false);
+                        m_logics->onMovement.publish(world, player, Direction::DOWN, false);
                         break; // go bottom
                     case GLFW_KEY_L:
-                        m_logics->movement.publish(world, player, Direction::RIGHT, false);
+                        m_logics->onMovement.publish(world, player, Direction::RIGHT, false);
                         break; // go right
                     case GLFW_KEY_J:
-                        m_logics->movement.publish(world, player, Direction::LEFT, false);
+                        m_logics->onMovement.publish(world, player, Direction::LEFT, false);
                         break; // go left
                     default: return;
                     }
                 },
                 [&](const engine::TimeElapsed &dt) {
-                    m_logics->gameUpdated.publish(world, dt);
-                    m_logics->afterGameUpdated.publish(world, dt);
+                    m_logics->onGameUpdate.publish(world, dt);
+                    m_logics->onGameUpdateAfter.publish(world, dt);
                 },
                 [&](const engine::Moved<engine::JoystickAxis> &joy) {
                     switch (joy.source.axis) {
@@ -149,7 +151,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         auto &spell = world.get<SpellSlots>(player).spells[id];
                         if (!spell.has_value()) break;
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        m_logics->onSpellCast.publish(world, player, {vel.x, vel.y}, spell.value());
                     } break;
                     case engine::Joystick::LSX:
                     case engine::Joystick::LSY: {
@@ -183,7 +185,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         auto &spell = world.get<SpellSlots>(player).spells[id];
                         if (!spell.has_value()) break;
                         auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->castSpell.publish(world, player, {vel.x, vel.y}, spell.value());
+                        m_logics->onSpellCast.publish(world, player, {vel.x, vel.y}, spell.value());
                     } break;
                     default: return;
                     }
@@ -236,7 +238,7 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 [&](const engine::Pressed<engine::JoystickButton> &joy) {
                     switch (joy.source.button) {
                     case engine::Joystick::CENTER2: {
-                        logics()->onGameStarted.publish(world);
+                        logics()->onGameStart.publish(world);
                         setState(ThePURGE::State::IN_GAME);
                     } break;
                     default: break;
@@ -392,7 +394,7 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                     }
                     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                     if (ImGui::Button("Add class")) {
-                        m_logics->onPlayerBuyClass.publish(world, player, selectedClass.value());
+                        m_logics->onPlayerPurchase.publish(world, player, selectedClass.value());
                         infoAdd = 1;
                         if (choosetrigger == false) {
                             spellmapped++;

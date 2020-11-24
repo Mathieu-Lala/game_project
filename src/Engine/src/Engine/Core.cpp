@@ -21,6 +21,7 @@
 #include "Engine/component/Color.hpp"
 #include "Engine/component/Spritesheet.hpp"
 #include "Engine/component/VBOTexture.hpp"
+#include "Engine/component/Lifetime.hpp"
 
 #include "Engine/Event/Event.hpp"
 #include "Engine/Graphics/Shader.hpp"
@@ -288,6 +289,16 @@ auto engine::Core::main(int argc, char **argv) -> int
 auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
+
+    for (const auto &i : m_world.view<Lifetime>()) {
+        auto &lifetime = m_world.get<Lifetime>(i);
+
+        if (t.elapsed < lifetime.remaining_lifetime) {
+            lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed);
+        } else {
+            m_world.destroy(i);
+        }
+    }
 
     // should have only one entity cooldown
     m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {

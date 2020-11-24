@@ -30,7 +30,7 @@ auto game::SpellFactory::create<game::SpellFactory::ENEMY_ATTACK>(
     holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/spells/stick.wav")->play();
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 200ms);
+    world.emplace<engine::Lifetime>(spell, 200ms);
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
@@ -62,7 +62,7 @@ auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTACK>(
     holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/spells/stick.wav")->play();
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 200ms);
+    world.emplace<engine::Lifetime>(spell, 200ms);
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
@@ -97,7 +97,7 @@ auto game::SpellFactory::create<game::SpellFactory::SWORD_ATTACK>(
         ->play();
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 200ms);
+    world.emplace<engine::Lifetime>(spell, 200ms);
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
@@ -132,7 +132,7 @@ auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &wo
 
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 2000ms);
+    world.emplace<engine::Lifetime>(spell, 2000ms);
     world.emplace<game::AttackDamage>(spell, attack_damage.damage * 1.5f);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
@@ -161,7 +161,7 @@ auto game::SpellFactory::create<game::SpellFactory::DEBUG_GIANT_FIREBALL>(entt::
 
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 2000ms);
+    world.emplace<engine::Lifetime>(spell, 2000ms);
     world.emplace<game::AttackDamage>(spell, 999999.0f);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
@@ -197,7 +197,7 @@ auto game::SpellFactory::create<game::SpellFactory::PIERCING_ARROW>(
 
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 1000ms);
+    world.emplace<engine::Lifetime>(spell, 1000ms);
     world.emplace<game::AttackDamage>(spell, attack_damage.damage * 1.25f);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});

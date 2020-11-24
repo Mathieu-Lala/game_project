@@ -35,7 +35,7 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
         // note : see std::transform
         for (const auto &spell : data["spells"]) { spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>())); }
 
-        const auto currentID = EntityFactory::ID_from_string(name);
+        const auto currentID = EntityFactory::toID(name);
 
         database[currentID] = Class{
             .id = currentID,
