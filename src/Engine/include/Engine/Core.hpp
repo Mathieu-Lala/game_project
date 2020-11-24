@@ -9,7 +9,9 @@
 #include <glm/matrix.hpp>
 
 #include "Engine/resources/LoaderColor.hpp"
+#include "Engine/resources/LoaderVBOTexture.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
+
 #include "Engine/Event/Event.hpp"
 #include "Engine/Settings.hpp"
 #include "Engine/audio/AudioManager.hpp"
@@ -150,8 +152,9 @@ private:
 
     std::unique_ptr<JoystickManager> m_joystickManager;
 
-    CacheColor m_colors;
-    CacheTexture m_textures;
+    entt::resource_cache<Color> m_colors;
+    entt::resource_cache<VBOTexture> m_vbo_textures;
+    entt::resource_cache<Texture> m_textures;
 
     std::unique_ptr<Shader> m_shader_colored;
     std::unique_ptr<Shader> m_shader_colored_textured;
@@ -170,6 +173,9 @@ private:
 
 template<>
 auto Core::getCache() noexcept -> entt::resource_cache<Color> &;
+
+template<>
+auto Core::getCache() noexcept -> entt::resource_cache<VBOTexture> &;
 
 template<>
 auto Core::getCache() noexcept -> entt::resource_cache<Texture> &;

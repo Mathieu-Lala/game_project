@@ -6,7 +6,7 @@
 #include <Engine/audio/AudioManager.hpp>
 #include <Engine/Settings.hpp>
 #include <Engine/component/Color.hpp>
-#include <Engine/component/Texture.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 

@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include <Engine/component/Color.hpp>
-#include <Engine/component/Texture.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
 
 game::DebugConsole::DebugConsole(ThePURGE &game) : m_game(game)

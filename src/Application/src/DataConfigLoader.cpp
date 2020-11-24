@@ -10,7 +10,7 @@
 #include <Engine/Settings.hpp>
 #include <Engine/audio/AudioManager.hpp>
 #include <Engine/component/Color.hpp>
-#include <Engine/component/Texture.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
 
 #include "DataConfigLoader.hpp"
