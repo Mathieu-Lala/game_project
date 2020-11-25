@@ -445,17 +445,17 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
                 bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
                 if (bought) {
                     buyableClasses.insert(buyableClasses.end(), currentClass.children.begin(), currentClass.children.end());
-                    if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(0, 1, 0, 0.5))) {
+                    if (helper::ImGui::Button(currentClass.name, ImVec4(0, 1, 0, 0.5))) {
                         selectedClass = currentClass;
                         infoAdd = 1;
                     }
                 } else if (buyable) {
-                    if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(1, 1, 0, 0.5))) {
+                    if (helper::ImGui::Button(currentClass.name, ImVec4(1, 1, 0, 0.5))) {
                         selectedClass = currentClass;
                         infoAdd = 2;
                     }
                 } else {
-                    if (helper::ImGui::Button(currentClass.name.c_str(), ImVec4(1, 0, 0, 0.5))) {
+                    if (helper::ImGui::Button(currentClass.name, ImVec4(1, 0, 0, 0.5))) {
                         selectedClass = currentClass;
                         infoAdd = 3;
                     }

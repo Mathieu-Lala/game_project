@@ -14,10 +14,10 @@ inline void Text(std::string_view format, Param &&... param)
     ::ImGui::TextUnformatted(fmt::format(format, std::forward<Param>(param)...).c_str());
 }
 
-inline bool Button(std::string id, ImVec4 selectedColor) { 
-    bool pressed;
+inline bool Button(std::string_view label, ImVec4 selectedColor)
+{
     ::ImGui::PushStyleColor(ImGuiCol_Button, selectedColor);
-    pressed =::ImGui::Button(id.c_str());
+    const auto pressed = ::ImGui::Button(label.data());
     ::ImGui::PopStyleColor(1);
     return pressed;
 }
