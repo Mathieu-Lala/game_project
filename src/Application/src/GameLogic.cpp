@@ -551,9 +551,6 @@ auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caste
         spell.cd.remaining_cooldown = spell.cd.cooldown;
         spell.cd.is_in_cooldown = true;
     }
-
-    const auto &aim = world.get<AimingDirection>(caster).dir;
-    spdlog::info("dir : {}, {}, actual : {}, {}", direction.x, direction.y, aim.x, aim.y);
 }
 
 auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
