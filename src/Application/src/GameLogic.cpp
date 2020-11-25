@@ -6,7 +6,7 @@
 #include <Engine/audio/AudioManager.hpp>
 #include <Engine/Settings.hpp>
 #include <Engine/component/Color.hpp>
-#include <Engine/component/Texture.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
@@ -24,54 +24,54 @@ using namespace std::chrono_literals;
 game::GameLogic::GameLogic(ThePURGE &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
-    sinkMovement.connect<&GameLogic::move>(*this);
+    sinkMovement.connect<&GameLogic::slots_move>(*this);
     // sinkJoystickMovement.connect<&GameLogic::joystickMove>(*this);
 
-    sinkOnGameStarted.connect<&GameLogic::on_game_started>(*this);
+    sinkOnGameStarted.connect<&GameLogic::slots_game_start>(*this);
 
-    sinkOnPlayerBuyClass.connect<&GameLogic::apply_class_to_player>(*this);
-    sinkOnPlayerBuyClass.connect<&GameLogic::on_class_bought>(*this);
-    sinkOnPlayerLevelUp.connect<&GameLogic::on_player_level_up>(*this);
+    sinkOnPlayerBuyClass.connect<&GameLogic::slots_apply_classes>(*this);
+    sinkOnPlayerBuyClass.connect<&GameLogic::slots_purchase_classes>(*this);
+    sinkOnPlayerLevelUp.connect<&GameLogic::slots_level_up>(*this);
 
-    sinkGameUpdated.connect<&GameLogic::player_movement_update>(*this);
-    sinkGameUpdated.connect<&GameLogic::ai_pursue>(*this);
-    sinkGameUpdated.connect<&GameLogic::cooldown>(*this);
-    sinkGameUpdated.connect<&GameLogic::effect>(*this);
-    sinkGameUpdated.connect<&GameLogic::enemies_try_attack>(*this);
-    sinkGameUpdated.connect<&GameLogic::update_lifetime>(*this);
-    sinkGameUpdated.connect<&GameLogic::update_particule>(*this);
-    sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
-    sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_player_movement>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_ai_movement>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_ai_attack>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_particle>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_cooldown>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_effect>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_check_collision>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_check_floor_change>(*this);
+
     sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
     sinkGameUpdated.connect<&GameLogic::boss_anim_update>(*this);
 
-    sinkAfterGameUpdated.connect<&GameLogic::update_camera>(*this);
-    sinkAfterGameUpdated.connect<&GameLogic::update_player_sight>(*this);
+    sinkAfterGameUpdated.connect<&GameLogic::slots_update_camera>(*this);
+    sinkAfterGameUpdated.connect<&GameLogic::slots_update_player_sigh>(*this);
 
-    sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
+    sinkCastSpell.connect<&GameLogic::slots_cast_spell>(*this);
 
-    sinkGetKilled.connect<&GameLogic::entity_killed>(*this);
-    sinkOnFloorChange.connect<&GameLogic::goToTheNextFloor>(*this);
+    sinkGetKilled.connect<&GameLogic::slots_kill_entity>(*this);
+    sinkOnFloorChange.connect<&GameLogic::slots_change_floor>(*this);
 }
 
-auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
+auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
     -> void
 {
     switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f : 0.0f; break;
+    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f : 0.0f; break;
+    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
     case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1.0f : 0.0f; break;
     case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1.0f : 0.0f; break;
     default: break;
     }
 }
 
-auto game::GameLogic::joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
-{
-    world.get<engine::d2::Acceleration>(player) = accel;
-}
+// auto game::GameLogic::joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
+//{
+//    world.get<engine::d2::Acceleration>(player) = accel;
+//}
 
-auto game::GameLogic::on_game_started(entt::registry &world) -> void
+auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
 
@@ -82,7 +82,7 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
     m_game.getMusic()->play();
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    apply_class_to_player(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+    onPlayerPurchase.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
 
     auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(world, {}, {});
 
@@ -97,7 +97,7 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
     onFloorChange.publish(world);
 }
 
-auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity player, const Class &newClass) -> void
+auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity player, const Class &newClass) -> void
 {
     static auto holder = engine::Core::Holder{};
 
@@ -150,17 +150,18 @@ auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity 
     }
 }
 
-auto game::GameLogic::on_class_bought(entt::registry &world, entt::entity player, const Class &) -> void
+auto game::GameLogic::slots_purchase_classes(entt::registry &world, entt::entity player, const Class &) -> void
 {
     world.get<SkillPoint>(player).count--;
 }
 
-auto game::GameLogic::on_player_level_up(entt::registry &world, entt::entity player) -> void
+auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity) -> void
 {
-    world.get<SkillPoint>(player).count++;
+    world.get<SkillPoint>(entity).count++;
 }
 
-auto game::GameLogic::player_movement_update(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt)
+    -> void
 {
     constexpr float kSpeed = 10;
 
@@ -173,7 +174,7 @@ auto game::GameLogic::player_movement_update(entt::registry &world, [[maybe_unus
     vel.y = axis.movement.y * kSpeed;
 }
 
-auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     const auto pursue = [&world](entt::entity entity, entt::entity target, engine::d2::Velocity &out) {
         const auto &pos = world.get<engine::d3::Position>(entity);
@@ -213,7 +214,7 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
     }
 }
 
-auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
 
@@ -234,7 +235,7 @@ auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed 
     });
 }
 
-auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
     auto player_health = world.get<game::Health>(m_game.player);
 
@@ -253,7 +254,7 @@ auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &d
     });
 }
 
-auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_ai_attack(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     for (auto enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange>()) {
         // TODO: Add brain to AI. current strategy : spam every spell towards the player
@@ -269,13 +270,13 @@ auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]]
             auto &attack_range = world.get<AttackRange>(enemy);
 
             if (glm::length(diff) <= attack_range.range) {
-                castSpell.publish(world, enemy, {diff.x, diff.y}, spell.value());
+                onSpellCast.publish(world, enemy, {diff.x, diff.y}, spell.value());
             }
         }
     }
 }
 
-auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     static auto holder = engine::Core::Holder{};
 
@@ -302,9 +303,8 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
             auto &entity_health = world.get<Health>(entity);
             auto &spell_damage = world.get<AttackDamage>(spell);
 
-            // todo : publish player_took_damage instead
+            // todo : publish entity_took_damage instead
             entity_health.current -= spell_damage.damage;
-            spdlog::warn("player took damage");
 
             if (world.has<entt::tag<"player"_hs>>(entity)) {
                 holder.instance->setScreenshake(true, 300ms);
@@ -355,21 +355,8 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
         });
 }
 
-// note : this should be in Core
-auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void
-{
-    for (auto &i : world.view<Lifetime>()) {
-        auto &lifetime = world.get<Lifetime>(i);
-
-        if (dt.elapsed < lifetime.remaining_lifetime) {
-            lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-        } else {
-            world.destroy(i);
-        }
-    }
-}
-
-auto game::GameLogic::update_particule(entt::registry &world, const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_particle(
+    [[maybe_unused]] entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
     for (const auto &i : world.view<Particule>()) {
@@ -390,18 +377,27 @@ auto game::GameLogic::update_particule(entt::registry &world, const engine::Time
     }
 }
 
-auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine::TimeElapsed &) -> void
+auto game::GameLogic::slots_check_floor_change(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    const auto &door = world.view<entt::tag<"exit_door"_hs>>()[0];
-    const auto &doorPosition = world.get<engine::d3::Position>(door);
+    world.view<KeyPicker, engine::d3::Position>().each(
+        [door = world.view<entt::tag<"exit_door"_hs>>()[0], &world, this](const auto &picker, const auto &pos) {
+            if (!picker.hasKey) return;
 
-    const auto doorUsageSystem = [&](const KeyPicker &keypicker, const engine::d3::Position &playerPos) {
-        if (!keypicker.hasKey) return;
+            constexpr auto kDoorInteractionRange = 2.0;
+            if (engine::d3::distance(world.get<engine::d3::Position>(door), pos) < kDoorInteractionRange)
+                onFloorChange.publish(world);
+        });
+}
 
-        if (engine::d3::distance(doorPosition, playerPos) < kDoorInteractionRange) onFloorChange.publish(world);
-    };
+auto game::GameLogic::slots_update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    static auto holder = engine::Core::Holder{};
 
-    world.view<KeyPicker, engine::d3::Position>().each(doorUsageSystem);
+    auto player = m_game.player;
+
+    auto &pos = world.get<engine::d3::Position>(player);
+    m_game.getCamera().setCenter({pos.x, pos.y});
+    if (m_game.getCamera().isUpdated()) holder.instance->updateView(m_game.getCamera().getViewProjMatrix());
 }
 
 auto game::GameLogic::player_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
@@ -440,10 +436,10 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
     }
 }
 
-auto game::GameLogic::update_player_sight(entt::registry &world, const engine::TimeElapsed &) -> void
+auto game::GameLogic::slots_update_player_sigh(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    constexpr float kSightMaxDistance = 1.5;
-    constexpr float kSightScaleMultiplier = 0.75;
+    constexpr auto kSightMaxDistance = 1.5;
+    constexpr auto kSightScaleMultiplier = 0.75;
 
     auto player = m_game.player;
     auto sight = world.get<AimSight>(player).entity;
@@ -457,29 +453,16 @@ auto game::GameLogic::update_player_sight(entt::registry &world, const engine::T
         aim.y = newAim.y;
     }
 
-
     const auto &playerPos = world.get<engine::d3::Position>(player);
     auto &sightPos = world.get<engine::d3::Position>(sight);
     auto &sightScale = world.get<engine::d2::Scale>(sight);
 
-    sightPos.x = playerPos.x + kSightMaxDistance * aimInput.x;
-    sightPos.y = playerPos.y + kSightMaxDistance * aimInput.y;
+    sightPos.x = playerPos.x + kSightMaxDistance * static_cast<double>(aimInput.x);
+    sightPos.y = playerPos.y + kSightMaxDistance * static_cast<double>(aimInput.y);
 
-    auto scale = glm::length(aimInput);
+    const auto scale = static_cast<double>(glm::length(aimInput));
     sightScale.x = scale * kSightScaleMultiplier;
     sightScale.y = scale * kSightScaleMultiplier;
-}
-
-
-auto game::GameLogic::update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
-{
-    static auto holder = engine::Core::Holder{};
-
-    auto player = m_game.player;
-
-    auto &pos = world.get<engine::d3::Position>(player);
-    m_game.getCamera().setCenter({pos.x, pos.y});
-    if (m_game.getCamera().isUpdated()) holder.instance->updateView(m_game.getCamera().getViewProjMatrix());
 }
 
 auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
@@ -520,7 +503,7 @@ auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::Time
     }
 }
 
-auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
+auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
     static auto holder = engine::Core::Holder{};
 
@@ -560,9 +543,7 @@ auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, 
     }
 }
 
-
-// todo : normalize direction
-auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)
+auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)
     -> void
 {
     if (!spell.cd.is_in_cooldown) {
@@ -572,7 +553,7 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, co
     }
 }
 
-auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void
+auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
 {
     world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });

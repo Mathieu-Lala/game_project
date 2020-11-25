@@ -15,12 +15,12 @@ public:
     virtual ~Game() = default;
 
     /**
-     * function called at the beginning of the game
+     * function called when the game is created
      */
     virtual auto onCreate(entt::registry &) -> void = 0;
 
     /**
-     * function called at the end of the game
+     * function called at the game is destroyed
      */
     virtual auto onDestroy(entt::registry &) -> void = 0;
 
@@ -30,7 +30,7 @@ public:
     virtual auto onUpdate(entt::registry &, const Event &) -> void = 0;
 
     /**
-     * function called for the rendering of the GUI
+     * function called at every frame, should call the GUI rendering
      */
     virtual auto drawUserInterface(entt::registry &) -> void = 0;
 

@@ -1,5 +1,5 @@
 #include <Engine/component/Color.hpp>
-#include <Engine/component/Texture.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/component/Rotation.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>

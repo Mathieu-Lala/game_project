@@ -2,7 +2,7 @@
 #include <numbers>
 
 #include <Engine/component/Color.hpp>
-#include <Engine/component/Texture.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
@@ -21,11 +21,13 @@ auto game::ParticuleFactory::create<game::Particule::ID::HITMARKER>(entt::regist
         const auto particule_pos = pos + glm::vec2{std::cos(angle), std::sin(angle)};
 
         auto e = world.create();
-        world.emplace<engine::d3::Position>(e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
+        // note : i think there is a probleme here !!!
+        world.emplace<engine::d3::Position>(e, particule_pos.x, particule_pos.y, 1);
+            //EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
         world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
         world.emplace<engine::d2::Velocity>(e, (particule_pos.x - pos.x) * speed, (particule_pos.y - pos.y) * speed);
         world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-        world.emplace<Lifetime>(e, 600ms);
+        world.emplace<engine::Lifetime>(e, 600ms);
         world.emplace<Particule>(e, Particule::HITMARKER);
         engine::DrawableFactory::fix_color(world, e, {255.0f / 255.0f, 92.0f / 255.0f, 103.0f / 255.0f});
     }

@@ -2,10 +2,10 @@
 
 #include <chrono>
 
-namespace game {
+namespace engine {
 
 struct Lifetime {
     std::chrono::milliseconds remaining_lifetime;
 };
 
-} // namespace game
+} // namespace engine

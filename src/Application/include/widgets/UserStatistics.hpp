@@ -9,7 +9,16 @@ namespace game {
 struct UserStatistics {
     static auto draw(ThePURGE &game, entt::registry &world) -> void
     {
-        static GLuint texture = engine::DrawableFactory::createtexture("data/textures/InfoHud.png");
+        auto holder = engine::Core::Holder{};
+        static GLuint texture =
+            holder.instance->getCache<engine::Texture>()
+                .load<engine::LoaderTexture>(
+                    entt::hashed_string{fmt::format(
+                                            "resource/texture/identifier/{}",
+                                            holder.instance->settings().data_folder + "/textures/InfoHud.png")
+                                            .data()},
+                    holder.instance->settings().data_folder + "/textures/InfoHud.png")
+                ->id;
 
         const auto infoHealth = world.get<Health>(game.player);
         const auto HP = infoHealth.current / infoHealth.max;

@@ -6,7 +6,7 @@
 
 namespace engine {
 
-struct Texture {
+struct VBOTexture {
     // clang-format off
     std::array<float, 8ul> vertices = {
         0.0f, 1.0f, // top left
@@ -17,17 +17,13 @@ struct Texture {
     // clang-format on
 
     std::uint32_t VBO;
-    std::uint32_t texture;
-
-    std::int32_t width;
-    std::int32_t height;
-    std::int32_t channels;
-    std::uint8_t *px;
+//    std::uint32_t texture;
+    std::uint32_t id;
     bool mirrored;
 
-    static auto ctor(const std::string_view path, const std::array<float, 4ul> &) -> Texture;
+    static auto ctor(const std::string_view path, const std::array<float, 4ul> &) -> VBOTexture;
 
-    static auto dtor(Texture *ptr) -> void;
+    static auto dtor(VBOTexture *ptr) -> void;
 };
 
 } // namespace engine

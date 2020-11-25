@@ -20,7 +20,8 @@
 #include "Engine/component/Hitbox.hpp"
 #include "Engine/component/Color.hpp"
 #include "Engine/component/Spritesheet.hpp"
-#include "Engine/component/Texture.hpp"
+#include "Engine/component/VBOTexture.hpp"
+#include "Engine/component/Lifetime.hpp"
 
 #include "Engine/Event/Event.hpp"
 #include "Engine/Graphics/Shader.hpp"
@@ -289,6 +290,16 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
+    for (const auto &i : m_world.view<Lifetime>()) {
+        auto &lifetime = m_world.get<Lifetime>(i);
+
+        if (t.elapsed < lifetime.remaining_lifetime) {
+            lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed);
+        } else {
+            m_world.destroy(i);
+        }
+    }
+
     // should have only one entity cooldown
     m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
         if (!cd.is_in_cooldown) return;
@@ -324,7 +335,8 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         sprite.current_frame++;
         sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).size());
 
-        auto &texture = m_world.get<Texture>(i);
+        auto &vbo_texture = m_world.get<VBOTexture>(i);
+        auto &texture = *getCache<Texture>().handle(vbo_texture.id);
 
         DrawableFactory::fix_texture(
             m_world,
@@ -430,7 +442,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         m_shader_colored->use();
         m_shader_colored->setUniform<float>("time", static_cast<float>(tmp));
-        m_world.view<Drawable, Color, d3::Position, d2::Scale, d2::Rotation>(entt::exclude<Texture>)
+        m_world.view<Drawable, Color, d3::Position, d2::Scale, d2::Rotation>(entt::exclude<VBOTexture>)
             .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale, auto &rot) {
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
@@ -443,7 +455,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         m_shader_colored_textured->use();
         m_shader_colored_textured->setUniform<float>("time", static_cast<float>(tmp));
-        m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale, d2::Rotation>().each(
+        m_world.view<Drawable, Color, VBOTexture, d3::Position, d2::Scale, d2::Rotation>().each(
             [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale, auto &rot) {
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
@@ -451,7 +463,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored_textured->setUniform("model", model);
                 m_shader_colored_textured->setUniform("mirrored", texture.mirrored);
-                ::glBindTexture(GL_TEXTURE_2D, texture.texture);
+                ::glBindTexture(GL_TEXTURE_2D, getCache<Texture>().handle(texture.id)->id);
                 ::glBindVertexArray(drawable.VAO);
                 ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
             });
@@ -492,6 +504,12 @@ template<>
 auto engine::Core::getCache() noexcept -> entt::resource_cache<Color> &
 {
     return m_colors;
+}
+
+template<>
+auto engine::Core::getCache() noexcept -> entt::resource_cache<VBOTexture> &
+{
+    return m_vbo_textures;
 }
 
 template<>

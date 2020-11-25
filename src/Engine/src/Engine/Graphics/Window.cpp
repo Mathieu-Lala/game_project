@@ -10,7 +10,7 @@
 #include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Settings.hpp"           // note : should not require this header here
 #include "Engine/component/Color.hpp"
-#include "Engine/component/Texture.hpp"
+#include "Engine/component/VBOTexture.hpp"
 #include "Engine/Core.hpp"
 
 engine::Window *engine::Window::s_instance{nullptr};

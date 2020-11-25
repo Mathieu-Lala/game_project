@@ -47,7 +47,7 @@ struct EntityFactory {
         MAX_ID,
     };
 
-    static auto ID_from_string(const std::string_view in) noexcept -> ID
+    static auto toID(const std::string_view in) noexcept -> ID
     {
         std::string compare{in};
         std::transform(compare.begin(), compare.end(), compare.begin(), [](auto c) { return static_cast<char>(std::tolower(c)); });

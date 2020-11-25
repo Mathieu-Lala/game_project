@@ -127,7 +127,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setMusicVolume =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
-    []([[maybe_unused]] entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
+    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
         try {
             if (args.size() != 1) throw std::runtime_error("Wrong argument count");
 
@@ -135,7 +135,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
             const auto player = game.player;
 
             if (const auto data = classes::getByName(game.getClassDatabase(), className); data) {
-                game.getLogics().onPlayerBuyClass.publish(world, player, *data);
+                game.getLogics().onPlayerPurchase.publish(world, player, *data);
             } else {
                 // note : see std::accumulate
                 std::stringstream names;
@@ -149,7 +149,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_getClasses =
-    []([[maybe_unused]] entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &console) {
+    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &console) {
         if (args.size() != 0) throw std::runtime_error("Wrong argument count");
 
         const auto &classes = world.get<Classes>(game.player).ids;
@@ -207,6 +207,6 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_giantfireball =
-    []([[maybe_unused]] entt::registry &world, ThePURGE &game, std::vector<std::string> &&, DebugConsole &) {
+    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&, DebugConsole &) {
         SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
     };

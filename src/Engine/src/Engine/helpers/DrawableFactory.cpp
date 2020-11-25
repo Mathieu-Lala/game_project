@@ -4,7 +4,7 @@
 #include "Engine/Graphics/third_party.hpp"
 #include "Engine/component/Drawable.hpp"
 #include "Engine/component/Color.hpp"
-#include "Engine/component/Texture.hpp"
+#include "Engine/component/VBOTexture.hpp"
 #include "Engine/helpers/DrawableFactory.hpp"
 #include "Engine/Graphics/Shader.hpp"
 #include "Engine/Event/Event.hpp"        // note : should not require this header here
@@ -79,7 +79,7 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
 }
 
 auto engine::DrawableFactory::fix_texture(
-    entt::registry &world, entt::entity e, const std::string_view filepath, const std::array<float, 4ul> &clip) -> Texture &
+    entt::registry &world, entt::entity e, const std::string_view filepath, const std::array<float, 4ul> &clip) -> VBOTexture &
 {
     static Core::Holder holder{};
 
@@ -90,7 +90,7 @@ auto engine::DrawableFactory::fix_texture(
     // note : could split the texture in two component :
     // Texture = raw image from file
     // ClippedTexture = VBO binded and clipped
-    auto handle = holder.instance->getCache<Texture>().load<LoaderTexture>(
+    auto handle = holder.instance->getCache<VBOTexture>().load<LoaderVBOTexture>(
         entt::hashed_string{
             fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}", filepath, clip[0], clip[1], clip[2], clip[3]).data()},
         filepath,
@@ -106,7 +106,7 @@ auto engine::DrawableFactory::fix_texture(
         ::glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), static_cast<void *>(0));
         ::glEnableVertexAttribArray(2);
 
-        return world.emplace_or_replace<Texture>(e, *handle);
+        return world.emplace_or_replace<VBOTexture>(e, *handle);
     } else {
         spdlog::error("could not load texture in cache !");
         throw std::runtime_error("could not load texture in cache !");

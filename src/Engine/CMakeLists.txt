@@ -17,6 +17,7 @@ add_library(glfw_imgui_impl STATIC ${CMAKE_BINARY_DIR}/download/imgui/${imgui_ve
                                    ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}/imgui_impl_opengl3.cpp)
 target_link_libraries(glfw_imgui_impl PUBLIC project_options CONAN_PKG::glew CONAN_PKG::glfw CONAN_PKG::imgui)
 target_compile_definitions(glfw_imgui_impl PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
+target_include_directories(glfw_imgui_impl PUBLIC ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version})
 
 configure_file(include/Engine/details/Version.hpp.in include/Engine/details/Version.hpp @ONLY)
 
@@ -36,8 +37,7 @@ add_library(
   src/Engine/audio/WavReader.cpp
   src/Engine/audio/AudioFileBuffer.cpp)
 
-target_include_directories(engine_core PUBLIC include ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}
-                                              ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(engine_core PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_link_libraries(
   engine_core
   PUBLIC project_options
