@@ -570,9 +570,6 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, co
         spell.cd.remaining_cooldown = spell.cd.cooldown;
         spell.cd.is_in_cooldown = true;
     }
-
-    const auto &aim = world.get<AimingDirection>(caster).dir;
-    spdlog::info("dir : {}, {}, actual : {}, {}", direction.x, direction.y, aim.x, aim.y);
 }
 
 auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void
