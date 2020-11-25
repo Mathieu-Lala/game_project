@@ -46,6 +46,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::boss_anim_update>(*this);
 
     sinkAfterGameUpdated.connect<&GameLogic::update_camera>(*this);
+    sinkAfterGameUpdated.connect<&GameLogic::update_player_sight>(*this);
 
     sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
 
@@ -53,7 +54,8 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkOnFloorChange.connect<&GameLogic::goToTheNextFloor>(*this);
 }
 
-auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed) -> void
+auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
+    -> void
 {
     switch (dir) {
     case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
@@ -81,6 +83,12 @@ auto game::GameLogic::on_game_started(entt::registry &world) -> void
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
     apply_class_to_player(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+
+    auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(world, {}, {});
+
+    glm::vec3 playerColor(1.f, 0.2f, 0.2f);
+    engine::DrawableFactory::fix_color(world, aimingSight, std::move(playerColor));
+    world.get<AimSight>(m_game.player).entity = aimingSight;
 
     // default camera value to see the generated terrain properly
     m_game.getCamera().setCenter(glm::vec2(13, 22));
@@ -162,7 +170,7 @@ auto game::GameLogic::player_movement_update(entt::registry &world, [[maybe_unus
     const auto &axis = world.get<ControllerAxis>(player);
 
     vel.x = axis.movement.x * kSpeed;
-    vel.y = -axis.movement.y * kSpeed;
+    vel.y = axis.movement.y * kSpeed;
 }
 
 auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
@@ -193,8 +201,8 @@ auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const en
             }
         }
 
-        auto result = glm::normalize(diff)* 7.f;
-        out =  {result.x, result.y} ;
+        auto result = glm::normalize(diff) * 7.f;
+        out = {result.x, result.y};
 
         return true;
     };
@@ -271,7 +279,7 @@ auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] co
 {
     static auto holder = engine::Core::Holder{};
 
-     for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
+    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
         const auto &spell_pos = world.get<engine::d3::Position>(spell);
         const auto &spell_box = world.get<engine::d2::HitboxFloat>(spell);
 
@@ -399,7 +407,7 @@ auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine
 auto game::GameLogic::player_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
 {
     const auto &vel = world.get<engine::d2::Velocity>(m_game.player);
-    const auto &facing = world.get<Facing>(m_game.player);
+    const auto &aiming = world.get<AimingDirection>(m_game.player).dir;
     auto &sp = world.get<engine::Spritesheet>(m_game.player);
 
     bool isFacingLeft;
@@ -407,7 +415,7 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
         isFacingLeft = true;
     else if (vel.x > 0)
         isFacingLeft = false;
-    else if (facing.dir.x < 0)
+    else if (aiming.x < 0)
         isFacingLeft = true;
     else
         isFacingLeft = false;
@@ -431,6 +439,37 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
         sp.current_frame = 0;
     }
 }
+
+auto game::GameLogic::update_player_sight(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    constexpr float kSightMaxDistance = 1.5;
+    constexpr float kSightScaleMultiplier = 0.75;
+
+    auto player = m_game.player;
+    auto sight = world.get<AimSight>(player).entity;
+    const auto &aimInput = world.get<ControllerAxis>(player).aiming;
+
+    if (glm::length(aimInput)) {
+        auto &aim = world.get<AimingDirection>(player).dir;
+        auto newAim = glm::normalize(aimInput);
+
+        aim.x = newAim.x;
+        aim.y = newAim.y;
+    }
+
+
+    const auto &playerPos = world.get<engine::d3::Position>(player);
+    auto &sightPos = world.get<engine::d3::Position>(sight);
+    auto &sightScale = world.get<engine::d2::Scale>(sight);
+
+    sightPos.x = playerPos.x + kSightMaxDistance * aimInput.x;
+    sightPos.y = playerPos.y + kSightMaxDistance * aimInput.y;
+
+    auto scale = glm::length(aimInput);
+    sightScale.x = scale * kSightScaleMultiplier;
+    sightScale.y = scale * kSightScaleMultiplier;
+}
+
 
 auto game::GameLogic::update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
 {
@@ -531,6 +570,9 @@ auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, co
         spell.cd.remaining_cooldown = spell.cd.cooldown;
         spell.cd.is_in_cooldown = true;
     }
+
+    const auto &aim = world.get<AimingDirection>(caster).dir;
+    spdlog::info("dir : {}, {}, actual : {}, {}", direction.x, direction.y, aim.x, aim.y);
 }
 
 auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void

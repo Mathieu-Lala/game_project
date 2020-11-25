@@ -9,6 +9,8 @@
 #include <Engine/component/Source.hpp>
 #include <Engine/component/Spritesheet.hpp>
 
+#include "component/AimSight.hpp"
+#include "component/AimingDirection.hpp"
 #include "component/AttackRange.hpp"
 #include "component/AttackDamage.hpp"
 #include "component/AttackCooldown.hpp"
@@ -24,7 +26,6 @@
 #include "component/Classes.hpp"
 #include "component/SkillPoint.hpp"
 
-#include "component/Facing.hpp"
 #include "component/Lifetime.hpp"
 #include "component/Particule.hpp"
 #include "component/ControllerAxis.hpp"
