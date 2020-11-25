@@ -13,7 +13,10 @@ struct EntityFactory {
         LAYER_DEBUG = 1,
         DEBUG_TILE = LAYER_DEBUG * 10,
 
-        LAYER_PLAYER = 2,
+        LAYER_AIMING_SIGHT = 2,
+        AIMING_SIGHT,
+
+        LAYER_PLAYER = 3,
         FARMER = LAYER_PLAYER * 10,
         SOLDIER,
         SHOOTER,
@@ -24,12 +27,12 @@ struct EntityFactory {
         KEY, // should be on a layer above
 
 
-        LAYER_ENEMY = 3,
+        LAYER_ENEMY = 4,
         ENEMY = LAYER_ENEMY * 10,
         BOSS,
 
 
-        LAYER_TERRAIN = 4,
+        LAYER_TERRAIN = 5,
 
         FLOOR_NORMAL = LAYER_TERRAIN * 10,
         FLOOR_SPAWN,
@@ -38,8 +41,8 @@ struct EntityFactory {
         EXIT_DOOR,
         WALL,
 
-        LAYER_BACKGROUND,
-        BACKGROUND,
+        LAYER_BACKGROUND = 6,
+        BACKGROUND = LAYER_BACKGROUND * 10,
 
         MAX_ID,
     };
@@ -87,6 +90,7 @@ DECL_SPEC(WALL);
 DECL_SPEC(BOSS);
 DECL_SPEC(ENEMY);
 
+DECL_SPEC(AIMING_SIGHT);
 DECL_SPEC(PLAYER);
 DECL_SPEC(KEY);
 

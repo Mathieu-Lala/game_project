@@ -46,6 +46,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::boss_anim_update>(*this);
 
     sinkAfterGameUpdated.connect<&GameLogic::slots_update_camera>(*this);
+    sinkAfterGameUpdated.connect<&GameLogic::slots_update_player_sigh>(*this);
 
     sinkCastSpell.connect<&GameLogic::slots_cast_spell>(*this);
 
@@ -82,6 +83,12 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
     onPlayerPurchase.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+
+    auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(world, {}, {});
+
+    glm::vec3 playerColor(1.f, 0.2f, 0.2f);
+    engine::DrawableFactory::fix_color(world, aimingSight, std::move(playerColor));
+    world.get<AimSight>(m_game.player).entity = aimingSight;
 
     // default camera value to see the generated terrain properly
     m_game.getCamera().setCenter(glm::vec2(13, 22));
@@ -164,7 +171,7 @@ auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[mayb
     const auto &axis = world.get<ControllerAxis>(player);
 
     vel.x = axis.movement.x * kSpeed;
-    vel.y = -axis.movement.y * kSpeed;
+    vel.y = axis.movement.y * kSpeed;
 }
 
 auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
@@ -396,7 +403,7 @@ auto game::GameLogic::slots_update_camera(entt::registry &world, const engine::T
 auto game::GameLogic::player_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
 {
     const auto &vel = world.get<engine::d2::Velocity>(m_game.player);
-    const auto &facing = world.get<Facing>(m_game.player);
+    const auto &aiming = world.get<AimingDirection>(m_game.player).dir;
     auto &sp = world.get<engine::Spritesheet>(m_game.player);
 
     bool isFacingLeft;
@@ -404,7 +411,7 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
         isFacingLeft = true;
     else if (vel.x > 0)
         isFacingLeft = false;
-    else if (facing.dir.x < 0)
+    else if (aiming.x < 0)
         isFacingLeft = true;
     else
         isFacingLeft = false;
@@ -427,6 +434,35 @@ auto game::GameLogic::player_anim_update(entt::registry &world, const engine::Ti
         sp.current_animation = anim;
         sp.current_frame = 0;
     }
+}
+
+auto game::GameLogic::slots_update_player_sigh(entt::registry &world, const engine::TimeElapsed &) -> void
+{
+    constexpr auto kSightMaxDistance = 1.5;
+    constexpr auto kSightScaleMultiplier = 0.75;
+
+    auto player = m_game.player;
+    auto sight = world.get<AimSight>(player).entity;
+    const auto &aimInput = world.get<ControllerAxis>(player).aiming;
+
+    if (glm::length(aimInput)) {
+        auto &aim = world.get<AimingDirection>(player).dir;
+        auto newAim = glm::normalize(aimInput);
+
+        aim.x = newAim.x;
+        aim.y = newAim.y;
+    }
+
+    const auto &playerPos = world.get<engine::d3::Position>(player);
+    auto &sightPos = world.get<engine::d3::Position>(sight);
+    auto &sightScale = world.get<engine::d2::Scale>(sight);
+
+    sightPos.x = playerPos.x + kSightMaxDistance * static_cast<double>(aimInput.x);
+    sightPos.y = playerPos.y + kSightMaxDistance * static_cast<double>(aimInput.y);
+
+    const auto scale = static_cast<double>(glm::length(aimInput));
+    sightScale.x = scale * kSightScaleMultiplier;
+    sightScale.y = scale * kSightScaleMultiplier;
 }
 
 auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
@@ -515,6 +551,9 @@ auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caste
         spell.cd.remaining_cooldown = spell.cd.cooldown;
         spell.cd.is_in_cooldown = true;
     }
+
+    const auto &aim = world.get<AimingDirection>(caster).dir;
+    spdlog::info("dir : {}, {}, actual : {}, {}", direction.x, direction.y, aim.x, aim.y);
 }
 
 auto game::GameLogic::slots_change_floor(entt::registry &world) -> void

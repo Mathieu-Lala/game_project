@@ -212,8 +212,9 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<SpellSlots>(player);
     world.emplace<Classes>(player);
     world.emplace<SkillPoint>(player, 0);
-    world.emplace<Facing>(player, glm::vec2(1.f, 0.f));
     world.emplace<ControllerAxis>(player, glm::vec2(0.f, 0.f), glm::vec2(0.f, 0.f));
+    world.emplace<AimSight>(player);
+    world.emplace<AimingDirection>(player, glm::vec2(1.f, 0.f));
 
     engine::DrawableFactory::fix_color(world, player, {1.0f, 1.0f, 1.0f});
 
@@ -258,6 +259,25 @@ auto game::EntityFactory::create<game::EntityFactory::BACKGROUND>(
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {0.15, 0.15, 0.15});
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/background.jpg");
+
+    return e;
+}
+
+template<>
+auto game::EntityFactory::create<game::EntityFactory::AIMING_SIGHT>(
+    entt::registry &world, [[maybe_unused]] const glm::vec2 &, [[maybe_unused]] const glm::vec2 &) -> entt::entity
+{
+    static auto holder = engine::Core::Holder{};
+
+    auto e = world.create();
+
+    world.emplace<engine::d3::Position>(e, 0.0, 0.0, EntityFactory::get_z_layer<EntityFactory::LAYER_AIMING_SIGHT>());
+    world.emplace<engine::d2::Rotation>(e, 0.f);
+    world.emplace<engine::d2::Scale>(e, 0.0, 0.0);
+
+    world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
+
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/aim_sight.png");
 
     return e;
 }

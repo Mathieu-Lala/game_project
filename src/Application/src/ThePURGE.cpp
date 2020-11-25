@@ -35,8 +35,6 @@
 
 #include "DataConfigLoader.hpp"
 
-#include "component/Facing.hpp"
-
 using namespace std::chrono_literals;
 
 game::ThePURGE::ThePURGE() {}
@@ -118,8 +116,8 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         auto &spell = world.get<SpellSlots>(player).spells[id];
                         if (!spell.has_value()) break;
 
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->onSpellCast.publish(world, player, {vel.x, vel.y}, spell.value());
+                        auto &aim = world.get<AimingDirection>(player).dir;
+                        m_logics->onSpellCast.publish(world, player, aim, spell.value());
                     } break;
                     default: return;
                     }
@@ -150,17 +148,21 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         const auto id = spell_map(joy.source.axis);
                         auto &spell = world.get<SpellSlots>(player).spells[id];
                         if (!spell.has_value()) break;
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->onSpellCast.publish(world, player, {vel.x, vel.y}, spell.value());
+                        auto &aim = world.get<AimingDirection>(player).dir;
+                        m_logics->onSpellCast.publish(world, player, aim, spell.value());
                     } break;
                     case engine::Joystick::LSX:
                     case engine::Joystick::LSY: {
                         auto joystick = holder.instance->getJoystick(joy.source.id);
-
                         auto &axis = world.get<ControllerAxis>(player).movement;
 
-                        axis.x = (*joystick)->axes[engine::Joystick::LSX];
-                        axis.y = (*joystick)->axes[engine::Joystick::LSY];
+                        glm::vec2 newVal(
+                            (*joystick)->axes[engine::Joystick::LSX], -(*joystick)->axes[engine::Joystick::LSY]);
+
+                        if (glm::length(newVal) > ControllerAxis::kDeadzone)
+                            axis = newVal;
+                        else
+                            axis = glm::vec2(0, 0);
 
                     } break;
                     case engine::Joystick::RSX:
@@ -169,8 +171,13 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
 
                         auto &axis = world.get<ControllerAxis>(player).aiming;
 
-                        axis.x = (*joystick)->axes[engine::Joystick::RSX];
-                        axis.y = (*joystick)->axes[engine::Joystick::RSY];
+                        glm::vec2 newVal(
+                            (*joystick)->axes[engine::Joystick::RSX], -(*joystick)->axes[engine::Joystick::RSY]);
+
+                        if (glm::length(newVal) > ControllerAxis::kDeadzone)
+                            axis = newVal;
+                        else
+                            axis = glm::vec2(0, 0);
 
                     } break;
                     default: break;
@@ -184,8 +191,8 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                         const auto id = spell_map(joy.source.button);
                         auto &spell = world.get<SpellSlots>(player).spells[id];
                         if (!spell.has_value()) break;
-                        auto &vel = world.get<engine::d2::Velocity>(player);
-                        m_logics->onSpellCast.publish(world, player, {vel.x, vel.y}, spell.value());
+                        auto &aim = world.get<AimingDirection>(player).dir;
+                        m_logics->onSpellCast.publish(world, player, aim, spell.value());
                     } break;
                     default: return;
                     }

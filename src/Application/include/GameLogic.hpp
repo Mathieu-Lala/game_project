@@ -93,8 +93,9 @@ private: // slots
     auto boss_anim_update(entt::registry &, const engine::TimeElapsed &) -> void; // todo : cleaner
     auto player_anim_update(entt::registry &, const engine::TimeElapsed &) -> void; // todo : cleaner
 
-    decltype(onGameUpdateAfter)::sink_type sinkAfterGameUpdated{onGameUpdateAfter};
-    auto slots_update_camera(entt::registry &, const engine::TimeElapsed &) -> void; // todo : cleaner
+    decltype(onGameUpdateAfter)::sink_type sinkAfterGameUpdated{onGameUpdateAfter}; // todo : cleaner
+    auto slots_update_camera(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_player_sigh(entt::registry &, const engine::TimeElapsed &) -> void;
 
     decltype(onSpellCast)::sink_type sinkCastSpell{onSpellCast};
     auto slots_cast_spell(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;
