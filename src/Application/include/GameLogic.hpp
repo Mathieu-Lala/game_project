@@ -94,6 +94,7 @@ private: // slots
     auto player_anim_update(entt::registry &, const engine::TimeElapsed &) -> void;
 
     decltype(afterGameUpdated)::sink_type sinkAfterGameUpdated{afterGameUpdated};
+    auto update_player_sight(entt::registry &, const engine::TimeElapsed &) -> void;
     auto update_camera(entt::registry &, const engine::TimeElapsed &) -> void;
 
     decltype(castSpell)::sink_type sinkCastSpell{castSpell};
