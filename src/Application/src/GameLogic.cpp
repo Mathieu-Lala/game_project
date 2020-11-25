@@ -58,8 +58,8 @@ auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::e
     -> void
 {
     switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f : 0.0f; break;
+    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f : 0.0f; break;
+    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
     case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1.0f : 0.0f; break;
     case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1.0f : 0.0f; break;
     default: break;
