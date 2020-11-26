@@ -309,7 +309,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unuse
 
             if (world.has<entt::tag<"player"_hs>>(entity)) {
                 holder.instance->setScreenshake(true, 300ms);
-                ParticuleFactory::create<Particule::POSITIVE>(
+                ParticuleFactory::create<Particule::HITMARKER>(
                     world, {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0}, {255,0,0});
             } else {
                 ParticuleFactory::create<Particule::HITMARKER>(
