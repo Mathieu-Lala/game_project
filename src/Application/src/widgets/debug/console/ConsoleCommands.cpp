@@ -2,11 +2,11 @@
 #include <Engine/audio/Sound.hpp>
 #include <Engine/helpers/Parser.hpp>
 
-#include "widgets/console/ConsoleCommands.hpp"
-#include "widgets/console/DebugConsole.hpp"
+#include "widgets/debug/console/ConsoleCommands.hpp"
+#include "widgets/debug/console/DebugConsole.hpp"
 
 #include "component/all.hpp"
-#include "screen/MainMenu.hpp"
+
 #include "ThePURGE.hpp"
 
 game::CommandHandler::CommandHandler() :

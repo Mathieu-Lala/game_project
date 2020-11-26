@@ -10,7 +10,9 @@
 
 #include "component/all.hpp"
 
-#include "widgets/console/DebugConsole.hpp"
+#include "widgets/debug/console/DebugConsole.hpp"
+
+#include "menu/AMenu.hpp"
 
 #include "level/MapGenerator.hpp"
 #include "GameLogic.hpp"
@@ -24,13 +26,6 @@ class ThePURGE : public engine::api::Game {
 public:
     ThePURGE();
 
-    enum class State {
-        LOADING,
-        IN_GAME,
-        IN_INVENTORY,
-        GAME_OVER,
-    };
-
     auto onCreate(entt::registry &world) -> void final;
 
     auto onUpdate(entt::registry &world, const engine::Event &e) -> void final;
@@ -39,14 +34,16 @@ public:
 
     auto drawUserInterface(entt::registry &world) -> void final;
 
-    entt::entity player; // note : should not require to keep it like that
+    void setMenu(std::unique_ptr<AMenu> &&menu)
+    {
+        m_currentMenu = std::move(menu);
+    }
 
-    auto setState(State new_state) noexcept { m_state = new_state; }
 
-    // constexpr // note : C++20 but not supported by MSVC yet
+    // TODO DELETEME : useless, we never get to see the background color
     auto getBackgroundColor() const noexcept -> glm::vec3 final
     {
-        return m_state == State::GAME_OVER ? glm::vec3{0.35f, 0.45f, 0.50f} : glm::vec3{0.45f, 0.55f, 0.60f};
+        return glm::vec3{0.45f, 0.55f, 0.60f};
     }
 
     auto getLogics() -> GameLogic & { return *m_logics; }
@@ -57,12 +54,10 @@ public:
 
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
+public:
+    entt::entity player; // note : should not require to keep it like that
+
 private:
-    // auto goToNextFloor(entt::registry &world) -> void;
-
-    auto displaySoundDebugGui() -> void;
-
-    State m_state{State::LOADING};
 
     FloorGenParam m_map_generation_params;
     std::uint32_t m_nextFloorSeed;
@@ -76,6 +71,8 @@ private:
     std::unique_ptr<DebugConsole> m_debugConsole;
 
     classes::Database m_classDatabase;
+
+    std::unique_ptr<AMenu> m_currentMenu;
 };
 
 } // namespace game

@@ -39,10 +39,9 @@ private:
 
     std::uint32_t m_nextFloorSeed;
 
-public: // signals // note : should be only related to input (elapsed time / keyboard / joysticks ...)
+public: // signals 
 
     // note : should have only one signal : onUserMove, or something like that
-    // entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> joystickMovement;
     entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir, bool is_pressed)> onMovement;
 
     entt::sigh<void(entt::registry &)> onGameStart;
@@ -50,6 +49,8 @@ public: // signals // note : should be only related to input (elapsed time / key
     entt::sigh<void(entt::registry &, entt::entity, const Class &)> onPlayerPurchase;
 
     entt::sigh<void(entt::registry &, entt::entity player)> onPlayerLevelUp;
+
+    entt::sigh<void(entt::registry &, const engine::Event &e)> onEvent;
 
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> onGameUpdate;
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> onGameUpdateAfter;
@@ -77,6 +78,9 @@ private: // slots
 
     decltype(onPlayerLevelUp)::sink_type sinkOnPlayerLevelUp{onPlayerLevelUp};
     auto slots_level_up(entt::registry &, entt::entity) -> void;
+
+    decltype(onEvent)::sink_type sinkOnEvent{onEvent};
+    auto slots_on_event(entt::registry &, const engine::Event &) -> void;
 
     decltype(onGameUpdate)::sink_type sinkGameUpdated{onGameUpdate};
     auto slots_update_player_movement(entt::registry &, const engine::TimeElapsed &) -> void;
