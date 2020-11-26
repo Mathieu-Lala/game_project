@@ -47,5 +47,82 @@
       2
     ],
     "children": []
+  },
+  "assassin": {
+    "desc": "Assassin description",
+    "icon": "",
+    "assetGraph": "",
+    "maxHealth": 1,
+    "damage": 1,
+    "spells": [],
+    "children": [
+      "soldier"
+    ]
+  },
+  "warrior": {
+    "desc": "Warrior description",
+    "icon": "",
+    "assetGraph": "",
+    "maxHealth": 1,
+    "damage": 1,
+    "spells": [],
+    "children": [
+      "soldier"
+    ]
+  },
+  "tank": {
+    "desc": "Tank description",
+    "icon": "",
+    "assetGraph": "",
+    "maxHealth": 1,
+    "damage": 1,
+    "spells": [],
+    "children": [
+      "soldier"
+    ]
+  },
+  "archer": {
+    "desc": "Archer description",
+    "icon": "",
+    "assetGraph": "",
+    "maxHealth": 1,
+    "damage": 1,
+    "spells": [],
+    "children": [
+      "shooter"
+    ]
+  },
+  "gunner": {
+    "desc": "Gunner description",
+    "icon": "",
+    "assetGraph": "",
+    "maxHealth": 1,
+    "damage": 1,
+    "spells": [],
+    "children": [
+      "shooter"
+    ]
+  },
+  "mage": {
+    "desc": "Mage description",
+    "icon": "",
+    "assetGraph": "",
+    "maxHealth": 1,
+    "damage": 1,
+    "spells": [],
+    "children": [
+      "sorcerer"
+    ]
+  },
+  "healer": {
+    "desc": "Healer description",
+    "icon": "",
+    "assetGraph": "",
+    "maxHealth": 1,
+    "damage": 1,
+    "spells": [],
+    "children": [
+      "sorcerer"
+    ]
   }
 }
