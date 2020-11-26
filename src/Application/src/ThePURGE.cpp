@@ -1,37 +1,10 @@
-#include <string>
+#include "ThePURGE.hpp"
+#include "Engine/Core.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <stb_image.h>
-#include <Engine/Graphics/third_party.hpp>
-#include <Engine/Graphics/Shader.hpp>
-#include <Engine/helpers/DrawableFactory.hpp>
-#include <Engine/Event/Event.hpp>
-#include <Engine/audio/AudioManager.hpp>
-#include <Engine/Settings.hpp>
-#include <Engine/component/Color.hpp>
-#include <Engine/component/VBOTexture.hpp>
-#include <Engine/component/Spritesheet.hpp>
-#include <Engine/Core.hpp>
-
-#include <Engine/helpers/ImGui.hpp>
-
-#include "level/LevelTilemapBuilder.hpp"
-#include "level/MapGenerator.hpp"
-
-#include "factory/EntityFactory.hpp"
-
-#include "Menu/MainMenu.hpp"
-#include "Menu/GameOver.hpp"
+#include "DataConfigLoader.hpp"
 
 #include "widgets/GameHUD.hpp"
 #include "widgets/debug/DebugTerrainGeneration.hpp"
-
-#include "GameLogic.hpp"
-#include "ThePURGE.hpp"
-
-#include "DataConfigLoader.hpp"
 
 #include "menu/MainMenu.hpp"
 
@@ -43,15 +16,14 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
 
-    m_nextFloorSeed = static_cast<std::uint32_t>(std::time(nullptr));
     m_logics = std::make_unique<GameLogic>(*this);
     m_debugConsole = std::make_unique<DebugConsole>(*this);
+    m_debugConsole->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 
     m_dungeonMusic =
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
     m_dungeonMusic->setVolume(0.1f).setLoop(true);
 
-    m_debugConsole->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 
     m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "db/classes.json");
 

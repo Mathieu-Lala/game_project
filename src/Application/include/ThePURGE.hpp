@@ -58,19 +58,13 @@ public:
     entt::entity player; // note : should not require to keep it like that
 
 private:
-
-    FloorGenParam m_map_generation_params;
-    std::uint32_t m_nextFloorSeed;
-
-    engine::Camera m_camera; // note : should be in engine::Core
-
     std::unique_ptr<GameLogic> m_logics;
 
-    std::shared_ptr<engine::Sound> m_dungeonMusic;
-
-    std::unique_ptr<DebugConsole> m_debugConsole;
-
     classes::Database m_classDatabase;
+
+    engine::Camera m_camera; // note : should be in engine::Core
+    std::unique_ptr<DebugConsole> m_debugConsole;
+    std::shared_ptr<engine::Sound> m_dungeonMusic;
 
     std::unique_ptr<AMenu> m_currentMenu;
 };
