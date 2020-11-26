@@ -53,8 +53,8 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
     }
 #endif
 
-    if (m_currentMenu)
+    if (m_currentMenu == nullptr)
+        GameHUD::draw(*this, world);
+    else
         m_currentMenu->onDraw(world, *this);
-
-    GameHUD::draw(*this, world);
 }

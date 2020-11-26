@@ -7,7 +7,8 @@ void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
     // todo : style because this is not a debug window
     ImGui::Begin("Menu Game Over", nullptr, ImGuiWindowFlags_NoDecoration);
 
-    if (ImGui::Button("Your are dead !")) {
+    ImGui::Text("You are dead !");
+    if (ImGui::Button("main menu")) {
         for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
         for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
         for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }

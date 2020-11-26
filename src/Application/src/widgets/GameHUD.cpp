@@ -1,13 +1,9 @@
 #include "widgets/GameHUD.hpp"
 #include "Engine/Core.hpp"
+#include "Engine/helpers/ImGui.hpp"
 
 void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 {
-    (void)game;
-    (void)world;
-    /*
-    
-
     auto holder = engine::Core::Holder{};
 
     static GLuint texture =
@@ -64,6 +60,4 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     }
 
     ImGui::End();
-
-    */
 }
