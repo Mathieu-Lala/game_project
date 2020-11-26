@@ -11,13 +11,15 @@
 #include <Engine/Core.hpp>
 
 #include "GameLogic.hpp"
-#include "screen/MainMenu.hpp"
 #include "ThePURGE.hpp"
 #include "factory/EntityFactory.hpp"
 #include "factory/SpellFactory.hpp"
 #include "factory/ParticuleFactory.hpp"
 
 #include "models/ClassDatabase.hpp"
+
+#include "menu/UpgradePanel.hpp"
+#include "menu/GameOver.hpp"
 
 using namespace std::chrono_literals;
 
@@ -32,6 +34,8 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkOnPlayerBuyClass.connect<&GameLogic::slots_apply_classes>(*this);
     sinkOnPlayerBuyClass.connect<&GameLogic::slots_purchase_classes>(*this);
     sinkOnPlayerLevelUp.connect<&GameLogic::slots_level_up>(*this);
+
+    sinkOnEvent.connect<&GameLogic::slots_on_event>(*this);
 
     sinkGameUpdated.connect<&GameLogic::slots_update_player_movement>(*this);
     sinkGameUpdated.connect<&GameLogic::slots_update_ai_movement>(*this);
@@ -158,6 +162,126 @@ auto game::GameLogic::slots_purchase_classes(entt::registry &world, entt::entity
 auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity) -> void
 {
     world.get<SkillPoint>(entity).count++;
+}
+
+auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event &e) -> void
+{
+    static auto holder = engine::Core::Holder{};
+
+    const auto spell_map = []<typename T>(T k) {
+        struct SpellMap {
+            int key;
+            std::size_t id;
+        };
+        if constexpr (std::is_same<T, engine::Joystick::Buttons>::value) {
+            const auto map = std::to_array<SpellMap>({{engine::Joystick::LS, 0}, {engine::Joystick::RS, 1}});
+            return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+
+        } else if constexpr (std::is_same<T, engine::Joystick::Axis>::value) {
+            const auto map = std::to_array<SpellMap>({{engine::Joystick::LST, 2}, {engine::Joystick::RST, 3}});
+            return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+
+        } else { // todo : should be engine::Keyboard::Key
+            const auto map = std::to_array<SpellMap>({{GLFW_KEY_U, 0}, {GLFW_KEY_Y, 1}, {GLFW_KEY_T, 2}, {GLFW_KEY_R, 3}});
+            return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+        }
+    };
+
+    auto player = m_game.player;
+
+    std::visit(
+        engine::overloaded{
+            [&](const engine::Pressed<engine::Key> &key) {
+                switch (key.source.key) {
+                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, true); break;
+                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, true); break;
+                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, true); break;
+                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, true); break;
+                case GLFW_KEY_P: m_game.setMenu(std::make_unique<menu::UpgradePanel>()); break;
+
+                case GLFW_KEY_U:
+                case GLFW_KEY_Y: {
+                    const auto id = spell_map(key.source.key);
+
+                    auto &spell = world.get<SpellSlots>(player).spells[id];
+                    if (!spell.has_value()) break;
+
+                    auto &aim = world.get<AimingDirection>(player).dir;
+                    onSpellCast.publish(world, player, aim, spell.value());
+                } break;
+                default: return;
+                }
+            },
+            [&](const engine::Released<engine::Key> &key) {
+                switch (key.source.key) {
+                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, false); break;
+                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, false); break;
+                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, false); break;
+                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, false); break;
+                default: return;
+                }
+            },
+            [&](const engine::TimeElapsed &dt) {
+                onGameUpdate.publish(world, dt);
+                onGameUpdateAfter.publish(world, dt);
+            },
+            [&](const engine::Moved<engine::JoystickAxis> &joy) {
+                switch (joy.source.axis) {
+                case engine::Joystick::LST:
+                case engine::Joystick::RST: {
+                    const auto id = spell_map(joy.source.axis);
+                    auto &spell = world.get<SpellSlots>(player).spells[id];
+                    if (!spell.has_value()) break;
+                    auto &aim = world.get<AimingDirection>(player).dir;
+                    onSpellCast.publish(world, player, aim, spell.value());
+                } break;
+                case engine::Joystick::LSX:
+                case engine::Joystick::LSY: {
+                    auto joystick = holder.instance->getJoystick(joy.source.id);
+                    auto &axis = world.get<ControllerAxis>(player).movement;
+
+                    glm::vec2 newVal((*joystick)->axes[engine::Joystick::LSX], -(*joystick)->axes[engine::Joystick::LSY]);
+
+                    if (glm::length(newVal) > ControllerAxis::kDeadzone)
+                        axis = newVal;
+                    else
+                        axis = glm::vec2(0, 0);
+
+                } break;
+                case engine::Joystick::RSX:
+                case engine::Joystick::RSY: {
+                    auto joystick = holder.instance->getJoystick(joy.source.id);
+
+                    auto &axis = world.get<ControllerAxis>(player).aiming;
+
+                    glm::vec2 newVal((*joystick)->axes[engine::Joystick::RSX], -(*joystick)->axes[engine::Joystick::RSY]);
+
+                    if (glm::length(newVal) > ControllerAxis::kDeadzone)
+                        axis = newVal;
+                    else
+                        axis = glm::vec2(0, 0);
+
+                } break;
+                default: break;
+                }
+            },
+            [&](const engine::Pressed<engine::JoystickButton> &joy) {
+                switch (joy.source.button) {
+                case engine::Joystick::CENTER2: m_game.setMenu(std::make_unique<menu::UpgradePanel>()); break;
+                case engine::Joystick::LS:
+                case engine::Joystick::RS: {
+                    const auto id = spell_map(joy.source.button);
+                    auto &spell = world.get<SpellSlots>(player).spells[id];
+                    if (!spell.has_value()) break;
+                    auto &aim = world.get<AimingDirection>(player).dir;
+                    onSpellCast.publish(world, player, aim, spell.value());
+                } break;
+                default: return;
+                }
+            },
+            [&](auto) {},
+        },
+        e);
 }
 
 auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt)
@@ -512,7 +636,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
             .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
             ->play();
 
-        m_game.setState(ThePURGE::State::GAME_OVER);
+        m_game.setMenu(std::make_unique<menu::GameOver>());
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         spdlog::warn("!! entity killed : dropping xp !!");
 
