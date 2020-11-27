@@ -231,7 +231,7 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
                     const auto id = spell_map(joy.source.axis);
                     auto &spell = world.get<SpellSlots>(player).spells[id];
                     if (!spell.has_value()) break;
-                    auto &aim = world.get<AimingDirection>(player).dir;
+                    auto &aim = world.get<AimingDirection>(player).dir; 
                     onSpellCast.publish(world, player, aim, spell.value());
                 } break;
                 case engine::Joystick::LSX:
