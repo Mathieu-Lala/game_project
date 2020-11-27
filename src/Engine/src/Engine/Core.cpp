@@ -315,13 +315,13 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
     // check if the spritesheet need to update the texture
     m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
-        if (!sprite.speed.is_in_cooldown) return;
+        if (!sprite.cooldown.is_in_cooldown) return;
 
-        if (std::chrono::milliseconds{elapsed} < sprite.speed.remaining_cooldown) {
-            sprite.speed.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+        if (std::chrono::milliseconds{elapsed} < sprite.cooldown.remaining_cooldown) {
+            sprite.cooldown.remaining_cooldown -= std::chrono::milliseconds{elapsed};
         } else {
-            sprite.speed.remaining_cooldown = std::chrono::milliseconds(0);
-            sprite.speed.is_in_cooldown = false;
+            sprite.cooldown.remaining_cooldown = std::chrono::milliseconds(0);
+            sprite.cooldown.is_in_cooldown = false;
         }
     });
 
@@ -329,11 +329,11 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
     // update and reset the cooldown of the spritesheet
     for (auto &i : m_world.view<Spritesheet>()) {
         auto &sprite = m_world.get<Spritesheet>(i);
-        if (sprite.speed.is_in_cooldown) continue;
-        sprite.speed.is_in_cooldown = true;
-        sprite.speed.remaining_cooldown = sprite.speed.cooldown;
+        if (sprite.cooldown.is_in_cooldown) continue;
+        sprite.cooldown.is_in_cooldown = true;
+        sprite.cooldown.remaining_cooldown = sprite.cooldown.cooldown;
         sprite.current_frame++;
-        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).size());
+        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).frames.size());
 
         auto &vbo_texture = m_world.get<VBOTexture>(i);
         auto &texture = *getCache<Texture>().handle(vbo_texture.id);
@@ -341,13 +341,13 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         DrawableFactory::fix_texture(
             m_world,
             i,
-            m_settings.data_folder + sprite.file,
-            {static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].x)
+            m_settings.data_folder + sprite.animations.at(sprite.current_animation).file,
+            {static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).x)
                  / static_cast<float>(texture.width),
-             static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].y)
+             static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).y)
                  / static_cast<float>(texture.height),
-             sprite.width / static_cast<float>(texture.width),
-             sprite.height / static_cast<float>(texture.height)});
+             sprite.animations.at(sprite.current_animation).width / static_cast<float>(texture.width),
+             sprite.animations.at(sprite.current_animation).height / static_cast<float>(texture.height)});
     }
 
     m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {

@@ -89,6 +89,8 @@ jobs:
 
       # TODO :
         # add steps 'unit-tests'
+        # add steps 'fuzz'
+        # add steps 'golden-tests'
         # add steps 'benchmark'
         # add steps 'style & lint'
         # ..

@@ -2,11 +2,11 @@
 #include <Engine/audio/Sound.hpp>
 #include <Engine/helpers/Parser.hpp>
 
-#include "widgets/console/ConsoleCommands.hpp"
-#include "widgets/console/DebugConsole.hpp"
+#include "widgets/debug/console/ConsoleCommands.hpp"
+#include "widgets/debug/console/DebugConsole.hpp"
 
 #include "component/all.hpp"
-#include "screen/MainMenu.hpp"
+
 #include "ThePURGE.hpp"
 
 game::CommandHandler::CommandHandler() :
@@ -119,7 +119,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setMusicVolume =
 
             const auto volume = lexicalCast<float>(args[0]);
 
-            game.getMusic()->setVolume(volume);
+            game.getBackgroundMusic()->setVolume(volume);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setMusicVolume volume\n\tvolume : [0; 2]", e.what()));
