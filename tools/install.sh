@@ -43,7 +43,7 @@ if [ -f requirements.txt ]; then pip3 install -r requirements.txt --user; fi
 # conan profile new game_project --detect
 
 if [[ $(uname -a) =~ "Ubuntu" ]]; then
-    if [ "$CI" ]; then
+    if [ ! "$CI" ]; then
         conan profile update settings.compiler.libcxx=libstdc++11 default
         conan profile update settings.compiler=gcc default
         conan profile update settings.compiler.version=10 default
