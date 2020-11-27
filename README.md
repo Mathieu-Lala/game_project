@@ -17,17 +17,16 @@ ThePURGE 0.3.0
 Usage: ./engine_main [OPTIONS]
 
 Options:
-  -h,--help                   Print this help message and exit
-  --version                   Print the version number and exit.
-  --config=data/config/app.ini
-                              Read an ini file
-  --fullscreen BOOLEAN=1      Launch the window in fullscreen mode.
-  --window-width UINT=1024    Width of the window.
-  --window-height UINT=768    Height of the window.
-  --replay-path TEXT          Path of the events to replay.
-  --replay-data TEXT          Json events to replay.
-  --data TEXT=data/           Path of the data folder.
-  --output-folder TEXT=data/  Path of the generated output.
+  -h,--help                     Print this help message and exit
+  --version                     Print the version number and exit.
+  --config=data/config/app.ini  Read an ini file
+  --fullscreen BOOLEAN=1        Launch the window in fullscreen mode.
+  --window-width UINT=1024      Width of the window.
+  --window-height UINT=768      Height of the window.
+  --replay-path TEXT            Path of the events to replay.
+  --replay-data TEXT            Json events to replay.
+  --data TEXT=data/             Path of the data folder.
+  --output-folder TEXT=data/    Path of the generated output.
 ```
 
 ## Screenshots
@@ -46,15 +45,15 @@ Application version 0.1.9
 
 * Unix systems
 
-    * g++>=10 || clang>=12
-    * cmake>=3.13
-    * python>=3.0
+  * g++>=10 || clang>=11
+  * cmake>=3.13
+  * python>=3.0
 
 * Visual Studio Extension
 
-    * Visual Studio 2019>=16.7
-    * Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
-    * python>=3.0
+  * Visual Studio 2019>=16.7
+  * Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
+  * python>=3.0
 
 The build **require** an internet connection (download of dependencies if missing).
 
@@ -73,16 +72,16 @@ $> ./tools/install.sh
 
 * Unix systems
 
-    * [ccache](https://ccache.dev/)
-    * [cppcheck](http://cppcheck.sourceforge.net/)
-    * [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
+  * [ccache](https://ccache.dev/)
+  * [cppcheck](http://cppcheck.sourceforge.net/)
+  * [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
 
 * Windows
 
-    * [VS cppcheck extension](https://marketplace.visualstudio.com/items?itemName=Alexium.Cppcheckadd-in)
-    * [VS conan extension](https://marketplace.visualstudio.com/items?itemName=conan-io.conan-vs-extension)
-    * [VS GLSL extension](https://marketplace.visualstudio.com/items?itemName=DanielScherzer.GLSL)
-    * [VS clang-format extension](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
+  * [VS cppcheck extension](https://marketplace.visualstudio.com/items?itemName=Alexium.Cppcheckadd-in)
+  * [VS conan extension](https://marketplace.visualstudio.com/items?itemName=conan-io.conan-vs-extension)
+  * [VS GLSL extension](https://marketplace.visualstudio.com/items?itemName=DanielScherzer.GLSL)
+  * [VS clang-format extension](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
 
 ## Build and Run
 

@@ -31,17 +31,21 @@ done
 
 if [[ $(uname -a) =~ "Ubuntu" ]]; then
     sudo apt update & > /dev/null
-    sudo apt install -y gcc-10 g++-10 pkg-config python3-pip
+    sudo apt install -y gcc-10 g++-10 pkg-config python3-pip ssh-askpass
 fi
 
 python3 -m pip install --upgrade pip setuptools --user
-if [ -f requirements.txt ]; then pip install -r requirements.txt --user; fi
 
 export PATH="$PATH:$HOME/.local/bin"
 
+if [ -f requirements.txt ]; then pip3 install -r requirements.txt --user; fi
+
 # conan profile new game_project --detect
-# if [[ $(uname -a) =~ "Ubuntu" ]]; then
-#     conan profile update settings.compiler.libcxx=libstdc++11 game_project
-#     conan profile update settings.compiler=gcc game_project
-#     conan profile update settings.compiler.version=10 game_project
-# fi
+
+if [[ $(uname -a) =~ "Ubuntu" ]]; then
+    if [ "$CI" ]; then
+        conan profile update settings.compiler.libcxx=libstdc++11 default
+        conan profile update settings.compiler=gcc default
+        conan profile update settings.compiler.version=10 default
+    fi
+fi
