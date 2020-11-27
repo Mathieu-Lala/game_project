@@ -22,7 +22,7 @@ auto game::ParticuleFactory::create<game::Particule::ID::HITMARKER>(entt::regist
 
         auto e = world.create();
         // note : i think there is a probleme here !!!
-        world.emplace<engine::d3::Position>(e, particule_pos.x, particule_pos.y, 1);
+        world.emplace<engine::d3::Position>(e, particule_pos.x, particule_pos.y, 1.0);
             //EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
         world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
         world.emplace<engine::d2::Velocity>(e, (particule_pos.x - pos.x) * speed, (particule_pos.y - pos.y) * speed);

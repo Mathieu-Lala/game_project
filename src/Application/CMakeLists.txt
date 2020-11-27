@@ -4,14 +4,19 @@ add_library(
   src/GameLogic.cpp
   src/level/LevelTilemapBuilder.cpp
   src/level/MapGenerator.cpp
+  src/models/SpellDatabase.cpp
+  src/models/ClassDatabase.cpp
+  src/DataConfigLoader.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
   src/factory/ParticuleFactory.cpp
-  src/DataConfigLoader.cpp
-  src/widgets/console/DebugConsole.cpp
-  src/widgets/console/ConsoleCommands.cpp
-  src/models/SpellDatabase.cpp
-  src/models/ClassDatabase.cpp)
+  src/widgets/debug/console/DebugConsole.cpp
+  src/widgets/debug/console/ConsoleCommands.cpp
+  src/widgets/GameHUD.cpp
+  src/menu/AMenu.cpp
+  src/menu/MainMenu.cpp
+  src/menu/UpgradePanel.cpp
+  src/menu/GameOver.cpp)
 
 target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 
