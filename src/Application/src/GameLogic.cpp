@@ -27,7 +27,6 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
     sinkMovement.connect<&GameLogic::slots_move>(*this);
-    // sinkJoystickMovement.connect<&GameLogic::joystickMove>(*this);
 
     sinkOnGameStarted.connect<&GameLogic::slots_game_start>(*this);
 
@@ -46,8 +45,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::slots_check_collision>(*this);
     sinkGameUpdated.connect<&GameLogic::slots_check_floor_change>(*this);
 
-    sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
-    sinkGameUpdated.connect<&GameLogic::boss_anim_update>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_animation_spritesheet>(*this);
 
     sinkAfterGameUpdated.connect<&GameLogic::slots_update_camera>(*this);
     sinkAfterGameUpdated.connect<&GameLogic::slots_update_player_sigh>(*this);
@@ -70,11 +68,6 @@ auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::e
     }
 }
 
-// auto game::GameLogic::joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
-//{
-//    world.get<engine::d2::Acceleration>(player) = accel;
-//}
-
 auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
@@ -83,7 +76,7 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
         .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
         ->setVolume(0.2f)
         .play();
-    m_game.getMusic()->play();
+    m_game.getBackgroundMusic()->play();
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
     onPlayerPurchase.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
@@ -124,13 +117,14 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
             break;
         }
 
-    auto &sp = world.replace<engine::Spritesheet>(
+    world.replace<engine::Spritesheet>(
         player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + newClass.assetGraphPath));
 
-    // Doesn't really matter, will be overridden by correct one soon enough. Prevent segfault of accessing inexistant "default" animation
-    sp.current_animation = "hold_right";
+    // Doesn't really matter, will be overridden by correct one soon enough. Prevent segfault of accessing inexistant
+    // "default" animation sp.current_animation = "idle_right";
 
-    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
+    // engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
+    engine::DrawableFactory::fix_spritesheet(world, player, "idle_right");
 
 
     { // Logging
@@ -326,7 +320,7 @@ auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_un
             }
         }
 
-        auto result = glm::normalize(diff) * 7.f;
+        const auto result = glm::normalize(diff) * 7.f;
         out = {result.x, result.y};
 
         return true;
@@ -504,7 +498,7 @@ auto game::GameLogic::slots_update_particle(
 auto game::GameLogic::slots_check_floor_change(entt::registry &world, const engine::TimeElapsed &) -> void
 {
     world.view<KeyPicker, engine::d3::Position>().each(
-        [door = world.view<entt::tag<"exit_door"_hs>>()[0], &world, this](const auto &picker, const auto &pos) {
+        [door = world.view<entt::tag<"exit_door"_hs>>().front(), &world, this](const auto &picker, const auto &pos) {
             if (!picker.hasKey) return;
 
             constexpr auto kDoorInteractionRange = 2.0;
@@ -515,48 +509,47 @@ auto game::GameLogic::slots_check_floor_change(entt::registry &world, const engi
 
 auto game::GameLogic::slots_update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    static auto holder = engine::Core::Holder{};
-
     auto player = m_game.player;
 
     auto &pos = world.get<engine::d3::Position>(player);
     m_game.getCamera().setCenter({pos.x, pos.y});
-    if (m_game.getCamera().isUpdated()) holder.instance->updateView(m_game.getCamera().getViewProjMatrix());
+    if (m_game.getCamera().isUpdated()) {
+        engine::Core::Holder{}.instance->updateView(m_game.getCamera().getViewProjMatrix());
+    }
 }
 
-auto game::GameLogic::player_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
+// this function will try to update the spritesheet ate everyframe !!! BAD BAD BAD
+auto game::GameLogic::slots_update_animation_spritesheet(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    const auto &vel = world.get<engine::d2::Velocity>(m_game.player);
-    const auto &aiming = world.get<AimingDirection>(m_game.player).dir;
-    auto &sp = world.get<engine::Spritesheet>(m_game.player);
+    for (const auto &i : world.view<engine::Spritesheet, engine::d2::Velocity>(entt::exclude<entt::tag<"spell"_hs>>)) {
+        const auto &vel = world.get<engine::d2::Velocity>(i);
+        const auto &sp = world.get<engine::Spritesheet>(i);
 
-    bool isFacingLeft;
-    if (vel.x < 0)
-        isFacingLeft = true;
-    else if (vel.x > 0)
-        isFacingLeft = false;
-    else if (aiming.x < 0)
-        isFacingLeft = true;
-    else
-        isFacingLeft = false;
+        const auto aiming = [](entt::registry &w, const entt::entity &e) -> std::optional<glm::vec2> {
+            if (w.has<AimingDirection>(e)) {
+                return w.get<AimingDirection>(e).dir;
+            } else {
+                return {};
+            }
+        }(world, i);
 
-    std::string anim;
+        const auto isFacingLeft = [](const auto &v, const auto &a) {
+            if (v.x < 0)
+                return true;
+            else if (v.x > 0)
+                return false;
+            else if (a.has_value() && a.value().x < 0)
+                return true;
+            else
+                return false;
+        }(vel, aiming);
 
-    auto isMoving = vel.x != 0 || vel.y != 0;
+        const auto isMoving = vel.x || vel.y;
 
-    if (isMoving)
-        if (isFacingLeft)
-            anim = "run_left";
-        else
-            anim = "run_right";
-    else if (isFacingLeft)
-        anim = "hold_left";
-    else
-        anim = "hold_right";
+        // all the entity will be looking on the right by default because they don t have a AimingDirection BAD BAD BAD
+        const auto animation = fmt::format("{}_{}", isMoving ? "run" : "idle", isFacingLeft ? "left" : "right");
 
-    if (sp.current_animation != anim) {
-        sp.current_animation = anim;
-        sp.current_frame = 0;
+        if (sp.current_animation != animation) { engine::DrawableFactory::fix_spritesheet(world, i, animation); }
     }
 }
 
@@ -587,44 +580,6 @@ auto game::GameLogic::slots_update_player_sigh(entt::registry &world, const engi
     const auto scale = static_cast<double>(glm::length(aimInput));
     sightScale.x = scale * kSightScaleMultiplier;
     sightScale.y = scale * kSightScaleMultiplier;
-}
-
-auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
-{
-    // we keep it as static to be consister with previous frame on standstill
-    static bool isFacingLeft = false;
-
-    auto queryRes = world.view<entt::tag<"boss"_hs>>();
-
-    if (queryRes.size() == 0) // boss is dead
-        return;
-
-    auto boss = queryRes.front();
-
-    const auto &vel = world.get<engine::d2::Velocity>(boss);
-    auto &sp = world.get<engine::Spritesheet>(boss);
-
-    isFacingLeft = vel.x < 0 || (isFacingLeft && vel.x == 0);
-
-    std::string anim;
-
-    auto isMoving = vel.x != 0 || vel.y != 0;
-
-    if (isMoving)
-        if (isFacingLeft)
-            anim = "run_left";
-        else
-            anim = "run_right";
-    else if (isFacingLeft)
-        anim = "hold_left";
-    else
-        anim = "hold_right";
-
-    if (sp.current_animation != anim) {
-        spdlog::info("Changing anim from {} to {}. Vel is {}, {}", sp.current_animation, anim, vel.x, vel.y);
-        sp.current_animation = anim;
-        sp.current_frame = 0;
-    }
 }
 
 auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity killed, entt::entity killer) -> void

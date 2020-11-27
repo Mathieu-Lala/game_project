@@ -23,8 +23,8 @@ namespace game {
 class GameLogic;
 
 class ThePURGE : public engine::api::Game {
-public:
-    ThePURGE();
+public: // api
+    ThePURGE() = default;
 
     auto onCreate(entt::registry &world) -> void final;
 
@@ -34,37 +34,33 @@ public:
 
     auto drawUserInterface(entt::registry &world) -> void final;
 
-    void setMenu(std::unique_ptr<AMenu> &&menu)
-    {
-        m_currentMenu = std::move(menu);
-    }
+    auto getBackgroundColor() const noexcept -> glm::vec3 final { return {0.0f, 0.0f, 0.0f}; }
 
-
-    // TODO DELETEME : useless, we never get to see the background color
-    auto getBackgroundColor() const noexcept -> glm::vec3 final
-    {
-        return glm::vec3{0.45f, 0.55f, 0.60f};
-    }
+public:
+    void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu); }
 
     auto getLogics() -> GameLogic & { return *m_logics; }
-    auto getMusic() -> std::shared_ptr<engine::Sound> { return m_dungeonMusic; }
+    auto getBackgroundMusic() -> std::shared_ptr<engine::Sound> { return m_background_music; }
 
     auto getClassDatabase() -> const classes::Database & { return m_classDatabase; }
     auto getCamera() -> engine::Camera & { return m_camera; }
 
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
-public:
     entt::entity player; // note : should not require to keep it like that
 
 private:
+
+#ifndef NDEBUG
+    std::unique_ptr<DebugConsole> m_console;
+#endif
+
     std::unique_ptr<GameLogic> m_logics;
 
     classes::Database m_classDatabase;
 
     engine::Camera m_camera; // note : should be in engine::Core
-    std::unique_ptr<DebugConsole> m_debugConsole;
-    std::shared_ptr<engine::Sound> m_dungeonMusic;
+    std::shared_ptr<engine::Sound> m_background_music;
 
     std::unique_ptr<AMenu> m_currentMenu;
 };

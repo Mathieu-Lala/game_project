@@ -11,6 +11,7 @@
 #include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Settings.hpp"           // note : should not require this header here
 #include "Engine/Core.hpp"
+#include "Engine/component/Spritesheet.hpp"
 
 auto engine::DrawableFactory::rectangle() -> Drawable
 {
@@ -79,7 +80,8 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
 }
 
 auto engine::DrawableFactory::fix_texture(
-    entt::registry &world, entt::entity e, const std::string_view filepath, const std::array<float, 4ul> &clip) -> VBOTexture &
+    entt::registry &world, entt::entity e, const std::string_view filepath, const std::array<float, 4ul> &clip)
+    -> VBOTexture &
 {
     static Core::Holder holder{};
 
@@ -90,12 +92,15 @@ auto engine::DrawableFactory::fix_texture(
     // note : could split the texture in two component :
     // Texture = raw image from file
     // ClippedTexture = VBO binded and clipped
-    auto handle = holder.instance->getCache<VBOTexture>().load<LoaderVBOTexture>(
-        entt::hashed_string{
-            fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}", filepath, clip[0], clip[1], clip[2], clip[3]).data()},
-        filepath,
-        clip);
-    if (handle) {
+    if (const auto handle = holder.instance->getCache<VBOTexture>().load<LoaderVBOTexture>(
+            entt::hashed_string{
+                fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}", filepath, clip[0], clip[1], clip[2], clip[3]).data()},
+            filepath,
+            clip);
+        !handle) {
+        spdlog::error("could not load texture in cache : {}", filepath);
+        return *world.try_get<VBOTexture>(e);
+    } else {
         ::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO);
         ::glBufferData(
             GL_ARRAY_BUFFER,
@@ -107,8 +112,32 @@ auto engine::DrawableFactory::fix_texture(
         ::glEnableVertexAttribArray(2);
 
         return world.emplace_or_replace<VBOTexture>(e, *handle);
-    } else {
-        spdlog::error("could not load texture in cache !");
-        throw std::runtime_error("could not load texture in cache !");
     }
+}
+
+auto engine::DrawableFactory::fix_spritesheet(entt::registry &world, entt::entity entity, const std::string_view animation)
+    -> void
+{
+    using namespace std::chrono_literals;
+
+    auto &sp = world.get<Spritesheet>(entity);
+    engine::Spritesheet::Animation *anim{nullptr};
+    try {
+        anim = &sp.animations.at(animation.data());
+    } catch (...) {
+        spdlog::error(
+            "could not find animation '{}' in {}",
+            animation,
+            std::accumulate(std::begin(sp.animations), std::end(sp.animations), std::string{}, [](auto old, auto &i) {
+                return old + "%" + i.first;
+            }));
+        return;
+    }
+
+    sp.current_animation = animation;
+    sp.cooldown.remaining_cooldown = 0ms;
+    sp.cooldown.is_in_cooldown = false;
+    sp.cooldown.cooldown = anim->cooldown;
+    engine::DrawableFactory::fix_texture(world, entity, Core::Holder{}.instance->settings().data_folder + anim->file);
+    sp.current_frame = 0;
 }

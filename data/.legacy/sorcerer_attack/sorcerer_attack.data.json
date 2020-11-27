@@ -5,7 +5,7 @@
         "height": 312,
         "speed": 100,
         "animations": {
-            "hold": [
+            "idle": [
                 {
                     "x": 754,
                     "y": 624
