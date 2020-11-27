@@ -104,7 +104,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
 
     auto &health = world.get<Health>(player);
 
-    health.current += newClass.maxHealth - health.max;
+    health.current += newClass.maxHealth;
     health.max += newClass.maxHealth;
     world.get<Classes>(player).ids.push_back(newClass.id);
 
@@ -190,10 +190,10 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, m_classDatabase[world.get<Classes>(player).ids.back()].speed, true); break;
-                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, m_classDatabase[world.get<Classes>(player).ids.back()].speed, true); break;
-                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, m_classDatabase[world.get<Classes>(player).ids.back()].speed, true); break;
-                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, m_classDatabase[world.get<Classes>(player).ids.back()].speed, true); break;
+                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed, true); break;
+                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed, true); break;
+                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed, true); break;
+                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed, true); break;
                 case GLFW_KEY_P: m_game.setMenu(std::make_unique<menu::UpgradePanel>()); break;
 
                 case GLFW_KEY_U:
@@ -290,9 +290,10 @@ auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[mayb
 
     auto &vel = world.get<engine::d2::Velocity>(player);
     const auto &axis = world.get<ControllerAxis>(player);
+    auto &spd = m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed;
 
-    vel.x = axis.movement.x * (kSpeed);
-    vel.y = axis.movement.y * (kSpeed);
+    vel.x = axis.movement.x * (kSpeed + spd);
+    vel.y = axis.movement.y * (kSpeed + spd);
 }
 
 auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
