@@ -13,7 +13,6 @@ struct Room {
     int w, h;
 };
 
-
 struct MapData {
     Room spawn{};
     std::vector<Room> regularRooms;

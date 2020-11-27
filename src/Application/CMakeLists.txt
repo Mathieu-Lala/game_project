@@ -5,8 +5,7 @@ add_library(
   src/level/LevelTilemapBuilder.cpp
   src/level/MapGenerator.cpp
   src/models/SpellDatabase.cpp
-  src/models/ClassDatabase.cpp
-  src/DataConfigLoader.cpp
+  src/models/Class.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
   src/factory/ParticuleFactory.cpp

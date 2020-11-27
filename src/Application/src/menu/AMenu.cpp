@@ -67,10 +67,10 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 
 void game::AMenu::onDraw(entt::registry &world, ThePURGE &game)
 {
-    draw(world, game);
-
-    m_up = false;
-    m_down = false;
-    m_left = false;
-    m_right = false;
+    if (draw(world, game)) {
+        m_up = false;
+        m_down = false;
+        m_left = false;
+        m_right = false;
+    }
 }

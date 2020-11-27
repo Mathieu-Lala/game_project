@@ -16,7 +16,7 @@
 #include "factory/SpellFactory.hpp"
 #include "factory/ParticuleFactory.hpp"
 
-#include "models/ClassDatabase.hpp"
+#include "models/Class.hpp"
 
 #include "menu/UpgradePanel.hpp"
 #include "menu/GameOver.hpp"
@@ -79,7 +79,7 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
     m_game.getBackgroundMusic()->play();
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    onPlayerPurchase.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+    onPlayerPurchase.publish(world, m_game.player, m_game.getClassDatabase().getStarterClass());
 
     auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(world, {}, {});
 
@@ -132,7 +132,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
         for (const auto &spell : newClass.spells) spellsId << spell << ", ";
 
         std::stringstream childrens;
-        for (const auto &child : newClass.children) childrens << m_game.getClassDatabase().at(child).name << ", ";
+        for (const auto &child : newClass.children) childrens << m_game.getClassDatabase().db.at(child).name << ", ";
 
         spdlog::info(
             "Applied class '{}' to player. Stats are now : \n"

@@ -6,7 +6,6 @@
 
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
-#include "DataConfigLoader.hpp"
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(

@@ -7,8 +7,9 @@
 #include "menu/UpgradePanel.hpp"
 #include "ThePURGE.hpp"
 
-void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
+bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
+    auto ret = true;
     static auto holder = engine::Core::Holder{};
 
     auto player = game.player;
@@ -18,7 +19,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
     // const auto comp = world.get<Class>(player);
     static bool choosetrigger = false;
-    static auto test = classes::getStarterClass(game.getClassDatabase());
+    static auto test = game.getClassDatabase().getStarterClass();
     static std::optional<Class> selectedClass;
     static std::string chosenTrig = "";
     static int spellmapped = 0;
@@ -159,7 +160,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
     std::vector<EntityFactory::ID> buyableClasses;
     int tier = 0;
 
-    nextLine.push_back(classes::getStarterClass(game.getClassDatabase()).id);
+    nextLine.push_back(game.getClassDatabase().getStarterClass().id);
 
     while (!nextLine.empty()) {
         ++tier;
@@ -169,7 +170,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
         helper::ImGui::Text("Tier : {}", tier);
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
         for (const auto currentId : currentLine) {
-            const auto &currentClass = game.getClassDatabase().at(currentId);
+            const auto &currentClass = game.getClassDatabase().db.at(currentId);
 
             bool bought = std::find(boughtClasses.begin(), boughtClasses.end(), currentId) != boughtClasses.end();
             bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
@@ -196,25 +197,28 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
         ImGui::Text(" "); // ImGui::NextLine()
     }
     ImGui::End();
+    return ret;
 }
 
-void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
+bool game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
 {
+    auto ret = true;
     std::visit(
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_P: game.setMenu(nullptr); break;
+                case GLFW_KEY_P: game.setMenu(nullptr); ret = false;break;
                 default: break;
                 }
             },
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
                 switch (joy.source.button) {
-                case engine::Joystick::CENTER2: game.setMenu(nullptr); break;
+                case engine::Joystick::CENTER2: game.setMenu(nullptr); ret = false; break;
                 default: break;
                 }
             },
             [&](auto) {},
         },
         e);
+    return ret;
 }

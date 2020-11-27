@@ -4,8 +4,6 @@
 
 #include "ThePURGE.hpp"
 
-#include "DataConfigLoader.hpp"
-
 #include "widgets/GameHUD.hpp"
 #include "widgets/debug/DebugTerrainGeneration.hpp"
 
@@ -28,7 +26,7 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
     m_background_music->setVolume(0.1f).setLoop(true);
 
-    m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "db/classes.json");
+    m_class_db.fromFile(holder.instance->settings().data_folder + "db/classes.json");
 
     // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
     EntityFactory::create<EntityFactory::ID::BACKGROUND>(world, glm::vec2(25, 25), glm::vec2(75, 75));

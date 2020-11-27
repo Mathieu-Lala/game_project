@@ -10,13 +10,15 @@
 
 #include "component/all.hpp"
 
-#include "widgets/debug/console/DebugConsole.hpp"
-
 #include "menu/AMenu.hpp"
 
 #include "level/MapGenerator.hpp"
 #include "GameLogic.hpp"
-#include "models/ClassDatabase.hpp"
+#include "models/Class.hpp"
+
+#ifndef NDEBUG
+# include "widgets/debug/console/DebugConsole.hpp"
+#endif
 
 namespace game {
 
@@ -42,12 +44,12 @@ public:
     auto getLogics() -> GameLogic & { return *m_logics; }
     auto getBackgroundMusic() -> std::shared_ptr<engine::Sound> { return m_background_music; }
 
-    auto getClassDatabase() -> const classes::Database & { return m_classDatabase; }
+    auto getClassDatabase() { return m_class_db; }
     auto getCamera() -> engine::Camera & { return m_camera; }
 
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
-    entt::entity player; // note : should not require to keep it like that
+    entt::entity player; // note : remove me
 
 private:
 
@@ -57,12 +59,12 @@ private:
 
     std::unique_ptr<GameLogic> m_logics;
 
-    classes::Database m_classDatabase;
+    ClassDatabase m_class_db;
 
     engine::Camera m_camera; // note : should be in engine::Core
     std::shared_ptr<engine::Sound> m_background_music;
 
-    std::unique_ptr<AMenu> m_currentMenu;
+    std::unique_ptr<AMenu> m_currentMenu{ nullptr };
 };
 
 } // namespace game
