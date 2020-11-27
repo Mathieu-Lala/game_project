@@ -37,7 +37,7 @@ public: // api
     auto getBackgroundColor() const noexcept -> glm::vec3 final { return {0.0f, 0.0f, 0.0f}; }
 
 public:
-    void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu); }
+    void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu);}
 
     auto getLogics() -> GameLogic & { return *m_logics; }
     auto getBackgroundMusic() -> std::shared_ptr<engine::Sound> { return m_background_music; }

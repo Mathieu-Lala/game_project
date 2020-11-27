@@ -1,6 +1,5 @@
-#include <Engine/component/Color.hpp>
-#include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/Graphics/Window.hpp>
 
 #include "ThePURGE.hpp"
 #include "menu/AMenu.hpp"
@@ -8,6 +7,11 @@
 void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::Event &e)
 {
     static auto holder = engine::Core::Holder{};
+
+    if (!m_createCalled) {
+        m_createCalled = true;
+        create(world, game);
+    }
 
     std::visit(
         engine::overloaded{
@@ -67,10 +71,31 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 
 void game::AMenu::onDraw(entt::registry &world, ThePURGE &game)
 {
+    if (!m_createCalled) {
+        m_createCalled = true;
+        create(world, game);
+    }
+
     draw(world, game);
 
     m_up = false;
     m_down = false;
     m_left = false;
     m_right = false;
+}
+
+
+auto game::AMenu::frac2pixel(ImVec2 fraction) const noexcept -> ImVec2
+{
+    static auto holder = engine::Core::Holder{};
+    
+    auto winSize = holder.instance->window()->getSize();
+
+    return ImVec2(static_cast<float>(fraction.x * winSize.x), static_cast<float>(fraction.y * winSize.y));
+}
+
+void game::AMenu::drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) const noexcept
+{
+    ImGui::SetCursorPos(topLeft);
+    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(id)), size);
 }

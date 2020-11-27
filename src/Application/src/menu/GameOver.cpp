@@ -5,6 +5,7 @@
 #include "menu/GameOver.hpp"
 #include "menu/MainMenu.hpp"
 
+
 void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 {
     // todo : style because this is not a debug window

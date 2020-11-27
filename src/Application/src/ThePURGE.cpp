@@ -1,6 +1,7 @@
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/Graphics/Window.hpp>
 
 #include "ThePURGE.hpp"
 
@@ -11,7 +12,7 @@
 
 #include "menu/MainMenu.hpp"
 
-auto game::ThePURGE::onDestroy(entt::registry &) -> void { spdlog::info("Thank's for playing ThePURGE"); }
+auto game::ThePURGE::onDestroy(entt::registry &) -> void { spdlog::info("Thanks for playing ThePURGE"); }
 
 auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 {
@@ -21,6 +22,8 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 #endif
 
     static auto holder = engine::Core::Holder{};
+
+    holder.instance->window()->setSize(glm::ivec2(1920, 1080));
 
     m_logics = std::make_unique<GameLogic>(*this);
 

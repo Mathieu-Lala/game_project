@@ -158,6 +158,7 @@ auto engine::Window::setActive() -> void { ::glfwMakeContextCurrent(m_handle); }
 auto engine::Window::setSize(glm::ivec2 &&size) -> void {
     ::glfwSetWindowSize(m_handle, size.x, size.y);
     ::glViewport(0, 0, size.x, size.y);
+    m_size = size;
 }
 
 auto engine::Window::setPosition(glm::ivec2 &&pos) -> void { ::glfwSetWindowPos(m_handle, pos.x, pos.y); }

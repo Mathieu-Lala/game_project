@@ -8,11 +8,12 @@ namespace game::menu {
 
 class MainMenu : public AMenu {
 public:
+    void create(entt::registry &world, ThePURGE &game) final;
     void draw(entt::registry &world, ThePURGE &game) final;
     void event(entt::registry &world, ThePURGE &game, const engine::Event &e) final;
 
 private:
-
+    std::uint32_t m_backgroundTexture;
 };
 
 } // namespace game
