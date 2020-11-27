@@ -21,7 +21,7 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
     m_handle{::glfwCreateWindow(size.x, size.y, title.data(), nullptr, nullptr)}, m_ui_context{ImGui::CreateContext()}
 {
     if (m_handle == nullptr) { throw std::logic_error("Engine::Window initialization failed"); }
-    spdlog::info("Engine::Window instanciated");
+    spdlog::trace("Engine::Window instanciated");
 
     ::glfwGetWindowSize(m_handle, &m_size.x, &m_size.y);
     ::glfwGetWindowPos(m_handle, &m_pos.x, &m_pos.y);
@@ -59,7 +59,7 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
     m_events.emplace_back(OpenWindow{});
 
     if (property & FULLSCREEN) {
-        spdlog::info("Engine::Window Fullscreen");
+        spdlog::trace("Engine::Window Fullscreen");
         setFullscreen(true);
     }
 
@@ -75,7 +75,7 @@ engine::Window::~Window()
 
     if (m_handle != nullptr) { ::glfwDestroyWindow(m_handle); }
 
-    spdlog::info("Engine::Window destroyed");
+    spdlog::trace("Engine::Window destroyed");
 }
 
 auto engine::Window::draw(const std::function<void()> &drawer) -> void

@@ -53,7 +53,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
         spdlog::error("Engine::Core GLFW An error occured '{}' 'code={}'\n", message, code);
     });
 
-    spdlog::info("Engine::Core instanciated");
+    spdlog::trace("Engine::Core instanciated");
     if (::glfwInit() == GLFW_FALSE) { throw std::logic_error(fmt::format("Engine::Core initialization failed")); }
 
     ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -63,7 +63,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
     ::glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    spdlog::info("Engine::Core GLFW version: '{}'\n", ::glfwGetVersionString());
+    spdlog::trace("Engine::Core GLFW version: '{}'\n", ::glfwGetVersionString());
 
     IMGUI_CHECKVERSION();
 
@@ -77,7 +77,7 @@ engine::Core::~Core()
     // note : otherwise we have a final error message at the end
     ::glfwSetErrorCallback(nullptr);
 
-    spdlog::info("Engine::Core destroyed");
+    spdlog::trace("Engine::Core destroyed");
 }
 
 auto engine::Core::setPendingEvents(std::vector<Event> &&events) -> void
@@ -126,7 +126,7 @@ auto engine::Core::getNextEvent() -> Event
     } break;
     case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
-            spdlog::warn("Engine::Window switching to record mode");
+            spdlog::info("Engine::Window switching to record mode");
             m_eventMode = EventMode::RECORD;
             return TimeElapsed{getElapsedTime()};
         }
@@ -161,7 +161,7 @@ auto engine::Core::main(int argc, char **argv) -> int
 #ifdef LOGLOGLOG
         // todo : setup properly logging
         auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
-        logger->info("logger created");
+        logger->trace("logger created");
 #endif
 
         Options opt{argc, argv};
