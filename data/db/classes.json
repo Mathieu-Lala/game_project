@@ -24,7 +24,7 @@
     "desc": "Soldier description",
     "icon": "icons/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
-    "maxHealth": 30,
+    "maxHealth": 20,
     "damage": 5,
     "speed": 1.1,
     "hitbox": {
@@ -40,7 +40,7 @@
     "desc": "Shooter description",
     "icon": "icons/shooter.png",
     "assetGraph": "anims/classes/shooter/shooter.data.json",
-    "maxHealth": 20,
+    "maxHealth": 10,
     "damage": 8,
     "speed": 1.3,
     "hitbox": {
@@ -56,7 +56,7 @@
     "desc": "Sorcerer description",
     "icon": "icons/sorcerer.png",
     "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
-    "maxHealth": 15,
+    "maxHealth": 5,
     "damage": 10,
     "speed": 1.2,
     "hitbox": {

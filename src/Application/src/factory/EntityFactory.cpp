@@ -210,7 +210,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<KeyPicker>(player);
     world.emplace<SpellSlots>(player);
     world.emplace<Classes>(player);
-    world.emplace<SkillPoint>(player, 0);
+    world.emplace<SkillPoint>(player, 1);
     world.emplace<ControllerAxis>(player, glm::vec2(0.f, 0.f), glm::vec2(0.f, 0.f));
     world.emplace<AimSight>(player);
     world.emplace<AimingDirection>(player, glm::vec2(1.f, 0.f));
@@ -219,7 +219,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
 
     // class dependant, see `GameLogic::apply_class_to_player`
     world.emplace<engine::Spritesheet>(player);
-    world.emplace<Health>(player, 1.f, 1.f);
+    world.emplace<Health>(player, 0.f, 0.f);
     world.emplace<AttackDamage>(player, 0.f);
     world.emplace<Speed>(player, 1.f);
     world.emplace<engine::d2::HitboxSolid>(player, 0.75, 2.0);

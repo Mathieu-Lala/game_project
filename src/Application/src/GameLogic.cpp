@@ -108,7 +108,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
     auto &health = world.get<Health>(player);
 
     health.current += newClass.maxHealth - health.max;
-    health.max = newClass.maxHealth;
+    health.max += newClass.maxHealth;
     world.get<Classes>(player).ids.push_back(newClass.id);
 
 
