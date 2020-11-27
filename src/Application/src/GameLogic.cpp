@@ -54,14 +54,14 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkOnFloorChange.connect<&GameLogic::slots_change_floor>(*this);
 }
 
-auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
+auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, const float spd, bool is_pressed)
     -> void
 {
     switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
-    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1.0f : 0.0f; break;
-    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1.0f : 0.0f; break;
+    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f + spd : 0.0f; break;
+    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f - spd : 0.0f; break;
+    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1.0f + spd : 0.0f; break;
+    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1.0f - spd : 0.0f; break;
     default: break;
     }
 }
@@ -102,6 +102,8 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
     static auto holder = engine::Core::Holder{};
 
     world.get<AttackDamage>(player).damage = newClass.damage;
+    world.get<Speed>(player).speed = newClass.speed;
+    world.get<engine::d2::HitboxSolid>(player) = newClass.hitbox;
 
     auto &health = world.get<Health>(player);
 
@@ -145,6 +147,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
             newClass.name,
             newClass.damage,
             newClass.maxHealth,
+            newClass.speed,
             spellsId.str(),
             childrens.str());
     }
@@ -170,8 +173,8 @@ auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[mayb
     auto &vel = world.get<engine::d2::Velocity>(player);
     const auto &axis = world.get<ControllerAxis>(player);
 
-    vel.x = axis.movement.x * kSpeed;
-    vel.y = axis.movement.y * kSpeed;
+    vel.x = axis.movement.x * (kSpeed);
+    vel.y = axis.movement.y * (kSpeed);
 }
 
 auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void

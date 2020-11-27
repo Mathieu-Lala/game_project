@@ -97,10 +97,10 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_DOWN: m_camera.move({0, -1}); break;
                     case GLFW_KEY_LEFT: m_camera.move({-1, 0}); break;
 
-                    case GLFW_KEY_I: m_logics->onMovement.publish(world, player, Direction::UP, true); break;
-                    case GLFW_KEY_K: m_logics->onMovement.publish(world, player, Direction::DOWN, true); break;
-                    case GLFW_KEY_L: m_logics->onMovement.publish(world, player, Direction::RIGHT, true); break;
-                    case GLFW_KEY_J: m_logics->onMovement.publish(world, player, Direction::LEFT, true); break;
+                    case GLFW_KEY_I: m_logics->onMovement.publish(world, player, Direction::UP, m_classDatabase[world.get<Classes>(player).ids.back()].speed, true); break;
+                    case GLFW_KEY_K: m_logics->onMovement.publish(world, player, Direction::DOWN, m_classDatabase[world.get<Classes>(player).ids.back()].speed, true); break;
+                    case GLFW_KEY_L: m_logics->onMovement.publish(world, player, Direction::RIGHT, m_classDatabase[world.get<Classes>(player).ids.back()].speed, true); break;
+                    case GLFW_KEY_J: m_logics->onMovement.publish(world, player, Direction::LEFT, m_classDatabase[world.get<Classes>(player).ids.back()].speed, true); break;
                     case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
 
                     case GLFW_KEY_U:
@@ -118,10 +118,10 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                 },
                 [&](const engine::Released<engine::Key> &key) {
                     switch (key.source.key) {
-                    case GLFW_KEY_I: m_logics->onMovement.publish(world, player, Direction::UP, false); break;
-                    case GLFW_KEY_K: m_logics->onMovement.publish(world, player, Direction::DOWN, false); break;
-                    case GLFW_KEY_L: m_logics->onMovement.publish(world, player, Direction::RIGHT, false); break;
-                    case GLFW_KEY_J: m_logics->onMovement.publish(world, player, Direction::LEFT, false); break;
+                    case GLFW_KEY_I: m_logics->onMovement.publish(world, player, Direction::UP, 0, false); break;
+                    case GLFW_KEY_K: m_logics->onMovement.publish(world, player, Direction::DOWN, 0, false); break;
+                    case GLFW_KEY_L: m_logics->onMovement.publish(world, player, Direction::RIGHT, 0, false); break;
+                    case GLFW_KEY_J: m_logics->onMovement.publish(world, player, Direction::LEFT, 0, false); break;
                     default: return;
                     }
                 },

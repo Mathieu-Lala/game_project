@@ -3,9 +3,12 @@
 
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "factory/SpellFactory.hpp"
 #include "factory/EntityFactory.hpp"
+
+#include "engine/component/Hitbox.hpp"
 
 namespace game {
 
@@ -22,6 +25,8 @@ struct Class {
 
     float maxHealth;
     float damage;
+    float speed;
+    engine::d2::HitboxSolid hitbox;
 
     std::vector<EntityFactory::ID> children;
 };

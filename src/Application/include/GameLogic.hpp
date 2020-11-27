@@ -43,7 +43,7 @@ public: // signals // note : should be only related to input (elapsed time / key
 
     // note : should have only one signal : onUserMove, or something like that
     // entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> joystickMovement;
-    entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir, bool is_pressed)> onMovement;
+    entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir, const float spd, bool is_pressed)> onMovement;
 
     entt::sigh<void(entt::registry &)> onGameStart;
 
@@ -63,7 +63,7 @@ public: // signals // note : should be only related to input (elapsed time / key
 private: // slots
 
     decltype(onMovement)::sink_type sinkMovement{onMovement};
-    auto slots_move(entt::registry &, entt::entity &, const Direction &, bool is_pressed) -> void;
+    auto slots_move(entt::registry &, entt::entity &, const Direction &, const float spd, bool is_pressed) -> void;
 
     //decltype(joystickMovement)::sink_type sinkJoystickMovement{joystickMovement};
     //auto joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void;
