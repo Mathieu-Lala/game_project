@@ -1,6 +1,9 @@
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
+#include <Engine/Core.hpp>
+#include <Engine/helpers/ImGui.hpp>
+
 #include "widgets/GameHUD.hpp"
-#include "Engine/Core.hpp"
-#include "Engine/helpers/ImGui.hpp"
 
 void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 {

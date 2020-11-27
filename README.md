@@ -5,7 +5,7 @@
 
 Keimyung University - Mobile Game Development - 2020 Fall Semester
 
-This project is a video game for PC. See the [Game Design Document](doc/GDD_ten_page.pdf) for more details.
+This project is a video game for PC. See the [Game Design Document](doc/ThePURGE_GameDesignDocument.pdf) for more details.
 
 This repository contains the source code of the [game](src/Application) and his [engine](src/Engine).
 

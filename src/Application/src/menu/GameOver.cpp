@@ -1,8 +1,11 @@
-#include "menu/GameOver.hpp"
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
+
 #include "ThePURGE.hpp"
+#include "menu/GameOver.hpp"
 #include "menu/MainMenu.hpp"
 
-void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game) 
+void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 {
     // todo : style because this is not a debug window
     ImGui::Begin("Menu Game Over", nullptr, ImGuiWindowFlags_NoDecoration);

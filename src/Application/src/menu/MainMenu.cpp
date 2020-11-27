@@ -1,4 +1,7 @@
-#include "Menu/MainMenu.hpp"
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
+
+#include "menu/MainMenu.hpp"
 #include "ThePURGE.hpp"
 
 void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)

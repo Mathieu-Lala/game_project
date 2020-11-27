@@ -1,9 +1,11 @@
-#include "Menu/UpgradePanel.hpp"
-#include "ThePURGE.hpp"
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
+#include <Engine/resources/Texture.hpp>
+#include <Engine/helpers/ImGui.hpp>
+#include <Engine/Core.hpp>
 
-#include "Engine/Core.hpp"
-#include "Engine/resources/Texture.hpp"
-#include "Engine/helpers/ImGui.hpp"
+#include "menu/UpgradePanel.hpp"
+#include "ThePURGE.hpp"
 
 void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {

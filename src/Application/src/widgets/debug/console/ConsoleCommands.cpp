@@ -119,7 +119,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setMusicVolume =
 
             const auto volume = lexicalCast<float>(args[0]);
 
-            game.getMusic()->setVolume(volume);
+            game.getBackgroundMusic()->setVolume(volume);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setMusicVolume volume\n\tvolume : [0; 2]", e.what()));

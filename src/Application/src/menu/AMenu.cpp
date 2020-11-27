@@ -1,8 +1,9 @@
-#include "menu/AMenu.hpp"
-#include "Engine/Core.hpp"
-#include "ThePURGE.hpp"
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
+#include <Engine/Core.hpp>
 
-game::AMenu::AMenu() : m_prevLeftJoystick(0) {}
+#include "ThePURGE.hpp"
+#include "menu/AMenu.hpp"
 
 void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::Event &e)
 {
