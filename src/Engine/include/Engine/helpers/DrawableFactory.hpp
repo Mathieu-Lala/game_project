@@ -28,6 +28,7 @@ struct DrawableFactory {
         const std::string_view filepath,
         const std::array<float, 4ul> &clip = {0.0f, 0.0f, 1.0f, 1.0f}) -> VBOTexture &;
 
+    static auto fix_spritesheet(entt::registry &world, entt::entity entity, const std::string_view animation) -> void;
 };
 
 } // namespace engine

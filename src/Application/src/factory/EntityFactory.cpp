@@ -136,17 +136,22 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(entt::registry &wor
     const auto e = world.create();
     world.emplace<entt::tag<"enemy"_hs>>(e);
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_ENEMY>());
-    world.emplace<engine::d2::Velocity>(e, 0.02 * (std::rand() & 1), 0.02 * (std::rand() & 1));
+    world.emplace<engine::d2::Velocity>(e, 0.0, 0.0);
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::d2::HitboxSolid>(e, 1.0, 1.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 0, 0});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/enemy.png");
+    // engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/enemy.png");
     world.emplace<ViewRange>(e, 10.0f);
     world.emplace<AttackRange>(e, 3.0f);
     world.emplace<AttackDamage>(e, 2.0f);
     world.emplace<Health>(e, 1.0f, 1.0f);
+
+    world.emplace<engine::Spritesheet>(
+        e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/enemies/skeleton/skeleton.data.json"));
+
+    engine::DrawableFactory::fix_spritesheet(world, e, (std::rand() & 1) ? "idle_right" : "idle_left");
 
     auto &slots = world.emplace<SpellSlots>(e);
     slots.spells[0] = Spell::create(SpellFactory::ENEMY_ATTACK);
@@ -177,12 +182,10 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
     world.emplace<Health>(e, 100.0f, 100.0f);
     engine::DrawableFactory::fix_color(world, e, {0.95f, 0.95f, 0.95f});
 
-    // todo : add cache
-    auto &sp = world.emplace<engine::Spritesheet>(
+    world.emplace<engine::Spritesheet>(
         e, engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/bosses/onlyone/boss.data.json"));
-    sp.current_animation = "hold_right";
 
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + sp.file);
+    engine::DrawableFactory::fix_spritesheet(world, e, "idle_right");
 
     auto &slots = world.emplace<SpellSlots>(e);
 

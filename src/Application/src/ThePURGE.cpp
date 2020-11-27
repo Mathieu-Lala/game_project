@@ -104,14 +104,16 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
                     case GLFW_KEY_P: setState(State::IN_INVENTORY); break;
 
                     case GLFW_KEY_U:
-                    case GLFW_KEY_Y: {
+                    case GLFW_KEY_Y:
+                    case GLFW_KEY_T:
+                    case GLFW_KEY_R: {
                         const auto id = spell_map(key.source.key);
 
                         auto &spell = world.get<SpellSlots>(player).spells[id];
                         if (!spell.has_value()) break;
 
-                        auto &aim = world.get<AimingDirection>(player).dir;
-                        m_logics->onSpellCast.publish(world, player, aim, spell.value());
+                        const auto &aim = world.get<engine::d2::Velocity>(player);
+                        m_logics->onSpellCast.publish(world, player, { aim.x, aim.y }, spell.value());
                     } break;
                     default: return;
                     }

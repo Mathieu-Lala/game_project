@@ -65,9 +65,6 @@ private: // slots
     decltype(onMovement)::sink_type sinkMovement{onMovement};
     auto slots_move(entt::registry &, entt::entity &, const Direction &, bool is_pressed) -> void;
 
-    //decltype(joystickMovement)::sink_type sinkJoystickMovement{joystickMovement};
-    //auto joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void;
-
     decltype(onGameStart)::sink_type sinkOnGameStarted{onGameStart};
     auto slots_game_start(entt::registry &) -> void;
 
@@ -78,7 +75,7 @@ private: // slots
     decltype(onPlayerLevelUp)::sink_type sinkOnPlayerLevelUp{onPlayerLevelUp};
     auto slots_level_up(entt::registry &, entt::entity) -> void;
 
-    decltype(onGameUpdate)::sink_type sinkGameUpdated{onGameUpdate};
+    decltype(onGameUpdate)::sink_type sinkGameUpdated{onGameUpdate}; // todo : cleaner
     auto slots_update_player_movement(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_update_ai_movement(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_update_ai_attack(entt::registry &, const engine::TimeElapsed &) -> void;
@@ -90,8 +87,8 @@ private: // slots
 
     /*[[deprecated]]*/ auto slots_update_effect(entt::registry &, const engine::TimeElapsed &) -> void;
 
-    auto boss_anim_update(entt::registry &, const engine::TimeElapsed &) -> void; // todo : cleaner
-    auto player_anim_update(entt::registry &, const engine::TimeElapsed &) -> void; // todo : cleaner
+    // todo : should not be a slots connected to onGameUpdate but a callback connected to replace<Velocity>
+    auto slots_update_animation_spritesheet(entt::registry &, const engine::TimeElapsed &) -> void;
 
     decltype(onGameUpdateAfter)::sink_type sinkAfterGameUpdated{onGameUpdateAfter}; // todo : cleaner
     auto slots_update_camera(entt::registry &, const engine::TimeElapsed &) -> void;
