@@ -56,14 +56,16 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkOnFloorChange.connect<&GameLogic::slots_change_floor>(*this);
 }
 
-auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, const float spd, bool is_pressed)
+auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
     -> void
 {
+    auto spd = world.get<Speed>(player).speed;
+
     switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f + spd : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f - spd : 0.0f; break;
-    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1.0f + spd : 0.0f; break;
-    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1.0f - spd : 0.0f; break;
+    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? spd : 0.0f; break;
+    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -spd : 0.0f; break;
+    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? spd : 0.0f; break;
+    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -spd : 0.0f; break;
     default: break;
     }
 }
@@ -190,10 +192,10 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed, true); break;
-                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed, true); break;
-                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed, true); break;
-                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed, true); break;
+                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, true); break;
+                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, true); break;
+                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, true); break;
+                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, true); break;
                 case GLFW_KEY_P: m_game.setMenu(std::make_unique<menu::UpgradePanel>()); break;
 
                 case GLFW_KEY_U:
@@ -211,10 +213,10 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
             },
             [&](const engine::Released<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, 0, false); break;
-                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, 0, false); break;
-                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, 0, false); break;
-                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, 0, false); break;
+                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, false); break;
+                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, false); break;
+                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, false); break;
+                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, false); break;
                 default: return;
                 }
             },
@@ -284,16 +286,14 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
 auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt)
     -> void
 {
-    constexpr float kSpeed = 10;
-
     auto player = m_game.player;
 
     auto &vel = world.get<engine::d2::Velocity>(player);
     const auto &axis = world.get<ControllerAxis>(player);
-    auto &spd = m_game.getClassDatabase().at(world.get<Classes>(player).ids.back()).speed;
+    auto spd = world.get<Speed>(player).speed;
 
-    vel.x = axis.movement.x * (kSpeed + spd);
-    vel.y = axis.movement.y * (kSpeed + spd);
+    vel.x = axis.movement.x * spd;
+    vel.y = axis.movement.y * spd;
 }
 
 auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void

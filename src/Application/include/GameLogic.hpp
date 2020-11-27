@@ -42,7 +42,7 @@ private:
 public: // signals
 
     // note : should have only one signal : onUserMove, or something like that
-    entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir, const float spd, bool is_pressed)> onMovement;
+    entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir, bool is_pressed)> onMovement;
 
     entt::sigh<void(entt::registry &)> onGameStart;
 
@@ -64,7 +64,7 @@ public: // signals
 private: // slots
 
     decltype(onMovement)::sink_type sinkMovement{onMovement};
-    auto slots_move(entt::registry &, entt::entity &, const Direction &, const float spd, bool is_pressed) -> void;
+    auto slots_move(entt::registry &, entt::entity &, const Direction &, bool is_pressed) -> void;
 
     decltype(onGameStart)::sink_type sinkOnGameStarted{onGameStart};
     auto slots_game_start(entt::registry &) -> void;
