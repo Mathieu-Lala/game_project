@@ -4,6 +4,9 @@
 #include <string_view>
 #include <vector>
 #include <unordered_map>
+#include <utility>
+
+#include <Engine/component/Hitbox.hpp>
 
 #include "factory/SpellFactory.hpp"
 #include "factory/EntityFactory.hpp"
@@ -24,6 +27,9 @@ struct Class {
     float maxHealth;
 
     float damage;
+    float speed;
+    int cost;
+    engine::d2::HitboxSolid hitbox;
 
     std::vector<EntityFactory::ID> children;
 };

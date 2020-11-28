@@ -38,16 +38,15 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
     if (!file.is_open()) { spdlog::error("Can't open the given file"); }
     const auto jsonData = nlohmann::json::parse(file);
 
-    for (const auto &[name, data] : jsonData.items()) {
+    const auto get_spells = [](const auto &in) {
         std::vector<SpellFactory::ID> spells;
-        // note : see std::transform
-        // for (const auto &spell : data["spells"]) { spells.push_back(static_cast<SpellFactory::ID>(spell.get<int>())); }
+        std::transform(std::begin(in), std::end(in), std::back_inserter(spells), [](const nlohmann::json &i) {
+            return static_cast<SpellFactory::ID>(i.get<int>());
+        });
+        return spells;
+    };
 
-        std::transform(
-            std::begin(data["spells"]), std::end(data["spells"]), std::back_inserter(spells), [](const nlohmann::json &i) {
-                return static_cast<SpellFactory::ID>(i.get<int>());
-            });
-
+    for (const auto &[name, data] : jsonData.items()) {
         const auto currentID = EntityFactory::toID(name);
 
         this->db[currentID] = {
@@ -57,17 +56,20 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             .iconPath = data["icon"],
             .assetGraphPath = data["assetGraph"],
             .is_starter = data.value("starter", false),
-            .spells = spells,
+            .spells = get_spells(data["spells"]),
             .maxHealth = data["maxHealth"].get<float>(),
             .damage = data["damage"].get<float>(),
+            .speed = data["speed"].get<float>(),
+            .cost = data["cost"].get<int>(),
+            .hitbox = engine::d2::HitboxSolid{data["hitbox"]["x"].get<double>(), data["hitbox"]["y"].get<double>()},
             .children = {},
         };
     }
 
-    for (auto &[id, dbClass] : this->db) {
-        for (const auto &child : jsonData[dbClass.name]["children"]) {
+    for (auto &[id, i] : this->db) {
+        for (const auto &child : jsonData[i.name]["children"]) {
             if (const auto c = getByName(child.get<std::string>()); c) {
-                dbClass.children.push_back(c->id);
+                i.children.push_back(c->id);
             } else
                 UNLIKELY { spdlog::warn("Unknown class '{}'. Ignoring", child); }
         }
@@ -88,8 +90,9 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             "", // classes.spells,
             classes.maxHealth,
             classes.damage,
-            std::accumulate(std::begin(classes.children), std::end(classes.children), std::string{}, [](auto out, auto &i){ return out + "/" + magic_enum::enum_name(i).data(); })
-        );
+            std::accumulate(std::begin(classes.children), std::end(classes.children), std::string{}, [](auto out, auto &i) {
+                return out + "/" + magic_enum::enum_name(i).data();
+            }));
     }
 
     return *this;
