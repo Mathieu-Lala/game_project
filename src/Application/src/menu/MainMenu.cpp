@@ -4,8 +4,9 @@
 #include "menu/MainMenu.hpp"
 #include "ThePURGE.hpp"
 
-void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
+bool game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
 {
+    auto ret = true;
     // todo : load the resource in a coroutine here
 
     // todo : style because this is not a debug window
@@ -14,13 +15,16 @@ void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
     if (ImGui::Button("Start the game")) {
         game.logics()->onGameStart.publish(world);
         game.setMenu(nullptr);
+        ret = false;
     }
 
     ImGui::End();
+    return ret;
 }
 
-void game::menu::MainMenu::event(entt::registry &world, ThePURGE &game, const engine::Event &e)
+bool game::menu::MainMenu::event(entt::registry &world, ThePURGE &game, const engine::Event &e)
 {
+    auto ret = true;
     std::visit(
         engine::overloaded{
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
@@ -28,6 +32,7 @@ void game::menu::MainMenu::event(entt::registry &world, ThePURGE &game, const en
                 case engine::Joystick::CENTER2: {
                     game.logics()->onGameStart.publish(world);
                     game.setMenu(nullptr);
+                    ret = false;
                 } break;
                 default: break;
                 }
@@ -35,4 +40,5 @@ void game::menu::MainMenu::event(entt::registry &world, ThePURGE &game, const en
             [&](auto) {},
         },
         e);
+    return ret;
 }

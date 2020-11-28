@@ -16,7 +16,7 @@
 #include "factory/SpellFactory.hpp"
 #include "factory/ParticuleFactory.hpp"
 
-#include "models/ClassDatabase.hpp"
+#include "models/Class.hpp"
 
 #include "menu/UpgradePanel.hpp"
 #include "menu/GameOver.hpp"
@@ -59,11 +59,13 @@ game::GameLogic::GameLogic(ThePURGE &game) :
 auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
     -> void
 {
+    auto spd = world.get<Speed>(player).speed;
+
     switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
-    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1.0f : 0.0f; break;
-    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1.0f : 0.0f; break;
+    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? spd : 0.0f; break;
+    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -spd : 0.0f; break;
+    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? spd : 0.0f; break;
+    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -spd : 0.0f; break;
     default: break;
     }
 }
@@ -78,10 +80,10 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
         .play();
     m_game.getBackgroundMusic()->play();
 
-    m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    onPlayerPurchase.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+    m_game.player = EntityFactory::create<EntityFactory::PLAYER>(m_game, world, {}, {});
+    slots_apply_classes(world, m_game.player, m_game.dbClasses().getStarterClass());
 
-    auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(world, {}, {});
+    auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(m_game, world, {}, {});
 
     glm::vec3 playerColor(1.f, 0.2f, 0.2f);
     engine::DrawableFactory::fix_color(world, aimingSight, std::move(playerColor));
@@ -99,11 +101,13 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
     static auto holder = engine::Core::Holder{};
 
     world.get<AttackDamage>(player).damage = newClass.damage;
+    world.get<Speed>(player).speed = newClass.speed;
+    world.get<engine::d2::HitboxSolid>(player) = newClass.hitbox;
 
     auto &health = world.get<Health>(player);
 
-    health.current += newClass.maxHealth - health.max;
-    health.max = newClass.maxHealth;
+    health.current += newClass.maxHealth;
+    health.max += newClass.maxHealth;
     world.get<Classes>(player).ids.push_back(newClass.id);
 
 
@@ -112,8 +116,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
     for (const auto &spell : newClass.spells)
         for (auto &slot : world.get<SpellSlots>(player).spells) {
             if (slot.has_value()) continue;
-
-            slot = Spell::create(spell);
+            slot = m_game.dbSpells().instantiate(spell);
             break;
         }
 
@@ -132,7 +135,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
         for (const auto &spell : newClass.spells) spellsId << spell << ", ";
 
         std::stringstream childrens;
-        for (const auto &child : newClass.children) childrens << m_game.getClassDatabase().at(child).name << ", ";
+        for (const auto &child : newClass.children) childrens << m_game.dbClasses().db.at(child).name << ", ";
 
         spdlog::info(
             "Applied class '{}' to player. Stats are now : \n"
@@ -143,14 +146,15 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
             newClass.name,
             newClass.damage,
             newClass.maxHealth,
+            newClass.speed,
             spellsId.str(),
             childrens.str());
     }
 }
 
-auto game::GameLogic::slots_purchase_classes(entt::registry &world, entt::entity player, const Class &) -> void
+auto game::GameLogic::slots_purchase_classes(entt::registry &world, entt::entity player, const Class &newClass) -> void
 {
-    world.get<SkillPoint>(player).count--;
+    world.get<SkillPoint>(player).count -= newClass.cost;
 }
 
 auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity) -> void
@@ -187,10 +191,10 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, true); break;
                 case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, true); break;
                 case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, true); break;
                 case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, true); break;
+                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, true); break;
                 case GLFW_KEY_P: m_game.setMenu(std::make_unique<menu::UpgradePanel>()); break;
 
                 case GLFW_KEY_U:
@@ -281,15 +285,14 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
 auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt)
     -> void
 {
-    constexpr float kSpeed = 10;
-
     auto player = m_game.player;
 
     auto &vel = world.get<engine::d2::Velocity>(player);
     const auto &axis = world.get<ControllerAxis>(player);
+    auto spd = world.get<Speed>(player).speed;
 
-    vel.x = axis.movement.x * kSpeed;
-    vel.y = axis.movement.y * kSpeed;
+    vel.x = axis.movement.x * spd;
+    vel.y = axis.movement.y * spd;
 }
 
 auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
@@ -327,7 +330,8 @@ auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_un
     };
 
     for (auto &i : world.view<entt::tag<"enemy"_hs>>()) {
-        if (world.has<engine::Spritesheet>(i) && world.get<engine::Spritesheet>(i).current_animation == "death") continue;
+        if (world.has<engine::Spritesheet>(i) && world.get<engine::Spritesheet>(i).current_animation == "death")
+            continue;
         auto &vel = world.get<engine::d2::Velocity>(i);
         pursue(i, m_game.player, vel);
     }
@@ -378,7 +382,8 @@ auto game::GameLogic::slots_update_ai_attack(entt::registry &world, [[maybe_unus
     for (auto enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange>()) {
         // TODO: Add brain to AI. current strategy : spam every spell towards the player
 
-        if (world.has<engine::Spritesheet>(enemy) && world.get<engine::Spritesheet>(enemy).current_animation == "death") continue;
+        if (world.has<engine::Spritesheet>(enemy) && world.get<engine::Spritesheet>(enemy).current_animation == "death")
+            continue;
 
         for (auto &spell : world.get<SpellSlots>(enemy).spells) {
             if (!spell.has_value()) continue;
@@ -417,7 +422,8 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unuse
     }
 
     const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source) {
-        if (world.has<engine::Spritesheet>(entity) && world.get<engine::Spritesheet>(entity).current_animation == "death") return;
+        if (world.has<engine::Spritesheet>(entity) && world.get<engine::Spritesheet>(entity).current_animation == "death")
+            return;
 
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
@@ -545,7 +551,8 @@ auto game::GameLogic::slots_update_animation_spritesheet(entt::registry &world, 
         const auto &vel = world.get<engine::d2::Velocity>(i);
         const auto &sp = world.get<engine::Spritesheet>(i);
 
-        if (world.has<engine::Spritesheet>(i) && world.get<engine::Spritesheet>(i).current_animation == "death") continue;
+        if (world.has<engine::Spritesheet>(i) && world.get<engine::Spritesheet>(i).current_animation == "death")
+            continue;
 
         const auto aiming = [](entt::registry &w, const entt::entity &e) -> std::optional<glm::vec2> {
             if (w.has<AimingDirection>(e)) {
@@ -624,7 +631,6 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
         m_game.setMenu(std::make_unique<menu::GameOver>());
 
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
-
         // TODO: actual random utilities
         bool lazyDevCoinflip = static_cast<std::uint32_t>(killed) % 2;
         holder.instance->getAudioManager()
@@ -643,7 +649,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);
-            EntityFactory::create<EntityFactory::KEY>(world, {pos.x, pos.y}, {1.0, 1.0});
+            EntityFactory::create<EntityFactory::KEY>(m_game, world, {pos.x, pos.y}, {1.0, 1.0});
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
                 ->play();
@@ -669,7 +675,8 @@ auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
     world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
 
-    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
+    auto data =
+        Stage{}.generate(m_game, world, m_map_generation_params, m_nextFloorSeed); // keep the stage instance somewhere
     m_nextFloorSeed = data.nextFloorSeed;
 
     auto allPlayers = world.view<entt::tag<"player"_hs>>();
