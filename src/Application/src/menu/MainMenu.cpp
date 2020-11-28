@@ -30,6 +30,23 @@ void game::menu::MainMenu::draw(entt::registry &, ThePURGE &)
 
     drawTexture(m_backgroundTexture, ImVec2(0, 0), frac2pixel({1.f, 1.f}));
 
+    if (up()) {
+    spdlog::info("up");
+    }
+        if (down()) {
+    spdlog::info("down");
+    }
+    if (left()) {
+    spdlog::info("left");
+    }
+    if (right()) {
+    spdlog::info("right");
+    }
+    if (select()) {
+    spdlog::info("select");
+    }
+
+
     ImGui::End();
 }
 

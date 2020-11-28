@@ -21,7 +21,7 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
                 case GLFW_KEY_RIGHT: m_right = true; break;
                 case GLFW_KEY_DOWN: m_down = true; break;
                 case GLFW_KEY_LEFT: m_left = true; break;
-
+                case GLFW_KEY_ENTER: m_select = true; break;
                 default: break;
                 }
             },
@@ -31,6 +31,7 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
                 case engine::Joystick::DOWN: m_down = true; break;
                 case engine::Joystick::LEFT: m_left = true; break;
                 case engine::Joystick::RIGHT: m_right = true; break;
+                case engine::Joystick::ACTION_BOTTOM: m_select = true; break;
                 default: return;
                 }
             },
@@ -42,22 +43,23 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 
                     float x = (*joystick)->axes[engine::Joystick::LSX];
                     float y = -(*joystick)->axes[engine::Joystick::LSY];
+                    //spdlog::info("Joystick x : {:.2f}, y : {:.2f}", x, y);
 
                     m_up = !m_recoveringUp && y > kTriggerThreshold;
                     m_recoveringUp =
-                        (!m_recoveringUp && y > kTriggerThreshold) || (m_recoveringUp && y > kTriggerThreshold);
+                        (!m_recoveringUp && m_up) || (m_recoveringUp && y > kRecoveryThreshold);
 
-                    m_down = !m_recoveringDown && y > kTriggerThreshold;
+                    m_down = !m_recoveringDown && y < -kTriggerThreshold;
                     m_recoveringDown =
-                        (!m_recoveringDown && y > kTriggerThreshold) || (m_recoveringDown && y > kTriggerThreshold);
+                        (!m_recoveringDown && m_down) || (m_recoveringDown && y < -kRecoveryThreshold);
 
-                    m_left = !m_recoveringLeft && x > kTriggerThreshold;
+                    m_left = !m_recoveringLeft && x < -kTriggerThreshold;
                     m_recoveringLeft =
-                        (!m_recoveringLeft && x > kTriggerThreshold) || (m_recoveringLeft && x > kTriggerThreshold);
+                        (!m_recoveringLeft && m_left) || (m_recoveringLeft && x < -kRecoveryThreshold);
 
                     m_right = !m_recoveringRight && x > kTriggerThreshold;
                     m_recoveringRight =
-                        (!m_recoveringRight && x > kTriggerThreshold) || (m_recoveringRight && x > kTriggerThreshold);
+                        (!m_recoveringRight && m_right) || (m_recoveringRight && x > kRecoveryThreshold);
                 } break;
                 default: break;
                 }
@@ -82,13 +84,14 @@ void game::AMenu::onDraw(entt::registry &world, ThePURGE &game)
     m_down = false;
     m_left = false;
     m_right = false;
+    m_select = false;
 }
 
 
 auto game::AMenu::frac2pixel(ImVec2 fraction) const noexcept -> ImVec2
 {
     static auto holder = engine::Core::Holder{};
-    
+
     auto winSize = holder.instance->window()->getSize();
 
     return ImVec2(static_cast<float>(fraction.x * winSize.x), static_cast<float>(fraction.y * winSize.y));
