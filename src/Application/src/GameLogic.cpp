@@ -78,10 +78,10 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
         .play();
     m_game.getBackgroundMusic()->play();
 
-    m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    onPlayerPurchase.publish(world, m_game.player, m_game.getClassDatabase().getStarterClass());
+    m_game.player = EntityFactory::create<EntityFactory::PLAYER>(m_game, world, {}, {});
+    onPlayerPurchase.publish(world, m_game.player, m_game.dbClasses().getStarterClass());
 
-    auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(world, {}, {});
+    auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(m_game, world, {}, {});
 
     glm::vec3 playerColor(1.f, 0.2f, 0.2f);
     engine::DrawableFactory::fix_color(world, aimingSight, std::move(playerColor));
@@ -112,8 +112,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
     for (const auto &spell : newClass.spells)
         for (auto &slot : world.get<SpellSlots>(player).spells) {
             if (slot.has_value()) continue;
-
-            slot = Spell::create(spell);
+            slot = m_game.dbSpells().instantiate(spell);
             break;
         }
 
@@ -132,7 +131,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
         for (const auto &spell : newClass.spells) spellsId << spell << ", ";
 
         std::stringstream childrens;
-        for (const auto &child : newClass.children) childrens << m_game.getClassDatabase().db.at(child).name << ", ";
+        for (const auto &child : newClass.children) childrens << m_game.dbClasses().db.at(child).name << ", ";
 
         spdlog::info(
             "Applied class '{}' to player. Stats are now : \n"
@@ -628,7 +627,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);
-            EntityFactory::create<EntityFactory::KEY>(world, {pos.x, pos.y}, {1.0, 1.0});
+            EntityFactory::create<EntityFactory::KEY>(m_game, world, {pos.x, pos.y}, {1.0, 1.0});
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
                 ->play();
@@ -654,7 +653,7 @@ auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
     world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
 
-    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
+    auto data = generateFloor(m_game, world, m_map_generation_params, m_nextFloorSeed);
     m_nextFloorSeed = data.nextFloorSeed;
 
     auto allPlayers = world.view<entt::tag<"player"_hs>>();

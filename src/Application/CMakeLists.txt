@@ -4,7 +4,7 @@ add_library(
   src/GameLogic.cpp
   src/level/LevelTilemapBuilder.cpp
   src/level/MapGenerator.cpp
-  src/models/SpellDatabase.cpp
+  src/models/Spell.cpp
   src/models/Class.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp

@@ -33,37 +33,37 @@ void game::TilemapBuilder::handleTileBuild(entt::registry &world, int x, int y)
 
     switch (tile) {
     case TileEnum::FLOOR_NORMAL_ROOM:
-        EntityFactory::create<EntityFactory::FLOOR_NORMAL>(world, tilePos, tileSize);
+        EntityFactory::create<EntityFactory::FLOOR_NORMAL>(m_game, world, tilePos, tileSize);
         break;
-    case TileEnum::FLOOR_BOSS_ROOM: EntityFactory::create<EntityFactory::FLOOR_BOSS>(world, tilePos, tileSize); break;
+    case TileEnum::FLOOR_BOSS_ROOM: EntityFactory::create<EntityFactory::FLOOR_BOSS>(m_game, world, tilePos, tileSize); break;
     case TileEnum::FLOOR_CORRIDOR:
-        EntityFactory::create<EntityFactory::FLOOR_CORRIDOR>(world, tilePos, tileSize);
+        EntityFactory::create<EntityFactory::FLOOR_CORRIDOR>(m_game, world, tilePos, tileSize);
         break;
-    case TileEnum::FLOOR_SPAWN: EntityFactory::create<EntityFactory::FLOOR_SPAWN>(world, tilePos, tileSize); break;
+    case TileEnum::FLOOR_SPAWN: EntityFactory::create<EntityFactory::FLOOR_SPAWN>(m_game, world, tilePos, tileSize); break;
 
     case TileEnum::EXIT_DOOR_FACING_NORTH: {
-        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
+        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(m_game, world, tilePos, tileSize);
         world.get<engine::d2::Rotation>(e).angle = std::numbers::pi_v<double>;
         break;
     }
     case TileEnum::EXIT_DOOR_FACING_EAST: {
-        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
+        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(m_game, world, tilePos, tileSize);
         world.get<engine::d2::Rotation>(e).angle = std::numbers::pi_v<double> / 2;
         break;
     }
     case TileEnum::EXIT_DOOR_FACING_SOUTH: {
-        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
+        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(m_game, world, tilePos, tileSize);
         world.get<engine::d2::Rotation>(e).angle = 0;
         break;
     }
     case TileEnum::EXIT_DOOR_FACING_WEST: {
-        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(world, tilePos, tileSize);
+        auto e = EntityFactory::create<EntityFactory::EXIT_DOOR>(m_game, world, tilePos, tileSize);
         world.get<engine::d2::Rotation>(e).angle = 3 * std::numbers::pi_v<double> / 2;
         break;
     }
 
-    case TileEnum::DEBUG_TILE: EntityFactory::create<EntityFactory::DEBUG_TILE>(world, tilePos, tileSize); break;
-    case TileEnum::WALL: EntityFactory::create<EntityFactory::WALL>(world, tilePos, tileSize); break;
+    case TileEnum::DEBUG_TILE: EntityFactory::create<EntityFactory::DEBUG_TILE>(m_game, world, tilePos, tileSize); break;
+    case TileEnum::WALL: EntityFactory::create<EntityFactory::WALL>(m_game, world, tilePos, tileSize); break;
 
     default: break;
     }

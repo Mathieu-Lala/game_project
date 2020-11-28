@@ -7,6 +7,17 @@
 #include "menu/UpgradePanel.hpp"
 #include "ThePURGE.hpp"
 
+#define UPGRADE_PANEL_NOT_WORKING 1
+
+#if UPGRADE_PANEL_NOT_WORKING
+
+bool game::menu::UpgradePanel::draw([[maybe_unused]] entt::registry &world, [[maybe_unused]] ThePURGE &game)
+{
+    return true;
+}
+
+#else
+
 bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
     auto ret = true;
@@ -19,7 +30,7 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
     // const auto comp = world.get<Class>(player);
     static bool choosetrigger = false;
-    static auto test = game.getClassDatabase().getStarterClass();
+    static auto test = game.dbClasses().getStarterClass();
     static std::optional<Class> selectedClass;
     static std::string chosenTrig = "";
     static int spellmapped = 0;
@@ -99,7 +110,7 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
                 if (chosenTrig != "") {
                     if (ImGui::Button("Validate")) {
                         choosetrigger = false;
-                        auto NewSpell = Spell::create(selectedClass.value().spells[0]);
+                        auto NewSpell = game.dbSpells().instantiate((selectedClass.value().spells[0]);
                         for (auto i = 0ul; i < spell.spells.size(); i++) {
                             if (spell.spells[i].has_value() && NewSpell.id == spell.spells[i].value().id) {
                                 spell.spells[i] = {};
@@ -160,7 +171,7 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
     std::vector<EntityFactory::ID> buyableClasses;
     int tier = 0;
 
-    nextLine.push_back(game.getClassDatabase().getStarterClass().id);
+    nextLine.push_back(game.dbClasses().getStarterClass().id);
 
     while (!nextLine.empty()) {
         ++tier;
@@ -170,7 +181,7 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
         helper::ImGui::Text("Tier : {}", tier);
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
         for (const auto currentId : currentLine) {
-            const auto &currentClass = game.getClassDatabase().db.at(currentId);
+            const auto &currentClass = game.dbClasses().db.at(currentId);
 
             bool bought = std::find(boughtClasses.begin(), boughtClasses.end(), currentId) != boughtClasses.end();
             bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
@@ -199,6 +210,8 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
     ImGui::End();
     return ret;
 }
+
+#endif
 
 bool game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
 {

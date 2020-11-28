@@ -7,6 +7,8 @@
 
 namespace game {
 
+struct ThePURGE;
+
 struct FloorGenParam {
     int minRoomSize = 7;  // exluding walls
     int maxRoomSize = 15; // exluding walls
@@ -25,7 +27,7 @@ struct FloorGenParam {
 };
 
 // note : avoid free function
-auto generateFloor(entt::registry &, const FloorGenParam & = {}, std::optional<std::uint32_t> seed = {})
+auto generateFloor(ThePURGE &, entt::registry &, const FloorGenParam & = {}, std::optional<std::uint32_t> seed = {})
     -> MapData;
 
 } // namespace game

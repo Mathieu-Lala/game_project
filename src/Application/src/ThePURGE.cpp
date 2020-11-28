@@ -9,8 +9,6 @@
 
 #include "menu/MainMenu.hpp"
 
-auto game::ThePURGE::onDestroy(entt::registry &) -> void { spdlog::info("Thank's for playing ThePURGE"); }
-
 auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 {
 #ifndef NDEBUG
@@ -26,12 +24,22 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
     m_background_music->setVolume(0.1f).setLoop(true);
 
-    m_class_db.fromFile(holder.instance->settings().data_folder + "db/classes.json");
+    m_db_spell.fromFile("");
+    m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
 
     // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
-    EntityFactory::create<EntityFactory::ID::BACKGROUND>(world, glm::vec2(25, 25), glm::vec2(75, 75));
+    EntityFactory::create<EntityFactory::ID::BACKGROUND>(*this, world, glm::vec2(25, 25), glm::vec2(75, 75));
 
     setMenu(std::make_unique<menu::MainMenu>());
+}
+
+auto game::ThePURGE::onDestroy(entt::registry &) -> void
+{
+    spdlog::info("Thank's for playing ThePURGE");
+
+    m_logics.reset(nullptr);
+
+    setMenu(nullptr);
 }
 
 auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> void
@@ -49,7 +57,6 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
     if (holder.instance->isShowingDebugInfo()) {
         m_console->draw();
-        ImGui::ShowDemoWindow();
         widget::TerrainGeneration::draw(*this, world);
     }
 #endif

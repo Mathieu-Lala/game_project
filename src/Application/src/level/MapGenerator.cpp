@@ -213,9 +213,9 @@ static auto placeBossRoomExitDoor(game::TilemapBuilder &builder, game::Room &r) 
     assert(false && "Could not find boss room entrance, cannot place exit door");
 }
 
-static auto generateLevel(entt::registry &world, game::FloorGenParam params) -> game::MapData
+static auto generateLevel(game::ThePURGE &game, entt::registry &world, game::FloorGenParam params) -> game::MapData
 {
-    game::TilemapBuilder builder({params.maxDungeonWidth, params.maxDungeonHeight});
+    game::TilemapBuilder builder(game, {params.maxDungeonWidth, params.maxDungeonHeight});
 
     auto roomCount = randRange(params.minRoomCount, params.maxRoomCount);
 
@@ -255,27 +255,27 @@ static auto generateLevel(entt::registry &world, game::FloorGenParam params) -> 
     return result;
 }
 
-static void spawnMobsIn(entt::registry &world, game::FloorGenParam params, const game::Room &r)
+static void spawnMobsIn(game::ThePURGE &game, entt::registry &world, game::FloorGenParam params, const game::Room &r)
 {
     if (params.mobDensity == 0) return;
 
     for (auto x = r.x + 1; x < r.x + r.w - 1; ++x) {
         for (auto y = r.y + 1; y < r.y + r.h - 1; ++y) {
             if (randRange(0, static_cast<int>(1.0f / params.mobDensity)) == 0) {
-                game::EntityFactory::create<game::EntityFactory::ENEMY>(world, glm::vec2{x + 0.5, y + 0.5}, {0.8, 1.0});
+                game::EntityFactory::create<game::EntityFactory::ENEMY>(game, world, glm::vec2{x + 0.5, y + 0.5}, {0.8, 1.0});
             }
         }
     }
 }
 
-auto game::generateFloor(entt::registry &world, const game::FloorGenParam &params, std::optional<std::uint32_t> seed) -> MapData
+auto game::generateFloor(game::ThePURGE &game, entt::registry &world, const game::FloorGenParam &params, std::optional<std::uint32_t> seed) -> MapData
 {
     if (seed) random_engine.seed(seed.value()); // todo : move this in engine::Core
 
-    auto data = generateLevel(world, params);
+    auto data = generateLevel(game, world, params);
 
-    for (auto &r : data.regularRooms) spawnMobsIn(world, params, r);
-    game::EntityFactory::create<game::EntityFactory::BOSS>(
+    for (auto &r : data.regularRooms) spawnMobsIn(game, world, params, r);
+    game::EntityFactory::create<game::EntityFactory::BOSS>(game,
         world, glm::vec2{data.boss.x + data.boss.w * 0.5, data.boss.y + data.boss.h * 0.5}, {3.0, 3.0});
 
     data.nextFloorSeed = static_cast<std::uint32_t>(random_engine());

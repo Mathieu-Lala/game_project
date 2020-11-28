@@ -46,10 +46,10 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_kill =
 
             if (what == "player") {
                 for (auto &e : world.view<entt::tag<"player"_hs>>())
-                    game.getLogics().onEntityKilled.publish(world, e, e);
+                    game.logics()->onEntityKilled.publish(world, e, e);
             } else if (what == "boss") {
                 for (auto &e : world.view<entt::tag<"boss"_hs>>())
-                    game.getLogics().onEntityKilled.publish(world, e, game.player);
+                    game.logics()->onEntityKilled.publish(world, e, game.player);
 
             } else
                 throw std::runtime_error(fmt::format("Invalid argument {}", what));
@@ -71,7 +71,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
 
             auto player = game.player;
             auto &spellSlots = world.get<SpellSlots>(player);
-            spellSlots.spells[static_cast<std::size_t>(idx)] = Spell::create(static_cast<SpellFactory::ID>(spellId));
+            spellSlots.spells[static_cast<std::size_t>(idx)] = game.dbSpells().instantiate(static_cast<SpellFactory::ID>(spellId));
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setSpell index spell_id", e.what()));
@@ -87,7 +87,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addXp =
 
             auto player = game.player;
 
-            game.getLogics().addXp(world, player, amount);
+            game.logics()->addXp(world, player, amount);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: addXp xp", e.what()));
@@ -105,7 +105,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addLevel =
 
             auto &level = world.get<Level>(player);
 
-            while (amount--) game.getLogics().addXp(world, player, level.xp_require);
+            while (amount--) game.logics()->addXp(world, player, level.xp_require);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: addLevel level", e.what()));
@@ -134,12 +134,12 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
             const auto className = lexicalCast<std::string>(args[0]);
             const auto player = game.player;
 
-            if (const auto data = game.getClassDatabase().getByName(className); data) {
-                game.getLogics().onPlayerPurchase.publish(world, player, *data);
+            if (const auto data = game.dbClasses().getByName(className); data) {
+                game.logics()->onPlayerPurchase.publish(world, player, *data);
             } else {
                 // note : see std::accumulate
                 std::stringstream names;
-                for (const auto &[_, i] : game.getClassDatabase().db) { names << i.name << ", "; }
+                for (const auto &[_, i] : game.dbClasses().db) { names << i.name << ", "; }
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
             }
 
@@ -156,7 +156,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClasses =
 
         std::stringstream names;
 
-        for (auto &id : classes) names << game.getClassDatabase().db.at(id).name << ", ";
+        for (auto &id : classes) names << game.dbClasses().db.at(id).name << ", ";
 
         console.info("Player has {} classes : {}", classes.size(), names.str());
     };
@@ -168,17 +168,17 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
 
             const auto className = lexicalCast<std::string>(args[0]);
 
-            if (const auto data = game.getClassDatabase().getByName(className); !data) {
+            if (const auto data = game.dbClasses().getByName(className); !data) {
                 // note : see std::accumulate
                 std::stringstream names;
-                for (const auto &[_, i] : game.getClassDatabase().db) names << i.name << ", ";
+                for (const auto &[_, i] : game.dbClasses().db) names << i.name << ", ";
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
             } else {
                 std::stringstream spellNames;
                 for (const auto &id : data->spells) spellNames << id << ", ";
 
                 std::stringstream childrenesNames;
-                for (const auto &id : data->children) childrenesNames << game.getClassDatabase().db.at(id).name << ", ";
+                for (const auto &id : data->children) childrenesNames << game.dbClasses().db.at(id).name << ", ";
 
                 console.info(
                     "Class {} :\n"
