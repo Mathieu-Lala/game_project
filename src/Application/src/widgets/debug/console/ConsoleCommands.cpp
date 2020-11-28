@@ -198,8 +198,8 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                     data->iconPath,
                     data->assetGraphPath,
                     spellNames.str(),
-                    data->maxHealth,
-                    data->damage,
+                    data->health,
+                    // data->damage,
                     childrenesNames.str());
             }
 

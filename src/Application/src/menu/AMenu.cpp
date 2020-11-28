@@ -1,5 +1,7 @@
-#include <Engine/Core.hpp>
 #include <Engine/Graphics/Window.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
+#include <Engine/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -102,11 +104,8 @@ void game::AMenu::resetInputs() noexcept
 
 auto game::AMenu::frac2pixel(ImVec2 fraction) const noexcept -> ImVec2
 {
-    static auto holder = engine::Core::Holder{};
-
-    auto winSize = holder.instance->window()->getSize();
-
-    return ImVec2(static_cast<float>(fraction.x * winSize.x), static_cast<float>(fraction.y * winSize.y));
+    const auto winSize = engine::Core::Holder{}.instance->window()->getSize();
+    return ImVec2(static_cast<float>(winSize.x) * fraction.x, static_cast<float>(winSize.y) * fraction.y);
 }
 
 void game::AMenu::drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) const noexcept

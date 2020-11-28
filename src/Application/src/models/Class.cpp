@@ -49,8 +49,8 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             .assetGraphPath = data["assetGraph"],
             .is_starter = data.value("starter", false),
             .spells = data["spells"].get<std::vector<std::string>>(),
-            .maxHealth = data["maxHealth"].get<float>(),
-            .damage = data["damage"].get<float>(),
+            .health = data["health"].get<float>(),
+            // .damage = data["damage"].get<float>(),
             .speed = data["speed"].get<float>(),
             .cost = data["cost"].get<int>(),
             .hitbox = engine::d2::HitboxSolid{data["hitbox"]["x"].get<double>(), data["hitbox"]["y"].get<double>()},
@@ -80,8 +80,8 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             "\tassetGraphPath={}\n"
             "\tis_starter={}\n"
             "\tspells={}\n"
-            "\tmaxHealth={}\n"
-            "\tdamage={}\n"
+            "\thealth={}\n"
+            // "\tdamage={}\n"
             "\tspeed={}\n"
             "\tcost={}\n"
             "\thitbox={},{}\n"
@@ -97,8 +97,8 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
                 std::end(classes.spells),
                 std::string{},
                 [](auto out, auto &i) { return out + "/" + i; }),
-            classes.maxHealth,
-            classes.damage,
+            classes.health,
+            // classes.damage,
             classes.speed,
             classes.cost,
             classes.hitbox.width,

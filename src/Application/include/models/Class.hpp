@@ -24,9 +24,9 @@ struct Class { // todo : name very confusing
 
     std::vector<std::string> spells;
 
-    float maxHealth;
+    float health;
 
-    float damage;
+    // float damage;
     float speed;
     int cost;
     engine::d2::HitboxSolid hitbox;
