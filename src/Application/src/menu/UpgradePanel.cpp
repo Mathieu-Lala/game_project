@@ -11,9 +11,8 @@
 #include "menu/UpgradePanel.hpp"
 #include "ThePURGE.hpp"
 
-bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
+void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
-    auto ret = true;
     static auto holder = engine::Core::Holder{};
 
     auto player = game.player;
@@ -200,19 +199,16 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
         ImGui::Text(" "); // ImGui::NextLine()
     }
     ImGui::End();
-    return ret;
 }
 
-bool game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
+void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
 {
-    auto ret = true;
     std::visit(
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
                 case GLFW_KEY_P:
                     game.setMenu(nullptr);
-                    ret = false;
                     break;
                 default: break;
                 }
@@ -221,7 +217,6 @@ bool game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
                 switch (joy.source.button) {
                 case engine::Joystick::CENTER2:
                     game.setMenu(nullptr);
-                    ret = false;
                     break;
                 default: break;
                 }
@@ -229,5 +224,4 @@ bool game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
             [&](auto) {},
         },
         e);
-    return ret;
 }

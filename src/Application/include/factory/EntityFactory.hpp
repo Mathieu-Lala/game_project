@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cctype>
 #include <magic_enum.hpp>
 #include <entt/entt.hpp>
 #include <glm/vec2.hpp>
 
 namespace game {
 
-struct ThePURGE;
+class ThePURGE;
 
 struct EntityFactory {
     enum ID {

@@ -1,6 +1,5 @@
-#include <Engine/component/Color.hpp>
-#include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/Graphics/Window.hpp>
 
 #include "models/Spell.hpp"
 
@@ -11,6 +10,17 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 {
     static auto holder = engine::Core::Holder{};
 
+    if (!m_createCalled) {
+        m_createCalled = true;
+        create(world, game);
+    }
+
+    if (m_shouldResetInputs) {
+        resetInputs();
+        m_shouldResetInputs = false;
+    }
+
+
     std::visit(
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
@@ -19,7 +29,7 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
                 case GLFW_KEY_RIGHT: m_right = true; break;
                 case GLFW_KEY_DOWN: m_down = true; break;
                 case GLFW_KEY_LEFT: m_left = true; break;
-
+                case GLFW_KEY_ENTER: m_select = true; break;
                 default: break;
                 }
             },
@@ -29,7 +39,8 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
                 case engine::Joystick::DOWN: m_down = true; break;
                 case engine::Joystick::LEFT: m_left = true; break;
                 case engine::Joystick::RIGHT: m_right = true; break;
-                default: return;
+                case engine::Joystick::ACTION_BOTTOM: m_select = true; break;
+                default: break;
                 }
             },
             [&](const engine::Moved<engine::JoystickAxis> &joy) {
@@ -40,22 +51,19 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 
                     float x = (*joystick)->axes[engine::Joystick::LSX];
                     float y = -(*joystick)->axes[engine::Joystick::LSY];
+                    // spdlog::info("Joystick x : {:.2f}, y : {:.2f}", x, y);
 
                     m_up = !m_recoveringUp && y > kTriggerThreshold;
-                    m_recoveringUp =
-                        (!m_recoveringUp && y > kTriggerThreshold) || (m_recoveringUp && y > kTriggerThreshold);
+                    m_recoveringUp = (!m_recoveringUp && m_up) || (m_recoveringUp && y > kRecoveryThreshold);
 
-                    m_down = !m_recoveringDown && y > kTriggerThreshold;
-                    m_recoveringDown =
-                        (!m_recoveringDown && y > kTriggerThreshold) || (m_recoveringDown && y > kTriggerThreshold);
+                    m_down = !m_recoveringDown && y < -kTriggerThreshold;
+                    m_recoveringDown = (!m_recoveringDown && m_down) || (m_recoveringDown && y < -kRecoveryThreshold);
 
-                    m_left = !m_recoveringLeft && x > kTriggerThreshold;
-                    m_recoveringLeft =
-                        (!m_recoveringLeft && x > kTriggerThreshold) || (m_recoveringLeft && x > kTriggerThreshold);
+                    m_left = !m_recoveringLeft && x < -kTriggerThreshold;
+                    m_recoveringLeft = (!m_recoveringLeft && m_left) || (m_recoveringLeft && x < -kRecoveryThreshold);
 
                     m_right = !m_recoveringRight && x > kTriggerThreshold;
-                    m_recoveringRight =
-                        (!m_recoveringRight && x > kTriggerThreshold) || (m_recoveringRight && x > kTriggerThreshold);
+                    m_recoveringRight = (!m_recoveringRight && m_right) || (m_recoveringRight && x > kRecoveryThreshold);
                 } break;
                 default: break;
                 }
@@ -69,10 +77,45 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 
 void game::AMenu::onDraw(entt::registry &world, ThePURGE &game)
 {
-    if (draw(world, game)) {
-        m_up = false;
-        m_down = false;
-        m_left = false;
-        m_right = false;
+    if (m_shouldResetInputs) resetInputs();
+
+    m_shouldResetInputs = true;
+
+    if (!m_createCalled) {
+        m_createCalled = true;
+        create(world, game);
     }
+
+    draw(world, game);
+}
+
+void game::AMenu::resetInputs() noexcept
+{
+    m_up = false;
+    m_down = false;
+    m_left = false;
+    m_right = false;
+    m_select = false;
+    m_close = false;
+}
+
+
+auto game::AMenu::frac2pixel(ImVec2 fraction) const noexcept -> ImVec2
+{
+    static auto holder = engine::Core::Holder{};
+
+    auto winSize = holder.instance->window()->getSize();
+
+    return ImVec2(static_cast<float>(fraction.x * winSize.x), static_cast<float>(fraction.y * winSize.y));
+}
+
+void game::AMenu::drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) const noexcept
+{
+    ImGui::SetCursorPos(topLeft);
+    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(id)), size);
+}
+
+void game::AMenu::drawTexture(const MenuTexture &t) const noexcept
+{
+    drawTexture(t.id, frac2pixel(t.topleft), frac2pixel(t.size));
 }

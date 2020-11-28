@@ -10,7 +10,7 @@
 
 namespace game {
 
-struct ThePURGE;
+class ThePURGE;
 
 // note : avoid macro
 #define IS_FLOOR(tile)                                                              \
