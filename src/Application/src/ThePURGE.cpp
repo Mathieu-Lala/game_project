@@ -21,6 +21,7 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     holder.instance->window()->setSize(glm::ivec2(1920, 1080));
 
+    m_logics = std::make_unique<GameLogic>(*this);
 
     m_db_spell.fromFile("");
     m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
@@ -31,11 +32,10 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
 auto game::ThePURGE::onDestroy(entt::registry &) -> void
 {
-    spdlog::info("Thank's for playing ThePURGE");
-
-    m_logics.reset(nullptr);
+    spdlog::info("Thanks for playing ThePURGE");
 
     setMenu(nullptr);
+    m_logics.reset(nullptr);
 }
 
 auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> void

@@ -66,10 +66,15 @@ protected:
     void drawTexture(const MenuTexture &texture) const noexcept;
 
 private:
+    void resetInputs() noexcept;
+
+private:
     static constexpr float kRecoveryThreshold = 0.3f;
     static constexpr float kTriggerThreshold = 0.3f;
 
     glm::vec2 m_prevLeftJoystick{0.f, 0.f};
+
+    bool m_shouldResetInputs = false;
 
     bool m_createCalled = false;
 

@@ -79,8 +79,8 @@ void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
 
         switch (m_selected) {
         case Button::PLAY:
-            game.setMenu(nullptr);
             game.logics()->onGameStart.publish(world);
+            game.setMenu(nullptr);
             return;
         case Button::HOWTOPLAY: game.setMenu(std::make_unique<menu::HowToPlay>()); return;
         case Button::CREDITS: game.setMenu(std::make_unique<menu::Credits>()); return;

@@ -13,6 +13,12 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
         create(world, game);
     }
 
+    if (m_shouldResetInputs) {
+        resetInputs();
+        m_shouldResetInputs = false;
+    }
+
+
     std::visit(
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
@@ -43,23 +49,19 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 
                     float x = (*joystick)->axes[engine::Joystick::LSX];
                     float y = -(*joystick)->axes[engine::Joystick::LSY];
-                    //spdlog::info("Joystick x : {:.2f}, y : {:.2f}", x, y);
+                    // spdlog::info("Joystick x : {:.2f}, y : {:.2f}", x, y);
 
                     m_up = !m_recoveringUp && y > kTriggerThreshold;
-                    m_recoveringUp =
-                        (!m_recoveringUp && m_up) || (m_recoveringUp && y > kRecoveryThreshold);
+                    m_recoveringUp = (!m_recoveringUp && m_up) || (m_recoveringUp && y > kRecoveryThreshold);
 
                     m_down = !m_recoveringDown && y < -kTriggerThreshold;
-                    m_recoveringDown =
-                        (!m_recoveringDown && m_down) || (m_recoveringDown && y < -kRecoveryThreshold);
+                    m_recoveringDown = (!m_recoveringDown && m_down) || (m_recoveringDown && y < -kRecoveryThreshold);
 
                     m_left = !m_recoveringLeft && x < -kTriggerThreshold;
-                    m_recoveringLeft =
-                        (!m_recoveringLeft && m_left) || (m_recoveringLeft && x < -kRecoveryThreshold);
+                    m_recoveringLeft = (!m_recoveringLeft && m_left) || (m_recoveringLeft && x < -kRecoveryThreshold);
 
                     m_right = !m_recoveringRight && x > kTriggerThreshold;
-                    m_recoveringRight =
-                        (!m_recoveringRight && m_right) || (m_recoveringRight && x > kRecoveryThreshold);
+                    m_recoveringRight = (!m_recoveringRight && m_right) || (m_recoveringRight && x > kRecoveryThreshold);
                 } break;
                 default: break;
                 }
@@ -73,13 +75,20 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 
 void game::AMenu::onDraw(entt::registry &world, ThePURGE &game)
 {
+    if (m_shouldResetInputs) resetInputs();
+
+    m_shouldResetInputs = true;
+
     if (!m_createCalled) {
         m_createCalled = true;
         create(world, game);
     }
 
     draw(world, game);
+}
 
+void game::AMenu::resetInputs() noexcept
+{
     m_up = false;
     m_down = false;
     m_left = false;
