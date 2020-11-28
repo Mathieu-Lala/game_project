@@ -117,7 +117,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
             ImGui::SetCursorPos(ImVec2(icon.x - 50, icon.y));
             ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((texture[2]))), ImVec2(50, 50));
         } else if (infoAdd == 2) {
-            if (skillPoints > 0) {
+            if (skillPoints >= selectedClass.value().cost) {
                 if (choosetrigger == true) {
                     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                     ImGui::Text("You haven't choose a trigger for the spell");

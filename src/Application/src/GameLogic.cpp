@@ -81,7 +81,8 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
     m_game.getBackgroundMusic()->play();
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    onPlayerPurchase.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+    // onPlayerPurchase.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+    slots_apply_classes(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
 
     auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(world, {}, {});
 
@@ -153,9 +154,9 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
     }
 }
 
-auto game::GameLogic::slots_purchase_classes(entt::registry &world, entt::entity player, const Class &) -> void
+auto game::GameLogic::slots_purchase_classes(entt::registry &world, entt::entity player, const Class &newClass) -> void
 {
-    world.get<SkillPoint>(player).count--;
+    world.get<SkillPoint>(player).count -= newClass.cost;
 }
 
 auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity) -> void
