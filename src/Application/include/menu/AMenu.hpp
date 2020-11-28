@@ -2,6 +2,7 @@
 
 #include <glm/vec2.hpp>
 #include <entt/entt.hpp>
+#include <imgui.h>
 
 #include <Engine/Event/Event.hpp>
 

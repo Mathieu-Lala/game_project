@@ -10,13 +10,15 @@
 
 #include "component/all.hpp"
 
-#include "widgets/debug/console/DebugConsole.hpp"
-
 #include "menu/AMenu.hpp"
 
-#include "level/MapGenerator.hpp"
 #include "GameLogic.hpp"
-#include "models/ClassDatabase.hpp"
+#include "models/Class.hpp"
+//#include "models/Level.hpp"
+
+#ifndef NDEBUG
+# include "widgets/debug/console/DebugConsole.hpp"
+#endif
 
 namespace game {
 
@@ -39,16 +41,15 @@ public: // api
 public:
     void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu);}
     void setBackgroundMusic(const std::string &path, float volume = 1) noexcept;
-
-    auto getLogics() -> GameLogic & { return *m_logics; }
-    auto getBackgroundMusic() -> std::shared_ptr<engine::Sound> { return m_background_music; }
-
-    auto getClassDatabase() -> const classes::Database & { return m_classDatabase; }
-    auto getCamera() -> engine::Camera & { return m_camera; }
-
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
-    entt::entity player; // note : should not require to keep it like that
+    auto dbSpells() noexcept -> SpellDatabase & { return m_db_spell; }
+    auto dbClasses() noexcept -> ClassDatabase & { return m_db_class; }
+
+    auto getCamera() -> engine::Camera & { return m_camera; }
+    auto getBackgroundMusic() -> std::shared_ptr<engine::Sound> { return m_background_music; }
+
+    entt::entity player; // note : remove me
 
 private:
 
@@ -58,12 +59,13 @@ private:
 
     std::unique_ptr<GameLogic> m_logics;
 
-    classes::Database m_classDatabase;
+    SpellDatabase m_db_spell;
+    ClassDatabase m_db_class;
 
     engine::Camera m_camera; // note : should be in engine::Core
     std::shared_ptr<engine::Sound> m_background_music;
 
-    std::unique_ptr<AMenu> m_currentMenu;
+    std::unique_ptr<AMenu> m_currentMenu{ nullptr };
 };
 
 } // namespace game

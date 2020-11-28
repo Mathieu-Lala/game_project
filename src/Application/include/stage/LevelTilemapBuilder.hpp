@@ -10,6 +10,8 @@
 
 namespace game {
 
+class ThePURGE;
+
 // note : avoid macro
 #define IS_FLOOR(tile)                                                              \
     ((tile == game::TileEnum::FLOOR_SPAWN || tile == game::TileEnum::FLOOR_CORRIDOR \
@@ -34,8 +36,8 @@ enum class TileEnum : std::uint8_t { // note : should be merged with EntityFacto
 
 class TilemapBuilder {
 public:
-    explicit TilemapBuilder(glm::ivec2 &&size = {100, 100}) :
-        m_size(size), m_tiles(static_cast<std::size_t>(m_size.x) * static_cast<std::size_t>(m_size.y), TileEnum::NONE)
+    explicit TilemapBuilder(ThePURGE &game, glm::ivec2 &&size = {100, 100}) :
+        m_game(game), m_size(size), m_tiles(static_cast<std::size_t>(m_size.x) * static_cast<std::size_t>(m_size.y), TileEnum::NONE)
     {
     }
 
@@ -64,6 +66,8 @@ private:
     auto getTileSize(int x, int y) const -> glm::ivec2;
 
 private:
+    ThePURGE &m_game;
+
     const glm::ivec2 m_size;
     std::vector<TileEnum> m_tiles;
 };

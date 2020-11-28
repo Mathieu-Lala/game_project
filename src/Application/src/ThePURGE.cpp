@@ -5,14 +5,10 @@
 
 #include "ThePURGE.hpp"
 
-#include "DataConfigLoader.hpp"
-
 #include "widgets/GameHUD.hpp"
 #include "widgets/debug/DebugTerrainGeneration.hpp"
 
 #include "menu/MainMenu.hpp"
-
-auto game::ThePURGE::onDestroy(entt::registry &) -> void { spdlog::info("Thanks for playing ThePURGE"); }
 
 auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 {
@@ -25,11 +21,21 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     holder.instance->window()->setSize(glm::ivec2(1920, 1080));
 
-    m_logics = std::make_unique<GameLogic>(*this);
-    m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "db/classes.json");
+
+    m_db_spell.fromFile("");
+    m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
 
     setMenu(std::make_unique<menu::MainMenu>());
     setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
+}
+
+auto game::ThePURGE::onDestroy(entt::registry &) -> void
+{
+    spdlog::info("Thank's for playing ThePURGE");
+
+    m_logics.reset(nullptr);
+
+    setMenu(nullptr);
 }
 
 auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> void
@@ -47,7 +53,6 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
     if (holder.instance->isShowingDebugInfo()) {
         m_console->draw();
-        ImGui::ShowDemoWindow();
         widget::TerrainGeneration::draw(*this, world);
     }
 #endif
