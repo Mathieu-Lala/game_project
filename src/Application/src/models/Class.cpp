@@ -38,14 +38,6 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
     if (!file.is_open()) { spdlog::error("Can't open the given file"); }
     const auto jsonData = nlohmann::json::parse(file);
 
-    const auto get_spells = [](const auto &in) {
-        std::vector<SpellFactory::ID> spells;
-        std::transform(std::begin(in), std::end(in), std::back_inserter(spells), [](const nlohmann::json &i) {
-            return static_cast<SpellFactory::ID>(i.get<int>());
-        });
-        return spells;
-    };
-
     for (const auto &[name, data] : jsonData.items()) {
         const auto currentID = EntityFactory::toID(name);
 
@@ -56,9 +48,9 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             .iconPath = data["icon"],
             .assetGraphPath = data["assetGraph"],
             .is_starter = data.value("starter", false),
-            .spells = get_spells(data["spells"]),
-            .maxHealth = data["maxHealth"].get<float>(),
-            .damage = data["damage"].get<float>(),
+            .spells = data["spells"].get<std::vector<std::string>>(),
+            .health = data["health"].get<float>(),
+            // .damage = data["damage"].get<float>(),
             .speed = data["speed"].get<float>(),
             .cost = data["cost"].get<int>(),
             .hitbox = engine::d2::HitboxSolid{data["hitbox"]["x"].get<double>(), data["hitbox"]["y"].get<double>()},
@@ -88,8 +80,8 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             "\tassetGraphPath={}\n"
             "\tis_starter={}\n"
             "\tspells={}\n"
-            "\tmaxHealth={}\n"
-            "\tdamage={}\n"
+            "\thealth={}\n"
+            // "\tdamage={}\n"
             "\tspeed={}\n"
             "\tcost={}\n"
             "\thitbox={},{}\n"
@@ -100,9 +92,13 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             classes.iconPath,
             classes.assetGraphPath,
             classes.is_starter,
-            "", // classes.spells,
-            classes.maxHealth,
-            classes.damage,
+            std::accumulate(
+                std::begin(classes.spells),
+                std::end(classes.spells),
+                std::string{},
+                [](auto out, auto &i) { return out + "/" + i; }),
+            classes.health,
+            // classes.damage,
             classes.speed,
             classes.cost,
             classes.hitbox.width,

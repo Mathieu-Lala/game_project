@@ -10,13 +10,17 @@
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
+
+#include "models/Spell.hpp"
+#include "models/Class.hpp"
+
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
 #include "factory/EntityFactory.hpp"
 #include "factory/SpellFactory.hpp"
 #include "factory/ParticuleFactory.hpp"
 
-#include "models/Class.hpp"
+#include "component/all.hpp"
 
 #include "menu/UpgradePanel.hpp"
 #include "menu/GameOver.hpp"
@@ -104,14 +108,14 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
 {
     static auto holder = engine::Core::Holder{};
 
-    world.get<AttackDamage>(player).damage = newClass.damage;
+    //world.get<AttackDamage>(player).damage = newClass.damage;
     world.get<Speed>(player).speed = newClass.speed;
     world.get<engine::d2::HitboxSolid>(player) = newClass.hitbox;
 
     auto &health = world.get<Health>(player);
 
-    health.current += newClass.maxHealth;
-    health.max += newClass.maxHealth;
+    health.current += newClass.health;
+    health.max += newClass.health;
     world.get<Classes>(player).ids.push_back(newClass.id);
 
 
@@ -130,30 +134,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
     // Doesn't really matter, will be overridden by correct one soon enough. Prevent segfault of accessing inexistant
     // "default" animation sp.current_animation = "idle_right";
 
-    // engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
     engine::DrawableFactory::fix_spritesheet(world, player, "idle_right");
-
-
-    { // Logging
-        std::stringstream spellsId;
-        for (const auto &spell : newClass.spells) spellsId << spell << ", ";
-
-        std::stringstream childrens;
-        for (const auto &child : newClass.children) childrens << m_game.dbClasses().db.at(child).name << ", ";
-
-        spdlog::info(
-            "Applied class '{}' to player. Stats are now : \n"
-            "\tDamage : {:.3}\n"
-            "\tMax health : {:.3}\n"
-            "\tAdded spells {}\n"
-            "\tNew available classes : {}",
-            newClass.name,
-            newClass.damage,
-            newClass.maxHealth,
-            newClass.speed,
-            spellsId.str(),
-            childrens.str());
-    }
 }
 
 auto game::GameLogic::slots_purchase_classes(entt::registry &world, entt::entity player, const Class &newClass) -> void
@@ -202,7 +183,9 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
                 case GLFW_KEY_P: m_game.setMenu(std::make_unique<menu::UpgradePanel>()); break;
 
                 case GLFW_KEY_U:
-                case GLFW_KEY_Y: {
+                case GLFW_KEY_Y:
+                case GLFW_KEY_R:
+                case GLFW_KEY_T: {
                     const auto id = spell_map(key.source.key);
 
                     auto &spell = world.get<SpellSlots>(player).spells[id];
@@ -650,7 +633,7 @@ auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caste
     -> void
 {
     if (!spell.cd.is_in_cooldown) {
-        SpellFactory::create(spell.id, world, caster, glm::normalize(direction));
+        SpellFactory::create(world, caster, glm::normalize(direction), m_game.dbSpells().db.at(std::string{spell.id}));
         spell.cd.remaining_cooldown = spell.cd.cooldown;
         spell.cd.is_in_cooldown = true;
     }

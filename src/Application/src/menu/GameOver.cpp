@@ -1,6 +1,10 @@
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 
+#include "models/Spell.hpp"
+
+#include "component/all.hpp"
+
 #include "ThePURGE.hpp"
 #include "menu/GameOver.hpp"
 #include "menu/MainMenu.hpp"

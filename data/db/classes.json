@@ -4,8 +4,7 @@
     "desc": "Farmer description",
     "icon": "icons/farmer.png",
     "assetGraph": "anims/classes/farmer/farmer.data.json",
-    "maxHealth": 10,
-    "damage": 1,
+    "health": 10,
     "speed": 10.1,
     "cost": 0,
     "hitbox": {
@@ -13,7 +12,7 @@
       "y": 2.0
     },
     "spells": [
-      0
+      "shovel"
     ],
     "children": [
       "soldier",
@@ -25,8 +24,7 @@
     "desc": "Soldier description",
     "icon": "icons/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
-    "maxHealth": 20,
-    "damage": 5,
+    "health": 20,
     "speed": 10.1,
     "cost": 1,
     "hitbox": {
@@ -34,16 +32,19 @@
       "y": 2.0
     },
     "spells": [
-      1
+      "sword"
     ],
-    "children": []
+    "children": [
+      "assassin",
+      "warrior",
+      "tank"
+    ]
   },
   "shooter": {
     "desc": "Shooter description",
     "icon": "icons/shooter.png",
     "assetGraph": "anims/classes/shooter/shooter.data.json",
-    "maxHealth": 10,
-    "damage": 8,
+    "health": 10,
     "speed": 10.3,
     "cost": 1,
     "hitbox": {
@@ -51,16 +52,18 @@
       "y": 2.0
     },
     "spells": [
-      3
+      "arrow"
     ],
-    "children": []
+    "children": [
+      "archer",
+      "gunner"
+    ]
   },
   "sorcerer": {
     "desc": "Sorcerer description",
     "icon": "icons/sorcerer.png",
     "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
-    "maxHealth": 5,
-    "damage": 10,
+    "health": 5,
     "speed": 10.2,
     "cost": 1,
     "hitbox": {
@@ -68,16 +71,17 @@
       "y": 2.0
     },
     "spells": [
-      2
+      "fireball"
     ],
-    "children": []
+    "children": [
+      "mage"
+    ]
   },
   "assassin": {
     "desc": "Assassin description",
     "icon": "icons/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
-    "maxHealth": 25,
-    "damage": 12,
+    "health": 25,
     "speed": 11,
     "cost": 2,
     "hitbox": {
@@ -85,16 +89,13 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "soldier"
-    ]
+    "children": []
   },
   "warrior": {
     "desc": "Warrior description",
     "icon": "icons/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
-    "maxHealth": 35,
-    "damage": 10,
+    "health": 35,
     "speed": 10.2,
     "cost": 2,
     "hitbox": {
@@ -102,16 +103,13 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "soldier"
-    ]
+    "children": []
   },
   "tank": {
     "desc": "Tank description",
     "icon": "icons/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
-    "maxHealth": 50,
-    "damage": 7,
+    "health": 50,
     "speed": 10,
     "cost": 2,
     "hitbox": {
@@ -119,16 +117,13 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "soldier"
-    ]
+    "children": []
   },
   "archer": {
     "desc": "Archer description",
     "icon": "icons/shooter.png",
     "assetGraph": "anims/classes/shooter/shooter.data.json",
-    "maxHealth": 22,
-    "damage": 10,
+    "health": 22,
     "speed": 10.4,
     "cost": 2,
     "hitbox": {
@@ -136,16 +131,13 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "shooter"
-    ]
+    "children": []
   },
   "gunner": {
     "desc": "Gunner description",
     "icon": "icons/shooter.png",
     "assetGraph": "anims/classes/shooter/shooter.data.json",
-    "maxHealth": 24,
-    "damage": 12,
+    "health": 24,
     "speed": 10.4,
     "cost": 2,
     "hitbox": {
@@ -153,16 +145,13 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "shooter"
-    ]
+    "children": []
   },
   "mage": {
     "desc": "Mage description",
     "icon": "icons/sorcerer.png",
     "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
-    "maxHealth": 20,
-    "damage": 15,
+    "health": 20,
     "speed": 10.3,
     "cost": 2,
     "hitbox": {
@@ -170,8 +159,6 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "sorcerer"
-    ]
+    "children": []
   }
 }

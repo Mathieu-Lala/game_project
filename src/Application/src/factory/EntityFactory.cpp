@@ -4,6 +4,8 @@
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
+#include "models/Spell.hpp"
+
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
 
@@ -105,9 +107,6 @@ auto game::EntityFactory::create<game::EntityFactory::WALL>(
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
-    // world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    // engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
-    // engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/wall.jpg");
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
     world.emplace<entt::tag<"terrain"_hs>>(e);
     world.emplace<entt::tag<"wall"_hs>>(e);
@@ -143,7 +142,6 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(
     world.emplace<engine::d2::HitboxSolid>(e, 1.0, 1.0);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 0, 0});
-    // engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/enemy.png");
     world.emplace<ViewRange>(e, 10.0f);
     world.emplace<AttackRange>(e, 3.0f);
     world.emplace<AttackDamage>(e, 2.0f);
@@ -155,7 +153,7 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(
     engine::DrawableFactory::fix_spritesheet(world, e, (std::rand() & 1) ? "idle_right" : "idle_left");
 
     auto &slots = world.emplace<SpellSlots>(e);
-    slots.spells[0] = game.dbSpells().instantiate(SpellFactory::ENEMY_ATTACK);
+    slots.spells[0] = game.dbSpells().instantiate("shovel");
 
     return e;
 }
@@ -177,7 +175,6 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     world.emplace<game::ViewRange>(e, 10.0f);
     world.emplace<game::AttackRange>(e, 5.0f);
-    world.emplace<game::AttackCooldown>(e, false, 2000ms, 0ms);
     world.emplace<game::Effect>(e, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
     world.emplace<game::AttackDamage>(e, 1.0f);
     world.emplace<Health>(e, 100.0f, 100.0f);
@@ -191,8 +188,8 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(
     [[maybe_unused]] auto &slots = world.emplace<SpellSlots>(e);
 
     // TODO: actual boss spells
-    slots.spells[0] = game.dbSpells().instantiate(SpellFactory::SWORD_ATTACK);
-    slots.spells[1] = game.dbSpells().instantiate(SpellFactory::PIERCING_ARROW);
+    slots.spells[0] = game.dbSpells().instantiate("sword");
+    slots.spells[1] = game.dbSpells().instantiate("arrow");
 
     return e;
 }

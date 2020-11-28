@@ -3,12 +3,17 @@
 #include <Engine/Core.hpp>
 #include <Engine/helpers/ImGui.hpp>
 
+#include "models/Spell.hpp"
+
+#include "component/all.hpp"
+
 #include "widgets/GameHUD.hpp"
 
 void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 {
     auto holder = engine::Core::Holder{};
 
+    // note : don t need to hold a Gluint as it exist in cache
     static GLuint texture =
         holder.instance->getCache<engine::Texture>()
             .load<engine::LoaderTexture>(
@@ -20,7 +25,6 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 
     const auto infoHealth = world.get<Health>(game.player);
     const auto HP = infoHealth.current / infoHealth.max;
-    // const auto Atk = world.get<AttackDamage>(game.player);
     const auto level = world.get<Level>(game.player);
     const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
 

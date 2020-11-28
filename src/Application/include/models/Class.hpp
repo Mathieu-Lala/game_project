@@ -13,7 +13,7 @@
 
 namespace game {
 
-struct Class {
+struct Class { // todo : name very confusing
     EntityFactory::ID id;
     std::string name;
     std::string description;
@@ -22,11 +22,11 @@ struct Class {
 
     bool is_starter = false;
 
-    std::vector<SpellFactory::ID> spells;
+    std::vector<std::string> spells;
 
-    float maxHealth;
+    float health;
 
-    float damage;
+    // float damage;
     float speed;
     int cost;
     engine::d2::HitboxSolid hitbox;

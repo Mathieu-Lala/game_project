@@ -1,5 +1,9 @@
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/TextureLoader.hpp>
 #include <Engine/Core.hpp>
+
+#include "models/Spell.hpp"
 
 #include "menu/HowToPlay.hpp"
 #include "menu/MainMenu.hpp"

@@ -5,6 +5,8 @@
 #include "widgets/debug/console/ConsoleCommands.hpp"
 #include "widgets/debug/console/DebugConsole.hpp"
 
+#include "models/Spell.hpp"
+
 #include "component/all.hpp"
 
 #include "ThePURGE.hpp"
@@ -19,7 +21,7 @@ game::CommandHandler::CommandHandler() :
         {"buyClass", cmd_buyClass},
         {"getClasses", cmd_getClasses},
         {"getClassInfo", cmd_getClassInfo},
-        {"giantfireball", cmd_giantfireball},
+        //{"giantfireball", cmd_giantfireball},
     }
 {
 }
@@ -65,13 +67,13 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
             if (args.size() != 2) throw std::runtime_error("Wrong argument count");
 
             auto idx = lexicalCast<int>(args[0]);
-            auto spellId = lexicalCast<int>(args[1]);
+            auto spellId = args[1];
 
             if (idx < 0 || idx > 4) throw std::runtime_error(fmt::format("Wrong index : {}", args[0]));
 
             auto player = game.player;
             auto &spellSlots = world.get<SpellSlots>(player);
-            spellSlots.spells[static_cast<std::size_t>(idx)] = game.dbSpells().instantiate(static_cast<SpellFactory::ID>(spellId));
+            spellSlots.spells[static_cast<std::size_t>(idx)] = game.dbSpells().instantiate(spellId);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setSpell index spell_id", e.what()));
@@ -196,8 +198,8 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                     data->iconPath,
                     data->assetGraphPath,
                     spellNames.str(),
-                    data->maxHealth,
-                    data->damage,
+                    data->health,
+                    // data->damage,
                     childrenesNames.str());
             }
 
@@ -207,6 +209,6 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_giantfireball =
-    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&, DebugConsole &) {
-        SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
+    [](entt::registry &, ThePURGE &, std::vector<std::string> &&, DebugConsole &) {
+        //SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
     };

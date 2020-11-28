@@ -8,14 +8,14 @@
 
 namespace engine::helper {
 
-inline std::uint32_t loadTexture(const std::string &path) {
-	static engine::Core::Holder holder{};
+inline std::uint32_t loadTexture(const std::string &path)
+{
+    static engine::Core::Holder holder{};
 
-	auto key = entt::hashed_string{fmt::format("resource/texture/identifier/{}", path).data()};
-	const auto &resource = holder.instance->getCache<engine::Texture>()
-		.load<engine::LoaderTexture>(key, path);
+    auto key = entt::hashed_string{fmt::format("resource/texture/identifier/{}", path).data()};
+    const auto &resource = holder.instance->getCache<engine::Texture>().load<engine::LoaderTexture>(key, path);
 
-	return resource->id;
+    return resource->id;
 }
 
-}
+} // namespace engine::helper

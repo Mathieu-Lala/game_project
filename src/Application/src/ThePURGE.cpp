@@ -3,6 +3,9 @@
 #include <Engine/Core.hpp>
 #include <Engine/Graphics/Window.hpp>
 
+#include "models/Spell.hpp"
+#include "models/Class.hpp"
+
 #include "ThePURGE.hpp"
 
 #include "widgets/GameHUD.hpp"
@@ -23,7 +26,7 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     m_logics = std::make_unique<GameLogic>(*this);
 
-    m_db_spell.fromFile("");
+    m_db_spell.fromFile(holder.instance->settings().data_folder + "db/spells.json");
     m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
 
     setMenu(std::make_unique<menu::MainMenu>());
