@@ -32,7 +32,7 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
                 case engine::Joystick::LEFT: m_left = true; break;
                 case engine::Joystick::RIGHT: m_right = true; break;
                 case engine::Joystick::ACTION_BOTTOM: m_select = true; break;
-                default: return;
+                default: break;
                 }
             },
             [&](const engine::Moved<engine::JoystickAxis> &joy) {

@@ -5,8 +5,8 @@
 #include "menu/MainMenu.hpp"
 #include "ThePURGE.hpp"
 
-void game::menu::Credits::create(entt::registry &, ThePURGE &) {
-
+void game::menu::Credits::create(entt::registry &, ThePURGE &)
+{
     static auto holder = engine::Core::Holder{};
 
     const auto &dataFolder = holder.instance->settings().data_folder;
@@ -14,7 +14,7 @@ void game::menu::Credits::create(entt::registry &, ThePURGE &) {
     m_texture = engine::helper::loadTexture(dataFolder + "menus/credits.png");
 }
 
-void game::menu::Credits::draw(entt::registry &, ThePURGE & game)
+void game::menu::Credits::draw(entt::registry &, ThePURGE &game)
 {
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(frac2pixel({1.f, 1.f}));
@@ -23,11 +23,10 @@ void game::menu::Credits::draw(entt::registry &, ThePURGE & game)
     ImGui::End();
 
 
-    if (close())
-        game.setMenu(std::make_unique<menu::MainMenu>());
+    if (close()) game.setMenu(std::make_unique<menu::MainMenu>());
 }
 
-void game::menu::Credits::event(entt::registry &, ThePURGE &, const engine::Event & e)
+void game::menu::Credits::event(entt::registry &, ThePURGE &, const engine::Event &e)
 {
     std::visit(
         engine::overloaded{
@@ -36,6 +35,12 @@ void game::menu::Credits::event(entt::registry &, ThePURGE &, const engine::Even
                 case engine::Joystick::ACTION_RIGHT: forceClose(true); break;
                 case engine::Joystick::ACTION_BOTTOM: forceClose(true); break;
                 default: return;
+                }
+            },
+            [&](const engine::Pressed<engine::Key> &key) {
+                switch (key.source.key) {
+                case GLFW_KEY_ENTER: forceClose(true); break;
+                default: break;
                 }
             },
             [&](auto) {},
