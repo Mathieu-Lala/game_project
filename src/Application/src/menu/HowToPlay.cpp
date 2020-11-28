@@ -23,8 +23,16 @@ void game::menu::HowToPlay::draw(entt::registry &, ThePURGE &game)
     ImGui::SetNextWindowSize(frac2pixel({1.f, 1.f}));
     ImGui::Begin("HowToPlay", nullptr, ImGuiWindowFlags_NoDecoration);
 
-    if (right()) m_currentTab = Tab::CONTROLS;
-    if (left()) m_currentTab = Tab::HOW_TO_PLAY;
+    if (right()) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+
+        m_currentTab = Tab::CONTROLS;
+    }
+    if (left()) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+
+        m_currentTab = Tab::HOW_TO_PLAY;
+    }
 
     switch (m_currentTab) {
     case Tab::HOW_TO_PLAY: drawTexture(m_howToPlay, ImVec2(0, 0), frac2pixel(ImVec2(1, 1))); break;

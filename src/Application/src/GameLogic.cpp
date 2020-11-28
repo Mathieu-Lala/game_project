@@ -79,7 +79,8 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
         .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
         ->setVolume(0.2f)
         .play();
-    m_game.getBackgroundMusic()->play();
+    m_game.setBackgroundMusic("sounds/dungeon_music.wav", 0.1f);
+
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
     onPlayerPurchase.publish(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));

@@ -26,14 +26,10 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
     holder.instance->window()->setSize(glm::ivec2(1920, 1080));
 
     m_logics = std::make_unique<GameLogic>(*this);
-
-    m_background_music =
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
-    m_background_music->setVolume(0.1f).setLoop(true);
-
     m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "db/classes.json");
 
     setMenu(std::make_unique<menu::MainMenu>());
+    setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
 }
 
 auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> void
@@ -60,4 +56,16 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
         GameHUD::draw(*this, world);
     else
         m_currentMenu->onDraw(world, *this);
+}
+
+void game::ThePURGE::setBackgroundMusic(const std::string & path, float volume) noexcept
+{
+    static auto holder = engine::Core::Holder{};
+
+    if (m_background_music)
+        m_background_music->stop();
+
+    m_background_music =
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + path);
+    m_background_music->setVolume(volume).setLoop(true).play();
 }

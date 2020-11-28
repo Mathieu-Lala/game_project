@@ -38,6 +38,7 @@ public: // api
 
 public:
     void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu);}
+    void setBackgroundMusic(const std::string &path, float volume = 1) noexcept;
 
     auto getLogics() -> GameLogic & { return *m_logics; }
     auto getBackgroundMusic() -> std::shared_ptr<engine::Sound> { return m_background_music; }

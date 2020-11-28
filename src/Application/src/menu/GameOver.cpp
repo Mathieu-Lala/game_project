@@ -20,6 +20,7 @@ void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
         for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
 
         game.setMenu(std::make_unique<menu::MainMenu>());
+        game.setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
     }
 
     ImGui::End();
