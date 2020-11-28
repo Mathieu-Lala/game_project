@@ -3,6 +3,7 @@
 
 #include "menu/MainMenu.hpp"
 #include "menu/Credits.hpp"
+#include "menu/HowToPlay.hpp"
 #include "ThePURGE.hpp"
 
 void game::menu::MainMenu::create(entt::registry &, ThePURGE &)
@@ -12,7 +13,7 @@ void game::menu::MainMenu::create(entt::registry &, ThePURGE &)
     const auto &dataFolder = holder.instance->settings().data_folder;
 
 
-    m_backgroundTexture = engine::helper::loadTexture(dataFolder + "menus/main/background.png");
+    m_backgroundTexture = engine::helper::loadTexture(dataFolder + "menus/main/mainmenu.png");
 
     // clang-format off
 
@@ -26,9 +27,9 @@ void game::menu::MainMenu::create(entt::registry &, ThePURGE &)
         .size =     FROM_1080p(229, 155)
     });
         m_buttons.emplace_back(MenuTexture{
-        .id =       TEXTURE("menus/main/btn_rules_selected.png"),
-        .topleft =  FROM_1080p(1218, 442),
-        .size =     FROM_1080p(284, 149)
+        .id =       TEXTURE("menus/main/btn_howtoplay_selected.png"),
+        .topleft =  FROM_1080p(1062, 441),
+        .size =     FROM_1080p(590, 155)
     });
     m_buttons.emplace_back(MenuTexture{
         .id =       TEXTURE("menus/main/btn_credits_selected.png"),
@@ -71,10 +72,9 @@ void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
             game.setMenu(nullptr);
             game.logics()->onGameStart.publish(world);
             return;
-        case Button::RULES:
-            // TODO: rules menu
-            spdlog::info("rules");
-            break;
+        case Button::HOWTOPLAY:
+            game.setMenu(std::make_unique<menu::HowToPlay>());
+            return;
         case Button::CREDITS:
             game.setMenu(std::make_unique<menu::Credits>());
             return;

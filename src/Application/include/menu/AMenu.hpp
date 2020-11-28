@@ -33,15 +33,26 @@ protected:
 
 
     //
-    // Input helpers. Should only be read during the draw() function
+    // Input helpers with most common interractions.
+    // Should only be read during the draw() function
     //
     bool up() const noexcept { return m_up; }
     bool down() const noexcept { return m_down; }
     bool right() const noexcept { return m_right; }
     bool left() const noexcept { return m_left; }
-
+    // User closed menu
+    bool close() const noexcept { return m_close; }
     // User selected / clicked on current option
     bool select() const noexcept { return m_select; }
+
+
+    void forceUp(bool val) noexcept { m_up = val; }
+    void forceDown(bool val) noexcept { m_down = val; }
+    void forceLeft(bool val) noexcept { m_left = val; }
+    void forceRight(bool val) noexcept { m_right = val; }
+
+    void forceSelect(bool val) noexcept { m_select = val; }
+    void forceClose(bool val) noexcept { m_close = val; }
 
 
     //
@@ -66,6 +77,7 @@ private:
     bool m_left = false;
     bool m_right = false;
     bool m_select = false;
+    bool m_close = false;
 
     bool m_recoveringUp = false;
     bool m_recoveringDown = false;

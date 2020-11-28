@@ -23,7 +23,7 @@ void game::menu::Credits::draw(entt::registry &, ThePURGE & game)
     ImGui::End();
 
 
-    if (select() || m_exit)
+    if (close())
         game.setMenu(std::make_unique<menu::MainMenu>());
 }
 
@@ -33,7 +33,8 @@ void game::menu::Credits::event(entt::registry &, ThePURGE &, const engine::Even
         engine::overloaded{
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
                 switch (joy.source.button) {
-                case engine::Joystick::ACTION_RIGHT: m_exit = true; break;
+                case engine::Joystick::ACTION_RIGHT: forceClose(true); break;
+                case engine::Joystick::ACTION_BOTTOM: forceClose(true); break;
                 default: return;
                 }
             },

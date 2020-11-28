@@ -85,6 +85,7 @@ void game::AMenu::onDraw(entt::registry &world, ThePURGE &game)
     m_left = false;
     m_right = false;
     m_select = false;
+    m_close = false;
 }
 
 

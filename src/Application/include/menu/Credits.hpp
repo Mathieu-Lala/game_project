@@ -14,8 +14,6 @@ public:
 
 private:
     std::uint32_t m_texture;
-
-    bool m_exit = false;
 };
 
 } // namespace game
