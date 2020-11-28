@@ -55,6 +55,7 @@ void game::menu::HowToPlay::event(entt::registry &, ThePURGE &, const engine::Ev
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
                 switch (joy.source.button) {
                 case engine::Joystick::ACTION_RIGHT: forceClose(true); break;
+                case engine::Joystick::ACTION_BOTTOM: forceClose(true); break;
                 case engine::Joystick::LS: forceLeft(true); break;
                 case engine::Joystick::RS: forceRight(true); break;
                 default: break;
