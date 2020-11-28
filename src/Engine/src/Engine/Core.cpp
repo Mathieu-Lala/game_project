@@ -53,7 +53,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
         spdlog::error("Engine::Core GLFW An error occured '{}' 'code={}'\n", message, code);
     });
 
-    spdlog::info("Engine::Core instanciated");
+    spdlog::trace("Engine::Core instanciated");
     if (::glfwInit() == GLFW_FALSE) { throw std::logic_error(fmt::format("Engine::Core initialization failed")); }
 
     ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -63,7 +63,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
     ::glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    spdlog::info("Engine::Core GLFW version: '{}'\n", ::glfwGetVersionString());
+    spdlog::trace("Engine::Core GLFW version: '{}'\n", ::glfwGetVersionString());
 
     IMGUI_CHECKVERSION();
 
@@ -77,7 +77,7 @@ engine::Core::~Core()
     // note : otherwise we have a final error message at the end
     ::glfwSetErrorCallback(nullptr);
 
-    spdlog::info("Engine::Core destroyed");
+    spdlog::trace("Engine::Core destroyed");
 }
 
 auto engine::Core::setPendingEvents(std::vector<Event> &&events) -> void
@@ -126,7 +126,7 @@ auto engine::Core::getNextEvent() -> Event
     } break;
     case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
-            spdlog::warn("Engine::Window switching to record mode");
+            spdlog::info("Engine::Window switching to record mode");
             m_eventMode = EventMode::RECORD;
             return TimeElapsed{getElapsedTime()};
         }
@@ -161,7 +161,7 @@ auto engine::Core::main(int argc, char **argv) -> int
 #ifdef LOGLOGLOG
         // todo : setup properly logging
         auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
-        logger->info("logger created");
+        logger->trace("logger created");
 #endif
 
         Options opt{argc, argv};
@@ -211,10 +211,11 @@ auto engine::Core::main(int argc, char **argv) -> int
         const auto event = getNextEvent();
 
         std::visit(
-            overloaded{[](TimeElapsed &prev, const TimeElapsed &next) { prev.elapsed += next.elapsed; },
-                       [&]([[maybe_unused]] const auto &, [[maybe_unused]] const std::monostate &) {},
-                       // event in playback mode will be saved twice = bad !
-                       [&]([[maybe_unused]] const auto &, const auto &next) { eventsProcessed.push_back(next); }},
+            overloaded{
+                [](TimeElapsed &prev, const TimeElapsed &next) { prev.elapsed += next.elapsed; },
+                [&]([[maybe_unused]] const auto &, [[maybe_unused]] const std::monostate &) {},
+                // event in playback mode will be saved twice = bad !
+                [&]([[maybe_unused]] const auto &, const auto &next) { eventsProcessed.push_back(next); }},
             eventsProcessed.back(),
             event);
 
@@ -228,40 +229,39 @@ auto engine::Core::main(int argc, char **argv) -> int
         };
 
         std::visit(
-            overloaded{[&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
-                       [&]([[maybe_unused]] const CloseWindow &) {
-                           m_window->close();
-                           this->close();
-                       },
-                       [&](const ResizeWindow &e) {
-                           m_window->setSize({e.width, e.height});
-                       },
-                       [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
-                       [&]([[maybe_unused]] const Pressed<Key> &) {
-                           // todo : abstract glfw keyboard
-                           switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
-                           case GLFW_KEY_ESCAPE: this->close(); break;
+            overloaded{
+                [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
+                [&]([[maybe_unused]] const CloseWindow &) {
+                    m_window->close();
+                    this->close();
+                },
+                [&](const ResizeWindow &e) {
+                    m_window->setSize({e.width, e.height});
+                },
+                [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
+                [&]([[maybe_unused]] const Pressed<Key> &) {
+                    // todo : abstract glfw keyboard
+                    switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
+                    case GLFW_KEY_ESCAPE: this->close(); break;
 #ifndef NDEBUG
-                           case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
+                    case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
 #endif
-                           case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
-                           case GLFW_KEY_F12: {
-                               std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
-                               const auto file = fmt::format(
-                                   m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
-                               if (!m_window->screenshot(file)) {
-                                   spdlog::warn("failed to take a screenshot: {}", file);
-                               }
-                           } break;
-                           default: break;
-                           }
-                       },
-                       [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
-                       [&](const Disconnected<Joystick> &j) { m_joystickManager->remove(j.source); },
-                       [&](const Moved<JoystickAxis> &j) { m_joystickManager->update(j); },
-                       [&](const Pressed<JoystickButton> &j) { m_joystickManager->update(j); },
-                       [&](const Released<JoystickButton> &j) { m_joystickManager->update(j); },
-                       []([[maybe_unused]] const auto &) {}},
+                    case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
+                    case GLFW_KEY_F12: {
+                        std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
+                        const auto file = fmt::format(
+                            m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
+                        if (!m_window->screenshot(file)) { spdlog::warn("failed to take a screenshot: {}", file); }
+                    } break;
+                    default: break;
+                    }
+                },
+                [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
+                [&](const Disconnected<Joystick> &j) { m_joystickManager->remove(j.source); },
+                [&](const Moved<JoystickAxis> &j) { m_joystickManager->update(j); },
+                [&](const Pressed<JoystickButton> &j) { m_joystickManager->update(j); },
+                [&](const Released<JoystickButton> &j) { m_joystickManager->update(j); },
+                []([[maybe_unused]] const auto &) {}},
             event);
 
         if (timeElapsed) { this->tickOnce(std::get<TimeElapsed>(event)); }
@@ -315,13 +315,13 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
     // check if the spritesheet need to update the texture
     m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
-        if (!sprite.speed.is_in_cooldown) return;
+        if (!sprite.cooldown.is_in_cooldown) return;
 
-        if (std::chrono::milliseconds{elapsed} < sprite.speed.remaining_cooldown) {
-            sprite.speed.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+        if (std::chrono::milliseconds{elapsed} < sprite.cooldown.remaining_cooldown) {
+            sprite.cooldown.remaining_cooldown -= std::chrono::milliseconds{elapsed};
         } else {
-            sprite.speed.remaining_cooldown = std::chrono::milliseconds(0);
-            sprite.speed.is_in_cooldown = false;
+            sprite.cooldown.remaining_cooldown = std::chrono::milliseconds(0);
+            sprite.cooldown.is_in_cooldown = false;
         }
     });
 
@@ -329,11 +329,11 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
     // update and reset the cooldown of the spritesheet
     for (auto &i : m_world.view<Spritesheet>()) {
         auto &sprite = m_world.get<Spritesheet>(i);
-        if (sprite.speed.is_in_cooldown) continue;
-        sprite.speed.is_in_cooldown = true;
-        sprite.speed.remaining_cooldown = sprite.speed.cooldown;
+        if (sprite.cooldown.is_in_cooldown) continue;
+        sprite.cooldown.is_in_cooldown = true;
+        sprite.cooldown.remaining_cooldown = sprite.cooldown.cooldown;
         sprite.current_frame++;
-        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).size());
+        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).frames.size());
 
         auto &vbo_texture = m_world.get<VBOTexture>(i);
         auto &texture = *getCache<Texture>().handle(vbo_texture.id);
@@ -341,13 +341,13 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         DrawableFactory::fix_texture(
             m_world,
             i,
-            m_settings.data_folder + sprite.file,
-            {static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].x)
+            m_settings.data_folder + sprite.animations.at(sprite.current_animation).file,
+            {static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).x)
                  / static_cast<float>(texture.width),
-             static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].y)
+             static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).y)
                  / static_cast<float>(texture.height),
-             sprite.width / static_cast<float>(texture.width),
-             sprite.height / static_cast<float>(texture.height)});
+             sprite.animations.at(sprite.current_animation).width / static_cast<float>(texture.width),
+             sprite.animations.at(sprite.current_animation).height / static_cast<float>(texture.height)});
     }
 
     m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
@@ -375,10 +375,10 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
         d2::Velocity actual_tick_velocity = moving_vel;
 
-        const auto pred_pos =
-            d3::Position{moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                         moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                         moving_pos.z};
+        const auto pred_pos = d3::Position{
+            moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+            moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+            moving_pos.z};
 
         d3::Position other_pos;
         d2::HitboxSolid other_hitbox;
@@ -442,11 +442,14 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         m_shader_colored->use();
         m_shader_colored->setUniform<float>("time", static_cast<float>(tmp));
-        m_world.view<Drawable, Color, d3::Position, d2::Scale, d2::Rotation>(entt::exclude<VBOTexture>)
-            .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale, auto &rot) {
+        m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<VBOTexture>)
+            .each([this](auto entity, auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
+                auto *rotationComponent = m_world.try_get<d2::Rotation>(entity);
+                auto rotation = rotationComponent ? static_cast<float>(rotationComponent->angle) : 0.f ;
+
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
-                model = glm::rotate(model, static_cast<float>(rot.angle), glm::vec3(0.f, 0.f, 1.f));
+                model = glm::rotate(model, rotation, glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored->setUniform("model", model);
                 ::glBindVertexArray(drawable.VAO);
@@ -455,11 +458,14 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         m_shader_colored_textured->use();
         m_shader_colored_textured->setUniform<float>("time", static_cast<float>(tmp));
-        m_world.view<Drawable, Color, VBOTexture, d3::Position, d2::Scale, d2::Rotation>().each(
-            [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale, auto &rot) {
+        m_world.view<Drawable, Color, VBOTexture, d3::Position, d2::Scale>().each(
+            [this](auto entity, auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
+                auto *rotationComponent = m_world.try_get<d2::Rotation>(entity);
+                auto rotation = rotationComponent ? static_cast<float>(rotationComponent->angle) : 0.f ;
+
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
-                model = glm::rotate(model, static_cast<float>(rot.angle), glm::vec3(0.f, 0.f, 1.f));
+                model = glm::rotate(model, rotation, glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored_textured->setUniform("model", model);
                 m_shader_colored_textured->setUniform("mirrored", texture.mirrored);

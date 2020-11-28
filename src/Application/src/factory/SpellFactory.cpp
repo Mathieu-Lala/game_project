@@ -34,11 +34,12 @@ auto game::SpellFactory::create<game::SpellFactory::ENEMY_ATTACK>(
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
-    auto &sp = world.emplace<engine::Spritesheet>(
+    world.emplace<engine::Spritesheet>(
         spell,
         engine::Spritesheet::from_json(
             holder.instance->settings().data_folder + "anims/spells/farmer_attack/farmer_anim.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    engine::DrawableFactory::fix_spritesheet(world, spell, "default");
+
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
     world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
     world.emplace<engine::d2::Scale>(spell, 1.0, 1.0);
@@ -66,11 +67,13 @@ auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTACK>(
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
-    auto &sp = world.emplace<engine::Spritesheet>(
+    world.emplace<engine::Spritesheet>(
         spell,
         engine::Spritesheet::from_json(
             holder.instance->settings().data_folder + "anims/spells/farmer_attack/farmer_anim.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    engine::DrawableFactory::fix_spritesheet(world, spell, "default");
+
+    //engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y * 1.5, -1.0);
     world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
     world.emplace<engine::d2::Scale>(spell, 1.5, 1.5);
@@ -101,11 +104,13 @@ auto game::SpellFactory::create<game::SpellFactory::SWORD_ATTACK>(
     world.emplace<game::AttackDamage>(spell, attack_damage.damage);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, std::move(color));
-    auto &sp = world.emplace<engine::Spritesheet>(
+    world.emplace<engine::Spritesheet>(
         spell,
         engine::Spritesheet::from_json(
             holder.instance->settings().data_folder + "anims/spells/soldier_attack/soldier_attack.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    //engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    engine::DrawableFactory::fix_spritesheet(world, spell, "default");
+
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
     world.emplace<engine::d2::Rotation>(spell, 0.f);
     world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
@@ -136,10 +141,11 @@ auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &wo
     world.emplace<game::AttackDamage>(spell, attack_damage.damage * 1.5f);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
-    auto &sp = world.emplace<engine::Spritesheet>(
+    world.emplace<engine::Spritesheet>(
         spell,
         engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/spells/fireball/fireball.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    // engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    engine::DrawableFactory::fix_spritesheet(world, spell, "default");
 
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0); // note : why -1
     world.emplace<engine::d2::Velocity>(spell, direction.x * speed, direction.y * speed);
@@ -152,8 +158,8 @@ auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &wo
 
 
 template<>
-auto game::SpellFactory::create<game::SpellFactory::DEBUG_GIANT_FIREBALL>(entt::registry &world, entt::entity caster, const glm::dvec2 &)
-    -> entt::entity
+auto game::SpellFactory::create<game::SpellFactory::DEBUG_GIANT_FIREBALL>(
+    entt::registry &world, entt::entity caster, const glm::dvec2 &) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -165,10 +171,11 @@ auto game::SpellFactory::create<game::SpellFactory::DEBUG_GIANT_FIREBALL>(entt::
     world.emplace<game::AttackDamage>(spell, 999999.0f);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
-    auto &sp = world.emplace<engine::Spritesheet>(
+    world.emplace<engine::Spritesheet>(
         spell,
         engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/spells/fireball/fireball.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    // engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    engine::DrawableFactory::fix_spritesheet(world, spell, "default");
 
     world.emplace<engine::d3::Position>(spell, 0.0, 0.0, -1.0); // note : why -1
     world.emplace<engine::d2::Velocity>(spell, 0.0, 0.0);
@@ -201,11 +208,13 @@ auto game::SpellFactory::create<game::SpellFactory::PIERCING_ARROW>(
     world.emplace<game::AttackDamage>(spell, attack_damage.damage * 1.25f);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
-    auto &sp = world.emplace<engine::Spritesheet>(
+    world.emplace<engine::Spritesheet>(
         spell,
         engine::Spritesheet::from_json(
             holder.instance->settings().data_folder + "anims/spells/shooter_attack/shooter_attack.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    // engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
+    engine::DrawableFactory::fix_spritesheet(world, spell, "default");
+
     world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0); // note : why -1
     world.emplace<engine::d2::Velocity>(spell, direction.x * speed, direction.y * speed);
     world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));

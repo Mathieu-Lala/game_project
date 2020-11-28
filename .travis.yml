@@ -6,6 +6,14 @@ dist: focal
 #  directories:
 #    - /home/travis/.conan
 
+## FIXME : This the cache generate this error
+## opengl/system: Already installed!
+## ERROR: opengl/system: Error in package_info() method, line 78
+##  self._fill_cppinfo_from_pkgconfig('gl')
+## while calling '_fill_cppinfo_from_pkgconfig', line 21
+##  if not pkg_config.provides:
+##  ConanException: pkg-config command ['pkg-config', '--print-provides', 'gl', '--print-errors'] failed with error: Command 'pkg-config --print-provides gl --print-errors' returned non-zero exit status 1.
+
 matrix:
   include:
     - name: "Linux (GCC compiler)"
@@ -20,49 +28,41 @@ matrix:
             - gcc-10
             - g++-10
             - cmake
-#            - doxygen
-#            - graphviz
-#            - binutils-dev
             - python3
             - python3-pip
             - python3-setuptools
             - lcov
-#            - uuid-dev
           update: true
       after_script:
         - bash <(curl -s https://codecov.io/bash)
-    - name: "Linux (Clang compiler)"
-      os: linux
-      compiler: clang
-      env: OS=linux COMPILER=clang CLANG_VERSION=11
-      addons:
-        apt:
-          sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-          packages:
-            - clang-11
-            - cmake
-#            - doxygen
-#            - graphviz
-#            - binutils-dev
-            - python3
-            - python3-pip
-            - python3-setuptools
-            - lcov
-#            - uuid-dev
-          update: true
-    - name: "MacOS"
-      os: osx
-      compiler: clang
-      env: OS=osx COMPILER=clang
-      osx_image: xcode12.2
+
+#    - name: "Linux (Clang compiler)"
+#      os: linux
+#      compiler: clang
+#      env: OS=linux COMPILER=clang CLANG_VERSION=11
+#      addons:
+#        apt:
+#          sources:
+#            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+#          packages:
+#            - clang-11
+#            - cmake
+#            - python3
+#            - python3-pip
+#            - python3-setuptools
+#            - lcov
+#          update: true
+
+#    - name: "MacOS"
+#      os: osx
+#      compiler: clang
+#      env: OS=osx COMPILER=clang
+#      osx_image: xcode12.2
 
 before_install:
   - if [ "$OS" != "osx" ] && [ "$COMPILER" = "gcc" ]; then export CC="gcc-${GCC_VERSION}" CXX="g++-${GCC_VERSION}"; fi
   - if [ "$OS" != "osx" ] && [ "$COMPILER" = "clang" ]; then export CC="clang-${CLANG_VERSION}" CXX="clang++-${CLANG_VERSION}"; fi
   - if [ "$OS" == "osx" ]; then brew update; fi
-#  - if [ "$OS" == "osx" ]; then brew install doxygen; fi
-#  - if [ "$OS" == "osx" ]; then brew install graphviz; fi
   - cmake --version
   - git config --global user.name "Travis CI"
   - git config --global user.email "travis@travis-ci.org"
@@ -71,6 +71,7 @@ before_install:
 install:
   - ./tools/install.sh
   - conan --version
+  - cmake --version
 
 script:
   - ./tools/generate.sh -- -DENABLE_COVERAGE:BOOL=TRUE -DENABLE_TESTING:BOOL=TRUE

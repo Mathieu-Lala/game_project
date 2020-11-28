@@ -61,14 +61,14 @@ engine::Shader::Shader(const std::string_view vCode, const std::string_view fCod
 
         spdlog::error("(Failed to link shader program {}, \nError : {}\n", ID, errorLog.data());
     } else {
-        spdlog::info("Successfully created shader program {}", ID);
+        spdlog::trace("Successfully created shader program {}", ID);
     }
 }
 
 engine::Shader::~Shader()
 {
     ::glDeleteProgram(ID);
-    spdlog::info("Destroyed shader program {}", ID);
+    spdlog::trace("Destroyed shader program {}", ID);
 }
 
 auto engine::Shader::fromFile(const std::string_view vFile, const std::string_view fFile) -> Shader
