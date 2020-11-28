@@ -12,6 +12,7 @@
 
 #include "GameLogic.hpp"
 #include "models/Class.hpp"
+#include "models/Enemy.hpp"
 
 #ifndef NDEBUG
 # include "widgets/debug/console/DebugConsole.hpp"
@@ -23,6 +24,7 @@ class GameLogic;
 
 struct SpellDatabase;
 struct ClassDatabase;
+struct EnemyDatabase;
 
 class ThePURGE : public engine::api::Game {
 public: // api
@@ -39,15 +41,17 @@ public: // api
     auto getBackgroundColor() const noexcept -> glm::vec3 final { return {0.0f, 0.0f, 0.0f}; }
 
 public:
-    void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu);}
-    void setBackgroundMusic(const std::string &path, float volume = 1) noexcept;
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
     auto dbSpells() noexcept -> SpellDatabase & { return m_db_spell; }
     auto dbClasses() noexcept -> ClassDatabase & { return m_db_class; }
+    auto dbEnemies() noexcept -> EnemyDatabase & { return m_db_enemy; }
 
     auto getCamera() -> engine::Camera & { return m_camera; }
+    void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu);}
+
     auto getBackgroundMusic() -> std::shared_ptr<engine::Sound> { return m_background_music; }
+    void setBackgroundMusic(const std::string &path, float volume = 1) noexcept;
 
     entt::entity player; // note : remove me
 
@@ -61,6 +65,7 @@ private:
 
     SpellDatabase m_db_spell;
     ClassDatabase m_db_class;
+    EnemyDatabase m_db_enemy;
 
     engine::Camera m_camera; // note : should be in engine::Core
     std::shared_ptr<engine::Sound> m_background_music;

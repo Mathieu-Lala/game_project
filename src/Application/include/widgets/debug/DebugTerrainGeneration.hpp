@@ -52,7 +52,9 @@ struct TerrainGeneration {
             50);
         ImGui::Separator();
 
-        ImGui::SliderFloat("Enemy per block", &game.logics()->m_map_generation_params.mobDensity, 0, 1);
+        for (const auto &[name, _] : game.dbEnemies().db) {
+            ImGui::SliderFloat("Enemy '{}' per block", &game.logics()->m_map_generation_params.mobDensity[name], 0, 1);
+        }
 
         ImGui::End();
     }

@@ -1,0 +1,75 @@
+{
+    "skeleton": {
+        "asset": "anims/enemies/skeleton/skeleton.data.json",
+        "health": 1,
+        "speed": 10.1,
+        "view_range": 6,
+        "attack_range": 4,
+        "experience": 2,
+        "color": {
+            "r": 1,
+            "g": 1,
+            "b": 1
+        },
+        "hitbox": {
+            "x": 1.0,
+            "y": 1.0
+        },
+        "scale": {
+            "x": 0.8,
+            "y": 1.0
+        },
+        "spells": [
+            "shovel"
+        ]
+    },
+    "electric_skeleton": {
+        "asset": "anims/enemies/skeleton/skeleton.data.json",
+        "health": 1,
+        "speed": 10.1,
+        "view_range": 10,
+        "attack_range": 8,
+        "experience": 3,
+        "color": {
+            "r": 1,
+            "g": 1,
+            "b": 0.2
+        },
+        "hitbox": {
+            "x": 1.0,
+            "y": 1.0
+        },
+        "scale": {
+            "x": 0.8,
+            "y": 1.0
+        },
+        "spells": [
+            "fireball_blue"
+        ]
+    },
+    "dark_skeleton": {
+        "asset": "anims/enemies/skeleton/skeleton.data.json",
+        "health": 4,
+        "speed": 9.6,
+        "view_range": 7,
+        "attack_range": 5,
+        "experience": 4,
+        "color": {
+            "r": 0.4,
+            "g": 0.4,
+            "b": 0.4
+        },
+        "hitbox": {
+            "x": 1.0,
+            "y": 1.0
+        },
+        "scale": {
+            "x": 0.8,
+            "y": 1.0
+        },
+        "spells": [
+            "sword"
+        ],
+        "is_boss": true
+    }
+}

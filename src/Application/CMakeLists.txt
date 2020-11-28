@@ -6,6 +6,7 @@ add_library(
   src/models/Stage.cpp
   src/models/Spell.cpp
   src/models/Class.cpp
+  src/models/Enemy.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
   src/factory/ParticuleFactory.cpp
@@ -15,7 +16,7 @@ add_library(
   src/menu/AMenu.cpp
   src/menu/MainMenu.cpp
   src/menu/UpgradePanel.cpp
-  src/menu/GameOver.cpp 
+  src/menu/GameOver.cpp
   src/menu/Credits.cpp
   src/menu/HowToPlay.cpp)
 

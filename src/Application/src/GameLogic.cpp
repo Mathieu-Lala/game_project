@@ -108,7 +108,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
 {
     static auto holder = engine::Core::Holder{};
 
-    //world.get<AttackDamage>(player).damage = newClass.damage;
+    // world.get<AttackDamage>(player).damage = newClass.damage;
     world.get<Speed>(player).speed = newClass.speed;
     world.get<engine::d2::HitboxSolid>(player) = newClass.hitbox;
 
@@ -145,6 +145,11 @@ auto game::GameLogic::slots_purchase_classes(entt::registry &world, entt::entity
 auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity) -> void
 {
     world.get<SkillPoint>(entity).count++;
+
+    auto &level = world.get<Level>(entity);
+    level.current_xp -= level.xp_require;
+    level.xp_require = static_cast<std::uint32_t>(std::ceil(level.xp_require * 1.2));
+    level.current_level++;
 }
 
 auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event &e) -> void
@@ -423,7 +428,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unuse
             entity_health.current -= spell_damage.damage;
 
             if (world.has<entt::tag<"player"_hs>>(entity)) {
-                holder.instance->setScreenshake(true, 300ms);
+                holder.instance->setScreenshake(true, 350ms);
                 ParticuleFactory::create<Particule::HITMARKER>(
                     world, {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0});
             }
@@ -611,13 +616,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
                                 : holder.instance->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
-        if (world.has<entt::tag<"player"_hs>>(killer)) {
-            // todo : move xp dropped as component or something
-            if (world.has<entt::tag<"boss"_hs>>(killed))
-                addXp(world, killer, 5);
-            else
-                addXp(world, killer, 1);
-        }
+        if (world.has<entt::tag<"player"_hs>>(killer)) { addXp(world, killer, world.get<Experience>(killed).xp); }
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);
@@ -647,13 +646,11 @@ auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
     world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
 
-    auto data =
-        Stage{}.generate(m_game, world, m_map_generation_params, m_nextFloorSeed); // keep the stage instance somewhere
+    // keep the stage instance somewhere
+    const auto data = Stage{}.generate(m_game, world, m_map_generation_params, m_nextFloorSeed);
     m_nextFloorSeed = data.nextFloorSeed;
 
-    auto allPlayers = world.view<entt::tag<"player"_hs>>();
-
-    for (auto &player : allPlayers) {
+    for (const auto &player : world.view<entt::tag<"player"_hs>>()) {
         auto &pos = world.get<engine::d3::Position>(player);
 
         pos.x = data.spawn.x + data.spawn.w * 0.5;
@@ -667,11 +664,5 @@ auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uin
 
     level.current_xp += xp;
 
-    while (level.current_xp >= level.xp_require) {
-        level.current_xp -= level.xp_require;
-        level.xp_require = static_cast<std::uint32_t>(std::ceil(level.xp_require * 1.2));
-        level.current_level++;
-
-        onPlayerLevelUp.publish(world, player);
-    }
+    while (level.current_xp >= level.xp_require) { onPlayerLevelUp.publish(world, player); }
 }

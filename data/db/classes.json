@@ -158,7 +158,9 @@
       "x": 0.75,
       "y": 2.0
     },
-    "spells": [],
+    "spells": [
+      "fireball_blue"
+    ],
     "children": []
   }
 }

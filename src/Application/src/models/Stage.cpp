@@ -1,6 +1,9 @@
 #include "models/Stage.hpp"
+#include "models/Spell.hpp"
 
 #include "factory/EntityFactory.hpp"
+
+#include "ThePURGE.hpp"
 
 // If gap is even, center will be chosen randomly between the two center tiles
 static int getOnePossibleCenterOf(int a, int b)
@@ -242,12 +245,14 @@ auto game::Stage::create_floor(ThePURGE &game, entt::registry &world, const Para
 
 auto game::Stage::spawn_mob(ThePURGE &game, entt::registry &world, const Parameters &params, const Room &r) -> void
 {
-    if (params.mobDensity == 0) return;
+    for (const auto &[id, density] : params.mobDensity) {
+        if (density == 0) continue;
 
-    for (auto x = r.x + 1; x < r.x + r.w - 1; ++x) {
-        for (auto y = r.y + 1; y < r.y + r.h - 1; ++y) {
-            if (randRange(0, static_cast<int>(1.0f / params.mobDensity)) == 0) {
-                EntityFactory::create<EntityFactory::ENEMY>(game, world, glm::vec2{x + 0.5, y + 0.5}, {0.8, 1.0});
+        for (auto x = r.x + 1; x < r.x + r.w - 1; ++x) {
+            for (auto y = r.y + 1; y < r.y + r.h - 1; ++y) {
+                if (randRange(0, static_cast<int>(1.0f / density)) == 0) {
+                    EntityFactory::create(game, world, glm::vec2{x + 0.5, y + 0.5}, game.dbEnemies().db.at(id));
+                }
             }
         }
     }
@@ -257,8 +262,10 @@ auto game::Stage::populate_enemies(ThePURGE &game, entt::registry &world, const 
 {
     for (auto &r : regularRooms) spawn_mob(game, world, params, r);
 
-    EntityFactory::create<EntityFactory::BOSS>(
-        game, world, glm::vec2{boss.x + boss.w * 0.5, boss.y + boss.h * 0.5}, {3.0, 3.0});
+    EntityFactory::create(game, world, glm::vec2{boss.x + boss.w * 0.5, boss.y + boss.h * 0.5}, game.dbEnemies().db.at("dark_skeleton"));
+
+//    EntityFactory::create<EntityFactory::BOSS>(
+//        game, world, glm::vec2{boss.x + boss.w * 0.5, boss.y + boss.h * 0.5}, {3.0, 3.0});
 }
 
 auto game::Stage::generate(ThePURGE &game, entt::registry &world, const Parameters &params, std::optional<std::uint32_t> seed)
