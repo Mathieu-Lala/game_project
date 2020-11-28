@@ -38,6 +38,21 @@ struct SpellFactory {
         }
 #undef MAP_SPELL
     }
+
+    template<typename... Args>
+    static auto create(const std::string_view search, Args &&... args)
+    {
+        struct s {
+            std::string tag;
+            ID id;
+        };
+        const auto db = std::to_array<s>(
+            {{"shovel", SHOVEL_ATTACK}, {"sword", SWORD_ATTACK}, {"fireball", FIREBALL}, {"arrow", PIERCING_ARROW}});
+
+        create(
+            std::find_if(db.begin(), db.end(), [&search](auto &i) { return i.tag == search; })->id,
+            std::forward<Args>(args)...);
+    }
 };
 
 #define DECL_SPEC(id) \

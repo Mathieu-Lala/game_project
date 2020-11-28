@@ -13,7 +13,7 @@
       "y": 2.0
     },
     "spells": [
-      0
+      "shovel"
     ],
     "children": [
       "soldier",
@@ -34,9 +34,13 @@
       "y": 2.0
     },
     "spells": [
-      1
+      "sword"
     ],
-    "children": []
+    "children": [
+      "assassin",
+      "warrior",
+      "tank"
+    ]
   },
   "shooter": {
     "desc": "Shooter description",
@@ -51,9 +55,12 @@
       "y": 2.0
     },
     "spells": [
-      3
+      "arrow"
     ],
-    "children": []
+    "children": [
+      "archer",
+      "gunner"
+    ]
   },
   "sorcerer": {
     "desc": "Sorcerer description",
@@ -68,9 +75,11 @@
       "y": 2.0
     },
     "spells": [
-      2
+      "fireball"
     ],
-    "children": []
+    "children": [
+      "mage"
+    ]
   },
   "assassin": {
     "desc": "Assassin description",
@@ -85,9 +94,7 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "soldier"
-    ]
+    "children": []
   },
   "warrior": {
     "desc": "Warrior description",
@@ -102,9 +109,7 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "soldier"
-    ]
+    "children": []
   },
   "tank": {
     "desc": "Tank description",
@@ -119,9 +124,7 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "soldier"
-    ]
+    "children": []
   },
   "archer": {
     "desc": "Archer description",
@@ -136,9 +139,7 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "shooter"
-    ]
+    "children": []
   },
   "gunner": {
     "desc": "Gunner description",
@@ -153,9 +154,7 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "shooter"
-    ]
+    "children": []
   },
   "mage": {
     "desc": "Mage description",
@@ -170,8 +169,6 @@
       "y": 2.0
     },
     "spells": [],
-    "children": [
-      "sorcerer"
-    ]
+    "children": []
   }
 }

@@ -65,13 +65,13 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_setSpell =
             if (args.size() != 2) throw std::runtime_error("Wrong argument count");
 
             auto idx = lexicalCast<int>(args[0]);
-            auto spellId = lexicalCast<int>(args[1]);
+            auto spellId = args[1];
 
             if (idx < 0 || idx > 4) throw std::runtime_error(fmt::format("Wrong index : {}", args[0]));
 
             auto player = game.player;
             auto &spellSlots = world.get<SpellSlots>(player);
-            spellSlots.spells[static_cast<std::size_t>(idx)] = game.dbSpells().instantiate(static_cast<SpellFactory::ID>(spellId));
+            spellSlots.spells[static_cast<std::size_t>(idx)] = game.dbSpells().instantiate(spellId);
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: setSpell index spell_id", e.what()));

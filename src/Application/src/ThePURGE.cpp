@@ -24,7 +24,7 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
     m_background_music->setVolume(0.1f).setLoop(true);
 
-    m_db_spell.fromFile("");
+    m_db_spell.fromFile(holder.instance->settings().data_folder + "db/spells.json");
     m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
 
     // pos and size based of `FloorGenParam::maxDungeonWidth / Height`

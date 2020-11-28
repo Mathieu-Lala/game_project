@@ -1,0 +1,14 @@
+{
+    "shovel": {
+        "cooldown": 500
+    },
+    "sword": {
+        "cooldown": 500
+    },
+    "fireball": {
+        "cooldown": 1250
+    },
+    "arrow": {
+        "cooldown": 1000
+    }
+}

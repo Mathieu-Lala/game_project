@@ -1,4 +1,8 @@
 #include <chrono>
+#include <optional>
+#include <fstream>
+
+#include <spdlog/spdlog.h>
 
 #include <Engine/component/Cooldown.hpp>
 
@@ -7,24 +11,40 @@
 
 using namespace std::chrono_literals;
 
-auto game::SpellDatabase::instantiate(SpellFactory::ID spell) -> Spell
+auto game::SpellDatabase::instantiate(const std::string_view spell) -> std::optional<Spell>
 {
-    return {
-        .id = spell,
-        .cd = {
-            .is_in_cooldown = false,
-            .cooldown = db.at(spell).cooldown,
-            .remaining_cooldown = 0ms,
-        }};
+    if (const auto found = std::find_if(std::begin(db), std::end(db), [&spell](auto &i) { return i.first == spell; });
+        found != std::end(db)) {
+        return Spell{
+            .id = found->first,
+            .cd = {
+                .is_in_cooldown = false,
+                .cooldown = found->second.cooldown,
+                .remaining_cooldown = 0ms,
+            }};
+
+    } else {
+        spdlog::error("SpellDatabase::instantiate: No such spell '{}'", spell.data());
+        return {};
+    }
 }
 
-auto game::SpellDatabase::fromFile(const std::string_view) -> bool
+auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
 {
-    this->db[SpellFactory::ID::SHOVEL_ATTACK] = {500ms};
-    this->db[SpellFactory::ID::SWORD_ATTACK] = {500ms};
-    this->db[SpellFactory::ID::FIREBALL] = {1250ms};
-    this->db[SpellFactory::ID::ENEMY_ATTACK] = {1000ms};
-    this->db[SpellFactory::ID::PIERCING_ARROW] = {1000ms};
+    std::ifstream file(path.data());
+    if (!file.is_open()) {
+        spdlog::error("Can't open the given file");
+        return false;
+    }
+    const auto jsonData = nlohmann::json::parse(file);
+
+    this->db = jsonData.get<std::decay_t<decltype(this->db)>>();
+
+    //    this->db[SpellFactory::ID::SHOVEL_ATTACK] = {500ms};
+    //    this->db[SpellFactory::ID::SWORD_ATTACK] = {500ms};
+    //    this->db[SpellFactory::ID::FIREBALL] = {1250ms};
+    //    this->db[SpellFactory::ID::ENEMY_ATTACK] = {1000ms};
+    //    this->db[SpellFactory::ID::PIERCING_ARROW] = {1000ms};
 
     return true;
 }

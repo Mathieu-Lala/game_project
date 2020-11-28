@@ -14,7 +14,6 @@
 
 using namespace std::chrono_literals;
 
-
 template<>
 auto game::SpellFactory::create<game::SpellFactory::ENEMY_ATTACK>(
     entt::registry &world, entt::entity caster, const glm::dvec2 &direction) -> entt::entity
@@ -156,7 +155,6 @@ auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &wo
     return spell;
 }
 
-
 template<>
 auto game::SpellFactory::create<game::SpellFactory::DEBUG_GIANT_FIREBALL>(
     entt::registry &world, entt::entity caster, const glm::dvec2 &) -> entt::entity
@@ -185,7 +183,6 @@ auto game::SpellFactory::create<game::SpellFactory::DEBUG_GIANT_FIREBALL>(
     world.emplace<engine::Source>(spell, caster);
     return spell;
 }
-
 
 template<>
 auto game::SpellFactory::create<game::SpellFactory::PIERCING_ARROW>(

@@ -155,7 +155,8 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(
     engine::DrawableFactory::fix_spritesheet(world, e, (std::rand() & 1) ? "idle_right" : "idle_left");
 
     auto &slots = world.emplace<SpellSlots>(e);
-    slots.spells[0] = game.dbSpells().instantiate(SpellFactory::ENEMY_ATTACK);
+    // slots.spells[0] = game.dbSpells().instantiate(SpellFactory::ENEMY_ATTACK);
+    slots.spells[0] = game.dbSpells().instantiate("shovel");
 
     return e;
 }
@@ -191,8 +192,8 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(
     [[maybe_unused]] auto &slots = world.emplace<SpellSlots>(e);
 
     // TODO: actual boss spells
-    slots.spells[0] = game.dbSpells().instantiate(SpellFactory::SWORD_ATTACK);
-    slots.spells[1] = game.dbSpells().instantiate(SpellFactory::PIERCING_ARROW);
+    slots.spells[0] = game.dbSpells().instantiate("sword");
+    slots.spells[1] = game.dbSpells().instantiate("arrow");
 
     return e;
 }

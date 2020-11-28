@@ -99,7 +99,7 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
                 if (chosenTrig != "") {
                     if (ImGui::Button("Validate")) {
                         choosetrigger = false;
-                        auto NewSpell = game.dbSpells().instantiate(selectedClass.value().spells[0]);
+                        auto NewSpell = game.dbSpells().instantiate(selectedClass.value().spells[0]).value();
                         for (auto i = 0ul; i < spell.spells.size(); i++) {
                             if (spell.spells[i].has_value() && NewSpell.id == spell.spells[i].value().id) {
                                 spell.spells[i] = {};

@@ -22,7 +22,7 @@ struct Class {
 
     bool is_starter = false;
 
-    std::vector<SpellFactory::ID> spells;
+    std::vector<std::string> spells;
 
     float maxHealth;
 
