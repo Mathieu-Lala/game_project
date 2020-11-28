@@ -16,7 +16,9 @@ add_library(
   src/menu/AMenu.cpp
   src/menu/MainMenu.cpp
   src/menu/UpgradePanel.cpp
-  src/menu/GameOver.cpp "include/menu/Credits.hpp" "src/menu/Credits.cpp" "include/menu/HowToPlay.hpp" "src/menu/HowToPlay.cpp")
+  src/menu/GameOver.cpp 
+  src/menu/Credits.cpp
+  src/menu/HowToPlay.cpp)
 
 target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 
