@@ -2,6 +2,7 @@
 #include <Engine/Core.hpp>
 
 #include "menu/MainMenu.hpp"
+#include "menu/Credits.hpp"
 #include "ThePURGE.hpp"
 
 void game::menu::MainMenu::create(entt::registry &, ThePURGE &)
@@ -62,27 +63,26 @@ void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
 
     drawTexture(m_buttons.at(m_selected));
 
+    ImGui::End();
+
     if (select()) {
         switch (m_selected) {
         case Button::PLAY:
             game.setMenu(nullptr);
             game.logics()->onGameStart.publish(world);
-            break;
+            return;
         case Button::RULES:
             // TODO: rules menu
             spdlog::info("rules");
             break;
         case Button::CREDITS:
-            // TODO: credits menu
-            spdlog::info("credits");
-            break;
+            game.setMenu(std::make_unique<menu::Credits>());
+            return;
         case Button::EXIT:
             holder.instance->close();
             break;
         }
     }
-
-    ImGui::End();
 }
 
 void game::menu::MainMenu::event(entt::registry &world, ThePURGE &game, const engine::Event &e)

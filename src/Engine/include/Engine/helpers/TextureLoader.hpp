@@ -8,7 +8,7 @@
 
 namespace engine::helper {
 
-std::uint32_t loadTexture(const std::string &path) {
+inline std::uint32_t loadTexture(const std::string &path) {
 	static engine::Core::Holder holder{};
 
 	auto key = entt::hashed_string{fmt::format("resource/texture/identifier/{}", path).data()};
