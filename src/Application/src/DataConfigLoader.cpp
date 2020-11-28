@@ -50,6 +50,7 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
             .maxHealth = data["maxHealth"].get<float>(),
             .damage = data["damage"].get<float>(),
             .speed = data["speed"].get<float>(),
+            .cost = data["cost"].get<size_t>(),
             .hitbox = hitbox,
             .children = {},
         };

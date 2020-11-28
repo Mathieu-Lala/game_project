@@ -26,6 +26,7 @@ struct Class {
     float maxHealth;
     float damage;
     float speed;
+    size_t cost;
     engine::d2::HitboxSolid hitbox;
 
     std::vector<EntityFactory::ID> children;
