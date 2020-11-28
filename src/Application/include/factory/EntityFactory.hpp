@@ -21,18 +21,23 @@ struct EntityFactory {
         SOLDIER,
         SHOOTER,
         SORCERER,
-        TONK,
+        ASSASSIN,
+        WARRIOR,
+        TANK,
+        ARCHER,
+        GUNNER,
+        MAGE,
         PLAYER, // should be named farmer
 
         KEY, // should be on a layer above
 
 
-        LAYER_ENEMY = 4,
+        LAYER_ENEMY = 5,
         ENEMY = LAYER_ENEMY * 10,
         BOSS,
 
 
-        LAYER_TERRAIN = 5,
+        LAYER_TERRAIN = 6,
 
         FLOOR_NORMAL = LAYER_TERRAIN * 10,
         FLOOR_SPAWN,
@@ -41,7 +46,7 @@ struct EntityFactory {
         EXIT_DOOR,
         WALL,
 
-        LAYER_BACKGROUND = 6,
+        LAYER_BACKGROUND = 7,
         BACKGROUND = LAYER_BACKGROUND * 10,
 
         MAX_ID,

@@ -37,6 +37,8 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
 
         const auto currentID = EntityFactory::toID(name);
 
+        engine::d2::HitboxSolid hitbox{data["hitbox"]["x"].get<double>(), data["hitbox"]["y"].get<double>()};
+
         database[currentID] = Class{
             .id = currentID,
             .name = name,
@@ -47,6 +49,9 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
             .spells = spells,
             .maxHealth = data["maxHealth"].get<float>(),
             .damage = data["damage"].get<float>(),
+            .speed = data["speed"].get<float>(),
+            .cost = data["cost"].get<int>(),
+            .hitbox = hitbox,
             .children = {},
         };
     }
@@ -75,6 +80,7 @@ auto game::DataConfigLoader::loadClassDatabase(const std::string_view path) -> c
             "",//classes.spells,
             classes.maxHealth,
             classes.damage,
+            classes.speed,
             ""//,classes.children
         );
     }
