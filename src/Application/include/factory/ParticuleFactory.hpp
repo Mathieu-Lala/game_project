@@ -19,6 +19,7 @@ struct ParticuleFactory {
 
 DECL_SPEC(POSITIVE);
 DECL_SPEC(HITMARKER);
+DECL_SPEC(NEUTRAL);
 
 #undef DECL_SPEC
 
