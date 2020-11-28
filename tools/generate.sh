@@ -53,12 +53,12 @@ done
 argument="-DCMAKE_BUILD_TYPE=$build_type"
 
 case "$(uname)" in
-"Linux")
-  argument="$argument -B build/$build_type/$arch"
-  ;;
-*) # Windows
-  argument="$argument -B build/$build_type -A $arch"
-  ;;
+    "Linux")
+    argument="$argument -B build/$build_type/$arch"
+    ;;
+    *) # Windows
+    argument="$argument -B build/$build_type -A $arch"
+    ;;
 esac
 
 #if [[ $(uname -a) =~ "Ubuntu" ]]; then

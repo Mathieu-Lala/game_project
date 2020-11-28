@@ -57,6 +57,7 @@ target_link_libraries(
 if(MSVC)
   target_compile_definitions(engine_core PUBLIC NOMINMAX)
 endif()
+target_compile_definitions(engine_core PUBLIC GLM_FORCE_SILENT_WARNINGS)
 
 add_executable(engine_main src/Engine/main.cpp)
 target_link_libraries(engine_main PRIVATE engine_core ThePURGE)

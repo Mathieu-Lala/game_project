@@ -5,6 +5,15 @@
 #include "menu/GameOver.hpp"
 #include "menu/MainMenu.hpp"
 
+auto game::menu::GameOver::clean_world(entt::registry &world) -> void
+{
+    for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
+    for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
+    for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }
+    for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); world.destroy(world.get<AimSight>(i).entity); }
+    for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
+}
+
 void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 {
     // todo : style because this is not a debug window
@@ -12,12 +21,7 @@ void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 
     ImGui::Text("You are dead !");
     if (ImGui::Button("main menu")) {
-        for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
-        for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
-        for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }
-        for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); }
-        for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
-
+        clean_world(world);
         game.setMenu(std::make_unique<menu::MainMenu>());
     }
 
@@ -31,12 +35,7 @@ void game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const en
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
                 switch (joy.source.button) {
                 case engine::Joystick::CENTER2: {
-                    for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
-                    for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
-                    for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }
-                    for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); }
-                    for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
-
+                    clean_world(world);
                     game.setMenu(std::make_unique<MainMenu>());
                 } break;
                 default: break;
