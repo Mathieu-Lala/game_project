@@ -40,11 +40,5 @@ auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
 
     this->db = jsonData.get<std::decay_t<decltype(this->db)>>();
 
-    //    this->db[SpellFactory::ID::SHOVEL_ATTACK] = {500ms};
-    //    this->db[SpellFactory::ID::SWORD_ATTACK] = {500ms};
-    //    this->db[SpellFactory::ID::FIREBALL] = {1250ms};
-    //    this->db[SpellFactory::ID::ENEMY_ATTACK] = {1000ms};
-    //    this->db[SpellFactory::ID::PIERCING_ARROW] = {1000ms};
-
     return true;
 }

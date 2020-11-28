@@ -9,13 +9,14 @@
 
 #include <Engine/Event/Event.hpp>
 
-#include "component/all.hpp"
-//#include "models/Class.hpp"
 #include "models/Stage.hpp"
 
 namespace game {
 
 class ThePURGE;
+
+struct Class;
+struct Spell;
 
 enum class Direction {
     UP,

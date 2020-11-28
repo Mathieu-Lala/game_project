@@ -2,6 +2,8 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
 
+#include "models/Spell.hpp"
+
 #include "ThePURGE.hpp"
 #include "menu/AMenu.hpp"
 

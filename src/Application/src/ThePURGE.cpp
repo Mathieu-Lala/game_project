@@ -2,6 +2,9 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
 
+#include "models/Spell.hpp"
+#include "models/Class.hpp"
+
 #include "ThePURGE.hpp"
 
 #include "widgets/GameHUD.hpp"

@@ -1,14 +1,82 @@
 {
     "shovel": {
-        "cooldown": 500
+        "cooldown": 700,
+        "damage": 1,
+        "scale": {
+            "x": 1.5,
+            "y": 1.5
+        },
+        "hitbox": {
+            "x": 0.2,
+            "y": 0.7
+        },
+        "lifetime": 200,
+        "audio_on_cast": "sounds/spells/stick.wav",
+        "animation": "anims/spells/farmer_attack/farmer_anim.data.json",
+        "speed": 0,
+        "offset_to_source": {
+            "x": 1,
+            "y": 1
+        }
     },
     "sword": {
-        "cooldown": 500
+        "cooldown": 500,
+        "damage": 5,
+        "scale": {
+            "x": 0.7,
+            "y": 0.7
+        },
+        "hitbox": {
+            "x": 0.3,
+            "y": 0.7
+        },
+        "lifetime": 200,
+        "audio_on_cast": "sounds/spells/soldier_attack.wav",
+        "animation": "anims/spells/soldier_attack/soldier_attack.data.json",
+        "speed": 0,
+        "offset_to_source": {
+            "x": 1,
+            "y": 1
+        }
     },
     "fireball": {
-        "cooldown": 1250
+        "cooldown": 1500,
+        "damage": 3,
+        "scale": {
+            "x": 2.0,
+            "y": 2.0
+        },
+        "hitbox": {
+            "x": 0.7,
+            "y": 0.7
+        },
+        "lifetime": 2000,
+        "audio_on_cast": "sounds/fire_cast.wav",
+        "animation": "anims/spells/fireball/fireball.data.json",
+        "speed": 4.0,
+        "offset_to_source": {
+            "x": 2,
+            "y": 2
+        }
     },
     "arrow": {
-        "cooldown": 1000
+        "cooldown": 1000,
+        "damage": 2,
+        "scale": {
+            "x": 1,
+            "y": 0.2
+        },
+        "hitbox": {
+            "x": 0.7,
+            "y": 0.3
+        },
+        "lifetime": 1000,
+        "audio_on_cast": "sounds/spells/stick.wav",
+        "animation": "anims/spells/arrow/arrow.data.json",
+        "speed": 8.0,
+        "offset_to_source": {
+            "x": 1.5,
+            "y": 1.5
+        }
     }
 }

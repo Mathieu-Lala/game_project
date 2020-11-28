@@ -13,7 +13,7 @@
 
 namespace game {
 
-struct Class {
+struct Class { // todo : name very confusing
     EntityFactory::ID id;
     std::string name;
     std::string description;

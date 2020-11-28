@@ -5,6 +5,8 @@
 #include "widgets/debug/console/ConsoleCommands.hpp"
 #include "widgets/debug/console/DebugConsole.hpp"
 
+#include "models/Spell.hpp"
+
 #include "component/all.hpp"
 
 #include "ThePURGE.hpp"
@@ -19,7 +21,7 @@ game::CommandHandler::CommandHandler() :
         {"buyClass", cmd_buyClass},
         {"getClasses", cmd_getClasses},
         {"getClassInfo", cmd_getClassInfo},
-        {"giantfireball", cmd_giantfireball},
+        //{"giantfireball", cmd_giantfireball},
     }
 {
 }
@@ -207,6 +209,6 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_giantfireball =
-    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&, DebugConsole &) {
-        SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
+    [](entt::registry &, ThePURGE &, std::vector<std::string> &&, DebugConsole &) {
+        //SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
     };

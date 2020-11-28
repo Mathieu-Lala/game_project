@@ -38,14 +38,6 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
     if (!file.is_open()) { spdlog::error("Can't open the given file"); }
     const auto jsonData = nlohmann::json::parse(file);
 
-    // const auto get_spells = [](const auto &in) {
-    //    std::vector<SpellFactory::ID> spells;
-    //    std::transform(std::begin(in), std::end(in), std::back_inserter(spells), [](const nlohmann::json &i) {
-    //        return static_cast<SpellFactory::ID>(i.get<int>());
-    //    });
-    //    return spells;
-    //};
-
     for (const auto &[name, data] : jsonData.items()) {
         const auto currentID = EntityFactory::toID(name);
 

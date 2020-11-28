@@ -4,6 +4,10 @@
 #include <Engine/helpers/ImGui.hpp>
 #include <Engine/Core.hpp>
 
+#include "models/Spell.hpp"
+
+#include "component/all.hpp"
+
 #include "menu/UpgradePanel.hpp"
 #include "ThePURGE.hpp"
 
@@ -103,7 +107,6 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
                         for (auto i = 0ul; i < spell.spells.size(); i++) {
                             if (spell.spells[i].has_value() && NewSpell.id == spell.spells[i].value().id) {
                                 spell.spells[i] = {};
-                                // spell.removeElem(i);
                             }
                         }
                         spell.spells[triggerValue] = NewSpell;

@@ -58,8 +58,8 @@ if [[ $(uname -a) =~ "Linux" ]]; then
     build_folder="$build_folder/$arch"
 fi
 
-cmake --build $build_folder --config $build_type -j $(nproc --ignore=4)
+cmake --build $build_folder --config $build_type # -j $(nproc --ignore=4)
 
 if [[ "$test" == "true" ]]; then
-    cd $build_folder && ctest -j $(nproc --ignore=4)
+    cd $build_folder && ctest # -j $(nproc --ignore=4)
 fi

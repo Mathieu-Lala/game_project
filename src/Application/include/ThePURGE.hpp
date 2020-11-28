@@ -8,13 +8,10 @@
 #include <Engine/Camera.hpp>
 #include <Engine/audio/Sound.hpp>
 
-#include "component/all.hpp"
-
 #include "menu/AMenu.hpp"
 
 #include "GameLogic.hpp"
 #include "models/Class.hpp"
-//#include "models/Level.hpp"
 
 #ifndef NDEBUG
 # include "widgets/debug/console/DebugConsole.hpp"
@@ -23,6 +20,9 @@
 namespace game {
 
 class GameLogic;
+
+struct SpellDatabase;
+struct ClassDatabase;
 
 class ThePURGE : public engine::api::Game {
 public: // api

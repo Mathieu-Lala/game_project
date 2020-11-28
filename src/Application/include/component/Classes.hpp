@@ -5,7 +5,7 @@
 
 namespace game {
 
-struct Classes {
+struct Classes { // todo : name very confusing
     std::vector<EntityFactory::ID> ids;
 };
 
