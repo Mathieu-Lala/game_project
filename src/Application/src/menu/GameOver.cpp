@@ -14,8 +14,10 @@ auto game::menu::GameOver::clean_world(entt::registry &world) -> void
     for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
 }
 
-void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
+bool game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 {
+    auto ret = true;
+
     // todo : style because this is not a debug window
     ImGui::Begin("Menu Game Over", nullptr, ImGuiWindowFlags_NoDecoration);
 
@@ -23,13 +25,16 @@ void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
     if (ImGui::Button("main menu")) {
         clean_world(world);
         game.setMenu(std::make_unique<menu::MainMenu>());
+        ret = false;
     }
 
     ImGui::End();
+    return ret;
 }
 
-void game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const engine::Event &e)
+bool game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const engine::Event &e)
 {
+    auto ret = true;
     std::visit(
         engine::overloaded{
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
@@ -37,6 +42,7 @@ void game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const en
                 case engine::Joystick::CENTER2: {
                     clean_world(world);
                     game.setMenu(std::make_unique<MainMenu>());
+                    ret = false;
                 } break;
                 default: break;
                 }
@@ -44,4 +50,5 @@ void game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const en
             [&](auto) {},
         },
         e);
+    return ret;
 }

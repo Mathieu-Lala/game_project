@@ -18,8 +18,8 @@ public:
     void onDraw(entt::registry &world, ThePURGE &game);
 
 protected:
-    virtual void event(entt::registry &, ThePURGE &, const engine::Event &) = 0;
-    virtual void draw(entt::registry &, ThePURGE &) = 0;
+    virtual auto event(entt::registry &, ThePURGE &, const engine::Event &) -> bool = 0;
+    virtual auto draw(entt::registry &, ThePURGE &) -> bool = 0;
 
     bool up() const noexcept { return m_up; }
     bool down() const noexcept { return m_down; }

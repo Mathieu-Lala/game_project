@@ -6,11 +6,12 @@
 
 #include "component/all.hpp"
 #include "factory/EntityFactory.hpp"
-#include "DataConfigLoader.hpp"
+
+#include "ThePURGE.hpp"
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
-    entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -27,7 +28,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
-    entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -44,7 +45,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
-    entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -61,7 +62,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
-    entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -78,7 +79,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
-    entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -97,8 +98,8 @@ auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
 }
 
 template<>
-auto game::EntityFactory::create<game::EntityFactory::WALL>(entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size)
-    -> entt::entity
+auto game::EntityFactory::create<game::EntityFactory::WALL>(
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
@@ -115,7 +116,7 @@ auto game::EntityFactory::create<game::EntityFactory::WALL>(entt::registry &worl
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::DEBUG_TILE>(
-    entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
@@ -128,8 +129,8 @@ auto game::EntityFactory::create<game::EntityFactory::DEBUG_TILE>(
 }
 
 template<>
-auto game::EntityFactory::create<game::EntityFactory::ENEMY>(entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size)
-    -> entt::entity
+auto game::EntityFactory::create<game::EntityFactory::ENEMY>(
+    ThePURGE &game, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -154,14 +155,14 @@ auto game::EntityFactory::create<game::EntityFactory::ENEMY>(entt::registry &wor
     engine::DrawableFactory::fix_spritesheet(world, e, (std::rand() & 1) ? "idle_right" : "idle_left");
 
     auto &slots = world.emplace<SpellSlots>(e);
-    slots.spells[0] = Spell::create(SpellFactory::ENEMY_ATTACK);
+    slots.spells[0] = game.dbSpells().instantiate(SpellFactory::ENEMY_ATTACK);
 
     return e;
 }
 
 template<>
-auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size)
-    -> entt::entity
+auto game::EntityFactory::create<game::EntityFactory::BOSS>(
+    ThePURGE &game, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -187,18 +188,19 @@ auto game::EntityFactory::create<game::EntityFactory::BOSS>(entt::registry &worl
 
     engine::DrawableFactory::fix_spritesheet(world, e, "idle_right");
 
-    auto &slots = world.emplace<SpellSlots>(e);
+    [[maybe_unused]] auto &slots = world.emplace<SpellSlots>(e);
 
     // TODO: actual boss spells
-    slots.spells[0] = Spell::create(SpellFactory::ID::SWORD_ATTACK);
-    slots.spells[1] = Spell::create(SpellFactory::ID::PIERCING_ARROW);
+    slots.spells[0] = game.dbSpells().instantiate(SpellFactory::SWORD_ATTACK);
+    slots.spells[1] = game.dbSpells().instantiate(SpellFactory::PIERCING_ARROW);
 
     return e;
 }
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
-    entt::registry &world, [[maybe_unused]] const glm::vec2 &pos, [[maybe_unused]] const glm::vec2 &size) -> entt::entity
+    ThePURGE &, entt::registry &world, [[maybe_unused]] const glm::vec2 &pos, [[maybe_unused]] const glm::vec2 &size)
+    -> entt::entity
 {
     auto player = world.create();
 
@@ -232,8 +234,8 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
 }
 
 template<>
-auto game::EntityFactory::create<game::EntityFactory::KEY>(entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size)
-    -> entt::entity
+auto game::EntityFactory::create<game::EntityFactory::KEY>(
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -251,7 +253,7 @@ auto game::EntityFactory::create<game::EntityFactory::KEY>(entt::registry &world
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::BACKGROUND>(
-    entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
+    ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
@@ -269,7 +271,8 @@ auto game::EntityFactory::create<game::EntityFactory::BACKGROUND>(
 
 template<>
 auto game::EntityFactory::create<game::EntityFactory::AIMING_SIGHT>(
-    entt::registry &world, [[maybe_unused]] const glm::vec2 &, [[maybe_unused]] const glm::vec2 &) -> entt::entity
+    ThePURGE &, entt::registry &world, [[maybe_unused]] const glm::vec2 &, [[maybe_unused]] const glm::vec2 &)
+    -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 

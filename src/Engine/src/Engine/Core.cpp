@@ -421,6 +421,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
 #ifndef NDEBUG
         if (isShowingDebugInfo()) {
+            ImGui::ShowDemoWindow();
             debugDrawJoystick();
             debugDrawDisplayOptions();
         }
@@ -430,7 +431,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         const auto background = m_game->getBackgroundColor();
 
-        ::glClearColor(background.r, background.g, background.b, 1.00f);
+        ::glClearColor(background.r, background.g, background.b, 1.0f);
         ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // todo : add rendering

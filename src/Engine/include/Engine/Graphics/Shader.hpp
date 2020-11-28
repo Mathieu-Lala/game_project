@@ -1,9 +1,10 @@
 #pragma once
 
-#include <string_view>
-#include <string>
+#include <cstdint>
 
-#include <glm/matrix.hpp>
+#include <string_view>
+
+#include <glm/ext/matrix_float4x4.hpp>
 
 namespace engine {
 

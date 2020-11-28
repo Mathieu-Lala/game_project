@@ -6,6 +6,8 @@
 
 namespace game {
 
+struct ThePURGE;
+
 struct EntityFactory {
     enum ID {
         ID_ERROR = 0,
@@ -55,11 +57,14 @@ struct EntityFactory {
     static auto toID(const std::string_view in) noexcept -> ID
     {
         std::string compare{in};
-        std::transform(compare.begin(), compare.end(), compare.begin(), [](auto c) { return static_cast<char>(std::tolower(c)); });
+        std::transform(
+            compare.begin(), compare.end(), compare.begin(), [](auto c) { return static_cast<char>(std::tolower(c)); });
 
         for (const auto &i : magic_enum::enum_values<ID>()) {
             auto enum_name = std::string{magic_enum::enum_name(i)};
-            std::transform(enum_name.begin(), enum_name.end(), enum_name.begin(), [](auto c) { return static_cast<char>(std::tolower(c)); });
+            std::transform(enum_name.begin(), enum_name.end(), enum_name.begin(), [](auto c) {
+                return static_cast<char>(std::tolower(c));
+            });
             if (compare == enum_name) { return static_cast<ID>(i); }
         }
         return LAYER_DEBUG;
@@ -68,7 +73,8 @@ struct EntityFactory {
     // note : should take a path to a json config instead ... ?
     // todo : normalize arguments , Args...&& ?
     template<ID>
-    static auto create(entt::registry &, const glm::vec2 &pos, const glm::vec2 &size /*, float rotation*/) -> entt::entity;
+    static auto create(ThePURGE &, entt::registry &, const glm::vec2 &pos, const glm::vec2 &size /*, float rotation*/)
+        -> entt::entity;
 
     template<ID id>
     constexpr static auto get_z_layer() noexcept -> double
@@ -77,10 +83,10 @@ struct EntityFactory {
     }
 };
 
-#define DECL_SPEC(id)                                                                \
-    template<>                                                                       \
-    auto EntityFactory::create<EntityFactory::ID::id>(                               \
-        entt::registry &, const glm::vec2 &, const glm::vec2 & /*, float rotation*/) \
+#define DECL_SPEC(id)                                                                            \
+    template<>                                                                                   \
+    auto EntityFactory::create<EntityFactory::ID::id>(                                           \
+        ThePURGE &, entt::registry &, const glm::vec2 &, const glm::vec2 & /*, float rotation*/) \
         ->entt::entity
 
 DECL_SPEC(DEBUG_TILE);
