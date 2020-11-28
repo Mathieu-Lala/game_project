@@ -16,6 +16,7 @@
 #include "component/AttackDamage.hpp"
 #include "component/AttackCooldown.hpp"
 #include "component/Effect.hpp"
+#include <component/Speed.hpp>
 
 #include "component/ViewRange.hpp"
 #include "component/Health.hpp"

@@ -208,7 +208,6 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<engine::d2::Rotation>(player, 0.f);
     world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
     world.emplace<engine::d2::Scale>(player, 1.5, 2.5);
-    world.emplace<engine::d2::HitboxSolid>(player, 0.75, 2.0);
     world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
     world.emplace<Level>(player, 0u, 0u, 10u);
     world.emplace<KeyPicker>(player);
@@ -223,8 +222,10 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
 
     // class dependant, see `GameLogic::apply_class_to_player`
     world.emplace<engine::Spritesheet>(player);
-    world.emplace<Health>(player, 1.f, 1.f);
+    world.emplace<Health>(player, 0.f, 0.f);
     world.emplace<AttackDamage>(player, 0.f);
+    world.emplace<Speed>(player, 1.f);
+    world.emplace<engine::d2::HitboxSolid>(player, 0.75, 2.0);
     // --
 
     return player;
