@@ -49,7 +49,7 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
     for (const auto &[name, data] : jsonData.items()) {
         const auto currentID = EntityFactory::toID(name);
 
-        this->db[currentID] = {
+        Class c{
             .id = currentID,
             .name = name,
             .description = data["desc"].get<std::string>(),
@@ -64,6 +64,8 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             .hitbox = engine::d2::HitboxSolid{data["hitbox"]["x"].get<double>(), data["hitbox"]["y"].get<double>()},
             .children = {},
         };
+        // Note creating the `Class` instance during assignment raises internal compiler error on MSVC
+        db[currentID] = c;
     }
 
     for (auto &[id, i] : this->db) {

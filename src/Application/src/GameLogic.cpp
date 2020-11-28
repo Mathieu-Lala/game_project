@@ -74,11 +74,15 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
 
+    // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
+    EntityFactory::create<EntityFactory::ID::BACKGROUND>(m_game, world, glm::vec2(25, 25), glm::vec2(75, 75));
+
     holder.instance->getAudioManager()
         .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
         ->setVolume(0.2f)
         .play();
-    m_game.getBackgroundMusic()->play();
+    m_game.setBackgroundMusic("sounds/dungeon_music.wav", 0.1f);
+
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(m_game, world, {}, {});
     slots_apply_classes(world, m_game.player, m_game.dbClasses().getStarterClass());

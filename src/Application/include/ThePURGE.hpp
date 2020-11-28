@@ -39,6 +39,8 @@ public: // api
     auto getBackgroundColor() const noexcept -> glm::vec3 final { return {0.0f, 0.0f, 0.0f}; }
 
 public:
+    void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu);}
+    void setBackgroundMusic(const std::string &path, float volume = 1) noexcept;
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }
 
     auto dbSpells() noexcept -> SpellDatabase & { return m_db_spell; }
@@ -46,8 +48,6 @@ public:
 
     auto getCamera() -> engine::Camera & { return m_camera; }
     auto getBackgroundMusic() -> std::shared_ptr<engine::Sound> { return m_background_music; }
-
-    auto setMenu(std::unique_ptr<AMenu> &&menu) -> void { m_currentMenu = std::move(menu); }
 
     entt::entity player; // note : remove me
 
