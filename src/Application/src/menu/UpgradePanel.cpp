@@ -7,17 +7,6 @@
 #include "menu/UpgradePanel.hpp"
 #include "ThePURGE.hpp"
 
-#define UPGRADE_PANEL_NOT_WORKING 1
-
-#if UPGRADE_PANEL_NOT_WORKING
-
-bool game::menu::UpgradePanel::draw([[maybe_unused]] entt::registry &world, [[maybe_unused]] ThePURGE &game)
-{
-    return true;
-}
-
-#else
-
 bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
     auto ret = true;
@@ -110,7 +99,7 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
                 if (chosenTrig != "") {
                     if (ImGui::Button("Validate")) {
                         choosetrigger = false;
-                        auto NewSpell = game.dbSpells().instantiate((selectedClass.value().spells[0]);
+                        auto NewSpell = game.dbSpells().instantiate(selectedClass.value().spells[0]);
                         for (auto i = 0ul; i < spell.spells.size(); i++) {
                             if (spell.spells[i].has_value() && NewSpell.id == spell.spells[i].value().id) {
                                 spell.spells[i] = {};
@@ -211,8 +200,6 @@ bool game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
     return ret;
 }
 
-#endif
-
 bool game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
 {
     auto ret = true;
@@ -220,13 +207,19 @@ bool game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_P: game.setMenu(nullptr); ret = false;break;
+                case GLFW_KEY_P:
+                    game.setMenu(nullptr);
+                    ret = false;
+                    break;
                 default: break;
                 }
             },
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
                 switch (joy.source.button) {
-                case engine::Joystick::CENTER2: game.setMenu(nullptr); ret = false; break;
+                case engine::Joystick::CENTER2:
+                    game.setMenu(nullptr);
+                    ret = false;
+                    break;
                 default: break;
                 }
             },

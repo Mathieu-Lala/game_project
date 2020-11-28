@@ -79,8 +79,19 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
         spdlog::info("[{}]", id);
 
         spdlog::info(
-            "id={} name={} description={} iconPath={} assetGraphPath={} is_starter={} spells={} maxHealth={} damage={} "
-            "children={}",
+            "\tid={}\n"
+            "\tname={}\n"
+            "\tdescription={}\n"
+            "\ticonPath={}\n"
+            "\tassetGraphPath={}\n"
+            "\tis_starter={}\n"
+            "\tspells={}\n"
+            "\tmaxHealth={}\n"
+            "\tdamage={}\n"
+            "\tspeed={}\n"
+            "\tcost={}\n"
+            "\thitbox={},{}\n"
+            "\tchildren={}\n",
             classes.id,
             classes.name,
             classes.description,
@@ -90,6 +101,10 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             "", // classes.spells,
             classes.maxHealth,
             classes.damage,
+            classes.speed,
+            classes.cost,
+            classes.hitbox.width,
+            classes.hitbox.height,
             std::accumulate(std::begin(classes.children), std::end(classes.children), std::string{}, [](auto out, auto &i) {
                 return out + "/" + magic_enum::enum_name(i).data();
             }));
