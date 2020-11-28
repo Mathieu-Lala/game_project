@@ -16,6 +16,8 @@ void game::menu::Credits::create(entt::registry &, ThePURGE &)
 
 void game::menu::Credits::draw(entt::registry &, ThePURGE &game)
 {
+    static auto holder = engine::Core::Holder{};
+
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(frac2pixel({1.f, 1.f}));
     ImGui::Begin("Credits", nullptr, ImGuiWindowFlags_NoDecoration);
@@ -23,7 +25,11 @@ void game::menu::Credits::draw(entt::registry &, ThePURGE &game)
     ImGui::End();
 
 
-    if (close()) game.setMenu(std::make_unique<menu::MainMenu>());
+    if (close()) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/back.wav")->play();
+
+        game.setMenu(std::make_unique<menu::MainMenu>());
+    }
 }
 
 void game::menu::Credits::event(entt::registry &, ThePURGE &, const engine::Event &e)

@@ -59,28 +59,32 @@ void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
 
     drawTexture(m_backgroundTexture, ImVec2(0, 0), frac2pixel({1.f, 1.f}));
 
-    if (up() && m_selected > 0) m_selected--;
-    if (down() && m_selected < Button::MAX - 1) m_selected++;
+    if (up() && m_selected > 0) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+
+        m_selected--;
+    }
+    if (down() && m_selected < Button::MAX - 1) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+
+        m_selected++;
+    }
 
     drawTexture(m_buttons.at(m_selected));
 
     ImGui::End();
 
     if (select()) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/accept.wav")->play();
+
         switch (m_selected) {
         case Button::PLAY:
             game.setMenu(nullptr);
             game.logics()->onGameStart.publish(world);
             return;
-        case Button::HOWTOPLAY:
-            game.setMenu(std::make_unique<menu::HowToPlay>());
-            return;
-        case Button::CREDITS:
-            game.setMenu(std::make_unique<menu::Credits>());
-            return;
-        case Button::EXIT:
-            holder.instance->close();
-            break;
+        case Button::HOWTOPLAY: game.setMenu(std::make_unique<menu::HowToPlay>()); return;
+        case Button::CREDITS: game.setMenu(std::make_unique<menu::Credits>()); return;
+        case Button::EXIT: holder.instance->close(); break;
         }
     }
 }
