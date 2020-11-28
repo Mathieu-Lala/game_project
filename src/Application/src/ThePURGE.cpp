@@ -33,9 +33,6 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "db/classes.json");
 
-    // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
-    EntityFactory::create<EntityFactory::ID::BACKGROUND>(world, glm::vec2(25, 25), glm::vec2(75, 75));
-
     setMenu(std::make_unique<menu::MainMenu>());
 }
 

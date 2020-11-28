@@ -72,6 +72,9 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
 
+    // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
+    EntityFactory::create<EntityFactory::ID::BACKGROUND>(world, glm::vec2(25, 25), glm::vec2(75, 75));
+
     holder.instance->getAudioManager()
         .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
         ->setVolume(0.2f)

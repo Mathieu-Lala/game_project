@@ -240,7 +240,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                        [&]([[maybe_unused]] const Pressed<Key> &) {
                            // todo : abstract glfw keyboard
                            switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
-                           case GLFW_KEY_ESCAPE: this->close(); break;
+                           case GLFW_KEY_ESCAPE: this->close(); break; // TODO : remove. Replace by pause menu allowing to quit
 #ifndef NDEBUG
                            case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
 #endif

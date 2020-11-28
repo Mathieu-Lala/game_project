@@ -102,3 +102,8 @@ void game::AMenu::drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) con
     ImGui::SetCursorPos(topLeft);
     ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(id)), size);
 }
+
+void game::AMenu::drawTexture(const MenuTexture &t) const noexcept
+{
+    drawTexture(t.id, frac2pixel(t.topleft), frac2pixel(t.size));
+}
