@@ -12,9 +12,9 @@
 
 #include "menu/AMenu.hpp"
 
-#include "level/MapGenerator.hpp"
 #include "GameLogic.hpp"
 #include "models/Class.hpp"
+//#include "models/Level.hpp"
 
 #ifndef NDEBUG
 # include "widgets/debug/console/DebugConsole.hpp"
