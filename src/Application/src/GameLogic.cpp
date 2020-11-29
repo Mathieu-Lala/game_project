@@ -415,6 +415,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unuse
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
 
+        
         if (engine::d2::overlapped<engine::d2::WITHOUT_EDGE>(entity_hitbox, entity_pos, spell_hitbox, spell_pos)) {
             auto &entity_health = world.get<Health>(entity);
             auto &spell_damage = world.get<AttackDamage>(spell);
@@ -425,7 +426,10 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unuse
             if (world.has<entt::tag<"player"_hs>>(entity)) {
                 holder.instance->setScreenshake(true, 300ms);
                 ParticuleFactory::create<Particule::HITMARKER>(
-                    world, {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0});
+                    world, {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0}, {255,0,0});
+            } else {
+                ParticuleFactory::create<Particule::HITMARKER>(
+                    world, {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0}, {0, 0, 0});
             }
 
             holder.instance->getAudioManager()
@@ -445,7 +449,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unuse
 
         if (world.has<entt::tag<"player"_hs>>(source)) {
             for (auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
-                if (world.valid(spell)) apply_damage(enemy, spell, hitbox, spell_pos, source);
+                if (world.valid(spell)) apply_damage(enemy, spell, hitbox, spell_pos, source); 
             }
         } else {
             for (auto &player : world.view<entt::tag<"player"_hs>>()) {
@@ -487,6 +491,17 @@ auto game::GameLogic::slots_update_particle(
             auto &vel = world.get<engine::d2::Velocity>(i);
             vel.x += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
             vel.y += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+        } break;
+        case Particule::POSITIVE: {
+            auto &color = world.get<engine::Color>(i);
+            const auto r = engine::Color::r(color);
+            const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+            const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+            engine::DrawableFactory::fix_color(world, i, {r, g, b});
+
+            auto &vel = world.get<engine::d2::Velocity>(i);
+            vel.x -= ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+            vel.y -= ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
         } break;
         default: break;
         }
@@ -668,6 +683,8 @@ auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uin
     level.current_xp += xp;
 
     while (level.current_xp >= level.xp_require) {
+        auto pos = world.get<engine::d3::Position>(player);
+        ParticuleFactory::create<Particule::POSITIVE>(world, {pos.x, pos.y}, {255, 255, 0});
         level.current_xp -= level.xp_require;
         level.xp_require = static_cast<std::uint32_t>(std::ceil(level.xp_require * 1.2));
         level.current_level++;
