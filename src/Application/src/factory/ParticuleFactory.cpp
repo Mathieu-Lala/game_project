@@ -77,12 +77,10 @@ auto game::ParticuleFactory::create<game::Particule::ID::NEUTRAL>(
         const auto angle = i * 2 * std::numbers::pi_v<float> / particule_count;
         const auto particule_pos = pos + glm::vec2{std::cos(angle), std::sin(angle)};
         auto e = world.create();
-        world.emplace<engine::d3::Position>(
-            e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
+        world.emplace<engine::d3::Position>(e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
         world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
         world.emplace<engine::d2::Rotation>(e, 0.f);
-        world.emplace<engine::d2::Velocity>(
-            e, (old_value.x - particule_pos.x) * speed, (old_value.y - particule_pos.y) * speed);
+        world.emplace<engine::d2::Velocity>(e, (old_value.x - particule_pos.x) * speed, (old_value.y - particule_pos.y) * speed);
         world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
         world.emplace<engine::Lifetime>(e, 600ms);
         world.emplace<Particule>(e, Particule::HITMARKER);
