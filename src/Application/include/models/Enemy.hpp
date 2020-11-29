@@ -34,7 +34,7 @@ struct Enemy {
     float view_range;
     float attack_range;
 
-    float experience;
+    std::uint32_t experience;
 
 };
 

@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <string_view>
+#include <optional>
 
 #include <nlohmann/json.hpp>
 #include <glm/vec2.hpp>
