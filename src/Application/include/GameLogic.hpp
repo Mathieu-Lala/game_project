@@ -58,6 +58,8 @@ public: // signals
 
     entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell &)> onSpellCast;
 
+    entt::sigh<void(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell)> onDamageTaken;
+
     entt::sigh<void(entt::registry &, entt::entity killed, entt::entity killer)> onEntityKilled;
 
     entt::sigh<void(entt::registry &)> onFloorChange;
@@ -72,7 +74,6 @@ private: // slots
 
     decltype(onPlayerPurchase)::sink_type sinkOnPlayerBuyClass{onPlayerPurchase};
     auto slots_apply_classes(entt::registry &, entt::entity, const Class &) -> void;
-    auto slots_purchase_classes(entt::registry &, entt::entity, const Class &) -> void;
 
     decltype(onPlayerLevelUp)::sink_type sinkOnPlayerLevelUp{onPlayerLevelUp};
     auto slots_level_up(entt::registry &, entt::entity) -> void;
@@ -101,6 +102,10 @@ private: // slots
 
     decltype(onSpellCast)::sink_type sinkCastSpell{onSpellCast};
     auto slots_cast_spell(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;
+
+
+    decltype(onDamageTaken)::sink_type sinkDamageTaken{onDamageTaken};
+    auto slots_damage_taken(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell) -> void;
 
     decltype(onEntityKilled)::sink_type sinkGetKilled{onEntityKilled};
     auto slots_kill_entity(entt::registry &, entt::entity killed, entt::entity killer) -> void;

@@ -35,7 +35,8 @@ add_library(
   src/Engine/audio/AlErrorHandling.cpp
   src/Engine/audio/Sound.cpp
   src/Engine/audio/WavReader.cpp
-  src/Engine/audio/AudioFileBuffer.cpp)
+  src/Engine/audio/AudioFileBuffer.cpp
+  src/Engine/resources/Texture.cpp)
 
 target_include_directories(engine_core PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_link_libraries(

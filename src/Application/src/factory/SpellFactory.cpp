@@ -32,7 +32,10 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, spell, glm::vec3{1, 1, 1}); // todo : add color in db ?
     world.emplace<engine::d3::Position>(
-        spell, caster_pos.x + data.offset_to_source_x * direction.x, caster_pos.y + data.offset_to_source_y * direction.y, -1.0);
+        spell,
+        caster_pos.x + (data.scale.x / 3.0 + data.offset_to_source_x) * direction.x,
+        caster_pos.y + (data.scale.y / 3.0 + data.offset_to_source_y) * direction.y,
+        -1.0);
     world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
 
     world.emplace<engine::d2::Scale>(spell, data.scale);

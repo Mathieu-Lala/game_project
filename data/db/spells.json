@@ -68,7 +68,7 @@
             "projectile"
         ]
     },
-    "fireball_wall": {
+    "firewall": {
         "cooldown": 3000,
         "damage": 0.5,
         "scale": {
@@ -81,7 +81,7 @@
         },
         "lifetime": 7000,
         "audio_on_cast": "sounds/fire_cast.wav",
-        "animation": "anims/spells/fireball/fireball.data.json",
+        "animation": "anims/spells/firewall/firewall.data.json",
         "speed": 0,
         "offset_to_source": {
             "x": 5,

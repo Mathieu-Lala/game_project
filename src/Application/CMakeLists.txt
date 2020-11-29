@@ -2,6 +2,8 @@ add_library(
   ThePURGE STATIC # MODULE
   src/ThePURGE.cpp
   src/GameLogic.cpp
+  src/GameLogic/collision.cpp
+  src/GameLogic/fight.cpp
   src/stage/LevelTilemapBuilder.cpp
   src/models/Stage.cpp
   src/models/Spell.cpp
