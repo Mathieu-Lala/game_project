@@ -2,15 +2,19 @@
 
 #include <optional>
 #include <array>
+//#include <string>
 
-#include "models/Spell.hpp"
+//#include "models/Spell.hpp"
 
 namespace game {
+
+struct Spell;
 
 struct SpellSlots {
     std::array<std::optional<Spell>, 4ul> spells;
 
-    // inline void removeElem(int pos) { spells[pos] = {}; }
+    // note : should be a reference to the spell castable and not the real spell
+    //std::array<std::optional<std::string>, 4ul> spells;
 };
 
 } // namespace game

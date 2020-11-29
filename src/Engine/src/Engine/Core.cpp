@@ -73,10 +73,7 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 engine::Core::~Core()
 {
     ::glfwTerminate();
-
-    // note : otherwise we have a final error message at the end
     ::glfwSetErrorCallback(nullptr);
-
     spdlog::trace("Engine::Core destroyed");
 }
 
@@ -280,7 +277,6 @@ auto engine::Core::main(int argc, char **argv) -> int
     f << serialized;
 #endif
 
-    // otherwise the singleton will be destroy after the main -> dead signal
     get().reset(nullptr);
 
     return 0;
@@ -406,21 +402,12 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         moving_pos.y += actual_tick_velocity.y * static_cast<d2::Velocity::type>(elapsed) * 0.001;
     }
 
-#ifdef MODE_EPILEPTIC // change the color at every frame
-    for (const auto &i : m_world.view<Drawable, Color>()) {
-        auto &color = m_world.get<Color>(i);
-        const auto r = std::clamp(Color::r(color) - 0.01f, 0.0f, 1.0f);
-        const auto g = std::clamp(Color::g(color) - 0.01f, 0.0f, 1.0f);
-        const auto b = std::clamp(Color::b(color) - 0.01f, 0.0f, 1.0f);
-        DrawableFactory::fix_color(m_world, i, {r ? r : 1.0f, g ? g : 1.0f, b ? b : 1.0f});
-    }
-#endif
-
     m_window->draw([&] {
         m_game->drawUserInterface(m_world);
 
 #ifndef NDEBUG
         if (isShowingDebugInfo()) {
+            ImGui::ShowDemoWindow();
             debugDrawJoystick();
             debugDrawDisplayOptions();
         }
@@ -430,7 +417,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         const auto background = m_game->getBackgroundColor();
 
-        ::glClearColor(background.r, background.g, background.b, 1.00f);
+        ::glClearColor(background.r, background.g, background.b, 1.0f);
         ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // todo : add rendering

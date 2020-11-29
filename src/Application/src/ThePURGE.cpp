@@ -1,17 +1,17 @@
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/Graphics/Window.hpp>
+
+#include "models/Spell.hpp"
+#include "models/Class.hpp"
 
 #include "ThePURGE.hpp"
-
-#include "DataConfigLoader.hpp"
 
 #include "widgets/GameHUD.hpp"
 #include "widgets/debug/DebugTerrainGeneration.hpp"
 
 #include "menu/MainMenu.hpp"
-
-auto game::ThePURGE::onDestroy(entt::registry &) -> void { spdlog::info("Thank's for playing ThePURGE"); }
 
 auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 {
@@ -22,18 +22,23 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     static auto holder = engine::Core::Holder{};
 
+    holder.instance->window()->setSize(glm::ivec2(1920, 1080));
+
     m_logics = std::make_unique<GameLogic>(*this);
 
-    m_background_music =
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/dungeon_music.wav");
-    m_background_music->setVolume(0.1f).setLoop(true);
-
-    m_classDatabase = DataConfigLoader::loadClassDatabase(holder.instance->settings().data_folder + "db/classes.json");
-
-    // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
-    EntityFactory::create<EntityFactory::ID::BACKGROUND>(world, glm::vec2(25, 25), glm::vec2(75, 75));
+    m_db_spell.fromFile(holder.instance->settings().data_folder + "db/spells.json");
+    m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
 
     setMenu(std::make_unique<menu::MainMenu>());
+    setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
+}
+
+auto game::ThePURGE::onDestroy(entt::registry &) -> void
+{
+    spdlog::info("Thanks for playing ThePURGE");
+
+    setMenu(nullptr);
+    m_logics.reset(nullptr);
 }
 
 auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> void
@@ -51,7 +56,6 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
     if (holder.instance->isShowingDebugInfo()) {
         m_console->draw();
-        ImGui::ShowDemoWindow();
         widget::TerrainGeneration::draw(*this, world);
     }
 #endif
@@ -60,4 +64,16 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
         GameHUD::draw(*this, world);
     else
         m_currentMenu->onDraw(world, *this);
+}
+
+void game::ThePURGE::setBackgroundMusic(const std::string & path, float volume) noexcept
+{
+    static auto holder = engine::Core::Holder{};
+
+    if (m_background_music)
+        m_background_music->stop();
+
+    m_background_music =
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + path);
+    m_background_music->setVolume(volume).setLoop(true).play();
 }

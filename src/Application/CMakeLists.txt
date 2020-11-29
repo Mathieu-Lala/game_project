@@ -2,11 +2,10 @@ add_library(
   ThePURGE STATIC # MODULE
   src/ThePURGE.cpp
   src/GameLogic.cpp
-  src/level/LevelTilemapBuilder.cpp
-  src/level/MapGenerator.cpp
-  src/models/SpellDatabase.cpp
-  src/models/ClassDatabase.cpp
-  src/DataConfigLoader.cpp
+  src/stage/LevelTilemapBuilder.cpp
+  src/models/Stage.cpp
+  src/models/Spell.cpp
+  src/models/Class.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
   src/factory/ParticuleFactory.cpp
@@ -16,7 +15,9 @@ add_library(
   src/menu/AMenu.cpp
   src/menu/MainMenu.cpp
   src/menu/UpgradePanel.cpp
-  src/menu/GameOver.cpp)
+  src/menu/GameOver.cpp 
+  src/menu/Credits.cpp
+  src/menu/HowToPlay.cpp)
 
 target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 

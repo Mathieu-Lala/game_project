@@ -5,7 +5,7 @@
 
 namespace game {
 
-struct Effect { // todo : split me in severals components
+struct /*[[deprecated]]*/ Effect { // todo : split me in severals components
     bool is_in_effect;
     bool is_in_cooldown;
     std::string effect_name; // todo : use enum

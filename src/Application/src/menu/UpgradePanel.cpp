@@ -4,6 +4,10 @@
 #include <Engine/helpers/ImGui.hpp>
 #include <Engine/Core.hpp>
 
+#include "models/Spell.hpp"
+
+#include "component/all.hpp"
+
 #include "menu/UpgradePanel.hpp"
 #include "ThePURGE.hpp"
 
@@ -18,7 +22,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
     // const auto comp = world.get<Class>(player);
     static bool choosetrigger = false;
-    static auto test = classes::getStarterClass(game.getClassDatabase());
+    static auto test = game.dbClasses().getStarterClass();
     static std::optional<Class> selectedClass;
     static std::string chosenTrig = "";
     static int spellmapped = 0;
@@ -98,11 +102,10 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
                 if (chosenTrig != "") {
                     if (ImGui::Button("Validate")) {
                         choosetrigger = false;
-                        auto NewSpell = Spell::create(selectedClass.value().spells[0]);
+                        auto NewSpell = game.dbSpells().instantiate(selectedClass.value().spells[0]).value();
                         for (auto i = 0ul; i < spell.spells.size(); i++) {
                             if (spell.spells[i].has_value() && NewSpell.id == spell.spells[i].value().id) {
                                 spell.spells[i] = {};
-                                // spell.removeElem(i);
                             }
                         }
                         spell.spells[triggerValue] = NewSpell;
@@ -117,7 +120,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
             ImGui::SetCursorPos(ImVec2(icon.x - 50, icon.y));
             ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((texture[2]))), ImVec2(50, 50));
         } else if (infoAdd == 2) {
-            if (skillPoints > 0) {
+            if (skillPoints >= selectedClass.value().cost) {
                 if (choosetrigger == true) {
                     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY()));
                     ImGui::Text("You haven't choose a trigger for the spell");
@@ -159,7 +162,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
     std::vector<EntityFactory::ID> buyableClasses;
     int tier = 0;
 
-    nextLine.push_back(classes::getStarterClass(game.getClassDatabase()).id);
+    nextLine.push_back(game.dbClasses().getStarterClass().id);
 
     while (!nextLine.empty()) {
         ++tier;
@@ -169,7 +172,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
         helper::ImGui::Text("Tier : {}", tier);
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
         for (const auto currentId : currentLine) {
-            const auto &currentClass = game.getClassDatabase().at(currentId);
+            const auto &currentClass = game.dbClasses().db.at(currentId);
 
             bool bought = std::find(boughtClasses.begin(), boughtClasses.end(), currentId) != boughtClasses.end();
             bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
@@ -204,13 +207,17 @@ void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_P: game.setMenu(nullptr); break;
+                case GLFW_KEY_P:
+                    game.setMenu(nullptr);
+                    break;
                 default: break;
                 }
             },
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
                 switch (joy.source.button) {
-                case engine::Joystick::CENTER2: game.setMenu(nullptr); break;
+                case engine::Joystick::CENTER2:
+                    game.setMenu(nullptr);
+                    break;
                 default: break;
                 }
             },

@@ -89,9 +89,6 @@ auto engine::DrawableFactory::fix_texture(
     auto &drawable = world.get<Drawable>(e);
     ::glBindVertexArray(drawable.VAO);
 
-    // note : could split the texture in two component :
-    // Texture = raw image from file
-    // ClippedTexture = VBO binded and clipped
     if (const auto handle = holder.instance->getCache<VBOTexture>().load<LoaderVBOTexture>(
             entt::hashed_string{
                 fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}", filepath, clip[0], clip[1], clip[2], clip[3]).data()},

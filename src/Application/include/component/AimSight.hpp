@@ -6,7 +6,7 @@ namespace game {
 
 // Reference to a player aiming sight
 struct AimSight {
-	entt::entity entity;
+    entt::entity entity;
 };
 
 } // namespace game

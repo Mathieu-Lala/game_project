@@ -9,13 +9,14 @@
 
 #include <Engine/Event/Event.hpp>
 
-#include "component/all.hpp"
-#include "level/MapGenerator.hpp"
-#include "models/Class.hpp"
+#include "models/Stage.hpp"
 
 namespace game {
 
 class ThePURGE;
+
+struct Class;
+struct Spell;
 
 enum class Direction {
     UP,
@@ -33,7 +34,7 @@ public:
     // todo : should be a signals slots too !
     auto addXp(entt::registry &, entt::entity player, std::uint32_t xp) -> void;
 
-    FloorGenParam m_map_generation_params; // note : should be private
+    Stage::Parameters m_map_generation_params; // note : should be private
 
 private:
 

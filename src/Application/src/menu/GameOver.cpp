@@ -1,6 +1,10 @@
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 
+#include "models/Spell.hpp"
+
+#include "component/all.hpp"
+
 #include "ThePURGE.hpp"
 #include "menu/GameOver.hpp"
 #include "menu/MainMenu.hpp"
@@ -23,6 +27,7 @@ void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
     if (ImGui::Button("main menu")) {
         clean_world(world);
         game.setMenu(std::make_unique<menu::MainMenu>());
+        game.setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
     }
 
     ImGui::End();
