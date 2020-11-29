@@ -17,10 +17,9 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
     auto player = game.player;
 
-    const auto &boughtClasses = world.get<Classes>(player).ids;
+    const auto &already_purchased = world.get<Classes>(player).ids;
     const auto skillPoints = world.get<SkillPoint>(player).count;
 
-    // const auto comp = world.get<Class>(player);
     static bool choosetrigger = false;
     static auto test = game.dbClasses().getStarterClass();
     static std::optional<Class> selectedClass;
@@ -72,7 +71,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
             static std::size_t triggerValue = 5;
             std::optional<Classes> lastclass = world.get<Classes>(player);
             if (spellmapped % 2 != 0 && lastclass.value().ids.size() > 1
-                && lastclass.value().ids[lastclass.value().ids.size() - 1] == selectedClass.value().id) {
+                && lastclass.value().ids[lastclass.value().ids.size() - 1] == selectedClass.value().name) {
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY() + 50));
                 ImGui::Text("Choose Your trigger :");
                 ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 3, ImGui::GetCursorPosY() + 10));
@@ -157,45 +156,36 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + length, ImGui::GetCursorPosY() + 30));
     helper::ImGui::Text("class Name: {}", test.name);
 
-    std::vector<EntityFactory::ID> currentLine;
-    std::vector<EntityFactory::ID> nextLine;
-    std::vector<EntityFactory::ID> buyableClasses;
-    int tier = 0;
+    std::vector<std::string> classes = {game.dbClasses().getStarterClass().name};
+    std::vector<std::string> purchasable;
 
-    nextLine.push_back(game.dbClasses().getStarterClass().id);
-
-    while (!nextLine.empty()) {
-        ++tier;
-        currentLine.clear();
-        std::swap(currentLine, nextLine);
+    while (!classes.empty()) {
+        std::vector<std::string> children;
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
-        helper::ImGui::Text("Tier : {}", tier);
-        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + size.x / 4, ImGui::GetCursorPosY() + 10));
-        for (const auto currentId : currentLine) {
-            const auto &currentClass = game.dbClasses().db.at(currentId);
+        for (const auto &id : classes) {
+            const auto &data = *game.dbClasses().getByName(id);
 
-            bool bought = std::find(boughtClasses.begin(), boughtClasses.end(), currentId) != boughtClasses.end();
-            bool buyable = std::find(buyableClasses.begin(), buyableClasses.end(), currentId) != buyableClasses.end();
-            if (bought) {
-                buyableClasses.insert(buyableClasses.end(), currentClass.children.begin(), currentClass.children.end());
-                if (helper::ImGui::Button(currentClass.name, ImVec4(0, 1, 0, 0.5))) {
-                    selectedClass = currentClass;
+            if (std::find(already_purchased.begin(), already_purchased.end(), id) != already_purchased.end()) {
+                purchasable.insert(purchasable.end(), data.children.begin(), data.children.end());
+                if (helper::ImGui::Button(data.name, ImVec4(0, 1, 0, 0.5))) {
+                    selectedClass = data;
                     infoAdd = 1;
                 }
-            } else if (buyable) {
-                if (helper::ImGui::Button(currentClass.name, ImVec4(1, 1, 0, 0.5))) {
-                    selectedClass = currentClass;
+            } else if (std::find(purchasable.begin(), purchasable.end(), id) != purchasable.end()) {
+                if (helper::ImGui::Button(data.name, ImVec4(1, 1, 0, 0.5))) {
+                    selectedClass = data;
                     infoAdd = 2;
                 }
             } else {
-                if (helper::ImGui::Button(currentClass.name, ImVec4(1, 0, 0, 0.5))) {
-                    selectedClass = currentClass;
+                if (helper::ImGui::Button(data.name, ImVec4(1, 0, 0, 0.5))) {
+                    selectedClass = data;
                     infoAdd = 3;
                 }
             }
             ImGui::SameLine();
-            nextLine.insert(nextLine.end(), currentClass.children.begin(), currentClass.children.end());
+            children.insert(children.end(), data.children.begin(), data.children.end());
         }
+        classes = std::move(children);
         ImGui::Text(" "); // ImGui::NextLine()
     }
     ImGui::End();
@@ -207,17 +197,13 @@ void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_P:
-                    game.setMenu(nullptr);
-                    break;
+                case GLFW_KEY_P: game.setMenu(nullptr); break;
                 default: break;
                 }
             },
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
                 switch (joy.source.button) {
-                case engine::Joystick::CENTER2:
-                    game.setMenu(nullptr);
-                    break;
+                case engine::Joystick::CENTER2: game.setMenu(nullptr); break;
                 default: break;
                 }
             },

@@ -11,6 +11,61 @@
 
 using namespace std::chrono_literals;
 
+void game::to_json(nlohmann::json &j, const SpellData &spell)
+{
+    // clang-format off
+    j = nlohmann::json{{
+        "cooldown", spell.cooldown.count(),
+        "damage", spell.damage,
+        "hitbox", {
+            "x", spell.hitbox.width,
+            "y", spell.hitbox.height
+        },
+        "scale", {
+            "x", spell.scale.x,
+            "y", spell.scale.y
+        },
+        "lifetime", spell.lifetime.count(),
+        //"offset_to_source", {
+        //    "x": spell.offset_to_source_x,
+        //    "y": spell.offset_to_source_y
+        //}
+        "audio_on_cast", spell.audio_on_cast,
+        "animation", spell.animation,
+        "speed", spell.speed
+    }};
+    // clang-format on
+}
+
+void game::from_json(const nlohmann::json &j, SpellData &spell) try
+{
+    spell.cooldown = std::chrono::milliseconds{j.at("cooldown")};
+    spell.damage = j.at("damage");
+    spell.hitbox.width = j.at("hitbox").at("x");
+    spell.hitbox.height = j.at("hitbox").at("y");
+    spell.scale.x = j.at("scale").at("x");
+    spell.scale.y = j.at("scale").at("y");
+    spell.lifetime = std::chrono::milliseconds{j.at("lifetime")};
+    spell.audio_on_cast = j.at("audio_on_cast");
+    spell.animation = j.at("animation");
+    spell.speed = j.at("speed");
+    spell.offset_to_source_x = j.at("offset_to_source").at("x");
+    spell.offset_to_source_y = j.at("offset_to_source").at("y");
+    spell.type = [](const auto &type) {
+        decltype(SpellData{}.type) out;
+        for (const auto &i : type) {
+            if (const auto id = SpellData::toType(i); id != SpellData::Type::ZERO) {
+                out[id] = true;
+            }
+        }
+        return out;
+    }(j.at("type").get<std::vector<std::string>>());
+}
+catch (nlohmann::json::exception &e)
+{
+    spdlog::error("failed: {}", e.what());
+}
+
 auto game::SpellDatabase::instantiate(const std::string_view spell) -> std::optional<Spell>
 {
     if (const auto found = std::find_if(std::begin(db), std::end(db), [&spell](auto &i) { return i.first == spell; });

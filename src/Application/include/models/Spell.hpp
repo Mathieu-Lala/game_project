@@ -3,9 +3,11 @@
 #include <chrono>
 #include <string_view>
 #include <optional>
+#include <bitset>
 
 #include <nlohmann/json.hpp>
 #include <glm/vec2.hpp>
+#include <magic_enum.hpp>
 
 #include <Engine/component/Cooldown.hpp>
 #include <Engine/component/Hitbox.hpp>
@@ -37,49 +39,36 @@ struct SpellData {
 
     double offset_to_source_x;
     double offset_to_source_y;
+
+    enum Type {
+        ZERO = 0,
+
+        PROJECTILE = 1 << 0,
+        AOE = 1 << 1,
+
+        TYPE_MAX,
+    };
+
+    static auto toType(std::string in) noexcept -> Type
+    {
+        const auto to_lower = [](auto str) {
+            std::transform(str.begin(), str.end(), str.begin(), [](auto c) { return static_cast<char>(std::tolower(c)); });
+            return str;
+        };
+
+        in = to_lower(in);
+
+        for (const auto &i : magic_enum::enum_values<Type>()) {
+            if (in == to_lower(std::string{magic_enum::enum_name(i)})) { return static_cast<Type>(i); }
+        }
+        return ZERO;
+    }
+
+    std::bitset<TYPE_MAX> type;
 };
 
-inline void to_json(nlohmann::json &j, const SpellData &spell)
-{
-    // clang-format off
-    j = nlohmann::json{{
-        "cooldown", spell.cooldown.count(),
-        "damage", spell.damage,
-        "hitbox", {
-            "x", spell.hitbox.width,
-            "y", spell.hitbox.height
-        },
-        "scale", {
-            "x", spell.scale.x,
-            "y", spell.scale.y
-        },
-        "lifetime", spell.lifetime.count(),
-        //"offset_to_source", {
-        //    "x": spell.offset_to_source_x,
-        //    "y": spell.offset_to_source_y
-        //}
-        "audio_on_cast", spell.audio_on_cast,
-        "animation", spell.animation,
-        "speed", spell.speed
-    }};
-    // clang-format on
-}
-
-inline void from_json(const nlohmann::json &j, SpellData &spell)
-{
-    spell.cooldown = std::chrono::milliseconds{j.at("cooldown")};
-    spell.damage = j.at("damage");
-    spell.hitbox.width = j.at("hitbox").at("x");
-    spell.hitbox.height = j.at("hitbox").at("y");
-    spell.scale.x = j.at("scale").at("x");
-    spell.scale.y = j.at("scale").at("y");
-    spell.lifetime = std::chrono::milliseconds{j.at("lifetime")};
-    spell.audio_on_cast = j.at("audio_on_cast");
-    spell.animation = j.at("animation");
-    spell.speed = j.at("speed");
-    spell.offset_to_source_x = j.at("offset_to_source").at("x");
-    spell.offset_to_source_y = j.at("offset_to_source").at("y");
-}
+void to_json(nlohmann::json &j, const SpellData &spell);
+void from_json(const nlohmann::json &j, SpellData &spell);
 
 struct SpellDatabase {
     std::unordered_map<std::string, SpellData> db;

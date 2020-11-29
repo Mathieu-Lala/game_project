@@ -159,7 +159,7 @@
       "y": 2.0
     },
     "spells": [
-      "fireball_blue"
+      "fireball_wall"
     ],
     "children": []
   }

@@ -44,5 +44,9 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
         spell, engine::Spritesheet::from_json(holder.instance->settings().data_folder + data.animation));
     engine::DrawableFactory::fix_spritesheet(world, spell, "default");
     world.emplace<engine::d2::Velocity>(spell, direction.x * data.speed, direction.y * data.speed);
+
+    if (data.type[SpellData::Type::PROJECTILE]) world.emplace<entt::tag<"projectile"_hs>>(spell);
+    if (data.type[SpellData::Type::AOE]) world.emplace<entt::tag<"aoe"_hs>>(spell);
+
     return spell;
 }

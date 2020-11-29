@@ -6,7 +6,7 @@
 namespace game {
 
 struct Classes { // todo : name very confusing
-    std::vector<EntityFactory::ID> ids;
+    std::vector<std::string> ids;
 };
 
 } // namespace game

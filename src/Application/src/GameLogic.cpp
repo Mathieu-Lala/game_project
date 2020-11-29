@@ -116,7 +116,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
 
     health.current += newClass.health;
     health.max += newClass.health;
-    world.get<Classes>(player).ids.push_back(newClass.id);
+    world.get<Classes>(player).ids.push_back(newClass.name);
 
 
     // TODO: actual spell selection ?
@@ -423,7 +423,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unuse
         auto &entity_pos = world.get<engine::d3::Position>(entity);
         auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
 
-        
+
         if (engine::d2::overlapped<engine::d2::WITHOUT_EDGE>(entity_hitbox, entity_pos, spell_hitbox, spell_pos)) {
             auto &entity_health = world.get<Health>(entity);
             auto &spell_damage = world.get<AttackDamage>(spell);
@@ -457,7 +457,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, [[maybe_unuse
 
         if (world.has<entt::tag<"player"_hs>>(source)) {
             for (auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
-                if (world.valid(spell)) apply_damage(enemy, spell, hitbox, spell_pos, source); 
+                if (world.valid(spell)) apply_damage(enemy, spell, hitbox, spell_pos, source);
             }
         } else {
             for (auto &player : world.view<entt::tag<"player"_hs>>()) {
