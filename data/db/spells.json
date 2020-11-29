@@ -59,6 +59,26 @@
             "y": 2
         }
     },
+    "fireball_blue": {
+        "cooldown": 2000,
+        "damage": 5,
+        "scale": {
+            "x": 2.5,
+            "y": 2.5
+        },
+        "hitbox": {
+            "x": 1.2,
+            "y": 1.2
+        },
+        "lifetime": 3000,
+        "audio_on_cast": "sounds/fire_cast.wav",
+        "animation": "anims/spells/fireball_blue/fireball_blue.data.json",
+        "speed": 3.0,
+        "offset_to_source": {
+            "x": 2,
+            "y": 2
+        }
+    },
     "arrow": {
         "cooldown": 1000,
         "damage": 2,

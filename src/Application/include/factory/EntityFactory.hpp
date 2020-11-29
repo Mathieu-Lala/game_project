@@ -5,6 +5,8 @@
 #include <entt/entt.hpp>
 #include <glm/vec2.hpp>
 
+#include "models/Enemy.hpp"
+
 namespace game {
 
 class ThePURGE;
@@ -82,6 +84,9 @@ struct EntityFactory {
     {
         return static_cast<double>(id);
     }
+
+    static auto create(ThePURGE &, entt::registry &, const glm::vec2 &pos, const Enemy &) -> entt::entity;
+
 };
 
 #define DECL_SPEC(id)                                                                            \
@@ -99,8 +104,8 @@ DECL_SPEC(FLOOR_CORRIDOR);
 DECL_SPEC(EXIT_DOOR);
 DECL_SPEC(WALL);
 
-DECL_SPEC(BOSS);
-DECL_SPEC(ENEMY);
+//DECL_SPEC(BOSS);
+//DECL_SPEC(ENEMY);
 
 DECL_SPEC(AIMING_SIGHT);
 DECL_SPEC(PLAYER);

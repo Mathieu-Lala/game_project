@@ -37,7 +37,12 @@ struct Stage {
         int minCorridorWidth = 3; // min 3 or player may not fit
         int maxCorridorWidth = 4;
 
-        float mobDensity = 0.05f; // Average mob per tile
+        // float mobDensity = 0.05f; // Average mob per tile
+
+        std::unordered_map<std::string, float> mobDensity {
+            { "skeleton", 0.04f },
+            { "electric_skeleton", 0.01f }
+        };
     };
 
     auto generate(ThePURGE &, entt::registry &, const Parameters &, std::optional<std::uint32_t> seed = {}) -> Stage &;

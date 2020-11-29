@@ -28,6 +28,7 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     m_db_spell.fromFile(holder.instance->settings().data_folder + "db/spells.json");
     m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
+    m_db_enemy.fromFile(holder.instance->settings().data_folder + "db/enemies.json");
 
     setMenu(std::make_unique<menu::MainMenu>());
     setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);

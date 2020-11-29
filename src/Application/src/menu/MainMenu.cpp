@@ -22,29 +22,29 @@ void game::menu::MainMenu::create(entt::registry &, ThePURGE &)
     // clang-format off
 
 #define TEXTURE(path) engine::helper::loadTexture(dataFolder + path)
-#define FROM_1080p(x, y) ImVec2(x / 1920.0f, y / 1080.0f)
+#define FROM_1080p(x, y) ImVec2{x / 1920.0f, y / 1080.0f}
 
     // SAME ORDER AS `Button` ENUM
-    m_buttons.emplace_back(
+    m_buttons.emplace_back(MenuTexture{
         TEXTURE("menus/main/btn_play_selected.png"),
         FROM_1080p(1238, 259),
         FROM_1080p(229, 155)
-    );
-    m_buttons.emplace_back(
+    });
+    m_buttons.emplace_back(MenuTexture{
         TEXTURE("menus/main/btn_howtoplay_selected.png"),
         FROM_1080p(1062, 441),
         FROM_1080p(590, 155)
-    );
-    m_buttons.emplace_back(
+    });
+    m_buttons.emplace_back(MenuTexture{
         TEXTURE("menus/main/btn_credits_selected.png"),
         FROM_1080p(1195, 629),
         FROM_1080p(345, 149)
-    );
-    m_buttons.emplace_back(
+    });
+    m_buttons.emplace_back(MenuTexture{
         TEXTURE("menus/main/btn_exit_selected.png"),
         FROM_1080p(1263, 820),
         FROM_1080p(195, 149)
-    );
+    });
 
 #undef TEXTURE
 #undef FROM_1080p

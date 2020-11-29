@@ -20,6 +20,7 @@
 #include "component/ViewRange.hpp"
 #include "component/Health.hpp"
 #include "component/Level.hpp"
+#include "component/Experience.hpp"
 
 #include "component/KeyPicker.hpp"
 
