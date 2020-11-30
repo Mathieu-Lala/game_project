@@ -47,8 +47,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_kill =
             const auto what = lexicalCast<std::string>(args[0]);
 
             if (what == "player") {
-                for (auto &e : world.view<entt::tag<"player"_hs>>())
-                    game.logics()->onEntityKilled.publish(world, e, e);
+                for (auto &e : world.view<entt::tag<"player"_hs>>()) game.logics()->onEntityKilled.publish(world, e, e);
             } else if (what == "boss") {
                 for (auto &e : world.view<entt::tag<"boss"_hs>>())
                     game.logics()->onEntityKilled.publish(world, e, game.player);
@@ -141,7 +140,7 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_buyClass =
             } else {
                 // note : see std::accumulate
                 std::stringstream names;
-                for (const auto &[_, i] : game.dbClasses().db) { names << i.name << ", "; }
+                for (const auto &i : game.dbClasses().db) { names << i.name << ", "; }
                 throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
             }
 
@@ -156,11 +155,11 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClasses =
 
         const auto &classes = world.get<Classes>(game.player).ids;
 
-        std::stringstream names;
-
-        for (auto &id : classes) names << game.dbClasses().db.at(id).name << ", ";
-
-        console.info("Player has {} classes : {}", classes.size(), names.str());
+        console.info(
+            "Player has {} classes : {}",
+            classes.size(),
+            std::accumulate(
+                std::begin(classes), std::end(classes), std::string{}, [](auto out, auto &i) { return out + ", " + i; }));
     };
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
@@ -171,20 +170,21 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
             const auto className = lexicalCast<std::string>(args[0]);
 
             if (const auto data = game.dbClasses().getByName(className); !data) {
-                // note : see std::accumulate
-                std::stringstream names;
-                for (const auto &[_, i] : game.dbClasses().db) names << i.name << ", ";
-                throw std::runtime_error(fmt::format("Available classes : [ {}]", names.str()));
+                throw std::runtime_error(fmt::format(
+                    "Available classes : [ {}]",
+                    std::accumulate(
+                        std::begin(game.dbClasses().db), std::end(game.dbClasses().db), std::string{}, [](auto out, auto &i) {
+                            return out + ", " + i.name;
+                        })));
             } else {
                 std::stringstream spellNames;
                 for (const auto &id : data->spells) spellNames << id << ", ";
 
                 std::stringstream childrenesNames;
-                for (const auto &id : data->children) childrenesNames << game.dbClasses().db.at(id).name << ", ";
+                for (const auto &id : data->children) childrenesNames << game.dbClasses().getByName(id)->name << ", ";
 
                 console.info(
                     "Class {} :\n"
-                    "\tid : {}\n"
                     "\tdescription : {}\n"
                     "\ticon : {}\n"
                     "\tgraph asset : {}\n"
@@ -193,7 +193,6 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                     "\tdamage : {}\n"
                     "\tchildren classes : {}",
                     data->name,
-                    data->id,
                     data->description,
                     data->iconPath,
                     data->assetGraphPath,
@@ -210,5 +209,5 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
 
 game::CommandHandler::handler_t game::CommandHandler::cmd_giantfireball =
     [](entt::registry &, ThePURGE &, std::vector<std::string> &&, DebugConsole &) {
-        //SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
+        // SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
     };

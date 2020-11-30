@@ -14,7 +14,7 @@
 namespace game {
 
 struct Class { // todo : name very confusing
-    EntityFactory::ID id;
+    // EntityFactory::ID id;
     std::string name;
     std::string description;
     std::string iconPath;
@@ -31,11 +31,12 @@ struct Class { // todo : name very confusing
     int cost;
     engine::d2::HitboxSolid hitbox;
 
-    std::vector<EntityFactory::ID> children;
+    std::vector<std::string> children;
 };
 
 struct ClassDatabase {
-    std::unordered_map<EntityFactory::ID, Class> db;
+    //std::unordered_map<EntityFactory::ID, Class> db;
+    std::vector<Class> db;
 
     auto fromFile(const std::string_view path) -> ClassDatabase &;
 

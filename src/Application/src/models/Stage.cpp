@@ -263,9 +263,6 @@ auto game::Stage::populate_enemies(ThePURGE &game, entt::registry &world, const 
     for (auto &r : regularRooms) spawn_mob(game, world, params, r);
 
     EntityFactory::create(game, world, glm::vec2{boss.x + boss.w * 0.5, boss.y + boss.h * 0.5}, game.dbEnemies().db.at("dark_skeleton"));
-
-//    EntityFactory::create<EntityFactory::BOSS>(
-//        game, world, glm::vec2{boss.x + boss.w * 0.5, boss.y + boss.h * 0.5}, {3.0, 3.0});
 }
 
 auto game::Stage::generate(ThePURGE &game, entt::registry &world, const Parameters &params, std::optional<std::uint32_t> seed)

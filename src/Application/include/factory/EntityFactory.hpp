@@ -22,25 +22,11 @@ struct EntityFactory {
         AIMING_SIGHT,
 
         LAYER_PLAYER = 3,
-        FARMER = LAYER_PLAYER * 10,
-        SOLDIER,
-        SHOOTER,
-        SORCERER,
-        ASSASSIN,
-        WARRIOR,
-        TANK,
-        ARCHER,
-        GUNNER,
-        MAGE,
-        PLAYER, // should be named farmer
+        PLAYER = LAYER_PLAYER * 10,
 
         KEY, // should be on a layer above
 
-
         LAYER_ENEMY = 5,
-        ENEMY = LAYER_ENEMY * 10,
-        BOSS,
-
 
         LAYER_TERRAIN = 6,
 
@@ -76,8 +62,7 @@ struct EntityFactory {
     // note : should take a path to a json config instead ... ?
     // todo : normalize arguments , Args...&& ?
     template<ID>
-    static auto create(ThePURGE &, entt::registry &, const glm::vec2 &pos, const glm::vec2 &size /*, float rotation*/)
-        -> entt::entity;
+    /*[[deprecated]]*/ static auto create(ThePURGE &, entt::registry &, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity;
 
     template<ID id>
     constexpr static auto get_z_layer() noexcept -> double
@@ -86,13 +71,11 @@ struct EntityFactory {
     }
 
     static auto create(ThePURGE &, entt::registry &, const glm::vec2 &pos, const Enemy &) -> entt::entity;
-
 };
 
-#define DECL_SPEC(id)                                                                            \
-    template<>                                                                                   \
-    auto EntityFactory::create<EntityFactory::ID::id>(                                           \
-        ThePURGE &, entt::registry &, const glm::vec2 &, const glm::vec2 & /*, float rotation*/) \
+#define DECL_SPEC(id)                                                                                                     \
+    template<>                                                                                                            \
+    auto EntityFactory::create<EntityFactory::ID::id>(ThePURGE &, entt::registry &, const glm::vec2 &, const glm::vec2 &) \
         ->entt::entity
 
 DECL_SPEC(DEBUG_TILE);
@@ -104,15 +87,11 @@ DECL_SPEC(FLOOR_CORRIDOR);
 DECL_SPEC(EXIT_DOOR);
 DECL_SPEC(WALL);
 
-//DECL_SPEC(BOSS);
-//DECL_SPEC(ENEMY);
-
 DECL_SPEC(AIMING_SIGHT);
 DECL_SPEC(PLAYER);
 DECL_SPEC(KEY);
 
 DECL_SPEC(BACKGROUND);
-
 
 #undef DECL_SPEC
 
