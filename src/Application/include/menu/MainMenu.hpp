@@ -3,6 +3,8 @@
 #include <entt/entt.hpp>
 
 #include "AMenu.hpp"
+#include "widgets/helpers.hpp"
+
 
 namespace game::menu {
 
@@ -24,7 +26,7 @@ private:
 
 
     std::uint32_t m_backgroundTexture;
-    std::vector<MenuTexture> m_buttons;
+    std::vector<GUITexture> m_buttons;
 
     int m_selected = Button::PLAY;
 };
