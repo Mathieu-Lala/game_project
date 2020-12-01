@@ -27,6 +27,7 @@ private:
     static handler_t cmd_setSpell;
     static handler_t cmd_addXp;
     static handler_t cmd_addLevel;
+    static handler_t cmd_addHealth;
     static handler_t cmd_setMusicVolume;
     static handler_t cmd_buyClass;
     static handler_t cmd_getClasses;

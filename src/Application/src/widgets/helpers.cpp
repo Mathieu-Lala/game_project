@@ -15,7 +15,7 @@ auto getTexture(const std::string &simplePath) -> std::uint32_t
     return engine::helper::loadTexture(dataFolder + simplePath);
 }
 
-auto from1080p(int x, int y) noexcept -> ImVec2
+auto from1080p(float x, float y) noexcept -> ImVec2
 {
     return ImVec2{x / 1920.0f, y / 1080.0f};
 }

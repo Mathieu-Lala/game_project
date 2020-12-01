@@ -1,31 +1,47 @@
+#include <cassert>
+
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/TextureLoader.hpp>
 #include <Engine/Core.hpp>
 #include <Engine/helpers/ImGui.hpp>
 
+#include "ThePURGE.hpp"
+
 #include "models/Spell.hpp"
+#include "models/Class.hpp"
 
 #include "component/all.hpp"
 
 #include "widgets/GameHUD.hpp"
 #include "widgets/helpers.hpp"
 
-void game::GameHUD::draw(ThePURGE &, entt::registry &)
+void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 {
     static auto holder = engine::Core::Holder{};
 
+    const auto player = game.player;
+
+    const auto *currentClass = game.dbClasses().getByName(world.get<Classes>(player).ids.back());
+    assert(currentClass != nullptr);
+
+    const auto &health = world.get<Health>(player);
 
 #pragma region Textures
     // clang-format off
 
 
     GUITexture staticBackground = {
-        .id = helper::getTexture("textures/hud/hud_static.png"),
-        .topleft = helper::from1080p(25, 16),
-        .size = helper::from1080p(339, 152)
+        .id =       helper::getTexture("textures/hud/hud_static.png"),
+        .topleft =  helper::from1080p(25, 16),
+        .size =     helper::from1080p(339, 152)
     };
 
+    GUITexture portrait = {
+        .id =       helper::getTexture(currentClass->iconPath),
+        .topleft =  helper::from1080p(28, 25),
+        .size =     helper::from1080p(70, 80)
+    };
 
     // clang-format on
 #pragma endregion Textures
@@ -37,6 +53,9 @@ void game::GameHUD::draw(ThePURGE &, entt::registry &)
     ImGui::Begin("HUD", nullptr, ImGuiWindowFlags_NoDecoration);
 
     helper::drawTexture(staticBackground);
+    helper::drawTexture(portrait);
+
+    drawHealthBar(health);
 
     ImGui::End();
 
@@ -98,4 +117,28 @@ void game::GameHUD::draw(ThePURGE &, entt::registry &)
     //}
 
     // ImGui::End();
+}
+
+void game::GameHUD::drawHealthBar(const Health &health)
+{
+    float currentHealthPercent = health.current / health.max;
+
+    ImVec2 healthBarTopLeft = helper::frac2pixel(helper::from1080p(137, 16));
+    ImVec2 healthBarBottomRight = helper::frac2pixel(helper::from1080p(std::lerp(137, 364, currentHealthPercent), 51));
+
+    ImVec4 healthColor(0, 0, 0, 1);
+    if (currentHealthPercent < 0.5) {
+        // red
+        healthColor.x = 1;
+        // green
+        healthColor.y = std::lerp(0, 1, currentHealthPercent * 2);
+    } else {
+        // red
+        healthColor.x = std::lerp(1, 0, (currentHealthPercent - 0.5f) * 2);
+        // green
+        healthColor.y = 1;
+    }
+
+    ImGui::GetWindowDrawList()->AddRectFilled(
+        healthBarTopLeft, healthBarBottomRight, ImGui::ColorConvertFloat4ToU32(healthColor));
 }
