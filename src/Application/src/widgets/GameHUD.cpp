@@ -1,5 +1,6 @@
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
+#include <Engine/helpers/TextureLoader.hpp>
 #include <Engine/Core.hpp>
 #include <Engine/helpers/ImGui.hpp>
 
@@ -10,14 +11,32 @@
 #include "widgets/GameHUD.hpp"
 #include "widgets/helpers.hpp"
 
-void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
+void game::GameHUD::draw(ThePURGE &, entt::registry &)
 {
     static auto holder = engine::Core::Holder{};
 
+
+#pragma region Textures
+    // clang-format off
+
+
+    GUITexture staticBackground = {
+        .id = helper::getTexture("textures/hud/hud_static.png"),
+        .topleft = helper::from1080p(25, 16),
+        .size = helper::from1080p(339, 152)
+    };
+
+
+    // clang-format on
+#pragma endregion Textures
+
+
     ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(helpers::frac2pixel({1.f, 1.f}));
+    ImGui::SetNextWindowSize(helper::frac2pixel({1.f, 1.f}));
+    ImGui::SetNextWindowBgAlpha(0.f);
     ImGui::Begin("HUD", nullptr, ImGuiWindowFlags_NoDecoration);
 
+    helper::drawTexture(staticBackground);
 
     ImGui::End();
 

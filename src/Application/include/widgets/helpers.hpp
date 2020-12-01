@@ -13,7 +13,11 @@ struct GUITexture {
     ImVec2 size;
 };
 
-namespace helpers {
+namespace helper {
+
+// path relative to the data directory
+auto getTexture(const std::string &simplePath) -> std::uint32_t;
+auto from1080p(int x, int y) noexcept -> ImVec2;
 
 auto frac2pixel(ImVec2 fraction) noexcept -> ImVec2;
 

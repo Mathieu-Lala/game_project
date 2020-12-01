@@ -24,9 +24,9 @@ void game::menu::Credits::draw(entt::registry &, ThePURGE &game)
     static auto holder = engine::Core::Holder{};
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(helpers::frac2pixel({1.f, 1.f}));
+    ImGui::SetNextWindowSize(helper::frac2pixel({1.f, 1.f}));
     ImGui::Begin("Credits", nullptr, ImGuiWindowFlags_NoDecoration);
-    helpers::drawTexture(m_texture, ImVec2(0, 0), helpers::frac2pixel(ImVec2(1, 1)));
+    helper::drawTexture(m_texture, ImVec2(0, 0), helper::frac2pixel(ImVec2(1, 1)));
     ImGui::End();
 
 

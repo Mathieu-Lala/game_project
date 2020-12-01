@@ -1,9 +1,24 @@
 #include <Engine/Core.hpp>
 #include <Engine/Graphics/Window.hpp>
+#include <Engine/helpers/TextureLoader.hpp>
 
 #include "widgets/helpers.hpp"
 
-namespace game::helpers {
+namespace game::helper {
+
+auto getTexture(const std::string &simplePath) -> std::uint32_t
+{
+    static auto holder = engine::Core::Holder{};
+
+    const auto &dataFolder = holder.instance->settings().data_folder;
+
+    return engine::helper::loadTexture(dataFolder + simplePath);
+}
+
+auto from1080p(int x, int y) noexcept -> ImVec2
+{
+    return ImVec2{x / 1920.0f, y / 1080.0f};
+}
 
 auto frac2pixel(ImVec2 fraction) noexcept -> ImVec2
 {
@@ -19,4 +34,4 @@ void drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) noexcept
 
 void drawTexture(const GUITexture &t) noexcept { drawTexture(t.id, frac2pixel(t.topleft), frac2pixel(t.size)); }
 
-} // namespace game::helpers
+} // namespace game::helper
