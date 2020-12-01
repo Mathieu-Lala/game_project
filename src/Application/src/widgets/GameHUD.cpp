@@ -43,6 +43,29 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
         .size =     helper::from1080p(70, 80)
     };
 
+    GUITexture LB = {
+        .id =       helper::getTexture("textures/hud/LB.png"),
+        .topleft =  helper::from1080p(5, 160),
+        .size =     helper::from1080p(30, 22)
+    };
+
+    GUITexture LT = {
+        .id =       helper::getTexture("textures/hud/LT.png"),
+        .topleft =  helper::from1080p(80, 160),
+        .size =     helper::from1080p(30, 27)
+    };
+
+    GUITexture RT = {
+        .id =       helper::getTexture("textures/hud/RT.png"),
+        .topleft =  helper::from1080p(155, 160),
+        .size =     helper::from1080p(30, 27)
+    };
+
+     GUITexture RB = {
+        .id =       helper::getTexture("textures/hud/RB.png"),
+        .topleft =  helper::from1080p(230, 160),
+        .size =     helper::from1080p(30, 22)
+    };
     // clang-format on
 #pragma endregion Textures
 
@@ -59,6 +82,27 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     drawXpBar(world.get<Level>(player));
 
 
+    const auto &spells = world.get<SpellSlots>(player).spells;
+
+    std::array<float, 4> spellX = {26, 101, 176, 251};
+
+    for (int i = 0; i < 4; ++i) {
+        if (!spells[i].has_value()) continue;
+
+        GUITexture spell{
+            .id = helper::getTexture(game.dbSpells().db.at(std::string(spells[i]->id)).iconPath),
+            .topleft = helper::from1080p(spellX[i], 119),
+            .size = helper::from1080p(48, 48)};
+
+        helper::drawTexture(spell);
+
+        // TODO: cooldown
+    }
+
+    helper::drawTexture(LB);
+    helper::drawTexture(LT);
+    helper::drawTexture(RT);
+    helper::drawTexture(RB);
 
     ImGui::End();
 
