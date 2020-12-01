@@ -121,6 +121,8 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
         const auto &spell_pos = world.get<engine::d3::Position>(spell);
         const auto &spell_hitbox = world.get<engine::d2::HitboxFloat>(spell);
 
+        if (!world.has<engine::d2::HitboxSolid>(entity))
+            return;
         const auto &entity_pos = world.get<engine::d3::Position>(entity);
         const auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
 
