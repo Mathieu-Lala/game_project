@@ -56,6 +56,9 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     helper::drawTexture(portrait);
 
     drawHealthBar(health);
+    drawXpBar(world.get<Level>(player));
+
+
 
     ImGui::End();
 
@@ -121,24 +124,34 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 
 void game::GameHUD::drawHealthBar(const Health &health)
 {
-    float currentHealthPercent = health.current / health.max;
+    float fraction = health.current / health.max;
 
-    ImVec2 healthBarTopLeft = helper::frac2pixel(helper::from1080p(137, 16));
-    ImVec2 healthBarBottomRight = helper::frac2pixel(helper::from1080p(std::lerp(137, 364, currentHealthPercent), 51));
+    ImVec2 topLeft = helper::frac2pixel(helper::from1080p(137, 16));
+    ImVec2 bottomRight = helper::frac2pixel(helper::from1080p(std::lerp(137, 364, fraction), 51));
 
-    ImVec4 healthColor(0, 0, 0, 1);
-    if (currentHealthPercent < 0.5) {
+    ImVec4 color(0, 0, 0, 1);
+    if (fraction < 0.5) {
         // red
-        healthColor.x = 1;
+        color.x = 1;
         // green
-        healthColor.y = std::lerp(0, 1, currentHealthPercent * 2);
+        color.y = std::lerp(0, 1, fraction * 2);
     } else {
         // red
-        healthColor.x = std::lerp(1, 0, (currentHealthPercent - 0.5f) * 2);
+        color.x = std::lerp(1, 0, (fraction - 0.5f) * 2);
         // green
-        healthColor.y = 1;
+        color.y = 1;
     }
 
-    ImGui::GetWindowDrawList()->AddRectFilled(
-        healthBarTopLeft, healthBarBottomRight, ImGui::ColorConvertFloat4ToU32(healthColor));
+    ImGui::GetWindowDrawList()->AddRectFilled(topLeft, bottomRight, ImGui::ColorConvertFloat4ToU32(color));
+}
+
+void game::GameHUD::drawXpBar(const Level &level)
+{
+    float fraction = static_cast<float>(level.current_xp) / level.xp_require;
+
+    ImVec2 topLeft = helper::frac2pixel(helper::from1080p(137, 57));
+    ImVec2 bottomRight = helper::frac2pixel(helper::from1080p(std::lerp(137, 364, fraction), 92));
+    ImVec4 color(0, 0.5, 1, 1);
+
+    ImGui::GetWindowDrawList()->AddRectFilled(topLeft, bottomRight, ImGui::ColorConvertFloat4ToU32(color));
 }

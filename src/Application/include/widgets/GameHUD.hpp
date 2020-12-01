@@ -2,6 +2,7 @@
 
 #include <entt/entt.hpp>
 #include "component/Health.hpp"
+#include "component/Level.hpp"
 
 #include "ThePURGE.hpp"
 
@@ -12,6 +13,7 @@ struct GameHUD {
     
 private:
     static void drawHealthBar(const Health &health);
+    static void drawXpBar(const Level &level);
 };
 
 } // namespace game
