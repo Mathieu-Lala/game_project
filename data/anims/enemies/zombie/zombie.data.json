@@ -3,28 +3,28 @@
         "animations": {
             "idle_right": {
                 "file": "/anims/enemies/zombie/spritesheet/zombie_idle.png",
-                "width": 35,
+                "width": 39,
                 "height": 75,
                 "cooldown": 70,
                 "frames": [
                   {
-                    "x": 0,
+                    "x": 2,
                     "y": 71
                   },
                   {
-                    "x": 42,
+                    "x": 43,
                     "y": 71
                   },
                   {
-                    "x": 86,
+                    "x": 91,
                     "y": 71
                   },
                   {
-                    "x": 135,
+                    "x": 137,
                     "y": 71
                   },
                   {
-                    "x": 185,
+                    "x": 187,
                     "y": 71
                   },
                   {
@@ -40,7 +40,7 @@
                 "cooldown": 70,
                 "frames": [
                   {
-                    "x": 234,
+                    "x": 233,
                     "y": 0
                   },
                   {
