@@ -2,6 +2,7 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/TextureLoader.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -12,9 +13,9 @@
 
 void game::menu::MainMenu::create(entt::registry &, ThePURGE &)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
-    const auto &dataFolder = holder.instance->settings().data_folder;
+    const auto &dataFolder = core->settings().data_folder;
 
 
     m_backgroundTexture = engine::helper::loadTexture(dataFolder + "menus/main/mainmenu.png");
@@ -54,7 +55,7 @@ void game::menu::MainMenu::create(entt::registry &, ThePURGE &)
 
 void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(frac2pixel({1.f, 1.f}));
@@ -64,12 +65,12 @@ void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
     drawTexture(m_backgroundTexture, ImVec2(0, 0), frac2pixel({1.f, 1.f}));
 
     if (up() && m_selected > 0) {
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+        core->getAudioManager().getSound(core->settings().data_folder + "sounds/menu/change.wav")->play();
 
         m_selected--;
     }
     if (down() && m_selected < Button::MAX - 1) {
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+        core->getAudioManager().getSound(core->settings().data_folder + "sounds/menu/change.wav")->play();
 
         m_selected++;
     }
@@ -79,7 +80,7 @@ void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
     ImGui::End();
 
     if (select()) {
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/accept.wav")->play();
+        core->getAudioManager().getSound(core->settings().data_folder + "sounds/menu/accept.wav")->play();
 
         switch (m_selected) {
         case Button::PLAY:
@@ -88,7 +89,7 @@ void game::menu::MainMenu::draw(entt::registry &world, ThePURGE &game)
             return;
         case Button::HOWTOPLAY: game.setMenu(std::make_unique<menu::HowToPlay>()); return;
         case Button::CREDITS: game.setMenu(std::make_unique<menu::Credits>()); return;
-        case Button::EXIT: holder.instance->close(); break;
+        case Button::EXIT: core->close(); break;
         }
     }
 }

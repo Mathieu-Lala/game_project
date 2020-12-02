@@ -9,7 +9,7 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
-
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 #include "models/Class.hpp"
@@ -29,7 +29,7 @@ using namespace std::chrono_literals;
 
 auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity player, const Class &newClass) -> void
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     world.get<Speed>(player).speed = newClass.speed;
     world.get<engine::d2::HitboxSolid>(player) = newClass.hitbox;
@@ -50,7 +50,7 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
         }
 
     world.replace<engine::Spritesheet>(
-        player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + newClass.assetGraphPath));
+        player, engine::Spritesheet::from_json(core->settings().data_folder + newClass.assetGraphPath));
 
     engine::DrawableFactory::fix_spritesheet(world, player, "idle_right");
 
@@ -82,14 +82,14 @@ auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uin
 auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity receiver, entt::entity sender, entt::entity spell)
     -> void
 {
-    auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     auto &entity_health = world.get<Health>(receiver);
 
     entity_health.current -= world.get<AttackDamage>(spell).damage;
     const auto is_player = world.has<entt::tag<"player"_hs>>(receiver);
 
-    if (is_player) { holder.instance->setScreenshake(true, 350ms); }
+    if (is_player) { core->setScreenshake(true, 350ms); }
 
     const auto &entity_pos = world.get<engine::d3::Position>(receiver);
     const auto &spell_pos = world.get<engine::d3::Position>(spell);
@@ -98,7 +98,7 @@ auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity rec
         {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0},
         is_player ? glm::vec3{255, 0, 0} : glm::vec3{0, 0, 0});
 
-    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")->play();
+    core->getAudioManager().getSound(core->settings().data_folder + "sounds/fire_hit.wav")->play();
 
     if (world.has<entt::tag<"projectile"_hs>>(spell)) { world.destroy(spell); }
 
@@ -143,7 +143,7 @@ auto game::GameLogic::slots_update_ai_attack(entt::registry &world, [[maybe_unus
 
 auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity killed, entt::entity killer) -> void
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     engine::DrawableFactory::fix_spritesheet(world, killed, "death");
     const auto &animation = world.get<engine::Spritesheet>(killed).animations["death"];
@@ -154,8 +154,8 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
     world.remove<engine::d2::HitboxSolid>(killed);
 
     if (world.has<entt::tag<"player"_hs>>(killed)) {
-        holder.instance->getAudioManager()
-            .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
+        core->getAudioManager()
+            .getSound(core->settings().data_folder + "sounds/player_death.wav")
             ->play();
 
         m_game.setMenu(std::make_unique<menu::GameOver>());
@@ -163,10 +163,10 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         // TODO: actual random utilities
         bool lazyDevCoinflip = static_cast<std::uint32_t>(killed) % 2;
-        holder.instance->getAudioManager()
+        core->getAudioManager()
             .getSound(
-                lazyDevCoinflip ? holder.instance->settings().data_folder + "sounds/death_01.wav"
-                                : holder.instance->settings().data_folder + "sounds/death_02.wav")
+                lazyDevCoinflip ? core->settings().data_folder + "sounds/death_01.wav"
+                                : core->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
         if (world.has<entt::tag<"player"_hs>>(killer)) { addXp(world, killer, world.get<Experience>(killed).xp); }
@@ -174,8 +174,8 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             auto pos = world.get<engine::d3::Position>(killed);
             EntityFactory::create<EntityFactory::KEY>(m_game, world, {pos.x, pos.y}, {1.0, 1.0});
-            holder.instance->getAudioManager()
-                .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
+            core->getAudioManager()
+                .getSound(core->settings().data_folder + "sounds/boss_death.wav")
                 ->play();
         }
     }

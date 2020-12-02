@@ -3,6 +3,7 @@
 #include <Engine/component/Rotation.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -14,7 +15,7 @@
 auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry &world, const glm::vec2 &pos, const Enemy &data)
     -> entt::entity
 {
-    auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     // todo : speed
 
@@ -34,7 +35,7 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
     engine::DrawableFactory::fix_color(world, enemy, glm::vec3{data.color});
 
     world.emplace<engine::Spritesheet>(
-        enemy, engine::Spritesheet::from_json(holder.instance->settings().data_folder + data.asset));
+        enemy, engine::Spritesheet::from_json(core->settings().data_folder + data.asset));
 
     // note : this does not set animation as wished
     engine::DrawableFactory::fix_spritesheet(world, enemy, (std::rand() & 1) ? "idle_right" : "idle_left");
@@ -60,7 +61,7 @@ template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
@@ -68,7 +69,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg");
+    engine::DrawableFactory::fix_texture(world, e, core->settings().data_folder + "textures/floor.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -77,7 +78,7 @@ template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
@@ -85,7 +86,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg");
+    engine::DrawableFactory::fix_texture(world, e, core->settings().data_folder + "textures/floor.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -94,7 +95,7 @@ template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
@@ -102,7 +103,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor_boss.jpg");
+    engine::DrawableFactory::fix_texture(world, e, core->settings().data_folder + "textures/floor_boss.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -111,7 +112,7 @@ template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
@@ -119,7 +120,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/corridor.jpg");
+    engine::DrawableFactory::fix_texture(world, e, core->settings().data_folder + "textures/corridor.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -128,7 +129,7 @@ template<>
 auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     const auto e = world.create();
     world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
@@ -136,7 +137,7 @@ auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/door.png");
+    engine::DrawableFactory::fix_texture(world, e, core->settings().data_folder + "textures/door.png");
 
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
     world.emplace<entt::tag<"terrain"_hs>>(e);
@@ -213,7 +214,7 @@ template<>
 auto game::EntityFactory::create<game::EntityFactory::KEY>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     auto key = world.create();
     world.emplace<entt::tag<"key"_hs>>(key);
@@ -223,7 +224,7 @@ auto game::EntityFactory::create<game::EntityFactory::KEY>(
     world.emplace<engine::d2::Scale>(key, size.x, size.y);
     world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
-    engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "textures/key.png");
+    engine::DrawableFactory::fix_texture(world, key, core->settings().data_folder + "textures/key.png");
     return key;
 }
 
@@ -231,7 +232,7 @@ template<>
 auto game::EntityFactory::create<game::EntityFactory::BACKGROUND>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     auto e = world.create();
 
@@ -240,7 +241,7 @@ auto game::EntityFactory::create<game::EntityFactory::BACKGROUND>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {0.15, 0.15, 0.15});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/background.jpg");
+    engine::DrawableFactory::fix_texture(world, e, core->settings().data_folder + "textures/background.jpg");
 
     return e;
 }
@@ -250,7 +251,7 @@ auto game::EntityFactory::create<game::EntityFactory::AIMING_SIGHT>(
     ThePURGE &, entt::registry &world, [[maybe_unused]] const glm::vec2 &, [[maybe_unused]] const glm::vec2 &)
     -> entt::entity
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     auto e = world.create();
 
@@ -260,7 +261,7 @@ auto game::EntityFactory::create<game::EntityFactory::AIMING_SIGHT>(
 
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
 
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/aim_sight.png");
+    engine::DrawableFactory::fix_texture(world, e, core->settings().data_folder + "textures/aim_sight.png");
 
     return e;
 }

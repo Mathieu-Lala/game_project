@@ -21,8 +21,12 @@ target_include_directories(glfw_imgui_impl PUBLIC ${CMAKE_BINARY_DIR}/download/i
 
 configure_file(include/Engine/details/Version.hpp.in include/Engine/details/Version.hpp @ONLY)
 
-add_library(
-  engine_core STATIC
+add_library(engine_core STATIC)
+
+include(GenerateExportHeader)
+generate_export_header(engine_core)
+
+target_sources(engine_core PRIVATE
   src/Engine/Core.cpp
   src/Engine/Graphics/Window.cpp
   src/Engine/Graphics/Image.cpp
@@ -36,9 +40,10 @@ add_library(
   src/Engine/audio/Sound.cpp
   src/Engine/audio/WavReader.cpp
   src/Engine/audio/AudioFileBuffer.cpp
-  src/Engine/resources/Texture.cpp)
+  src/Engine/resources/Texture.cpp
+  src/Engine/dll/Handler.cpp)
 
-target_include_directories(engine_core PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(engine_core PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(
   engine_core
   PUBLIC project_options
@@ -61,5 +66,4 @@ endif()
 target_compile_definitions(engine_core PUBLIC GLM_FORCE_SILENT_WARNINGS)
 
 add_executable(engine_main src/Engine/main.cpp)
-target_link_libraries(engine_main PRIVATE engine_core ThePURGE)
-# note : should not link with ThePURGE, but load it at runtime
+target_link_libraries(engine_main PRIVATE engine_core)

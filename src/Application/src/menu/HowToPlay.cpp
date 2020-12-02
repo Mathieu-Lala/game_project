@@ -2,6 +2,7 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/TextureLoader.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -11,9 +12,9 @@
 
 void game::menu::HowToPlay::create(entt::registry &, ThePURGE &)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
-    const auto &dataFolder = holder.instance->settings().data_folder;
+    const auto &dataFolder = core->settings().data_folder;
 
     m_howToPlay = engine::helper::loadTexture(dataFolder + "menus/how_to_play/howtoplay.png");
     m_controls = engine::helper::loadTexture(dataFolder + "menus/how_to_play/controls.png");
@@ -21,19 +22,19 @@ void game::menu::HowToPlay::create(entt::registry &, ThePURGE &)
 
 void game::menu::HowToPlay::draw(entt::registry &, ThePURGE &game)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(frac2pixel({1.f, 1.f}));
     ImGui::Begin("HowToPlay", nullptr, ImGuiWindowFlags_NoDecoration);
 
     if (right()) {
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+        core->getAudioManager().getSound(core->settings().data_folder + "sounds/menu/change.wav")->play();
 
         m_currentTab = Tab::CONTROLS;
     }
     if (left()) {
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+        core->getAudioManager().getSound(core->settings().data_folder + "sounds/menu/change.wav")->play();
 
         m_currentTab = Tab::HOW_TO_PLAY;
     }
@@ -46,7 +47,7 @@ void game::menu::HowToPlay::draw(entt::registry &, ThePURGE &game)
     ImGui::End();
 
     if (close()) {
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/back.wav")->play();
+        core->getAudioManager().getSound(core->settings().data_folder + "sounds/menu/back.wav")->play();
 
         game.setMenu(std::make_unique<menu::MainMenu>());
     }

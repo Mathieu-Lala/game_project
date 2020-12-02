@@ -3,6 +3,7 @@
 #include <Engine/resources/Texture.hpp>
 #include <Engine/helpers/ImGui.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -13,7 +14,7 @@
 
 void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     auto player = game.player;
 
@@ -27,7 +28,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
     static int spellmapped = 0;
     static int infoAdd;
 
-    static auto texture = [data = holder.instance->settings().data_folder]() {
+    static auto texture = [data = core->settings().data_folder]() {
         // clang-format off
             const auto path = std::to_array({
                 data + "/textures/InfoHud.png",
@@ -41,7 +42,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
         // clang-format on
         std::array<std::uint32_t, path.size()> out;
         std::generate(out.begin(), out.end(), [&path, n = 0ul]() mutable {
-            const auto &o = engine::Core::Holder{}.instance->getCache<engine::Texture>().load<engine::LoaderTexture>(
+            const auto &o = engine::api::getCore()->getCache<engine::Texture>().load<engine::LoaderTexture>(
                 entt::hashed_string{fmt::format("resource/texture/identifier/{}", path.at(n)).data()}, path.at(n));
             n++;
             return o->id;

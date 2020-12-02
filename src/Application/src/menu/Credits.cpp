@@ -2,6 +2,7 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/TextureLoader.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -11,16 +12,16 @@
 
 void game::menu::Credits::create(entt::registry &, ThePURGE &)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
-    const auto &dataFolder = holder.instance->settings().data_folder;
+    const auto &dataFolder = core->settings().data_folder;
 
     m_texture = engine::helper::loadTexture(dataFolder + "menus/credits.png");
 }
 
 void game::menu::Credits::draw(entt::registry &, ThePURGE &game)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(frac2pixel({1.f, 1.f}));
@@ -30,7 +31,7 @@ void game::menu::Credits::draw(entt::registry &, ThePURGE &game)
 
 
     if (close()) {
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/back.wav")->play();
+        core->getAudioManager().getSound(core->settings().data_folder + "sounds/menu/back.wav")->play();
 
         game.setMenu(std::make_unique<menu::MainMenu>());
     }

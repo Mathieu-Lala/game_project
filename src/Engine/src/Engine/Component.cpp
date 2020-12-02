@@ -9,6 +9,7 @@
 #include "Engine/resources/LoaderVBOTexture.hpp"
 
 #include "Engine/Core.hpp"
+#include "Engine/api/Core.hpp"
 
 auto engine::Drawable::dtor(const Drawable &drawable) -> void
 {
@@ -54,7 +55,7 @@ auto engine::VBOTexture::ctor(const std::string_view path, const std::array<floa
 
     ::glGenBuffers(1, &out.VBO);
 
-    auto handle = Core::Holder{}.instance->getCache<Texture>().load<LoaderTexture>(
+    auto handle = engine::api::getCore()->getCache<Texture>().load<LoaderTexture>(
         entt::hashed_string{fmt::format("resource/texture/identifier/{}", path.data()).data()}, path);
     if (!handle) {
         spdlog::error("could not load texture in cache !");

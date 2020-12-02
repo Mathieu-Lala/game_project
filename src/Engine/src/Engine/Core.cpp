@@ -37,7 +37,14 @@
 
 #include "Engine/Graphics/third_party.hpp" // note : only for DisplayMode
 
+#include "Engine/api/Core.hpp"
+
 using namespace std::chrono_literals;
+
+auto engine::api::getCore() -> engine::Core *
+{
+    return engine::Core::Holder{}.instance;
+}
 
 engine::Core *engine::Core::s_instance{nullptr};
 

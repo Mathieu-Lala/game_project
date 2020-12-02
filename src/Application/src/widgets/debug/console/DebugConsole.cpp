@@ -1,10 +1,13 @@
-#include "widgets/debug/console/DebugConsole.hpp"
-#include <spdlog/spdlog.h>
 #include <sstream>
+
+#include <spdlog/spdlog.h>
 
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/api/Core.hpp>
+
+#include "widgets/debug/console/DebugConsole.hpp"
 
 game::DebugConsole::DebugConsole(ThePURGE &game) : m_game(game)
 {
@@ -14,7 +17,7 @@ game::DebugConsole::DebugConsole(ThePURGE &game) : m_game(game)
 
 void game::DebugConsole::handleCmd(const std::string_view line)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     std::string cmd;
     std::vector<std::string> args;
@@ -38,7 +41,7 @@ void game::DebugConsole::handleCmd(const std::string_view line)
     }
 
     try {
-        handler(holder.instance->getWorld(), m_game, std::move(args), *this);
+        handler(core->getWorld(), m_game, std::move(args), *this);
     } catch (const std::exception &e) {
         error(e.what());
     }

@@ -2,6 +2,7 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
 #include <Engine/Graphics/Window.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 #include "models/Class.hpp"
@@ -20,15 +21,15 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
     m_console->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 #endif
 
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
-    holder.instance->window()->setSize(glm::ivec2(1920, 1080));
+    core->window()->setSize(glm::ivec2(1920, 1080));
 
     m_logics = std::make_unique<GameLogic>(*this);
 
-    m_db_spell.fromFile(holder.instance->settings().data_folder + "db/spells.json");
-    m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
-    m_db_enemy.fromFile(holder.instance->settings().data_folder + "db/enemies.json");
+    m_db_spell.fromFile(core->settings().data_folder + "db/spells.json");
+    m_db_class.fromFile(core->settings().data_folder + "db/classes.json");
+    m_db_enemy.fromFile(core->settings().data_folder + "db/enemies.json");
 
     setMenu(std::make_unique<menu::MainMenu>());
     setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
@@ -53,9 +54,9 @@ auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> 
 auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 {
 #ifndef NDEBUG
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
-    if (holder.instance->isShowingDebugInfo()) {
+    if (core->isShowingDebugInfo()) {
         m_console->draw();
         widget::TerrainGeneration::draw(*this, world);
     }
@@ -69,12 +70,12 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
 
 void game::ThePURGE::setBackgroundMusic(const std::string & path, float volume) noexcept
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     if (m_background_music)
         m_background_music->stop();
 
     m_background_music =
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + path);
+        core->getAudioManager().getSound(core->settings().data_folder + path);
     m_background_music->setVolume(volume).setLoop(true).play();
 }

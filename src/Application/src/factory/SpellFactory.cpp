@@ -8,6 +8,7 @@
 #include <Engine/component/Rotation.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -21,8 +22,8 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
 {
     spdlog::trace("Casting a spell");
 
-    static auto holder = engine::Core::Holder{};
-    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + data.audio_on_cast)->play();
+    auto core = engine::api::getCore();
+    core->getAudioManager().getSound(core->settings().data_folder + data.audio_on_cast)->play();
 
     const auto &caster_pos = world.get<engine::d3::Position>(caster);
 
@@ -44,7 +45,7 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
     world.emplace<engine::Lifetime>(spell, data.lifetime);
 
     world.emplace<engine::Spritesheet>(
-        spell, engine::Spritesheet::from_json(holder.instance->settings().data_folder + data.animation));
+        spell, engine::Spritesheet::from_json(core->settings().data_folder + data.animation));
     engine::DrawableFactory::fix_spritesheet(world, spell, "default");
     world.emplace<engine::d2::Velocity>(spell, direction.x * data.speed, direction.y * data.speed);
 

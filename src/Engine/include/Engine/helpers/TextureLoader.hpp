@@ -5,15 +5,14 @@
 
 #include "Engine/resources/LoaderTexture.hpp"
 #include "Engine/Core.hpp"
+#include "Engine/api/Core.hpp"
 
 namespace engine::helper {
 
 inline std::uint32_t loadTexture(const std::string &path)
 {
-    static engine::Core::Holder holder{};
-
     auto key = entt::hashed_string{fmt::format("resource/texture/identifier/{}", path).data()};
-    const auto &resource = holder.instance->getCache<engine::Texture>().load<engine::LoaderTexture>(key, path);
+    const auto &resource = engine::api::getCore()->getCache<engine::Texture>().load<engine::LoaderTexture>(key, path);
 
     return resource->id;
 }

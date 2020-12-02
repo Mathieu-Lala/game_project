@@ -16,6 +16,8 @@
 #include "Engine/Settings.hpp"
 #include "Engine/audio/AudioManager.hpp"
 
+#include "Engine/api/Game.hpp"
+
 namespace engine {
 
 namespace api {
@@ -73,6 +75,16 @@ public:
         loadOpenGL();
 
         return m_window;
+    }
+
+
+    auto game(std::unique_ptr<api::Game> &&input) -> std::unique_ptr<api::Game> &
+    {
+        if (m_game != nullptr) { return m_game; }
+
+        m_game = std::move(input);
+
+        return m_game;
     }
 
     template<std::derived_from<api::Game> UserDefinedGame, typename... Args>
@@ -185,7 +197,7 @@ auto Core::getCache() noexcept -> entt::resource_cache<Texture> &;
 #ifndef NDEBUG
 #    define IF_RECORD(...)                                                                                           \
         do {                                                                                                         \
-            if (engine::Core::Holder{}.instance->getEventMode() == engine::Core::EventMode::RECORD) { __VA_ARGS__; } \
+            if (engine::api::getCore()->getEventMode() == engine::Core::EventMode::RECORD) { __VA_ARGS__; } \
         } while (0)
 #else
 #    define IF_RECORD(...) \

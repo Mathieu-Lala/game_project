@@ -1,6 +1,11 @@
-add_library(
-  ThePURGE STATIC # MODULE
+add_library(ThePURGE SHARED)
+
+include(GenerateExportHeader)
+generate_export_header(ThePURGE)
+
+target_sources(ThePURGE PRIVATE
   src/ThePURGE.cpp
+  src/EntryPoint.cpp
   src/GameLogic.cpp
   src/GameLogic/collision.cpp
   src/GameLogic/fight.cpp
@@ -24,7 +29,7 @@ add_library(
 
 target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 
-target_include_directories(ThePURGE PUBLIC include) # note : should be private
+target_include_directories(ThePURGE PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}) # note : should be private
 
 # note : maybe not the best solution because the assets might be heavy
 add_custom_command(

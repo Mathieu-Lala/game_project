@@ -13,6 +13,8 @@
 #include "Engine/Core.hpp"
 #include "Engine/component/Spritesheet.hpp"
 
+#include "Engine/api/Core.hpp"
+
 auto engine::DrawableFactory::rectangle() -> Drawable
 {
     // clang-format off
@@ -52,13 +54,13 @@ auto engine::DrawableFactory::rectangle() -> Drawable
 
 auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, glm::vec3 &&color) -> Color &
 {
-    static Core::Holder holder{};
+    auto core = engine::api::getCore();
 
     assert(world.has<Drawable>(e));
     auto &drawable = world.get<Drawable>(e);
     ::glBindVertexArray(drawable.VAO);
 
-    auto handle = holder.instance->getCache<Color>().load<LoaderColor>(
+    auto handle = core->getCache<Color>().load<LoaderColor>(
         entt::hashed_string{fmt::format("resource/color/identifier/{}_{}_{}", color.r, color.g, color.b).data()},
         std::move(color));
     if (handle) {
@@ -83,13 +85,13 @@ auto engine::DrawableFactory::fix_texture(
     entt::registry &world, entt::entity e, const std::string_view filepath, const std::array<float, 4ul> &clip)
     -> VBOTexture &
 {
-    static Core::Holder holder{};
+    auto core = engine::api::getCore();
 
     assert(world.has<Drawable>(e));
     auto &drawable = world.get<Drawable>(e);
     ::glBindVertexArray(drawable.VAO);
 
-    if (const auto handle = holder.instance->getCache<VBOTexture>().load<LoaderVBOTexture>(
+    if (const auto handle = core->getCache<VBOTexture>().load<LoaderVBOTexture>(
             entt::hashed_string{
                 fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}", filepath, clip[0], clip[1], clip[2], clip[3]).data()},
             filepath,
@@ -135,6 +137,6 @@ auto engine::DrawableFactory::fix_spritesheet(entt::registry &world, entt::entit
     sp.cooldown.remaining_cooldown = 0ms;
     sp.cooldown.is_in_cooldown = false;
     sp.cooldown.cooldown = anim->cooldown;
-    engine::DrawableFactory::fix_texture(world, entity, Core::Holder{}.instance->settings().data_folder + anim->file);
+    engine::DrawableFactory::fix_texture(world, entity, engine::api::getCore()->settings().data_folder + anim->file);
     sp.current_frame = 0;
 }

@@ -9,7 +9,7 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
-
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 #include "models/Class.hpp"
@@ -63,13 +63,13 @@ game::GameLogic::GameLogic(ThePURGE &game) :
 
 auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
     EntityFactory::create<EntityFactory::ID::BACKGROUND>(m_game, world, glm::vec2(25, 25), glm::vec2(75, 75));
 
-    holder.instance->getAudioManager()
-        .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
+    core->getAudioManager()
+        .getSound(core->settings().data_folder + "sounds/entrance_gong.wav")
         ->setVolume(0.2f)
         .play();
     m_game.setBackgroundMusic("sounds/dungeon_music.wav", 0.1f);
@@ -93,7 +93,7 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 
 auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event &e) -> void
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     const auto spell_map = []<typename T>(T k) {
         struct SpellMap {
@@ -166,7 +166,7 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
                 } break;
                 case engine::Joystick::LSX:
                 case engine::Joystick::LSY: {
-                    auto joystick = holder.instance->getJoystick(joy.source.id);
+                    auto joystick = core->getJoystick(joy.source.id);
 
                     const auto newVal =
                         glm::vec2{(*joystick)->axes[engine::Joystick::LSX], -(*joystick)->axes[engine::Joystick::LSY]};
@@ -176,7 +176,7 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
                 } break;
                 case engine::Joystick::RSX:
                 case engine::Joystick::RSY: {
-                    auto joystick = holder.instance->getJoystick(joy.source.id);
+                    auto joystick = core->getJoystick(joy.source.id);
 
                     const auto newVal =
                         glm::vec2{(*joystick)->axes[engine::Joystick::RSX], -(*joystick)->axes[engine::Joystick::RSY]};
@@ -298,7 +298,7 @@ auto game::GameLogic::slots_update_camera(entt::registry &world, const engine::T
     auto &pos = world.get<engine::d3::Position>(player);
     m_game.getCamera().setCenter({pos.x, pos.y});
     if (m_game.getCamera().isUpdated()) {
-        engine::Core::Holder{}.instance->updateView(m_game.getCamera().getViewProjMatrix());
+        engine::api::getCore()->updateView(m_game.getCamera().getViewProjMatrix());
     }
 }
 

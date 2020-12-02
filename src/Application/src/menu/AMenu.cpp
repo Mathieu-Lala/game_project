@@ -2,6 +2,7 @@
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -10,7 +11,7 @@
 
 void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::Event &e)
 {
-    static auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     if (!m_createCalled) {
         m_createCalled = true;
@@ -49,7 +50,7 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
                 switch (joy.source.axis) {
                 case engine::Joystick::LSX:
                 case engine::Joystick::LSY: {
-                    auto joystick = holder.instance->getJoystick(joy.source.id);
+                    auto joystick = core->getJoystick(joy.source.id);
 
                     float x = (*joystick)->axes[engine::Joystick::LSX];
                     float y = -(*joystick)->axes[engine::Joystick::LSY];
@@ -104,7 +105,7 @@ void game::AMenu::resetInputs() noexcept
 
 auto game::AMenu::frac2pixel(ImVec2 fraction) const noexcept -> ImVec2
 {
-    const auto winSize = engine::Core::Holder{}.instance->window()->getSize();
+    const auto winSize = engine::api::getCore()->window()->getSize();
     return ImVec2(static_cast<float>(winSize.x) * fraction.x, static_cast<float>(winSize.y) * fraction.y);
 }
 

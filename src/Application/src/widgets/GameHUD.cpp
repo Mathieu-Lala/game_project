@@ -2,6 +2,7 @@
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
 #include <Engine/helpers/ImGui.hpp>
+#include <Engine/api/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -11,16 +12,16 @@
 
 void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 {
-    auto holder = engine::Core::Holder{};
+    auto core = engine::api::getCore();
 
     // note : don t need to hold a Gluint as it exist in cache
     static GLuint texture =
-        holder.instance->getCache<engine::Texture>()
+        core->getCache<engine::Texture>()
             .load<engine::LoaderTexture>(
                 entt::hashed_string{
-                    fmt::format("resource/texture/identifier/{}", holder.instance->settings().data_folder + "/textures/InfoHud.png")
+                    fmt::format("resource/texture/identifier/{}", core->settings().data_folder + "/textures/InfoHud.png")
                         .data()},
-                holder.instance->settings().data_folder + "/textures/InfoHud.png")
+                core->settings().data_folder + "/textures/InfoHud.png")
             ->id;
 
     const auto infoHealth = world.get<Health>(game.player);
