@@ -15,6 +15,7 @@ void game::to_json(nlohmann::json &j, const SpellData &spell)
 {
     // clang-format off
     j = nlohmann::json{{
+            "icon", spell.iconPath,
         "cooldown", spell.cooldown.count(),
         "damage", spell.damage,
         "hitbox", {
@@ -39,6 +40,7 @@ void game::to_json(nlohmann::json &j, const SpellData &spell)
 
 void game::from_json(const nlohmann::json &j, SpellData &spell) try
 {
+    spell.iconPath = j.at("icon");
     spell.cooldown = std::chrono::milliseconds{j.at("cooldown")};
     spell.damage = j.at("damage");
     spell.hitbox.width = j.at("hitbox").at("x");

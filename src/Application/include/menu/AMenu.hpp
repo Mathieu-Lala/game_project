@@ -10,14 +10,6 @@ namespace game {
 
 class ThePURGE;
 
-struct MenuTexture {
-    std::uint32_t id;
-
-    // In a range [0; 1] relative to the window size
-    ImVec2 topleft;
-    ImVec2 size;
-};
-
 
 class AMenu {
 public:
@@ -55,15 +47,6 @@ protected:
     void forceSelect(bool val) noexcept { m_select = val; }
     void forceClose(bool val) noexcept { m_close = val; }
 
-
-    //
-    // Display helpers
-    //
-
-    // Input : [0; 1], position in percentage of the window, Output : [0, windowSize] corresponding position in pixels
-    auto frac2pixel(ImVec2 fraction) const noexcept -> ImVec2;
-    void drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) const noexcept;
-    void drawTexture(const MenuTexture &texture) const noexcept;
 
 private:
     void resetInputs() noexcept;

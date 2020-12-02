@@ -100,21 +100,3 @@ void game::AMenu::resetInputs() noexcept
     m_select = false;
     m_close = false;
 }
-
-
-auto game::AMenu::frac2pixel(ImVec2 fraction) const noexcept -> ImVec2
-{
-    const auto winSize = engine::Core::Holder{}.instance->window()->getSize();
-    return ImVec2(static_cast<float>(winSize.x) * fraction.x, static_cast<float>(winSize.y) * fraction.y);
-}
-
-void game::AMenu::drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) const noexcept
-{
-    ImGui::SetCursorPos(topLeft);
-    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(id)), size);
-}
-
-void game::AMenu::drawTexture(const MenuTexture &t) const noexcept
-{
-    drawTexture(t.id, frac2pixel(t.topleft), frac2pixel(t.size));
-}

@@ -21,6 +21,7 @@ game::CommandHandler::CommandHandler() :
         {"buyClass", cmd_buyClass},
         {"getClasses", cmd_getClasses},
         {"getClassInfo", cmd_getClassInfo},
+        {"addHealth", cmd_addHealth},
         //{"giantfireball", cmd_giantfireball},
     }
 {
@@ -110,6 +111,26 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_addLevel =
 
         } catch (const std::runtime_error &e) {
             throw std::runtime_error(fmt::format("{}\nusage: addLevel level", e.what()));
+        }
+    };
+
+game::CommandHandler::handler_t game::CommandHandler::cmd_addHealth =
+    [](entt::registry &world, ThePURGE &game, std::vector<std::string> &&args, DebugConsole &) {
+        try {
+            if (args.size() != 1) throw std::runtime_error("Wrong argument count");
+
+            auto amount = lexicalCast<float>(args[0]);
+
+            auto player = game.player;
+
+            auto &health = world.get<Health>(player);
+
+            health.current += amount;
+            if (health.current > health.max)
+                health.current = health.max;
+
+        } catch (const std::runtime_error &e) {
+            throw std::runtime_error(fmt::format("{}\nusage: addHealth amount", e.what()));
         }
     };
 
@@ -211,3 +232,4 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_giantfireball =
     [](entt::registry &, ThePURGE &, std::vector<std::string> &&, DebugConsole &) {
         // SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
     };
+

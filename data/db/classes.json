@@ -2,7 +2,7 @@
   "farmer": {
     "starter": true,
     "desc": "Farmer description",
-    "icon": "icons/farmer.png",
+    "icon": "icons/classes/farmer.png",
     "assetGraph": "anims/classes/farmer/farmer.data.json",
     "health": 10,
     "speed": 10.1,
@@ -22,7 +22,7 @@
   },
   "soldier": {
     "desc": "Soldier description",
-    "icon": "icons/soldier.png",
+    "icon": "icons/classes/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
     "health": 20,
     "speed": 10.1,
@@ -42,7 +42,7 @@
   },
   "shooter": {
     "desc": "Shooter description",
-    "icon": "icons/shooter.png",
+    "icon": "icons/classes/shooter.png",
     "assetGraph": "anims/classes/shooter/shooter.data.json",
     "health": 10,
     "speed": 10.3,
@@ -61,7 +61,7 @@
   },
   "sorcerer": {
     "desc": "Sorcerer description",
-    "icon": "icons/sorcerer.png",
+    "icon": "icons/classes/sorcerer.png",
     "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
     "health": 5,
     "speed": 10.2,
@@ -79,7 +79,7 @@
   },
   "assassin": {
     "desc": "Assassin description",
-    "icon": "icons/soldier.png",
+    "icon": "icons/classes/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
     "health": 25,
     "speed": 11,
@@ -93,7 +93,7 @@
   },
   "warrior": {
     "desc": "Warrior description",
-    "icon": "icons/soldier.png",
+    "icon": "icons/classes/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
     "health": 35,
     "speed": 10.2,
@@ -107,7 +107,7 @@
   },
   "tank": {
     "desc": "Tank description",
-    "icon": "icons/soldier.png",
+    "icon": "icons/classes/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
     "health": 50,
     "speed": 10,
@@ -121,7 +121,7 @@
   },
   "archer": {
     "desc": "Archer description",
-    "icon": "icons/shooter.png",
+    "icon": "icons/classes/shooter.png",
     "assetGraph": "anims/classes/shooter/shooter.data.json",
     "health": 22,
     "speed": 10.4,
@@ -135,7 +135,7 @@
   },
   "gunner": {
     "desc": "Gunner description",
-    "icon": "icons/shooter.png",
+    "icon": "icons/classes/shooter.png",
     "assetGraph": "anims/classes/shooter/shooter.data.json",
     "health": 24,
     "speed": 10.4,
@@ -149,7 +149,7 @@
   },
   "mage": {
     "desc": "Mage description",
-    "icon": "icons/sorcerer.png",
+    "icon": "icons/classes/sorcerer.png",
     "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
     "health": 20,
     "speed": 10.3,
