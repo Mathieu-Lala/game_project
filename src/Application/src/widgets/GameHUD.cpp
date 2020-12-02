@@ -14,6 +14,7 @@
 #include "component/all.hpp"
 
 #include "widgets/GameHUD.hpp"
+#include "widgets/Fonts.hpp"
 #include "widgets/helpers.hpp"
 
 void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
@@ -26,21 +27,16 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     assert(currentClass != nullptr);
 
     const auto &health = world.get<Health>(player);
+    const auto &level = world.get<Level>(player);
+    const auto &skillPoints = world.get<SkillPoint>(player).count;
 
-#pragma region Textures
+#pragma region Static textures
     // clang-format off
-
 
     static GUITexture staticBackground = {
         .id =       helper::getTexture("textures/hud/hud_static.png"),
         .topleft =  helper::from1080p(25, 16),
         .size =     helper::from1080p(339, 152)
-    };
-
-    static GUITexture portrait = {
-        .id =       helper::getTexture(currentClass->iconPath),
-        .topleft =  helper::from1080p(28, 25),
-        .size =     helper::from1080p(70, 80)
     };
 
     static GUITexture LB = {
@@ -66,8 +62,20 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
         .topleft =  helper::from1080p(230, 160),
         .size =     helper::from1080p(30, 22)
     };
+
+    static GUITexture UpgradeIcon = {
+        .id =       helper::getTexture("textures/hud/UpgradeIcon.png"),
+        .topleft =  helper::from1080p(337, 125),
+        .size =     helper::from1080p(26, 33)
+    };
     // clang-format on
-#pragma endregion Textures
+#pragma endregion Static textures
+
+    GUITexture portrait = {
+        .id =       helper::getTexture(currentClass->iconPath),
+        .topleft =  helper::from1080p(28, 25),
+        .size =     helper::from1080p(70, 80)
+    };
 
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -76,15 +84,27 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     ImGui::Begin("HUD", nullptr, ImGuiWindowFlags_NoDecoration);
 
     helper::drawTexture(staticBackground);
+
     helper::drawTexture(portrait);
 
+
     drawHealthBar(health);
-    drawXpBar(world.get<Level>(player));
+    drawXpBar(level);
+
+    ImGui::PushFont(Fonts::kimberley_23);
+    {
+        ImGui::SetCursorPos(helper::frac2pixel(helper::from1080p(377, 20)));
+        ImGui::Text(fmt::format("{}/{}", health.current, health.max).c_str());
+
+        ImGui::SetCursorPos(helper::frac2pixel(helper::from1080p(377, 63)));
+        ImGui::Text(fmt::format("{}/{}", level.current_xp, level.xp_require).c_str());
+    }
+    ImGui::PopFont();
 
 
     const auto &spells = world.get<SpellSlots>(player).spells;
 
-    std::array<float, 4> spellX = {26, 251, 101, 176  };
+    std::array<float, 4> spellX = {26, 251, 101, 176};
 
     for (int i = 0; i < 4; ++i) {
         if (!spells[i].has_value()) continue;
@@ -97,13 +117,24 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
         helper::drawTexture(spell);
 
         if (spells[i]->cd.is_in_cooldown)
-            drawSpellCooldown(spellX[i], static_cast<float>(spells[i]->cd.remaining_cooldown.count()) / spells[i]->cd.cooldown.count());
+            drawSpellCooldown(
+                spellX[i], static_cast<float>(spells[i]->cd.remaining_cooldown.count()) / spells[i]->cd.cooldown.count());
     }
 
     helper::drawTexture(LB);
     helper::drawTexture(LT);
     helper::drawTexture(RT);
     helper::drawTexture(RB);
+
+
+    if (skillPoints) {
+        helper::drawTexture(UpgradeIcon);
+
+        ImGui::PushFont(Fonts::kimberley_23);
+        ImGui::SetCursorPos(helper::frac2pixel(helper::from1080p(371, 131)));
+        ImGui::Text(fmt::format("{}", skillPoints).c_str());
+        ImGui::PopFont();
+    }
 
     ImGui::End();
 }
@@ -149,5 +180,4 @@ void game::GameHUD::drawSpellCooldown(float spellX, float remaining)
     ImVec4 color(.3f, .3f, .3f, .75);
 
     ImGui::GetWindowDrawList()->AddRectFilled(topLeft, bottomRight, ImGui::ColorConvertFloat4ToU32(color));
-
 }
