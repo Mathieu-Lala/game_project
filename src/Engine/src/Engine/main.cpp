@@ -27,13 +27,29 @@ int main(int argc, char **argv)
     // holder.instance->game<game::ThePURGE>();
     engine::dll::Handler module;
     try {
-        std::cout << std::filesystem::current_path().string() << std::endl;
-        module = engine::dll::Handler(std::filesystem::current_path().string() + "\\ThePURGE.dll");
+        const auto module_name =
+#if defined(_WIN32)
+#    ifdef NDEBUG
+            "\\ThePURGE.dll"
+#    else
+            "\\ThePURGE-d.dll"
+#    endif
+#else
+#    ifdef NDEBUG
+            "/libThePURGE.so"
+#    else
+            "/libThePURGE-d.so"
+#    endif
+#endif
+            ;
+
+        module = engine::dll::Handler(std::filesystem::current_path().string() + module_name);
     } catch (const engine::dll::Handler::error &e) {
         std::cout << e.what() << std::endl;
+        return 1;
     }
 
-    auto constructor = module.load<engine::api::Game *(*)()>("constructor");
+    auto constructor = module.load<engine::api::Game *(*) ()>("constructor");
 
     holder.instance->game(std::unique_ptr<engine::api::Game>(constructor()));
 

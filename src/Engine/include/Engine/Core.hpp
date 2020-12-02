@@ -17,6 +17,7 @@
 #include "Engine/audio/AudioManager.hpp"
 
 #include "Engine/api/Game.hpp"
+#include "Engine/api/Core.hpp"
 
 namespace engine {
 

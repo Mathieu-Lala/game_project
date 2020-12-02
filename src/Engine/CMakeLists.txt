@@ -21,7 +21,7 @@ target_include_directories(glfw_imgui_impl PUBLIC ${CMAKE_BINARY_DIR}/download/i
 
 configure_file(include/Engine/details/Version.hpp.in include/Engine/details/Version.hpp @ONLY)
 
-add_library(engine_core STATIC)
+add_library(engine_core SHARED)
 
 include(GenerateExportHeader)
 generate_export_header(engine_core)
