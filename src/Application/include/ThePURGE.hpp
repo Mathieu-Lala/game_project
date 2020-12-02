@@ -48,8 +48,6 @@ public:
     auto dbClasses() noexcept -> ClassDatabase & { return m_db_class; }
     auto dbEnemies() noexcept -> EnemyDatabase & { return m_db_enemy; }
 
-    auto getFontKimberley() const noexcept { return m_kimberley_br; }
-
     auto getCamera() -> engine::Camera & { return m_camera; }
     void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu);}
 
@@ -74,8 +72,6 @@ private:
     std::shared_ptr<engine::Sound> m_background_music;
 
     std::unique_ptr<AMenu> m_currentMenu{ nullptr };
-
-    ImFont *m_kimberley_br;
 };
 
 } // namespace game
