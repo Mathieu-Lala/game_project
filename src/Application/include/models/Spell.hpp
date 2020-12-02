@@ -26,6 +26,8 @@ struct /*[[deprecated]]*/ Spell {
 };
 
 struct SpellData {
+    std::string iconPath;
+
     std::chrono::milliseconds cooldown;
 
     float damage;

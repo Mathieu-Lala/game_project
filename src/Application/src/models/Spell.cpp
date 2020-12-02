@@ -15,6 +15,7 @@ void game::to_json(nlohmann::json &j, const SpellData &spell)
 {
     // clang-format off
     j = nlohmann::json{{
+        "icon", spell.iconPath,
         "cooldown", spell.cooldown.count(),
         "damage", spell.damage,
         "hitbox", {
@@ -37,8 +38,9 @@ void game::to_json(nlohmann::json &j, const SpellData &spell)
     // clang-format on
 }
 
-void game::from_json(const nlohmann::json &j, SpellData &spell) try
-{
+void game::from_json(const nlohmann::json &j, SpellData &spell)
+try {
+    spell.iconPath = j.at("icon");
     spell.cooldown = std::chrono::milliseconds{j.at("cooldown")};
     spell.damage = j.at("damage");
     spell.hitbox.width = j.at("hitbox").at("x");
@@ -54,15 +56,11 @@ void game::from_json(const nlohmann::json &j, SpellData &spell) try
     spell.type = [](const auto &type) {
         decltype(SpellData{}.type) out;
         for (const auto &i : type) {
-            if (const auto id = SpellData::toType(i); id != SpellData::Type::ZERO) {
-                out[id] = true;
-            }
+            if (const auto id = SpellData::toType(i); id != SpellData::Type::ZERO) { out[id] = true; }
         }
         return out;
     }(j.at("type").get<std::vector<std::string>>());
-}
-catch (nlohmann::json::exception &e)
-{
+} catch (nlohmann::json::exception &e) {
     spdlog::error("failed: {}", e.what());
 }
 

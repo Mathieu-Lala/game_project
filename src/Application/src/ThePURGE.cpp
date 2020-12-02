@@ -13,14 +13,19 @@
 
 #include "menu/MainMenu.hpp"
 
+#include "widgets/Fonts.hpp"
+
 auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 {
+    static auto holder = engine::Core::Holder{};
+
+    game::Fonts::loadFonts();
+
+
 #ifndef NDEBUG
     m_console = std::make_unique<DebugConsole>(*this);
     m_console->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 #endif
-
-    static auto holder = engine::Core::Holder{};
 
     holder.instance->window()->setSize(glm::ivec2(1920, 1080));
 

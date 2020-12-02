@@ -12,6 +12,7 @@
 
 #include "GameLogic.hpp"
 #include "models/Class.hpp"
+#include "models/Spell.hpp"
 #include "models/Enemy.hpp"
 
 #ifndef NDEBUG
