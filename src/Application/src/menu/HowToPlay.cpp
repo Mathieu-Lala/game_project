@@ -4,6 +4,7 @@
 #include <Engine/Core.hpp>
 
 #include "models/Spell.hpp"
+#include "widgets/helpers.hpp"
 
 #include "menu/HowToPlay.hpp"
 #include "menu/MainMenu.hpp"
@@ -24,7 +25,7 @@ void game::menu::HowToPlay::draw(entt::registry &, ThePURGE &game)
     static auto holder = engine::Core::Holder{};
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(frac2pixel({1.f, 1.f}));
+    ImGui::SetNextWindowSize(helper::frac2pixel({1.f, 1.f}));
     ImGui::Begin("HowToPlay", nullptr, ImGuiWindowFlags_NoDecoration);
 
     if (right()) {
@@ -39,8 +40,8 @@ void game::menu::HowToPlay::draw(entt::registry &, ThePURGE &game)
     }
 
     switch (m_currentTab) {
-    case Tab::HOW_TO_PLAY: drawTexture(m_howToPlay, ImVec2(0, 0), frac2pixel(ImVec2(1, 1))); break;
-    case Tab::CONTROLS: drawTexture(m_controls, ImVec2(0, 0), frac2pixel(ImVec2(1, 1))); break;
+    case Tab::HOW_TO_PLAY: helper::drawTexture(m_howToPlay, ImVec2(0, 0), helper::frac2pixel(ImVec2(1, 1))); break;
+    case Tab::CONTROLS: helper::drawTexture(m_controls, ImVec2(0, 0), helper::frac2pixel(ImVec2(1, 1))); break;
     }
 
     ImGui::End();
