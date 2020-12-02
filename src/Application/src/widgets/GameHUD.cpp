@@ -31,37 +31,37 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     // clang-format off
 
 
-    GUITexture staticBackground = {
+    static GUITexture staticBackground = {
         .id =       helper::getTexture("textures/hud/hud_static.png"),
         .topleft =  helper::from1080p(25, 16),
         .size =     helper::from1080p(339, 152)
     };
 
-    GUITexture portrait = {
+    static GUITexture portrait = {
         .id =       helper::getTexture(currentClass->iconPath),
         .topleft =  helper::from1080p(28, 25),
         .size =     helper::from1080p(70, 80)
     };
 
-    GUITexture LB = {
+    static GUITexture LB = {
         .id =       helper::getTexture("textures/hud/LB.png"),
         .topleft =  helper::from1080p(5, 160),
         .size =     helper::from1080p(30, 22)
     };
 
-    GUITexture LT = {
+    static GUITexture LT = {
         .id =       helper::getTexture("textures/hud/LT.png"),
         .topleft =  helper::from1080p(80, 160),
         .size =     helper::from1080p(30, 27)
     };
 
-    GUITexture RT = {
+    static GUITexture RT = {
         .id =       helper::getTexture("textures/hud/RT.png"),
         .topleft =  helper::from1080p(155, 160),
         .size =     helper::from1080p(30, 27)
     };
 
-     GUITexture RB = {
+     static GUITexture RB = {
         .id =       helper::getTexture("textures/hud/RB.png"),
         .topleft =  helper::from1080p(230, 160),
         .size =     helper::from1080p(30, 22)
@@ -84,7 +84,7 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 
     const auto &spells = world.get<SpellSlots>(player).spells;
 
-    std::array<float, 4> spellX = {26, 101, 176, 251};
+    std::array<float, 4> spellX = {26, 251, 101, 176  };
 
     for (int i = 0; i < 4; ++i) {
         if (!spells[i].has_value()) continue;
@@ -96,7 +96,8 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 
         helper::drawTexture(spell);
 
-        // TODO: cooldown
+        if (spells[i]->cd.is_in_cooldown)
+            drawSpellCooldown(spellX[i], static_cast<float>(spells[i]->cd.remaining_cooldown.count()) / spells[i]->cd.cooldown.count());
     }
 
     helper::drawTexture(LB);
@@ -105,65 +106,6 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     helper::drawTexture(RB);
 
     ImGui::End();
-
-    // --------------------------------------------------------------------------------------------------------------
-
-    // auto holder = engine::Core::Holder{};
-
-    //// note : don t need to hold a Gluint as it exist in cache
-    // static GLuint texture =
-    //    holder.instance->getCache<engine::Texture>()
-    //        .load<engine::LoaderTexture>(
-    //            entt::hashed_string{
-    //                fmt::format("resource/texture/identifier/{}", holder.instance->settings().data_folder + "/textures/InfoHud.png")
-    //                    .data()},
-    //            holder.instance->settings().data_folder + "/textures/InfoHud.png")
-    //        ->id;
-
-    // const auto infoHealth = world.get<Health>(game.player);
-    // const auto HP = infoHealth.current / infoHealth.max;
-    // const auto level = world.get<Level>(game.player);
-    // const auto XP = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
-
-    // ImGui::Begin(
-    //    "Info Player",
-    //    nullptr,
-    //    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize
-    //        | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
-    // ImVec2 size = ImGui::GetWindowSize();
-    // ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>((texture))), ImVec2(size.x - 30, size.y - 10));
-    // ImGui::SetCursorPos(ImVec2(ImGui::GetItemRectMin().x + 40, ImGui::GetItemRectMin().y + size.y / 7));
-    // ImGui::ProgressBar(HP, ImVec2(0.f, 0.f), fmt::format("{}/{}", infoHealth.current, infoHealth.max).data());
-    // ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-    // ImGui::Text("HP");
-    // ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-    // ImGui::ProgressBar(XP, ImVec2(0.0f, 0.0f));
-    // ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-    // ImGui::Text("XP");
-    // ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-    // helper::ImGui::Text("LEVEL: {} ~~~ SKILL POINTS: {}", level.current_level, world.get<SkillPoint>(game.player).count);
-    //// ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-    //// ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-    //// helper::ImGui::Text("Speed: {}", 1);
-    //// ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-    //// helper::ImGui::Text("Atk: {}", Atk.damage);
-
-    // for (const auto &i : world.get<SpellSlots>(game.player).spells) {
-    //    if (i.has_value()) {
-    //        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-    //        ImGui::ProgressBar(
-    //            static_cast<float>(i.value().cd.remaining_cooldown.count())
-    //                / static_cast<float>(i.value().cd.cooldown.count()),
-    //            ImVec2(0.f, 0.f),
-    //            fmt::format("{}/{}", i.value().cd.remaining_cooldown.count(), i.value().cd.cooldown.count()).data());
-    //    }
-    //}
-    // if (world.get<KeyPicker>(game.player).hasKey) {
-    //    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 49, ImGui::GetCursorPosY()));
-    //    helper::ImGui::Text("You have the key");
-    //}
-
-    // ImGui::End();
 }
 
 void game::GameHUD::drawHealthBar(const Health &health)
@@ -198,4 +140,14 @@ void game::GameHUD::drawXpBar(const Level &level)
     ImVec4 color(0, 0.5, 1, 1);
 
     ImGui::GetWindowDrawList()->AddRectFilled(topLeft, bottomRight, ImGui::ColorConvertFloat4ToU32(color));
+}
+
+void game::GameHUD::drawSpellCooldown(float spellX, float remaining)
+{
+    ImVec2 topLeft = helper::frac2pixel(helper::from1080p(spellX, std::lerp(167, 119, remaining)));
+    ImVec2 bottomRight = helper::frac2pixel(helper::from1080p(spellX + 48, 167));
+    ImVec4 color(.3f, .3f, .3f, .75);
+
+    ImGui::GetWindowDrawList()->AddRectFilled(topLeft, bottomRight, ImGui::ColorConvertFloat4ToU32(color));
+
 }

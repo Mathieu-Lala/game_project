@@ -14,6 +14,7 @@ struct GameHUD {
 private:
     static void drawHealthBar(const Health &health);
     static void drawXpBar(const Level &level);
+    static void drawSpellCooldown(float spellX, float remaining);
 };
 
 } // namespace game
