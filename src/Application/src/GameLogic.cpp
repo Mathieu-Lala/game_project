@@ -124,7 +124,10 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
                 case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, true); break;
                 case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, true); break;
                 case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, true); break;
-                case GLFW_KEY_P: m_game.setMenu(std::make_unique<menu::UpgradePanel>()); break;
+                case GLFW_KEY_P: {
+                    m_game.setMenu(std::make_unique<menu::UpgradePanel>());
+                    holder.instance->setEventMode(engine::Core::EventMode::PAUSED);
+                } break;
 
                 case GLFW_KEY_U:
                 case GLFW_KEY_Y:

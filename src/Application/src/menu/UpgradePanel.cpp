@@ -197,7 +197,10 @@ void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_P: game.setMenu(nullptr); break;
+                case GLFW_KEY_P: {
+                    game.setMenu(nullptr);
+                    engine::Core::Holder{}.instance->setEventMode(engine::Core::EventMode::RECORD);
+                } break;
                 default: break;
                 }
             },
