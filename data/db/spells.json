@@ -93,6 +93,9 @@
     },
     "type": [
       "aoe"
+    ],
+    "effect": [
+      "burn"
     ]
   },
   "fireball_blue": {

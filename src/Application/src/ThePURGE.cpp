@@ -21,7 +21,6 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     game::Fonts::loadFonts();
 
-
 #ifndef NDEBUG
     m_console = std::make_unique<DebugConsole>(*this);
     m_console->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
@@ -31,9 +30,11 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
 
     m_logics = std::make_unique<GameLogic>(*this);
 
-    m_db_spell.fromFile(holder.instance->settings().data_folder + "db/spells.json");
-    m_db_class.fromFile(holder.instance->settings().data_folder + "db/classes.json");
-    m_db_enemy.fromFile(holder.instance->settings().data_folder + "db/enemies.json");
+    const auto data_folder = holder.instance->settings().data_folder;
+    m_db_spell.fromFile(data_folder + "db/spells.json");
+    m_db_class.fromFile(data_folder + "db/classes.json");
+    m_db_enemy.fromFile(data_folder + "db/enemies.json");
+    m_db_effects.fromFile(data_folder + "db/effects.json");
 
     setMenu(std::make_unique<menu::MainMenu>());
     setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);

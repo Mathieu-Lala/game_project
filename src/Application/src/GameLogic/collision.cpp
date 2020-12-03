@@ -142,12 +142,12 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
 
         if (world.has<entt::tag<"player"_hs>>(source)) {
             for (const auto &enemy : world.view<entt::tag<"enemy"_hs>, engine::d2::HitboxSolid>()) {
-                if (!world.valid(spell)) continue;
+                if (!world.valid(spell)) break;
                 check_spell_collision(enemy, spell, source);
             }
         } else {
             for (const auto &player : world.view<entt::tag<"player"_hs>, engine::d2::HitboxSolid>()) {
-                if (!world.valid(spell)) continue;
+                if (!world.valid(spell)) break;
                 check_spell_collision(player, spell, source);
             }
         }

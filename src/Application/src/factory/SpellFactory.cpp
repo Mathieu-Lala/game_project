@@ -48,6 +48,8 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
     engine::DrawableFactory::fix_spritesheet(world, spell, "default");
     world.emplace<engine::d2::Velocity>(spell, direction.x * data.speed, direction.y * data.speed);
 
+    world.emplace<SpellEffect>(spell, data.effects);
+
     if (data.type[SpellData::Type::PROJECTILE]) world.emplace<entt::tag<"projectile"_hs>>(spell);
     if (data.type[SpellData::Type::AOE]) world.emplace<entt::tag<"aoe"_hs>>(spell);
 

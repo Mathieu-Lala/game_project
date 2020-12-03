@@ -230,25 +230,6 @@ auto game::GameLogic::slots_update_cooldown(entt::registry &world, const engine:
     });
 }
 
-auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::TimeElapsed &dt) -> void
-{
-    auto player_health = world.get<game::Health>(m_game.player);
-
-    world.view<game::Effect>().each([&](auto &effect) {
-        if (!effect.is_in_effect) return;
-        if (dt.elapsed < effect.remaining_time_effect) {
-            effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-            if (effect.effect_name == "stun") spdlog::warn("stun");
-            if (effect.effect_name == "bleed") {
-                /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so TODO*/
-                player_health.current -= 0.01f;
-            }
-        } else {
-            effect.is_in_effect = false;
-        }
-    });
-}
-
 auto game::GameLogic::slots_update_particle(
     [[maybe_unused]] entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
