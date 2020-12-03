@@ -39,9 +39,8 @@ struct Stage {
 
         // float mobDensity = 0.05f; // Average mob per tile
 
-        std::unordered_map<std::string, float> mobDensity {
-            { "zombie", 0.04f },
-            { "golem", 0.01f }
+        std::unordered_map<std::string, float> mobDensity{
+            {"skeleton", 0.03f}, {"golem", 0.01f}, {"zombie", 0.04f}, {"electric_skeleton", 0.01f}, {"summoner", 0.01f} 
         };
     };
 

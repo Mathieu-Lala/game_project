@@ -16,8 +16,8 @@
     "animation": "anims/spells/farmer_attack/farmer_anim.data.json",
     "speed": 0,
     "offset_to_source": {
-      "x": 1,
-      "y": 1
+      "x": 0.5,
+      "y": 0.5
     },
     "type": [
       "projectile"
@@ -28,8 +28,8 @@
     "cooldown": 500,
     "damage": 5,
     "scale": {
-      "x": 0.7,
-      "y": 0.7
+      "x": 1.5,
+      "y": 1.5
     },
     "hitbox": {
       "x": 0.3,
@@ -40,8 +40,8 @@
     "animation": "anims/spells/soldier_attack/soldier_attack.data.json",
     "speed": 0,
     "offset_to_source": {
-      "x": 1,
-      "y": 1
+      "x": 0.7,
+      "y": 0.7
     },
     "type": [
       "projectile"

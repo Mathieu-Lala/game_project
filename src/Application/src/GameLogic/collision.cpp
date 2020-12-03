@@ -30,15 +30,21 @@ using namespace std::chrono_literals;
 auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
     -> void
 {
-    auto spd = world.get<Speed>(player).speed;
-
     switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? spd : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -spd : 0.0f; break;
-    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? spd : 0.0f; break;
-    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -spd : 0.0f; break;
+    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1 : 0.0f; break;
+    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1 : 0.0f; break;
+    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1 : 0.0f; break;
+    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1 : 0.0f; break;
     default: break;
     }
+
+    const auto &movement = world.get<ControllerAxis>(player).movement;
+    if (glm::length(movement) < 0.01f) return;
+
+    const auto &direction = glm::normalize(movement);
+
+    world.get<ControllerAxis>(player).aiming = direction;
+    world.get<ControllerAxis>(player).movement = direction;
 }
 
 auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt)
@@ -48,7 +54,7 @@ auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[mayb
 
     auto &vel = world.get<engine::d2::Velocity>(player);
     const auto &axis = world.get<ControllerAxis>(player);
-    auto spd = world.get<Speed>(player).speed;
+    const auto &spd = world.get<Speed>(player).speed;
 
     vel.x = axis.movement.x * spd;
     vel.y = axis.movement.y * spd;
@@ -82,8 +88,9 @@ auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_un
             }
         }
 
+        const auto &spd = world.get<Speed>(entity).speed;
         const auto result = glm::normalize(diff) * 7.f;
-        out = {result.x, result.y};
+        out = {result.x * spd, result.y * spd};
 
         return true;
     };
@@ -103,7 +110,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
         const auto &spell_pos = world.get<engine::d3::Position>(spell);
         const auto &spell_box = world.get<engine::d2::HitboxFloat>(spell);
 
-        for (const auto &wall : world.view<entt::tag<"wall"_hs>>()) {
+        for (const auto &wall : world.view<entt::tag<"wall"_hs>, engine::d2::HitboxSolid>()) {
             const auto &wall_pos = world.get<engine::d3::Position>(wall);
             const auto &wall_box = world.get<engine::d2::HitboxSolid>(wall);
 
@@ -134,12 +141,12 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
         if (!world.valid(source)) return;
 
         if (world.has<entt::tag<"player"_hs>>(source)) {
-            for (const auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
+            for (const auto &enemy : world.view<entt::tag<"enemy"_hs>, engine::d2::HitboxSolid>()) {
                 if (!world.valid(spell)) continue;
                 check_spell_collision(enemy, spell, source);
             }
         } else {
-            for (const auto &player : world.view<entt::tag<"player"_hs>>()) {
+            for (const auto &player : world.view<entt::tag<"player"_hs>, engine::d2::HitboxSolid>()) {
                 if (!world.valid(spell)) continue;
                 check_spell_collision(player, spell, source);
             }

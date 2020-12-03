@@ -49,9 +49,13 @@ auto game::ThePURGE::onDestroy(entt::registry &) -> void
 
 auto game::ThePURGE::onUpdate(entt::registry &world, const engine::Event &e) -> void
 {
-    if (m_currentMenu == nullptr)
-        m_logics->onEvent.publish(world, e);
-    else
+    static auto holder = engine::Core::Holder{};
+
+    if (m_currentMenu == nullptr) {
+        if (holder.instance->getEventMode() != engine::Core::EventMode::PAUSED) {
+            m_logics->onEvent.publish(world, e);
+        }
+    } else
         m_currentMenu->onEvent(world, *this, e);
 }
 
@@ -72,14 +76,12 @@ auto game::ThePURGE::drawUserInterface(entt::registry &world) -> void
         m_currentMenu->onDraw(world, *this);
 }
 
-void game::ThePURGE::setBackgroundMusic(const std::string & path, float volume) noexcept
+void game::ThePURGE::setBackgroundMusic(const std::string &path, float volume) noexcept
 {
     static auto holder = engine::Core::Holder{};
 
-    if (m_background_music)
-        m_background_music->stop();
+    if (m_background_music) m_background_music->stop();
 
-    m_background_music =
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + path);
+    m_background_music = holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + path);
     m_background_music->setVolume(volume).setLoop(true).play();
 }

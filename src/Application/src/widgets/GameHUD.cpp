@@ -19,8 +19,6 @@
 
 void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 {
-    static auto holder = engine::Core::Holder{};
-
     const auto player = game.player;
 
     const auto *currentClass = game.dbClasses().getByName(world.get<Classes>(player).ids.back());
@@ -30,7 +28,7 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     const auto &level = world.get<Level>(player);
     const auto &skillPoints = world.get<SkillPoint>(player).count;
 
-#pragma region Static textures
+// #pragma region Static textures
     // clang-format off
 
     static GUITexture staticBackground = {
@@ -69,13 +67,12 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
         .size =     helper::from1080p(26, 33)
     };
     // clang-format on
-#pragma endregion Static textures
+// #pragma endregion Static textures
 
     GUITexture portrait = {
-        .id =       helper::getTexture(currentClass->iconPath),
-        .topleft =  helper::from1080p(28, 25),
-        .size =     helper::from1080p(70, 80)
-    };
+        .id = helper::getTexture(currentClass->iconPath),
+        .topleft = helper::from1080p(28, 25),
+        .size = helper::from1080p(70, 80)};
 
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -94,31 +91,33 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     ImGui::PushFont(Fonts::kimberley_23);
     {
         ImGui::SetCursorPos(helper::frac2pixel(helper::from1080p(377, 20)));
-        ImGui::Text(fmt::format("{}/{}", health.current, health.max).c_str());
+        ::helper::ImGui::Text("{}/{}", health.current, health.max);
 
         ImGui::SetCursorPos(helper::frac2pixel(helper::from1080p(377, 63)));
-        ImGui::Text(fmt::format("{}/{}", level.current_xp, level.xp_require).c_str());
+        ::helper::ImGui::Text("{}/{}", level.current_xp, level.xp_require);
     }
     ImGui::PopFont();
 
 
     const auto &spells = world.get<SpellSlots>(player).spells;
 
-    std::array<float, 4> spellX = {26, 251, 101, 176};
+    constexpr auto spellX = std::to_array({26.0f, 251.0f, 101.0f, 176.0f});
 
-    for (int i = 0; i < 4; ++i) {
+    for (std::size_t i = 0; i < 4; ++i) {
         if (!spells[i].has_value()) continue;
 
         GUITexture spell{
             .id = helper::getTexture(game.dbSpells().db.at(std::string(spells[i]->id)).iconPath),
             .topleft = helper::from1080p(spellX[i], 119),
-            .size = helper::from1080p(48, 48)};
+            .size = helper::from1080p(48.0f, 48.0f)};
 
         helper::drawTexture(spell);
 
         if (spells[i]->cd.is_in_cooldown)
             drawSpellCooldown(
-                spellX[i], static_cast<float>(spells[i]->cd.remaining_cooldown.count()) / spells[i]->cd.cooldown.count());
+                spellX[i],
+                static_cast<float>(spells[i]->cd.remaining_cooldown.count())
+                    / static_cast<float>(spells[i]->cd.cooldown.count()));
     }
 
     helper::drawTexture(LB);
@@ -132,7 +131,7 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 
         ImGui::PushFont(Fonts::kimberley_23);
         ImGui::SetCursorPos(helper::frac2pixel(helper::from1080p(371, 131)));
-        ImGui::Text(fmt::format("{}", skillPoints).c_str());
+        ::helper::ImGui::Text("{}", skillPoints);
         ImGui::PopFont();
     }
 
@@ -141,13 +140,13 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
 
 void game::GameHUD::drawHealthBar(const Health &health)
 {
-    float fraction = health.current / health.max;
+    const auto fraction = health.current / health.max;
 
     ImVec2 topLeft = helper::frac2pixel(helper::from1080p(137, 16));
     ImVec2 bottomRight = helper::frac2pixel(helper::from1080p(std::lerp(137, 364, fraction), 51));
 
     ImVec4 color(0, 0, 0, 1);
-    if (fraction < 0.5) {
+    if (fraction < 0.5f) {
         // red
         color.x = 1;
         // green
@@ -164,7 +163,7 @@ void game::GameHUD::drawHealthBar(const Health &health)
 
 void game::GameHUD::drawXpBar(const Level &level)
 {
-    float fraction = static_cast<float>(level.current_xp) / level.xp_require;
+    const auto fraction = static_cast<float>(level.current_xp) / static_cast<float>(level.xp_require);
 
     ImVec2 topLeft = helper::frac2pixel(helper::from1080p(137, 57));
     ImVec2 bottomRight = helper::frac2pixel(helper::from1080p(std::lerp(137, 364, fraction), 92));
