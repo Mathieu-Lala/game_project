@@ -3,153 +3,101 @@
         "animations": {
             "idle_left": {
                 "file": "/anims/classes/sorcerer/sorcerer_spritesheet.png",
-                "width": 110,
-                "height": 170,
-                "cooldown": 25,
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
                 "frames": [
                     {
-                        "x": 220,
-                        "y": 340
+                        "x": 37,
+                        "y": 0
                     }
                 ]
             },
             "run_left": {
                 "file": "/anims/classes/sorcerer/sorcerer_spritesheet.png",
-                "width": 110,
-                "height": 170,
-                "cooldown": 25,
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
                 "frames": [
                     {
-                        "x": 0,
-                        "y": 0
+                        "x": 74,
+                        "y": 47
                     },
                     {
-                        "x": 110,
-                        "y": 0
-                    },
-                    {
-                        "x": 220,
-                        "y": 0
-                    },
-                    {
-                        "x": 330,
-                        "y": 0
-                    },
-                    {
-                        "x": 440,
-                        "y": 0
+                        "x": 37,
+                        "y": 47
                     },
                     {
                         "x": 0,
-                        "y": 170
-                    },
-                    {
-                        "x": 110,
-                        "y": 170
-                    },
-                    {
-                        "x": 220,
-                        "y": 170
-                    },
-                    {
-                        "x": 330,
-                        "y": 170
-                    },
-                    {
-                        "x": 440,
-                        "y": 170
-                    },
-                    {
-                        "x": 0,
-                        "y": 340
-                    },
-                    {
-                        "x": 110,
-                        "y": 340
-                    },
-                    {
-                        "x": 220,
-                        "y": 340
-                    },
-                    {
-                        "x": 330,
-                        "y": 340
+                        "y": 47
                     }
                 ]
             },
             "idle_right": {
                 "file": "/anims/classes/sorcerer/sorcerer_spritesheet.png",
-                "width": 110,
-                "height": 170,
-                "cooldown": 25,
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
                 "frames": [
                     {
-                        "x": 220,
-                        "y": 680
+                        "x": 37,
+                        "y": 0
                     }
                 ]
             },
             "run_right": {
                 "file": "/anims/classes/sorcerer/sorcerer_spritesheet.png",
-                "width": 110,
-                "height": 170,
-                "cooldown": 25,
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
                 "frames": [
                     {
                         "x": 0,
-                        "y": 510
+                        "y": 94
                     },
                     {
-                        "x": 110,
-                        "y": 510
+                        "x": 37,
+                        "y": 94
                     },
                     {
-                        "x": 220,
-                        "y": 510
-                    },
-                    {
-                        "x": 330,
-                        "y": 510
-                    },
-                    {
-                        "x": 440,
-                        "y": 510
-                    },
-                    {
-                        "x": 0,
-                        "y": 680
-                    },
-                    {
-                        "x": 110,
-                        "y": 680
-                    },
-                    {
-                        "x": 220,
-                        "y": 680
-                    },
-                    {
-                        "x": 330,
-                        "y": 680
-                    },
-                    {
-                        "x": 440,
-                        "y": 680
-                    },
+                        "x": 74,
+                        "y": 94
+                    }
+                ]
+            },
+            "death": {
+                "file": "/anims/classes//_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
+                "frames": [
                     {
                         "x": 0,
-                        "y": 850
-                    },
+                        "y": 141
+                    }
+                ]
+            },
+            "attack_left": {
+                "file": "/anims/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
+                "frames": [
                     {
-                        "x": 110,
-                        "y": 850
-                    },
+                        "x": 37,
+                        "y": 141
+                    }
+                ]
+            },
+            "attack_right": {
+                "file": "/anims/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
+                "frames": [
                     {
-                        "x": 220,
-                        "y": 850
-                    },
-                    {
-                        "x": 330,
-                        "y": 850
+                        "x": 74,
+                        "y": 141
                     }
                 ]
             }

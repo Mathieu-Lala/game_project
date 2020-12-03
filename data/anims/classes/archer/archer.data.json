@@ -2,29 +2,29 @@
     "object": {
         "animations": {
             "idle_left": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
+                "file": "/anims/classes/archer/archer_spritesheet.png",
+                "width": 47,
                 "height": 48,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 37,
+                        "x": 47,
                         "y": 0
                     }
                 ]
             },
             "run_left": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
+                "file": "/anims/classes/archer/archer_spritesheet.png",
+                "width": 47,
                 "height": 48,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 74,
+                        "x": 94,
                         "y": 48
                     },
                     {
-                        "x": 37,
+                        "x": 47,
                         "y": 48
                     },
                     {
@@ -34,20 +34,20 @@
                 ]
             },
             "idle_right": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
+                "file": "/anims/classes/archer/archer_spritesheet.png",
+                "width": 47,
                 "height": 48,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 37,
+                        "x": 47,
                         "y": 0
                     }
                 ]
             },
             "run_right": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
+                "file": "/anims/classes/archer/archer_spritesheet.png",
+                "width": 47,
                 "height": 48,
                 "cooldown": 50,
                 "frames": [
@@ -56,18 +56,18 @@
                         "y": 96
                     },
                     {
-                        "x": 37,
+                        "x": 47,
                         "y": 96
                     },
                     {
-                        "x": 80,
+                        "x": 94,
                         "y": 96
                     }
                 ]
             },
             "death": {
                 "file": "/anims/classes//_spritesheet.png",
-                "width": 37,
+                "width": 47,
                 "height": 48,
                 "cooldown": 50,
                 "frames": [
@@ -78,25 +78,25 @@
                 ]
             },
             "attack_left": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
+                "file": "/anims/classes/archer/archer_spritesheet.png",
+                "width": 47,
                 "height": 48,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 37,
+                        "x": 47,
                         "y": 144
                     }
                 ]
             },
             "attack_right": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
+                "file": "/anims/classes/archer/archer_spritesheet.png",
+                "width": 47,
                 "height": 48,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 74,
+                        "x": 94,
                         "y": 144
                     }
                 ]

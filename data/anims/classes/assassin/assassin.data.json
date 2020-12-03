@@ -2,53 +2,53 @@
     "object": {
         "animations": {
             "idle_left": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
-                "height": 48,
+                "file": "/anims/classes/assassin/assassin_spritesheet.png",
+                "width": 35,
+                "height": 47,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 37,
+                        "x": 35,
                         "y": 0
                     }
                 ]
             },
             "run_left": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
-                "height": 48,
+                "file": "/anims/classes/assassin/assassin_spritesheet.png",
+                "width": 35,
+                "height": 47,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 74,
-                        "y": 48
+                        "x": 70,
+                        "y": 47
                     },
                     {
-                        "x": 37,
-                        "y": 48
+                        "x": 35,
+                        "y": 47
                     },
                     {
                         "x": 0,
-                        "y": 48
+                        "y": 47
                     }
                 ]
             },
             "idle_right": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
-                "height": 48,
+                "file": "/anims/classes/assassin/assassin_spritesheet.png",
+                "width": 35,
+                "height": 47,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 37,
+                        "x": 35,
                         "y": 0
                     }
                 ]
             },
             "run_right": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
-                "height": 48,
+                "file": "/anims/classes/assassin/assassin_spritesheet.png",
+                "width": 35,
+                "height": 47,
                 "cooldown": 50,
                 "frames": [
                     {
@@ -56,48 +56,48 @@
                         "y": 96
                     },
                     {
-                        "x": 37,
+                        "x": 35,
                         "y": 96
                     },
                     {
-                        "x": 80,
+                        "x": 70,
                         "y": 96
                     }
                 ]
             },
             "death": {
                 "file": "/anims/classes//_spritesheet.png",
-                "width": 37,
-                "height": 48,
+                "width": 35,
+                "height": 47,
                 "cooldown": 50,
                 "frames": [
                     {
                         "x": 0,
-                        "y": 144
+                        "y": 141
                     }
                 ]
             },
             "attack_left": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
-                "height": 48,
+                "file": "/anims/classes/assassin/assassin_spritesheet.png",
+                "width": 35,
+                "height": 47,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 37,
-                        "y": 144
+                        "x": 35,
+                        "y": 141
                     }
                 ]
             },
             "attack_right": {
-                "file": "/anims/classes/shooter/shooter_spritesheet.png",
-                "width": 37,
-                "height": 48,
+                "file": "/anims/classes/assassin/assassin_spritesheet.png",
+                "width": 35,
+                "height": 47,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 74,
-                        "y": 144
+                        "x": 70,
+                        "y": 141
                     }
                 ]
             }
