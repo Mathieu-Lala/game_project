@@ -89,6 +89,7 @@ public:
     enum class EventMode {
         RECORD,
         PLAYBACK,
+        PAUSED,
     };
 
     auto close() noexcept -> void { m_is_running = false; }
@@ -104,6 +105,7 @@ public:
     auto window() noexcept -> std::unique_ptr<Window> & { return m_window; }
 
     [[nodiscard]] auto getEventMode() const noexcept { return m_eventMode; }
+    auto setEventMode(EventMode mode) noexcept { m_eventMode = mode; }
 
     [[nodiscard]] auto isRunning() const noexcept -> bool { return m_is_running; }
 
@@ -183,13 +185,13 @@ auto Core::getCache() noexcept -> entt::resource_cache<Texture> &;
 } // namespace engine
 
 #ifndef NDEBUG
-#    define IF_RECORD(...)                                                                                           \
-        do {                                                                                                         \
-            if (engine::Core::Holder{}.instance->getEventMode() == engine::Core::EventMode::RECORD) { __VA_ARGS__; } \
+#    define IF_NOT_PLAYBACK(...)                                                                                       \
+        do {                                                                                                           \
+            if (engine::Core::Holder{}.instance->getEventMode() != engine::Core::EventMode::PLAYBACK) { __VA_ARGS__; } \
         } while (0)
 #else
-#    define IF_RECORD(...) \
-        do {               \
-            __VA_ARGS__;   \
+#    define IF_NOT_PLAYBACK(...) \
+        do {                     \
+            __VA_ARGS__;         \
         } while (0)
 #endif

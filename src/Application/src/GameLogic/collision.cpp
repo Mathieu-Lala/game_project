@@ -39,7 +39,7 @@ auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::e
     }
 
     const auto &movement = world.get<ControllerAxis>(player).movement;
-    if (glm::length(movement) < 0.01)
+    if (glm::length(movement) < 0.01f)
         return;
 
     const auto &direction = glm::normalize(movement);
@@ -110,7 +110,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
         const auto &spell_pos = world.get<engine::d3::Position>(spell);
         const auto &spell_box = world.get<engine::d2::HitboxFloat>(spell);
 
-        for (const auto &wall : world.view<entt::tag<"wall"_hs>>()) {
+        for (const auto &wall : world.view<entt::tag<"wall"_hs>, engine::d2::HitboxSolid>()) {
             const auto &wall_pos = world.get<engine::d3::Position>(wall);
             const auto &wall_box = world.get<engine::d2::HitboxSolid>(wall);
 
@@ -141,12 +141,12 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
         if (!world.valid(source)) return;
 
         if (world.has<entt::tag<"player"_hs>>(source)) {
-            for (const auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
+            for (const auto &enemy : world.view<entt::tag<"enemy"_hs>, engine::d2::HitboxSolid>()) {
                 if (!world.valid(spell)) continue;
                 check_spell_collision(enemy, spell, source);
             }
         } else {
-            for (const auto &player : world.view<entt::tag<"player"_hs>>()) {
+            for (const auto &player : world.view<entt::tag<"player"_hs>, engine::d2::HitboxSolid>()) {
                 if (!world.valid(spell)) continue;
                 check_spell_collision(player, spell, source);
             }
