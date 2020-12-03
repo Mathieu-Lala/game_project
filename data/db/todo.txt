@@ -1,7 +1,5 @@
 class speed += instead of =
 
-tornado_sword // warrior
-
 frost // tank spell ? = zone de slow
 
 ? // archer // dash & attack_buffed
@@ -9,8 +7,6 @@ frost // tank spell ? = zone de slow
 shadow_dash // assassin
 
 barrel // gunner
-
-firewall // mage
 
 explosion_on_death // fire_skeleton
 forst_on_death // ice_skeleton
