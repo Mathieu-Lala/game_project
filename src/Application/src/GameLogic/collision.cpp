@@ -30,15 +30,22 @@ using namespace std::chrono_literals;
 auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
     -> void
 {
-    auto spd = world.get<Speed>(player).speed;
-
     switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? spd : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -spd : 0.0f; break;
-    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? spd : 0.0f; break;
-    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -spd : 0.0f; break;
+    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1 : 0.0f; break;
+    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1 : 0.0f; break;
+    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1 : 0.0f; break;
+    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1 : 0.0f; break;
     default: break;
     }
+
+    const auto &movement = world.get<ControllerAxis>(player).movement;
+    if (glm::length(movement) < 0.01)
+        return;
+
+    const auto &direction = glm::normalize(movement);
+
+    world.get<ControllerAxis>(player).aiming = direction;
+    world.get<ControllerAxis>(player).movement = direction;
 }
 
 auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt)
