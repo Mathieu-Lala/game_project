@@ -39,8 +39,7 @@ auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::e
     }
 
     const auto &movement = world.get<ControllerAxis>(player).movement;
-    if (glm::length(movement) < 0.01f)
-        return;
+    if (glm::length(movement) < 0.01f) return;
 
     const auto &direction = glm::normalize(movement);
 
@@ -55,7 +54,7 @@ auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[mayb
 
     auto &vel = world.get<engine::d2::Velocity>(player);
     const auto &axis = world.get<ControllerAxis>(player);
-    auto spd = world.get<Speed>(player).speed;
+    const auto &spd = world.get<Speed>(player).speed;
 
     vel.x = axis.movement.x * spd;
     vel.y = axis.movement.y * spd;
@@ -89,8 +88,9 @@ auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_un
             }
         }
 
+        const auto &spd = world.get<Speed>(entity).speed;
         const auto result = glm::normalize(diff) * 7.f;
-        out = {result.x, result.y};
+        out = {result.x * spd, result.y * spd};
 
         return true;
     };
