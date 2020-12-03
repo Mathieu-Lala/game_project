@@ -3,209 +3,101 @@
         "animations": {
             "idle_left": {
                 "file": "/anims/classes/farmer/farmer_spritesheet.png",
-                "width": 500,
-                "height": 500,
+                "width": 33,
+                "height": 45,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 1000,
-                        "y": 1000
+                        "x": 33,
+                        "y": 0
                     }
                 ]
             },
             "run_left": {
                 "file": "/anims/classes/farmer/farmer_spritesheet.png",
-                "width": 500,
-                "height": 500,
+                "width": 33,
+                "height": 45,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 0,
-                        "y": 0
+                        "x": 66,
+                        "y": 45
                     },
                     {
-                        "x": 500,
-                        "y": 0
-                    },
-                    {
-                        "x": 1000,
-                        "y": 0
-                    },
-                    {
-                        "x": 1500,
-                        "y": 0
-                    },
-                    {
-                        "x": 2000,
-                        "y": 0
+                        "x": 33,
+                        "y": 45
                     },
                     {
                         "x": 0,
-                        "y": 500
-                    },
-                    {
-                        "x": 500,
-                        "y": 500
-                    },
-                    {
-                        "x": 1000,
-                        "y": 500
-                    },
-                    {
-                        "x": 1500,
-                        "y": 500
-                    },
-                    {
-                        "x": 2000,
-                        "y": 500
-                    },
-                    {
-                        "x": 0,
-                        "y": 1000
-                    },
-                    {
-                        "x": 500,
-                        "y": 1000
-                    },
-                    {
-                        "x": 1000,
-                        "y": 1000
-                    },
-                    {
-                        "x": 1500,
-                        "y": 1000
-                    },
-                    {
-                        "x": 2000,
-                        "y": 1000
-                    },
-                    {
-                        "x": 0,
-                        "y": 1500
-                    },
-                    {
-                        "x": 500,
-                        "y": 1500
-                    },
-                    {
-                        "x": 1000,
-                        "y": 1500
-                    },
-                    {
-                        "x": 1500,
-                        "y": 1500
-                    },
-                    {
-                        "x": 2000,
-                        "y": 1500
-                    },
-                    {
-                        "x": 0,
-                        "y": 2000
+                        "y": 45
                     }
                 ]
             },
             "idle_right": {
                 "file": "/anims/classes/farmer/farmer_spritesheet.png",
-                "width": 500,
-                "height": 500,
+                "width": 33,
+                "height": 45,
                 "cooldown": 50,
                 "frames": [
                     {
-                        "x": 1000,
-                        "y": 3500
+                        "x": 33,
+                        "y": 0
                     }
                 ]
             },
             "run_right": {
                 "file": "/anims/classes/farmer/farmer_spritesheet.png",
-                "width": 500,
-                "height": 500,
+                "width": 33,
+                "height": 45,
                 "cooldown": 50,
                 "frames": [
                     {
                         "x": 0,
-                        "y": 2500
+                        "y": 90
                     },
                     {
-                        "x": 500,
-                        "y": 2500
+                        "x": 33,
+                        "y": 90
                     },
                     {
-                        "x": 1000,
-                        "y": 2500
-                    },
-                    {
-                        "x": 1500,
-                        "y": 2500
-                    },
-                    {
-                        "x": 2000,
-                        "y": 2500
-                    },
-                    {
-                        "x": 0,
-                        "y": 3000
-                    },
-                    {
-                        "x": 500,
-                        "y": 3000
-                    },
-                    {
-                        "x": 1000,
-                        "y": 3000
-                    },
-                    {
-                        "x": 1500,
-                        "y": 3000
-                    },
-                    {
-                        "x": 2000,
-                        "y": 3000
-                    },
+                        "x": 66,
+                        "y": 90
+                    }
+                ]
+            },
+            "death": {
+                "file": "/anims/classes//_spritesheet.png",
+                "width": 33,
+                "height": 45,
+                "cooldown": 50,
+                "frames": [
                     {
                         "x": 0,
-                        "y": 3500
-                    },
+                        "y": 135
+                    }
+                ]
+            },
+            "attack_left": {
+                "file": "/anims/classes/farmer/farmer_spritesheet.png",
+                "width": 33,
+                "height": 45,
+                "cooldown": 50,
+                "frames": [
                     {
-                        "x": 500,
-                        "y": 3500
-                    },
+                        "x": 33,
+                        "y": 135
+                    }
+                ]
+            },
+            "attack_right": {
+                "file": "/anims/classes/farmer/farmer_spritesheet.png",
+                "width": 33,
+                "height": 45,
+                "cooldown": 50,
+                "frames": [
                     {
-                        "x": 1000,
-                        "y": 3500
-                    },
-                    {
-                        "x": 1500,
-                        "y": 3500
-                    },
-                    {
-                        "x": 2000,
-                        "y": 3500
-                    },
-                    {
-                        "x": 0,
-                        "y": 4000
-                    },
-                    {
-                        "x": 500,
-                        "y": 4000
-                    },
-                    {
-                        "x": 1000,
-                        "y": 4000
-                    },
-                    {
-                        "x": 1500,
-                        "y": 4000
-                    },
-                    {
-                        "x": 2000,
-                        "y": 4000
-                    },
-                    {
-                        "x": 0,
-                        "y": 4500
+                        "x": 66,
+                        "y": 135
                     }
                 ]
             }

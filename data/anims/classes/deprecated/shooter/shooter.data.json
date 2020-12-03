@@ -1,0 +1,150 @@
+{
+    "object": {
+        "animations": {
+            "idle_left": {
+                "file": "/anims/classes/shooter/shooter_spritesheet.png",
+                "width": 450,
+                "height": 575,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 900,
+                        "y": 1150
+                    }
+                ]
+            },
+            "run_left": {
+                "file": "/anims/classes/shooter/shooter_spritesheet.png",
+                "width": 450,
+                "height": 575,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "x": 450,
+                        "y": 0
+                    },
+                    {
+                        "x": 900,
+                        "y": 0
+                    },
+                    {
+                        "x": 1350,
+                        "y": 0
+                    },
+                    {
+                        "x": 1800,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": 575
+                    },
+                    {
+                        "x": 450,
+                        "y": 575
+                    },
+                    {
+                        "x": 900,
+                        "y": 575
+                    },
+                    {
+                        "x": 1350,
+                        "y": 575
+                    },
+                    {
+                        "x": 1800,
+                        "y": 575
+                    },
+                    {
+                        "x": 0,
+                        "y": 1150
+                    },
+                    {
+                        "x": 450,
+                        "y": 1150
+                    },
+                    {
+                        "x": 900,
+                        "y": 1150
+                    }
+                ]
+            },
+            "idle_right": {
+                "file": "/anims/classes/shooter/shooter_spritesheet.png",
+                "width": 450,
+                "height": 575,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 900,
+                        "y": 2875
+                    }
+                ]
+            },
+            "run_right": {
+                "file": "/anims/classes/shooter/shooter_spritesheet.png",
+                "width": 450,
+                "height": 575,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 1725
+                    },
+                    {
+                        "x": 450,
+                        "y": 1725
+                    },
+                    {
+                        "x": 900,
+                        "y": 1725
+                    },
+                    {
+                        "x": 1350,
+                        "y": 1725
+                    },
+                    {
+                        "x": 1800,
+                        "y": 1725
+                    },
+                    {
+                        "x": 0,
+                        "y": 2300
+                    },
+                    {
+                        "x": 450,
+                        "y": 2300
+                    },
+                    {
+                        "x": 900,
+                        "y": 2300
+                    },
+                    {
+                        "x": 1350,
+                        "y": 2300
+                    },
+                    {
+                        "x": 1800,
+                        "y": 2300
+                    },
+                    {
+                        "x": 0,
+                        "y": 2875
+                    },
+                    {
+                        "x": 450,
+                        "y": 2875
+                    },
+                    {
+                        "x": 900,
+                        "y": 2875
+                    }
+                ]
+            }
+        }
+    }
+}
