@@ -8,18 +8,46 @@
 
 #include "component/all.hpp"
 
+
 #include "menu/UpgradePanel.hpp"
+#include "widgets/Fonts.hpp"
+#include "widgets/GameHUD.hpp"
+
 #include "ThePURGE.hpp"
+
+void game::menu::UpgradePanel::create(entt::registry &, ThePURGE &)
+{
+    m_static_background = GUITexture{
+        helper::getTexture("menus/upgrade_panel/static_background.png"),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+    };
+}
 
 void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
     static auto holder = engine::Core::Holder{};
 
-    auto player = game.player;
+    //auto player = game.player;
 
-    const auto &already_purchased = world.get<Classes>(player).ids;
-    const auto skillPoints = world.get<SkillPoint>(player).count;
+    //const auto &already_purchased = world.get<Classes>(player).ids;
+    //const auto skillPoints = world.get<SkillPoint>(player).count;
 
+    GameHUD::draw(game, world);
+
+
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(helper::frac2pixel({1.f, 1.f}));
+    ImGui::SetNextWindowBgAlpha(0.f);
+    ImGui::Begin("UpgradePanel", nullptr, ImGuiWindowFlags_NoDecoration);
+
+    helper::drawTexture(m_static_background);
+
+    ImGui::End();
+
+
+    /*
+    
     static bool choosetrigger = false;
     static auto test = game.dbClasses().getStarterClass();
     static std::optional<Class> selectedClass;
@@ -189,6 +217,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
         ImGui::Text(" "); // ImGui::NextLine()
     }
     ImGui::End();
+    */
 }
 
 void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
