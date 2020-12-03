@@ -36,7 +36,8 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
         caster_pos.x + (data.scale.x / 3.0 + data.offset_to_source_x) * direction.x,
         caster_pos.y + (data.scale.y / 3.0 + data.offset_to_source_y) * direction.y,
         -1.0);
-    world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
+    world.emplace<engine::d2::Rotation>(
+        spell, (direction.y < 0) ? -glm::acos(glm::dot({1.f, 0.f}, direction)) : glm::acos(glm::dot({1.f, 0.f}, direction)));
 
     world.emplace<engine::d2::Scale>(spell, data.scale);
     world.emplace<engine::d2::HitboxFloat>(spell, data.hitbox);
