@@ -1,6 +1,9 @@
 #include "models/Stage.hpp"
 #include "models/Spell.hpp"
 
+#include "component/KeyPicker.hpp"
+#include "component/AimSight.hpp"
+
 #include "factory/EntityFactory.hpp"
 
 #include "ThePURGE.hpp"
@@ -246,11 +249,12 @@ auto game::Stage::create_floor(ThePURGE &game, entt::registry &world, const Para
 auto game::Stage::spawn_mob(ThePURGE &game, entt::registry &world, const Parameters &params, const Room &r) -> void
 {
     for (const auto &[id, density] : params.mobDensity) {
-        if (density == 0) continue;
+        if (density == 0.0f) continue;
 
         for (auto x = r.x + 1; x < r.x + r.w - 1; ++x) {
             for (auto y = r.y + 1; y < r.y + r.h - 1; ++y) {
                 if (randRange(0, static_cast<int>(1.0f / density)) == 0) {
+                    spdlog::warn("{}", id);
                     EntityFactory::create(game, world, glm::vec2{x + 0.5, y + 0.5}, game.dbEnemies().db.at(id));
                 }
             }
@@ -260,9 +264,19 @@ auto game::Stage::spawn_mob(ThePURGE &game, entt::registry &world, const Paramet
 
 auto game::Stage::populate_enemies(ThePURGE &game, entt::registry &world, const Parameters &params)
 {
-    for (auto &r : regularRooms) spawn_mob(game, world, params, r);
+    for (const auto &r : regularRooms) spawn_mob(game, world, params, r);
 
-    EntityFactory::create(game, world, glm::vec2{boss.x + boss.w * 0.5, boss.y + boss.h * 0.5}, game.dbEnemies().db.at("dark_skeleton"));
+    decltype(game.dbEnemies().db) bosses;
+    std::copy_if(game.dbEnemies().db.begin(), game.dbEnemies().db.end(), std::inserter(bosses, bosses.end()), [](auto &i) {
+        return i.second.is_boss;
+    });
+
+    auto selected_one = bosses.begin();
+    std::advance(selected_one, static_cast<std::size_t>(std::rand()) % bosses.size());
+
+    spdlog::warn("Adding boss !");
+
+    EntityFactory::create(game, world, glm::vec2{boss.x + boss.w * 0.5, boss.y + boss.h * 0.5}, selected_one->second);
 }
 
 auto game::Stage::generate(ThePURGE &game, entt::registry &world, const Parameters &params, std::optional<std::uint32_t> seed)
@@ -273,9 +287,30 @@ auto game::Stage::generate(ThePURGE &game, entt::registry &world, const Paramete
     if (seed) random_engine.seed(seed.value());
 
     create_floor(game, world, params);
+
+    spdlog::info("Map generated !");
+
     populate_enemies(game, world, params);
+
+    spdlog::info("Enemies spawned !");
 
     nextFloorSeed = static_cast<std::uint32_t>(random_engine());
 
     return *this;
+}
+
+auto game::Stage::clear(entt::registry &world, bool kill_the_players) -> void
+{
+    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
+    if (kill_the_players) {
+        for (const auto &i : world.view<entt::tag<"player"_hs>>()) {
+            world.destroy(i);
+            world.destroy(world.get<AimSight>(i).entity);
+        }
+    } else {
+        world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
+    }
 }

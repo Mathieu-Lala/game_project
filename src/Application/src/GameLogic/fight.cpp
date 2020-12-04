@@ -79,8 +79,10 @@ auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uin
     while (level.current_xp >= level.xp_require) { onPlayerLevelUp.publish(world, player); }
 }
 
-auto game::GameLogic::slots_update_effect(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_effect([[maybe_unused]] entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
+#if 0
+
     auto holder = engine::Core::Holder{};
 
     const auto elapsed = dt.elapsed.count();
@@ -93,7 +95,7 @@ auto game::GameLogic::slots_update_effect(entt::registry &world, [[maybe_unused]
         } else {
             cd.remaining_cooldown = 0ms;
             cd.is_in_cooldown = false;
-            spdlog::warn("attack is up !");
+            spdlog::warn("effect is up !");
         }
     });
 
@@ -145,6 +147,7 @@ auto game::GameLogic::slots_update_effect(entt::registry &world, [[maybe_unused]
     //            effect.is_in_effect = false;
     //        }
     //    });
+#endif
 }
 
 // note : not really on damage taken but rather, on collide with spell
