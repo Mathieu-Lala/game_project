@@ -12,6 +12,7 @@ struct Fonts {
     static ImFont *kimberley_23;
     static ImFont *kimberley_35;
     static ImFont *kimberley_50;
+    static ImFont *kimberley_62;
     static ImFont *opensans_44;
     static ImFont *opensans_32;
 

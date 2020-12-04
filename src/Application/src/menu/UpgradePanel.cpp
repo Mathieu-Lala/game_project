@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/resources/Texture.hpp>
@@ -34,10 +36,10 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
     static auto holder = engine::Core::Holder{};
 
-    //auto player = game.player;
+    // auto player = game.player;
 
-    //const auto &ownedClasses = world.get<Classes>(player).ids;
-    //const auto skillPoints = world.get<SkillPoint>(player).count;
+    // const auto &ownedClasses = world.get<Classes>(player).ids;
+    // const auto skillPoints = world.get<SkillPoint>(player).count;
 
 
     GameHUD::draw(game, world);
@@ -54,11 +56,12 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
     ImGui::End();
 }
 
-void game::menu::UpgradePanel::drawDetailPanel(entt::registry &, ThePURGE &game) noexcept 
+void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &game) noexcept
 {
-    //auto player = game.player;
+    auto player = game.player;
 
-    //const auto skillPoints = world.get<SkillPoint>(player).count;
+    const auto skillPoints = world.get<SkillPoint>(player).count;
+    const auto ownedClasses = world.get<Classes>(player).ids;
     const auto &selectedClassSpell = game.dbSpells().db.at(m_selectedClass->spells.front());
 
     const GUITexture portrait{
@@ -66,27 +69,73 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &, ThePURGE &game)
         helper::from1080p(58, 226),
         helper::from1080p(158, 179),
     };
-    const GUITexture spellPortrait {
+    const GUITexture spellPortrait{
         helper::getTexture(selectedClassSpell.iconPath),
         helper::from1080p(64, 416),
         helper::from1080p(100, 100),
     };
+    const GUITexture btn_buy{
+        helper::getTexture("menus/upgrade_panel/button/buy.png"),
+        helper::from1080p(119, 855),
+        helper::from1080p(317, 197),
+    };
+    const GUITexture btn_cant{
+        helper::getTexture("menus/upgrade_panel/button/cant.png"),
+        helper::from1080p(119, 855),
+        helper::from1080p(317, 197),
+    };
+    const GUITexture btn_alreadyowned{
+        helper::getTexture("menus/upgrade_panel/button/owned.png"),
+        helper::from1080p(119, 855),
+        helper::from1080p(317, 197),
+    };
 
 
     helper::drawTexture(portrait);
-    helper::drawText(helper::frac2pixel(helper::from1080p(232, 295)), m_selectedClass->name, ImVec4(1, 1, 1, 1), Fonts::kimberley_50);
+    helper::drawText(
+        helper::frac2pixel(helper::from1080p(232, 295)), m_selectedClass->name, ImVec4(1, 1, 1, 1), Fonts::kimberley_50);
 
     helper::drawTexture(spellPortrait);
-    helper::drawText(helper::frac2pixel(helper::from1080p(232, 448)), selectedClassSpell.name, ImVec4(1, 1, 1, 1), Fonts::opensans_44);
+    helper::drawText(
+        helper::frac2pixel(helper::from1080p(232, 448)), selectedClassSpell.name, ImVec4(1, 1, 1, 1), Fonts::opensans_44);
 
-    helper::drawTextWrapped(helper::frac2pixel(helper::from1080p(67, 566)), selectedClassSpell.description, 510, Fonts::opensans_32);
+    helper::drawTextWrapped(
+        helper::frac2pixel(helper::from1080p(67, 566)), selectedClassSpell.description, 510, Fonts::opensans_32);
 
     const ImVec4 bonusColor(0.16f, 07, 0, 1);
     const ImVec4 malusColor(0.7f, 0, 0, 1);
 
-    helper::drawText(helper::frac2pixel(helper::from1080p(222, 747)), fmt::format("{:+}", m_selectedClass->health), m_selectedClass->health > 0 ? bonusColor : malusColor, Fonts::kimberley_35);
-    helper::drawText(helper::frac2pixel(helper::from1080p(222, 792)), fmt::format("{:+}", m_selectedClass->speed), m_selectedClass->speed  > 0 ? bonusColor : malusColor, Fonts::kimberley_35);
-    
+    helper::drawText(
+        helper::frac2pixel(helper::from1080p(222, 747)),
+        fmt::format("{:+}", m_selectedClass->health),
+        m_selectedClass->health > 0 ? bonusColor : malusColor,
+        Fonts::kimberley_35);
+    helper::drawText(
+        helper::frac2pixel(helper::from1080p(222, 792)),
+        fmt::format("{:+}", m_selectedClass->speed),
+        m_selectedClass->speed > 0 ? bonusColor : malusColor,
+        Fonts::kimberley_35);
+
+
+    const bool isClassOwned =
+        std::find(std::begin(ownedClasses), std::end(ownedClasses), m_selectedClass->name) != std::end(ownedClasses);
+
+    if (isClassOwned) {
+        helper::drawTexture(btn_alreadyowned);
+    } else {
+        const bool isClassBuyable = true; // TODO: with tree
+
+        if (isClassBuyable && skillPoints >= m_selectedClass->cost)
+            helper::drawTexture(btn_buy);
+        else
+            helper::drawTexture(btn_cant);
+
+        helper::drawText(
+            helper::frac2pixel(helper::from1080p(269, 960)),
+            std::to_string(m_selectedClass->cost),
+            ImVec4(0, 0, 0, 1),
+            Fonts::kimberley_62);
+    }
 }
 
 void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
