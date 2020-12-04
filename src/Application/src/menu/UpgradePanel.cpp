@@ -64,7 +64,6 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &
     auto player = game.player;
 
     const auto skillPoints = world.get<SkillPoint>(player).count;
-    const auto ownedClasses = world.get<Classes>(player).ids;
     const auto &selectedClassSpell = game.dbSpells().db.at(m_selectedClass->spells.front());
 
     const GUITexture portrait{
@@ -120,15 +119,10 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &
         Fonts::kimberley_35);
 
 
-    const bool isClassOwned =
-        std::find(std::begin(ownedClasses), std::end(ownedClasses), m_selectedClass->name) != std::end(ownedClasses);
-
-    if (isClassOwned) {
+    if (isOwned(m_selectedClass)) {
         helper::drawTexture(btn_alreadyowned);
     } else {
-        const bool isClassBuyable = true; // TODO: with tree
-
-        if (isClassBuyable && skillPoints >= m_selectedClass->cost)
+        if (isPurchaseable(m_selectedClass) && skillPoints >= m_selectedClass->cost)
             helper::drawTexture(btn_buy);
         else
             helper::drawTexture(btn_cant);
@@ -352,6 +346,40 @@ void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &
     printClassTreeDebug();
 }
 
+bool game::menu::UpgradePanel::isOwned(const Class *cl) const noexcept
+{
+    return std::find(std::begin(m_owned), std::end(m_owned), cl) != std::end(m_owned);
+}
+
+auto game::menu::UpgradePanel::isPurchaseable(const Class *) const noexcept -> bool
+{
+    return std::find(std::begin(m_purchaseable), std::end(m_purchaseable), m_selectedClass) != std::end(m_purchaseable);
+}
+
+void game::menu::UpgradePanel::printClassTreeDebug() const noexcept
+{
+    spdlog::info("================ CLASS TREE DEBUG ================");
+    spdlog::info("Tree :");
+
+    for (int i = 0; const auto &tier : m_classes) {
+        spdlog::info(" Tier {} :", ++i);
+
+        for (const auto *cl : tier) spdlog::info("\t{}", cl->name);
+    }
+
+    spdlog::info("");
+    spdlog::info("Owned :");
+    for (const auto *owned : m_owned) spdlog::info("\t{}", owned->name);
+
+    spdlog::info("");
+    spdlog::info("Purchaseable :");
+    for (const auto *purchaseable : m_purchaseable) spdlog::info("\t{}", purchaseable->name);
+
+
+    spdlog::info("==================================================");
+}
+
+
 void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
 {
     std::visit(
@@ -371,33 +399,4 @@ void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
             [&](auto) {},
         },
         e);
-}
-
-
-
-
-void game::menu::UpgradePanel::printClassTreeDebug() const noexcept
-{
-    spdlog::info("================ CLASS TREE DEBUG ================");
-    spdlog::info("Tree :");
-
-    for (int i = 0; const auto &tier : m_classes) {
-        spdlog::info(" Tier {} :", ++i);
-
-        for (const auto *cl : tier)
-            spdlog::info("\t{}", cl->name);
-    }
-
-    spdlog::info("");
-    spdlog::info("Owned :");
-    for (const auto *owned : m_owned)
-        spdlog::info("\t{}", owned->name);
-
-    spdlog::info("");
-    spdlog::info("Purchaseable :");
-    for (const auto *purchaseable : m_purchaseable)
-        spdlog::info("\t{}", purchaseable->name);
-
-
-    spdlog::info("==================================================");
 }

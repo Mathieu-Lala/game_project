@@ -20,6 +20,9 @@ private:
 
     void updateClassTree(entt::registry &world, ThePURGE &game);
 
+    auto isOwned(const Class *) const noexcept -> bool;
+    auto isPurchaseable(const Class *) const noexcept -> bool;
+
     void printClassTreeDebug() const noexcept;
 private:
     GUITexture m_static_background;
