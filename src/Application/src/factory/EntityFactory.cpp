@@ -16,8 +16,6 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
 {
     auto holder = engine::Core::Holder{};
 
-    // todo : speed
-
     const auto enemy = world.create();
 
     world.emplace<entt::tag<"enemy"_hs>>(enemy);
@@ -47,7 +45,6 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
 
     world.emplace<Speed>(enemy, data.speed);
 
-//    world.emplace<AttackDamage>(enemy, 2.0f); // deprecated
     // world.emplace<game::Effect>(enemy, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
 
     world.emplace<Health>(enemy, data.health, data.health);

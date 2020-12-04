@@ -67,6 +67,8 @@ struct SpellData {
     }
 
     std::bitset<TYPE_MAX> type;
+
+    std::vector<std::string> effects;
 };
 
 void to_json(nlohmann::json &j, const SpellData &spell);

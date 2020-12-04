@@ -32,8 +32,8 @@
       "y": 1.5
     },
     "hitbox": {
-      "x": 0.3,
-      "y": 0.7
+      "x": 0.7,
+      "y": 0.3
     },
     "lifetime": 200,
     "audio_on_cast": "sounds/spells/soldier_attack.wav",
@@ -45,6 +45,33 @@
     },
     "type": [
       "projectile"
+    ]
+  },
+  "tornado_sword": {
+    "icon": "icons/spells/shovel.png",
+    "cooldown": 1500,
+    "damage": 0,
+    "scale": {
+      "x": 6.0,
+      "y": 6.0
+    },
+    "hitbox": {
+      "x": 5.0,
+      "y": 5.0
+    },
+    "lifetime": 1000,
+    "audio_on_cast": "sounds/spells/soldier_attack.wav",
+    "animation": "anims/spells/firewall/firewall.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "sliced"
     ]
   },
   "fireball": {
@@ -74,7 +101,7 @@
   "firewall": {
     "icon": "icons/spells/firewall.png",
     "cooldown": 3000,
-    "damage": 0.5,
+    "damage": 0,
     "scale": {
       "x": 6.0,
       "y": 6.0
@@ -93,6 +120,9 @@
     },
     "type": [
       "aoe"
+    ],
+    "effect": [
+      "burn"
     ]
   },
   "fireball_blue": {

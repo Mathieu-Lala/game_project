@@ -1,0 +1,14 @@
+{
+    "burn": {
+        "type": "dot",
+        "damage": 0.1,
+        "lifetime": 500,
+        "cooldown": 100
+    },
+    "sliced": {
+        "type": "dot",
+        "damage": 3,
+        "lifetime": 100,
+        "cooldown": 100
+    }
+}

@@ -14,6 +14,7 @@
 #include "models/Class.hpp"
 #include "models/Spell.hpp"
 #include "models/Enemy.hpp"
+#include "models/Effect.hpp"
 
 #ifndef NDEBUG
 # include "widgets/debug/console/DebugConsole.hpp"
@@ -47,6 +48,7 @@ public:
     auto dbSpells() noexcept -> SpellDatabase & { return m_db_spell; }
     auto dbClasses() noexcept -> ClassDatabase & { return m_db_class; }
     auto dbEnemies() noexcept -> EnemyDatabase & { return m_db_enemy; }
+    auto dbEffects() noexcept -> EffectDatabase & { return m_db_effects; }
 
     auto getCamera() -> engine::Camera & { return m_camera; }
     void setMenu(std::unique_ptr<AMenu> &&menu) { m_currentMenu = std::move(menu);}
@@ -67,6 +69,7 @@ private:
     SpellDatabase m_db_spell;
     ClassDatabase m_db_class;
     EnemyDatabase m_db_enemy;
+    EffectDatabase m_db_effects;
 
     engine::Camera m_camera; // note : should be in engine::Core
     std::shared_ptr<engine::Sound> m_background_music;

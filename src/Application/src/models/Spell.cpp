@@ -60,6 +60,8 @@ try {
         }
         return out;
     }(j.at("type").get<std::vector<std::string>>());
+
+    spell.effects = j.value("effect", std::decay_t<decltype(spell.effects)>{});
 } catch (nlohmann::json::exception &e) {
     spdlog::error("failed: {}", e.what());
 }
