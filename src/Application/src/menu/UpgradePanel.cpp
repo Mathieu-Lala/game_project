@@ -30,6 +30,8 @@ void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
     const auto &ownedClasses = world.get<Classes>(player).ids;
 
     m_selectedClass = game.dbClasses().getByName(ownedClasses.back());
+
+    updateClassTree(world, game);
 }
 
 void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
@@ -51,6 +53,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
     helper::drawTexture(m_static_background);
 
+    drawTree(world, game);
     drawDetailPanel(world, game);
 
     ImGui::End();
@@ -314,6 +317,41 @@ void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
     */
 }
 
+void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &game)
+{
+    const auto player = game.player;
+
+    m_owned.clear();
+    m_classes.clear();
+    m_purchaseable.clear();
+
+    for (const auto &name : world.get<Classes>(player).ids) m_owned.push_back(game.dbClasses().getByName(name));
+
+
+    m_classes.push_back({&game.dbClasses().getStarterClass()});
+
+    for (int i = 0;; ++i) {
+        const auto &lastRow = m_classes.back();
+        std::vector<const Class *> thisRow;
+
+        for (const auto *parent : lastRow) {
+            for (const auto &childName : parent->children) {
+                const auto *child = game.dbClasses().getByName(childName);
+                thisRow.push_back(child);
+
+                if (std::find(std::begin(m_owned), std::end(m_owned), parent) != std::end(m_owned))
+                    m_purchaseable.push_back(child);
+            }
+        }
+
+        if (thisRow.empty()) break;
+
+        m_classes.push_back(std::move(thisRow));
+    }
+
+    printClassTreeDebug();
+}
+
 void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
 {
     std::visit(
@@ -333,4 +371,33 @@ void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
             [&](auto) {},
         },
         e);
+}
+
+
+
+
+void game::menu::UpgradePanel::printClassTreeDebug() const noexcept
+{
+    spdlog::info("================ CLASS TREE DEBUG ================");
+    spdlog::info("Tree :");
+
+    for (int i = 0; const auto &tier : m_classes) {
+        spdlog::info(" Tier {} :", ++i);
+
+        for (const auto *cl : tier)
+            spdlog::info("\t{}", cl->name);
+    }
+
+    spdlog::info("");
+    spdlog::info("Owned :");
+    for (const auto *owned : m_owned)
+        spdlog::info("\t{}", owned->name);
+
+    spdlog::info("");
+    spdlog::info("Purchaseable :");
+    for (const auto *purchaseable : m_purchaseable)
+        spdlog::info("\t{}", purchaseable->name);
+
+
+    spdlog::info("==================================================");
 }
