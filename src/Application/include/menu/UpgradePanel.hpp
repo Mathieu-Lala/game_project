@@ -16,6 +16,8 @@ public:
 
 private:
     struct ClassTreeNode {
+        int selfIndex;
+
         const Class *cl;
         ImVec2 relPos; // Position of the center of the element relative to tree bounds
         std::vector<ClassTreeNode> children;
@@ -23,26 +25,30 @@ private:
 
 private:
 
+    void processInputs();
+
     void drawTree(entt::registry &world, ThePURGE &game) noexcept;
     auto getTreeDrawPos(const ImVec2 &relPos, float elemSize) const noexcept -> ImVec2;
 
     void drawDetailPanel(entt::registry &world, ThePURGE &game) noexcept;
 
     void updateClassTree(entt::registry &world, ThePURGE &game);
-    auto generateTreeRec(ThePURGE &game, const Class *cl, int depth = 0) const noexcept -> ClassTreeNode;
+    auto generateTreeRec(ThePURGE &game, const Class *cl, int selfIndex = 0, int depth = 0) const noexcept -> ClassTreeNode;
     auto findInTree(const Class *cl) const noexcept -> const ClassTreeNode *;
+    auto findParent(const Class *cl) const noexcept -> const ClassTreeNode *;
 
     auto isOwned(const Class *) const noexcept -> bool;
     auto isPurchaseable(const Class *) const noexcept -> bool;
+    auto isUnavailable(const Class *) const noexcept -> bool;
 
     void printClassTreeDebug() const noexcept;
 private:
     GUITexture m_static_background;
 
 
-    const Class *m_selectedClass;
-    ImVec2 m_treeSelectionCurrentPos; // in tree unit (@see `ClassTreeNode`)
-    ImVec2 m_treeSelectionDestinationPos;
+    const ClassTreeNode *m_selection;
+    ImVec2 m_cursorCurrentPos; // in tree unit (@see `ClassTreeNode`)
+    ImVec2 m_cursorDestinationPos;
 
     // Classes by tier
     std::vector<std::vector<const Class *>> m_classes;

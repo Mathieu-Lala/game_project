@@ -29,20 +29,18 @@ void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
 
     const auto &ownedClasses = world.get<Classes>(player).ids;
 
-    m_selectedClass = game.dbClasses().getByName(ownedClasses.back());
-
     updateClassTree(world, game);
+
+    m_selection = findInTree(game.dbClasses().getByName(ownedClasses.back()));
+    m_cursorDestinationPos = m_selection->relPos;
+    m_cursorCurrentPos = m_cursorDestinationPos;
 }
 
 void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
     static auto holder = engine::Core::Holder{};
 
-    // auto player = game.player;
-
-    // const auto &ownedClasses = world.get<Classes>(player).ids;
-    // const auto skillPoints = world.get<SkillPoint>(player).count;
-
+    processInputs();
 
     GameHUD::draw(game, world);
 
@@ -64,10 +62,10 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &
     auto player = game.player;
 
     const auto skillPoints = world.get<SkillPoint>(player).count;
-    const auto &selectedClassSpell = game.dbSpells().db.at(m_selectedClass->spells.front());
+    const auto &selectedClassSpell = game.dbSpells().db.at(m_selection->cl->spells.front());
 
     const GUITexture portrait{
-        helper::getTexture(m_selectedClass->iconPath),
+        helper::getTexture(m_selection->cl->iconPath),
         helper::from1080p(58, 226),
         helper::from1080p(158, 179),
     };
@@ -95,7 +93,7 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &
 
     helper::drawTexture(portrait);
     helper::drawText(
-        helper::frac2pixel(helper::from1080p(232, 295)), m_selectedClass->name, ImVec4(1, 1, 1, 1), Fonts::kimberley_50);
+        helper::frac2pixel(helper::from1080p(232, 295)), m_selection->cl->name, ImVec4(1, 1, 1, 1), Fonts::kimberley_50);
 
     helper::drawTexture(spellPortrait);
     helper::drawText(
@@ -109,30 +107,66 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &
 
     helper::drawText(
         helper::frac2pixel(helper::from1080p(222, 747)),
-        fmt::format("{:+}", m_selectedClass->health),
-        m_selectedClass->health > 0 ? bonusColor : malusColor,
+        fmt::format("{:+}", m_selection->cl->health),
+        m_selection->cl->health > 0 ? bonusColor : malusColor,
         Fonts::kimberley_35);
     helper::drawText(
         helper::frac2pixel(helper::from1080p(222, 792)),
-        fmt::format("{:+}", m_selectedClass->speed),
-        m_selectedClass->speed > 0 ? bonusColor : malusColor,
+        fmt::format("{:+}", m_selection->cl->speed),
+        m_selection->cl->speed > 0 ? bonusColor : malusColor,
         Fonts::kimberley_35);
 
 
-    if (isOwned(m_selectedClass)) {
+    if (isOwned(m_selection->cl)) {
         helper::drawTexture(btn_alreadyowned);
     } else {
-        if (isPurchaseable(m_selectedClass) && skillPoints >= m_selectedClass->cost)
+        if (isPurchaseable(m_selection->cl) && skillPoints >= m_selection->cl->cost)
             helper::drawTexture(btn_buy);
         else
             helper::drawTexture(btn_cant);
 
         helper::drawText(
             helper::frac2pixel(helper::from1080p(269, 960)),
-            std::to_string(m_selectedClass->cost),
+            std::to_string(m_selection->cl->cost),
             ImVec4(0, 0, 0, 1),
             Fonts::kimberley_62);
     }
+}
+
+void game::menu::UpgradePanel::processInputs()
+{
+    const auto *parent = findParent(m_selection->cl);
+    spdlog::info("self index {}", m_selection->selfIndex);
+
+    if (up() && parent) {
+        m_selection = parent;
+    } else if (down() && !m_selection->children.empty()) {
+        for (const auto &child : m_selection->children) {
+            if (!isUnavailable(child.cl)) {
+                m_selection = &m_selection->children.front();
+                break;
+            }
+        }
+    } else if (left() && parent) {
+        for (int i = m_selection->selfIndex - 1; i >= 0; --i) {
+            const auto *it = &parent->children[i];
+            if (!isUnavailable(it->cl)) {
+                m_selection = it;
+                break;
+            }
+        }
+    } else if (right() && parent)
+        for (int i = m_selection->selfIndex + 1; i < parent->children.size(); ++i) {
+            const auto *it = &parent->children[i];
+            if (!isUnavailable(it->cl)) {
+                m_selection = it;
+                break;
+            }
+        }
+    else
+        return;
+
+    m_cursorDestinationPos = m_selection->relPos;
 }
 
 void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
@@ -145,7 +179,10 @@ void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
 
         for (const auto &child : current->children) {
             ImGui::GetWindowDrawList()->AddLine(
-                getTreeDrawPos(current->relPos, 0), getTreeDrawPos(child.relPos, 0), ImGui::ColorConvertFloat4ToU32(ImVec4(0, 0, 0, 1)), 3.f);
+                getTreeDrawPos(current->relPos, 0),
+                getTreeDrawPos(child.relPos, 0),
+                ImGui::ColorConvertFloat4ToU32(ImVec4(0, 0, 0, 1)),
+                3.f);
             todo.push_back(&child);
         }
 
@@ -164,11 +201,11 @@ void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
         helper::drawTexture(iconTexture, getTreeDrawPos(current->relPos, kIconSize), ImVec2(kIconSize, kIconSize));
     }
 
-    m_treeSelectionCurrentPos.x = std::lerp(m_treeSelectionCurrentPos.x, m_treeSelectionDestinationPos.x, kSelectionAnimationSpeed);
-    m_treeSelectionCurrentPos.y = std::lerp(m_treeSelectionCurrentPos.y, m_treeSelectionDestinationPos.y, kSelectionAnimationSpeed);
+    m_cursorCurrentPos.x = std::lerp(m_cursorCurrentPos.x, m_cursorDestinationPos.x, kSelectionAnimationSpeed);
+    m_cursorCurrentPos.y = std::lerp(m_cursorCurrentPos.y, m_cursorDestinationPos.y, kSelectionAnimationSpeed);
 
     const auto cursorTexture = helper::getTexture("menus/upgrade_panel/tree/cursor.png");
-    helper::drawTexture(cursorTexture, getTreeDrawPos(m_treeSelectionCurrentPos, kCursorSize), ImVec2(kCursorSize, kCursorSize));
+    helper::drawTexture(cursorTexture, getTreeDrawPos(m_cursorCurrentPos, kCursorSize), ImVec2(kCursorSize, kCursorSize));
 }
 
 auto game::menu::UpgradePanel::getTreeDrawPos(const ImVec2 &relPos, float elemSize) const noexcept -> ImVec2
@@ -213,12 +250,10 @@ void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &
     printClassTreeDebug();
 
     m_root = generateTreeRec(game, m_classes[0][0]);
-
-    m_treeSelectionDestinationPos = findInTree(m_selectedClass)->relPos;
-    m_treeSelectionCurrentPos = m_treeSelectionDestinationPos;
 }
 
-auto game::menu::UpgradePanel::generateTreeRec(ThePURGE &game, const Class *cl, int depth) const noexcept -> ClassTreeNode
+auto game::menu::UpgradePanel::generateTreeRec(ThePURGE &game, const Class *cl, int selfIndex, int depth) const noexcept
+    -> ClassTreeNode
 {
     float yPos = static_cast<float>(depth) / (m_classes.size() - 1);
 
@@ -229,17 +264,18 @@ auto game::menu::UpgradePanel::generateTreeRec(ThePURGE &game, const Class *cl, 
 
         float xPos = static_cast<float>(idx) / (lastRow.size() - 1);
 
-        return ClassTreeNode{.cl = cl, .relPos = ImVec2(xPos, yPos), .children = {}};
+        return ClassTreeNode{.selfIndex = selfIndex, .cl = cl, .relPos = ImVec2(xPos, yPos), .children = {}};
     }
 
     ClassTreeNode result;
 
     result.cl = cl;
+    result.selfIndex = selfIndex;
     result.relPos.y = yPos;
     result.relPos.x = 0;
 
-    for (const auto &childName : cl->children) {
-        result.children.push_back(generateTreeRec(game, game.dbClasses().getByName(childName), depth + 1));
+    for (int idx = 0; const auto &childName : cl->children) {
+        result.children.push_back(generateTreeRec(game, game.dbClasses().getByName(childName), idx++, depth + 1));
         result.relPos.x += result.children.back().relPos.x / cl->children.size();
     }
 
@@ -263,6 +299,25 @@ auto game::menu::UpgradePanel::findInTree(const Class *cl) const noexcept -> con
     return nullptr; // guaranteed crash
 }
 
+auto game::menu::UpgradePanel::findParent(const Class *cl) const noexcept -> const ClassTreeNode *
+{
+    std::vector<const ClassTreeNode *> todo = {&m_root};
+
+    while (!todo.empty()) {
+        const auto current = todo.back();
+
+        todo.pop_back();
+
+        for (const auto &child : current->children) {
+            if (child.cl == cl) return current;
+
+            todo.push_back(&child);
+        }
+    }
+
+    return nullptr;
+}
+
 bool game::menu::UpgradePanel::isOwned(const Class *cl) const noexcept
 {
     return std::find(std::begin(m_owned), std::end(m_owned), cl) != std::end(m_owned);
@@ -271,6 +326,11 @@ bool game::menu::UpgradePanel::isOwned(const Class *cl) const noexcept
 auto game::menu::UpgradePanel::isPurchaseable(const Class *cl) const noexcept -> bool
 {
     return std::find(std::begin(m_purchaseable), std::end(m_purchaseable), cl) != std::end(m_purchaseable);
+}
+
+auto game::menu::UpgradePanel::isUnavailable(const Class *cl) const noexcept -> bool
+{
+    return !(isOwned(cl) || isPurchaseable(cl));
 }
 
 void game::menu::UpgradePanel::printClassTreeDebug() const noexcept
