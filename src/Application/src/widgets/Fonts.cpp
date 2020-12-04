@@ -3,13 +3,20 @@
 #include "widgets/Fonts.hpp"
 
 ImFont *game::Fonts::kimberley_23;
-ImFont *game::Fonts::imguiDefault;
+ImFont *game::Fonts::kimberley_50;
+ImFont *game::Fonts::opensans_44;
+ImFont *game::Fonts::opensans_32;
+ImFont *game::Fonts::imgui;
 
 void game::Fonts::loadFonts() noexcept
 {
-    imguiDefault = ImGui::GetIO().Fonts->AddFontDefault();
+    imgui = ImGui::GetIO().Fonts->AddFontDefault();
 
     kimberley_23 = load("fonts/kimberley_bl.ttf", 23.f);
+    kimberley_50 = load("fonts/kimberley_bl.ttf", 50.f);
+
+    opensans_44 = load("fonts/OpenSans.ttf", 44.f);
+    opensans_32 = load("fonts/OpenSans.ttf", 32.f);
 }
 
 ImFont *game::Fonts::load(const std::string &simplePath, float size) noexcept

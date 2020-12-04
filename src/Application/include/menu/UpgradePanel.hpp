@@ -14,7 +14,15 @@ public:
     void event(entt::registry &world, ThePURGE &game, const engine::Event &e) final;
 
 private:
+    void drawDetailPanel(entt::registry &world, ThePURGE &game) noexcept;
+    void drawTree(entt::registry &world, ThePURGE &game) noexcept;
+
+private:
     GUITexture m_static_background;
+
+
+    const Class *m_selectedClass;
+
 };
 
 } // namespace game

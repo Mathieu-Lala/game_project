@@ -1,6 +1,7 @@
 {
   "shovel": {
     "icon": "icons/spells/shovel.png",
+    "description": "A weak shovel hit. Everyone has to start somewhere...",
     "cooldown": 700,
     "damage": 1,
     "scale": {
@@ -49,6 +50,7 @@
   },
   "fireball": {
     "icon": "icons/spells/fireball.png",
+    "description": "Throws a slow fireball dealing heavy damage",
     "cooldown": 1500,
     "damage": 3,
     "scale": {
@@ -73,6 +75,7 @@
   },
   "firewall": {
     "icon": "icons/spells/firewall.png",
+    "description": "Creates a fire wall dealing continuous damage in the area",
     "cooldown": 3000,
     "damage": 0.5,
     "scale": {
@@ -97,6 +100,7 @@
   },
   "fireball_blue": {
     "icon": "icons/spells/fireball_blue.png",
+    "description": "Creates a powerfull fireballdealing extremely high damages",
     "cooldown": 2000,
     "damage": 5,
     "scale": {
@@ -121,6 +125,7 @@
   },
   "arrow": {
     "icon": "icons/spells/arrow.png",
+    "description": "Shoots a basic arrow",
     "cooldown": 1000,
     "damage": 2,
     "scale": {

@@ -14,8 +14,9 @@ using namespace std::chrono_literals;
 void game::to_json(nlohmann::json &j, const SpellData &spell)
 {
     // clang-format off
-    j = nlohmann::json{{
-            "icon", spell.iconPath,
+    j = nlohmann::json({spell.name, {
+        "icon", spell.iconPath,
+        "description", spell.description,
         "cooldown", spell.cooldown.count(),
         "damage", spell.damage,
         "hitbox", {
@@ -34,39 +35,10 @@ void game::to_json(nlohmann::json &j, const SpellData &spell)
         "audio_on_cast", spell.audio_on_cast,
         "animation", spell.animation,
         "speed", spell.speed
-    }};
+    }});
     // clang-format on
 }
 
-void game::from_json(const nlohmann::json &j, SpellData &spell) try
-{
-    spell.iconPath = j.at("icon");
-    spell.cooldown = std::chrono::milliseconds{j.at("cooldown")};
-    spell.damage = j.at("damage");
-    spell.hitbox.width = j.at("hitbox").at("x");
-    spell.hitbox.height = j.at("hitbox").at("y");
-    spell.scale.x = j.at("scale").at("x");
-    spell.scale.y = j.at("scale").at("y");
-    spell.lifetime = std::chrono::milliseconds{j.at("lifetime")};
-    spell.audio_on_cast = j.at("audio_on_cast");
-    spell.animation = j.at("animation");
-    spell.speed = j.at("speed");
-    spell.offset_to_source_x = j.at("offset_to_source").at("x");
-    spell.offset_to_source_y = j.at("offset_to_source").at("y");
-    spell.type = [](const auto &type) {
-        decltype(SpellData{}.type) out;
-        for (const auto &i : type) {
-            if (const auto id = SpellData::toType(i); id != SpellData::Type::ZERO) {
-                out[id] = true;
-            }
-        }
-        return out;
-    }(j.at("type").get<std::vector<std::string>>());
-}
-catch (nlohmann::json::exception &e)
-{
-    spdlog::error("failed: {}", e.what());
-}
 
 auto game::SpellDatabase::instantiate(const std::string_view spell) -> std::optional<Spell>
 {
@@ -95,7 +67,38 @@ auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
     }
     const auto jsonData = nlohmann::json::parse(file);
 
-    this->db = jsonData.get<std::decay_t<decltype(this->db)>>();
+    for (const auto &[name, data] : jsonData.items()) {
+        SpellData spell;
+
+        try {
+            spell.name = name;
+            spell.iconPath = data.at("icon");
+            spell.description = data.at("description");
+            spell.cooldown = std::chrono::milliseconds{data.at("cooldown")};
+            spell.damage = data.at("damage");
+            spell.hitbox.width = data.at("hitbox").at("x");
+            spell.hitbox.height = data.at("hitbox").at("y");
+            spell.scale.x = data.at("scale").at("x");
+            spell.scale.y = data.at("scale").at("y");
+            spell.lifetime = std::chrono::milliseconds{data.at("lifetime")};
+            spell.audio_on_cast = data.at("audio_on_cast");
+            spell.animation = data.at("animation");
+            spell.speed = data.at("speed");
+            spell.offset_to_source_x = data.at("offset_to_source").at("x");
+            spell.offset_to_source_y = data.at("offset_to_source").at("y");
+            spell.type = [](const auto &type) {
+                decltype(SpellData{}.type) out;
+                for (const auto &i : type) {
+                    if (const auto id = SpellData::toType(i); id != SpellData::Type::ZERO) { out[id] = true; }
+                }
+                return out;
+            }(data.at("type").get<std::vector<std::string>>());
+        } catch (nlohmann::json::exception &e) {
+            spdlog::error("failed: {}", e.what());
+        }
+
+        this->db[name] = spell;
+    }
 
     return true;
 }

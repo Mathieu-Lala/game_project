@@ -15,13 +15,19 @@
 
 #include "ThePURGE.hpp"
 
-void game::menu::UpgradePanel::create(entt::registry &, ThePURGE &)
+void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
 {
     m_static_background = GUITexture{
         helper::getTexture("menus/upgrade_panel/static_background.png"),
         ImVec2(0, 0),
         ImVec2(1, 1),
     };
+
+    auto player = game.player;
+
+    const auto &ownedClasses = world.get<Classes>(player).ids;
+
+    m_selectedClass = game.dbClasses().getByName(ownedClasses.back());
 }
 
 void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
@@ -30,11 +36,11 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
     //auto player = game.player;
 
-    //const auto &already_purchased = world.get<Classes>(player).ids;
+    //const auto &ownedClasses = world.get<Classes>(player).ids;
     //const auto skillPoints = world.get<SkillPoint>(player).count;
 
-    GameHUD::draw(game, world);
 
+    GameHUD::draw(game, world);
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(helper::frac2pixel({1.f, 1.f}));
@@ -43,11 +49,43 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
     helper::drawTexture(m_static_background);
 
+    drawDetailPanel(world, game);
+
     ImGui::End();
+}
+
+void game::menu::UpgradePanel::drawDetailPanel(entt::registry &, ThePURGE &game) noexcept 
+{
+    //auto player = game.player;
+
+    //const auto skillPoints = world.get<SkillPoint>(player).count;
+    const auto &selectedClassSpell = game.dbSpells().db.at(m_selectedClass->spells.front());
+
+    const GUITexture portrait{
+        helper::getTexture(m_selectedClass->iconPath),
+        helper::from1080p(58, 226),
+        helper::from1080p(158, 179),
+    };
+    const GUITexture spellPortrait {
+        helper::getTexture(selectedClassSpell.iconPath),
+        helper::from1080p(64, 416),
+        helper::from1080p(100, 100),
+    };
 
 
+    helper::drawTexture(portrait);
+    helper::drawText(helper::frac2pixel(helper::from1080p(232, 295)), m_selectedClass->name, ImVec4(1, 1, 1, 1), Fonts::kimberley_50);
+
+    helper::drawTexture(spellPortrait);
+    helper::drawText(helper::frac2pixel(helper::from1080p(232, 448)), selectedClassSpell.name, ImVec4(1, 1, 1, 1), Fonts::opensans_44);
+
+    helper::drawTextWrapped(helper::frac2pixel(helper::from1080p(67, 566)), selectedClassSpell.description, 510, Fonts::opensans_32);
+}
+
+void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
+{
     /*
-    
+
     static bool choosetrigger = false;
     static auto test = game.dbClasses().getStarterClass();
     static std::optional<Class> selectedClass;
