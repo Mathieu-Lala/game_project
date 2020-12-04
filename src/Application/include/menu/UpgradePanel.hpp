@@ -25,7 +25,7 @@ private:
 
 private:
 
-    void processInputs();
+    void processInputs(entt::registry &world, ThePURGE &game);
 
     void drawTree(entt::registry &world, ThePURGE &game) noexcept;
     auto getTreeDrawPos(const ImVec2 &relPos, float elemSize) const noexcept -> ImVec2;
@@ -44,7 +44,7 @@ private:
     void printClassTreeDebug() const noexcept;
 private:
     GUITexture m_static_background;
-
+    entt::entity m_player;
 
     const ClassTreeNode *m_selection;
     ImVec2 m_cursorCurrentPos; // in tree unit (@see `ClassTreeNode`)

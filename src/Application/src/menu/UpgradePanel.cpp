@@ -25,9 +25,9 @@ void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
         ImVec2(1, 1),
     };
 
-    auto player = game.player;
+    m_player = game.player;
 
-    const auto &ownedClasses = world.get<Classes>(player).ids;
+    const auto &ownedClasses = world.get<Classes>(m_player).ids;
 
     updateClassTree(world, game);
 
@@ -40,7 +40,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
     static auto holder = engine::Core::Holder{};
 
-    processInputs();
+    processInputs(world, game);
 
     GameHUD::draw(game, world);
 
@@ -59,9 +59,7 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
 void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &game) noexcept
 {
-    auto player = game.player;
-
-    const auto skillPoints = world.get<SkillPoint>(player).count;
+    const auto skillPoints = world.get<SkillPoint>(m_player).count;
     const auto &selectedClassSpell = game.dbSpells().db.at(m_selection->cl->spells.front());
 
     const GUITexture portrait{
@@ -133,7 +131,7 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &
     }
 }
 
-void game::menu::UpgradePanel::processInputs()
+void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &game)
 {
     const auto *parent = findParent(m_selection->cl);
     spdlog::info("self index {}", m_selection->selfIndex);
@@ -163,10 +161,16 @@ void game::menu::UpgradePanel::processInputs()
                 break;
             }
         }
-    else
-        return;
 
     m_cursorDestinationPos = m_selection->relPos;
+
+    const auto sp = world.get<SkillPoint>(m_player).count;
+    if (select() && isPurchaseable(m_selection->cl) && sp >= m_selection->cl->cost) {
+        game.logics()->onPlayerPurchase.publish(world, m_player, *m_selection->cl);
+
+        updateClassTree(world, game);
+        m_selection = findInTree(game.dbClasses().getByName(world.get<Classes>(m_player).ids.back()));
+    }
 }
 
 void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
@@ -217,13 +221,11 @@ auto game::menu::UpgradePanel::getTreeDrawPos(const ImVec2 &relPos, float elemSi
 
 void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &game)
 {
-    const auto player = game.player;
-
     m_owned.clear();
     m_classes.clear();
     m_purchaseable.clear();
 
-    for (const auto &name : world.get<Classes>(player).ids) m_owned.push_back(game.dbClasses().getByName(name));
+    for (const auto &name : world.get<Classes>(m_player).ids) m_owned.push_back(game.dbClasses().getByName(name));
 
 
     m_classes.push_back({&game.dbClasses().getStarterClass()});
