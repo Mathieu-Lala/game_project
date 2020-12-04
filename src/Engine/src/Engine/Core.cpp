@@ -241,7 +241,10 @@ auto engine::Core::main(int argc, char **argv) -> int
                     switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
                     case GLFW_KEY_ESCAPE: this->close(); break;
 #ifndef NDEBUG
-                    case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
+                    case GLFW_KEY_F1:
+                        m_show_debug_info = !m_show_debug_info;
+                        window()->setCursorVisible(m_show_debug_info);
+                        break;
 #endif
                     case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
                     case GLFW_KEY_F12: {
@@ -432,7 +435,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<VBOTexture>)
             .each([this](auto entity, auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
                 auto *rotationComponent = m_world.try_get<d2::Rotation>(entity);
-                auto rotation = rotationComponent ? static_cast<float>(rotationComponent->angle) : 0.f ;
+                auto rotation = rotationComponent ? static_cast<float>(rotationComponent->angle) : 0.f;
 
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
@@ -448,7 +451,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         m_world.view<Drawable, Color, VBOTexture, d3::Position, d2::Scale>().each(
             [this](auto entity, auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
                 auto *rotationComponent = m_world.try_get<d2::Rotation>(entity);
-                auto rotation = rotationComponent ? static_cast<float>(rotationComponent->angle) : 0.f ;
+                auto rotation = rotationComponent ? static_cast<float>(rotationComponent->angle) : 0.f;
 
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
