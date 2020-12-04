@@ -80,6 +80,13 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &, ThePURGE &game)
     helper::drawText(helper::frac2pixel(helper::from1080p(232, 448)), selectedClassSpell.name, ImVec4(1, 1, 1, 1), Fonts::opensans_44);
 
     helper::drawTextWrapped(helper::frac2pixel(helper::from1080p(67, 566)), selectedClassSpell.description, 510, Fonts::opensans_32);
+
+    const ImVec4 bonusColor(0.16f, 07, 0, 1);
+    const ImVec4 malusColor(0.7f, 0, 0, 1);
+
+    helper::drawText(helper::frac2pixel(helper::from1080p(222, 747)), fmt::format("{:+}", m_selectedClass->health), m_selectedClass->health > 0 ? bonusColor : malusColor, Fonts::kimberley_35);
+    helper::drawText(helper::frac2pixel(helper::from1080p(222, 792)), fmt::format("{:+}", m_selectedClass->speed), m_selectedClass->speed  > 0 ? bonusColor : malusColor, Fonts::kimberley_35);
+    
 }
 
 void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
