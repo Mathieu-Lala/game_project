@@ -2,6 +2,7 @@
 #include <Engine/Graphics/Window.hpp>
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
+#include <Engine/helpers/TextureLoader.hpp>
 
 #include "models/Spell.hpp"
 
@@ -10,6 +11,95 @@
 #include "ThePURGE.hpp"
 #include "menu/GameOver.hpp"
 #include "menu/MainMenu.hpp"
+
+#include "widgets/Fonts.hpp"
+
+void game::menu::GameOver::create(entt::registry &, ThePURGE &)
+{
+    static auto holder = engine::Core::Holder{};
+
+    const auto &dataFolder = holder.instance->settings().data_folder;
+
+
+    m_backgroundTexture = engine::helper::loadTexture(dataFolder + "menus/game_over/background.png");
+
+    // clang-format off
+
+    // SAME ORDER AS `Button` ENUM
+    m_buttons.emplace_back(GUITexture{
+        helper::getTexture("menus/game_over/btn_playagain_selected.png"),
+        helper::from1080p(701, 665),
+        helper::from1080p(515, 156)
+    });
+    m_buttons.emplace_back(GUITexture{
+        helper::getTexture("menus/game_over/btn_menu_selected.png"),
+        helper::from1080p(822, 884),
+        helper::from1080p(276, 149)
+    });
+    // clang-format on
+}
+
+void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
+{
+    static auto holder = engine::Core::Holder{};
+
+    ImGui::SetNextWindowPos(ImVec2(-5, -1));
+    const auto winSize = helper::frac2pixel({1.f, 1.f});
+    ImGui::SetNextWindowSize(ImVec2(winSize.x + 10, winSize.y + 4));
+
+    ImGui::SetNextWindowBgAlpha(0.f);
+
+    ImGui::Begin("GameOver", nullptr, ImGuiWindowFlags_NoDecoration);
+
+    helper::drawTexture(m_backgroundTexture, ImVec2(0, 0), helper::frac2pixel({1.f, 1.f}), ImVec4(1, 1, 1, std::clamp(m_timeElapsed, 0.f, 1.f)));
+
+    if (up() && m_selected > 0) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+
+        m_selected--;
+    }
+    if (down() && m_selected < Button::MAX - 1) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
+
+        m_selected++;
+    }
+
+    helper::drawTexture(m_buttons.at(static_cast<std::size_t>(m_selected)));
+
+    drawGameStats();
+
+    ImGui::End();
+
+
+    if (close()) {
+        m_selected = Button::MENU;
+        forceSelect(true);
+    }
+    if (select()) {
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/accept.wav")->play();
+        clean_world(world);
+
+        switch (m_selected) {
+        case Button::PLAY_AGAIN:
+            game.setMenu(nullptr);
+            game.logics()->onGameStart.publish(world);
+            return;
+        case Button::MENU: game.setMenu(std::make_unique<menu::MainMenu>()); return;
+        }
+    }
+}
+
+void game::menu::GameOver::drawGameStats()
+{
+    // TODO: actual game time
+    helper::drawText(helper::frac2pixel(helper::from1080p(1018, 321)), "2:46.614", ImVec4(1, 1, 1, 1), Fonts::kimberley_62);
+
+    helper::drawText(
+        helper::frac2pixel(helper::from1080p(1018, 392)),
+        fmt::format("{}", m_stats.finalLevel),
+        ImVec4(1, 1, 1, 1),
+        Fonts::kimberley_62);
+}
 
 auto game::menu::GameOver::clean_world(entt::registry &world) -> void
 {
@@ -21,28 +111,6 @@ auto game::menu::GameOver::clean_world(entt::registry &world) -> void
         world.destroy(world.get<AimSight>(i).entity);
     }
     for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
-}
-
-void game::menu::GameOver::create(entt::registry &, ThePURGE &)
-{
-    engine::Core::Holder{}.instance->window()->setCursorVisible(true);
-}
-
-game::menu::GameOver::~GameOver() { engine::Core::Holder{}.instance->window()->setCursorVisible(false); }
-
-void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
-{
-    // todo : style because this is not a debug window
-    ImGui::Begin("Menu Game Over", nullptr, ImGuiWindowFlags_NoDecoration);
-
-    ImGui::Text("You are dead !");
-    if (ImGui::Button("main menu")) {
-        clean_world(world);
-        game.setMenu(std::make_unique<menu::MainMenu>());
-        game.setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
-    }
-
-    ImGui::End();
 }
 
 void game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const engine::Event &e)
@@ -58,6 +126,7 @@ void game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const en
                 default: break;
                 }
             },
+            [&](const engine::TimeElapsed &dt) { m_timeElapsed += static_cast<float>(dt.elapsed.count() / 1e9); },
             [&](auto) {},
         },
         e);

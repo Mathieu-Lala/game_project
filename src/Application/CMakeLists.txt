@@ -10,6 +10,7 @@ add_library(
   src/models/Class.cpp
   src/models/Enemy.cpp
   src/models/Effect.cpp
+  src/models/EndGameStats.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
   src/factory/ParticuleFactory.cpp
