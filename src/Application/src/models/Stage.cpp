@@ -304,11 +304,12 @@ auto game::Stage::clear(entt::registry &world, bool kill_the_players) -> void
     world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
     world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
+    world.view<entt::tag<"effect"_hs>>().each([&](auto &e){ world.destroy(e); });
     world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
     if (kill_the_players) {
         for (const auto &i : world.view<entt::tag<"player"_hs>>()) {
-            world.destroy(i);
             world.destroy(world.get<AimSight>(i).entity);
+            world.destroy(i);
         }
     } else {
         world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });

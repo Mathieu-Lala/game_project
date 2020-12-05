@@ -118,7 +118,9 @@
       "x": 0.75,
       "y": 2.0
     },
-    "spells": [],
+    "spells": [
+      "after_shock"
+    ],
     "children": []
   },
   "archer": {

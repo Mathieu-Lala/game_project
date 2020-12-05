@@ -2,7 +2,7 @@
   "summoner": {
     "asset": "anims/enemies/summoner/summoner.data.json",
     "health": 1,
-    "speed": 0.9,
+    "speed": 9.0,
     "view_range": 10,
     "attack_range": 8,
     "experience": 3,
@@ -26,7 +26,7 @@
   "zombie": {
     "asset": "anims/enemies/zombie/zombie.data.json",
     "health": 1,
-    "speed": 0.7,
+    "speed": 7.0,
     "view_range": 10,
     "attack_range": 8,
     "experience": 3,
@@ -44,13 +44,13 @@
       "y": 1.0
     },
     "spells": [
-      "fireball_blue"
+      "shovel"
     ]
   },
   "golem": {
     "asset": "anims/enemies/golem/golem.data.json",
     "health": 10,
-    "speed": 0.5,
+    "speed": 5.0,
     "view_range": 7,
     "attack_range": 5,
     "experience": 4,
@@ -74,7 +74,7 @@
   "skeleton": {
     "asset": "anims/enemies/skeleton/skeleton.data.json",
     "health": 1,
-    "speed": 0.9,
+    "speed": 9.0,
     "view_range": 6,
     "attack_range": 4,
     "experience": 2,
@@ -98,7 +98,7 @@
   "electric_skeleton": {
     "asset": "anims/enemies/skeleton/skeleton.data.json",
     "health": 1,
-    "speed": 0.8,
+    "speed": 5.0,
     "view_range": 10,
     "attack_range": 8,
     "experience": 3,
@@ -116,13 +116,13 @@
       "y": 1.0
     },
     "spells": [
-      "fireball_blue"
+      "thunder"
     ]
   },
   "dark_skeleton": {
     "asset": "anims/enemies/skeleton/skeleton.data.json",
-    "health": 50,
-    "speed": 0.7,
+    "health": 4,
+    "speed": 7.0,
     "view_range": 7,
     "attack_range": 5,
     "experience": 4,
@@ -136,12 +136,60 @@
       "y": 3.0
     },
     "scale": {
-      "x": 2.5,
+      "x": 2.2,
       "y": 2.5
     },
     "spells": [
       "sword"
     ],
     "is_boss": true
+  },
+  "ice_skeleton": {
+    "asset": "anims/enemies/skeleton/skeleton.data.json",
+    "health": 1,
+    "speed": 6.0,
+    "view_range": 9,
+    "attack_range": 2.2,
+    "experience": 4,
+    "color": {
+      "r": 0,
+      "g": 0.4,
+      "b": 0.8
+    },
+    "hitbox": {
+      "x": 1.0,
+      "y": 1.0
+    },
+    "scale": {
+      "x": 0.8,
+      "y": 1
+    },
+    "spells": [
+      "freeze"
+    ]
+  },
+  "fire_skeleton": {
+    "asset": "anims/enemies/skeleton/skeleton.data.json",
+    "health": 1,
+    "speed": 6.0,
+    "view_range": 9,
+    "attack_range": 2.2,
+    "experience": 4,
+    "color": {
+      "r": 1,
+      "g": 0.2,
+      "b": 0.2
+    },
+    "hitbox": {
+      "x": 1.0,
+      "y": 1.0
+    },
+    "scale": {
+      "x": 0.8,
+      "y": 1
+    },
+    "spells": [
+      "explosion"
+    ]
   }
 }
