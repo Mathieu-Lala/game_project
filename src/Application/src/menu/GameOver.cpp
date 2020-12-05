@@ -45,7 +45,7 @@ void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 
     ImGui::SetNextWindowPos(ImVec2(-5, -1));
     const auto winSize = helper::frac2pixel({1.f, 1.f});
-    ImGui::SetNextWindowSize(ImVec2(winSize.x + 10, winSize.y + 4));
+    ImGui::SetNextWindowSize(ImVec2(winSize.x + 10, winSize.y + 6));
 
     ImGui::SetNextWindowBgAlpha(0.f);
 
@@ -91,8 +91,13 @@ void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 
 void game::menu::GameOver::drawGameStats()
 {
-    // TODO: actual game time
-    helper::drawText(helper::frac2pixel(helper::from1080p(1018, 321)), "2:46.614", ImVec4(1, 1, 1, 1), Fonts::kimberley_62);
+    const auto time = m_stats.gameTimeInSeconds;
+
+    const int min = static_cast<int>(time / 60);
+    const int sec = static_cast<int>(time - min * 60);
+    const int ms = static_cast<int>((time - min * 60 - sec) * 1000);
+
+    helper::drawText(helper::frac2pixel(helper::from1080p(1018, 321)), fmt::format("{}m {}.{}s", min, sec, ms), ImVec4(1, 1, 1, 1), Fonts::kimberley_62);
 
     helper::drawText(
         helper::frac2pixel(helper::from1080p(1018, 392)),

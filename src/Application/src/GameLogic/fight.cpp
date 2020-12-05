@@ -263,7 +263,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
             .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
             ->play();
 
-        m_game.setMenu(std::make_unique<menu::GameOver>(EndGameStats(world, killed)));
+        m_game.setMenu(std::make_unique<menu::GameOver>(EndGameStats(world, killed, m_gameTime)));
 
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         // TODO: actual random utilities

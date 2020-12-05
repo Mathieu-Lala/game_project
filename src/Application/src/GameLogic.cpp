@@ -39,6 +39,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
 
     sinkOnEvent.connect<&GameLogic::slots_on_event>(*this);
 
+    sinkGameUpdated.connect<&GameLogic::slots_update_game_time>(*this);
     sinkGameUpdated.connect<&GameLogic::slots_update_player_movement>(*this);
     sinkGameUpdated.connect<&GameLogic::slots_update_ai_movement>(*this);
     sinkGameUpdated.connect<&GameLogic::slots_update_ai_attack>(*this);
@@ -64,6 +65,8 @@ game::GameLogic::GameLogic(ThePURGE &game) :
 auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
+
+    m_gameTime = 0;
 
     // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
     EntityFactory::create<EntityFactory::ID::BACKGROUND>(m_game, world, glm::vec2(25, 25), glm::vec2(75, 75));
@@ -211,6 +214,13 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
             [&](auto) {},
         },
         e);
+}
+
+auto game::GameLogic::slots_update_game_time(entt::registry &, [[maybe_unused]] const engine::TimeElapsed &dt)
+    -> void
+{
+    m_gameTime += static_cast<double>(dt.elapsed.count()) / 1e9;
+    spdlog::info("game time : {}", m_gameTime);
 }
 
 auto game::GameLogic::slots_update_cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
