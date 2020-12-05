@@ -22,6 +22,8 @@
 
 void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
 {
+    static auto holder = engine::Core::Holder{};
+
     m_static_background = GUITexture{
         helper::getTexture("menus/upgrade_panel/static_background.png"),
         ImVec2(0, 0),
@@ -44,6 +46,10 @@ void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
     m_selection = findInTree(game.dbClasses().getByName(ownedClasses.back()));
     m_cursorDestinationPos = m_selection->relPos;
     m_cursorCurrentPos = m_cursorDestinationPos;
+
+    holder.instance->getAudioManager()
+        .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/open_close.wav")
+        ->play();
 }
 
 void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
@@ -154,6 +160,9 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
 {
     if (m_spellBeingAssigned) return;
 
+    static engine::Core::Holder holder{};
+
+    const auto *previousSelection = m_selection;
 
     const auto *parent = findParent(m_selection->cl);
 
@@ -183,20 +192,35 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
             }
         }
 
-    m_cursorDestinationPos = m_selection->relPos;
+    if (previousSelection != m_selection) {
+        holder.instance->getAudioManager()
+            .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/tree_select.wav")
+            ->play();
+
+        m_cursorDestinationPos = m_selection->relPos;
+    }
 
     const auto sp = world.get<SkillPoint>(m_player).count;
-    if (select() && isPurchaseable(m_selection->cl) && sp >= m_selection->cl->cost) {
-        game.logics()->onPlayerPurchase.publish(world, m_player, *m_selection->cl);
+    if (select())
+        if (isPurchaseable(m_selection->cl) && sp >= m_selection->cl->cost) {
+            game.logics()->onPlayerPurchase.publish(world, m_player, *m_selection->cl);
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/buy_class.wav")
+                ->play();
 
-        m_spellBeingAssigned = &game.dbSpells().db.at(m_selection->cl->spells.front());
-        updateClassTree(world, game);
-        m_selection = findInTree(game.dbClasses().getByName(world.get<Classes>(m_player).ids.back()));
-    }
+            m_spellBeingAssigned = &game.dbSpells().db.at(m_selection->cl->spells.front());
+            updateClassTree(world, game);
+            m_selection = findInTree(game.dbClasses().getByName(world.get<Classes>(m_player).ids.back()));
+        } else
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/error.wav")
+                ->play();
 }
 
 void game::menu::UpgradePanel::onBuyHp(entt::registry &world)
 {
+    static engine::Core::Holder holder{};
+
     constexpr int kCost = 1;
     constexpr float kHeal = 5;
 
@@ -206,7 +230,14 @@ void game::menu::UpgradePanel::onBuyHp(entt::registry &world)
     if (sp > kCost && health.current < health.max) {
         sp -= kCost;
         health.current = std::min(health.current + kHeal, health.max);
-    }
+        holder.instance->getAudioManager()
+            .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/heal.wav")
+            ->play();
+
+    } else
+        holder.instance->getAudioManager()
+            .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/error.wav")
+            ->play();
 }
 
 void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
@@ -405,6 +436,8 @@ void game::menu::UpgradePanel::printClassTreeDebug() const noexcept
 
 void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, const engine::Event &e)
 {
+    static auto holder = engine::Core::Holder{};
+
     if (m_spellBeingAssigned) {
         const auto spell_map = []<typename T>(T k) {
             struct SpellMap {
@@ -438,6 +471,7 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
 
                         world.get<SpellSlots>(m_player).spells[id] =
                             game.dbSpells().instantiate(m_spellBeingAssigned->name);
+
                         m_spellBeingAssigned = nullptr;
                     } break;
                     default: break;
@@ -471,6 +505,10 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
             },
             e);
 
+        if (!m_spellBeingAssigned)
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/spell_assign.wav")
+                ->play();
         return;
     }
 
@@ -479,14 +517,24 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
                 case GLFW_KEY_ESCAPE:
-                case GLFW_KEY_P: game.setMenu(nullptr); break;
+                case GLFW_KEY_P:
+                    holder.instance->getAudioManager()
+                        .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/open_close.wav")
+                        ->play();
+                    game.setMenu(nullptr);
+                    break;
                 case GLFW_KEY_E: onBuyHp(world); break;
                 default: break;
                 }
             },
             [&](const engine::Pressed<engine::JoystickButton> &joy) {
                 switch (joy.source.button) {
-                case engine::Joystick::CENTER2: game.setMenu(nullptr); break;
+                case engine::Joystick::CENTER2:
+                    holder.instance->getAudioManager()
+                        .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/open_close.wav")
+                        ->play();
+                    game.setMenu(nullptr);
+                    break;
                 case engine::Joystick::Buttons::ACTION_TOP: onBuyHp(world); break;
                 default: break;
                 }
