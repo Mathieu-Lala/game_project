@@ -42,6 +42,7 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
     world.emplace<game::ViewRange>(enemy, data.view_range);
     world.emplace<game::AttackRange>(enemy, data.attack_range);
     world.emplace<game::Speed>(enemy, data.speed);
+
     // world.emplace<game::Effect>(enemy, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
 
     world.emplace<Health>(enemy, data.health, data.health);

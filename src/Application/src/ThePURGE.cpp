@@ -48,6 +48,7 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
     setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
 
     spdlog::info("Starting the game");
+    holder.instance->window()->setCursorVisible(false);
 }
 
 auto game::ThePURGE::onDestroy(entt::registry &) -> void

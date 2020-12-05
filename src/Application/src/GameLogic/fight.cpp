@@ -40,15 +40,6 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
     health.max += newClass.health;
     world.get<Classes>(player).ids.push_back(newClass.name);
 
-    // TODO: actual spell selection ?
-
-    for (const auto &spell : newClass.spells)
-        for (auto &slot : world.get<SpellSlots>(player).spells) {
-            if (slot.has_value()) continue;
-            slot = m_game.dbSpells().instantiate(spell);
-            break;
-        }
-
     world.replace<engine::Spritesheet>(
         player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + newClass.assetGraphPath));
 
@@ -66,7 +57,7 @@ auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity)
     level.xp_require = static_cast<std::uint32_t>(std::ceil(level.xp_require * 1.2));
     level.current_level++;
 
-    auto pos = world.get<engine::d3::Position>(entity);
+    const auto &pos = world.get<engine::d3::Position>(entity);
     ParticuleFactory::create<Particule::POSITIVE>(world, {pos.x, pos.y}, {255, 255, 0});
 }
 
