@@ -227,7 +227,7 @@ void game::menu::UpgradePanel::onBuyHp(entt::registry &world)
     auto &sp = world.get<SkillPoint>(m_player).count;
     auto &health = world.get<Health>(m_player);
 
-    if (sp > kCost && health.current < health.max) {
+    if (sp >= kCost && health.current < health.max) {
         sp -= kCost;
         health.current = std::min(health.current + kHeal, health.max);
         holder.instance->getAudioManager()
