@@ -1,5 +1,8 @@
 #include <algorithm>
 
+#include <Engine/Event/Event.hpp>
+#include <Engine/Event/JoystickManager.hpp>
+
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/resources/Texture.hpp>
@@ -24,6 +27,13 @@ void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
         ImVec2(0, 0),
         ImVec2(1, 1),
     };
+
+    m_bind_popup = GUITexture{
+        helper::getTexture("menus/upgrade_panel/key_assignment_popup.png"),
+        ImVec2(0, 0),
+        ImVec2(1, 1),
+    };
+
 
     m_player = game.player;
 
@@ -53,6 +63,15 @@ void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 
     drawTree(world, game);
     drawDetailPanel(world, game);
+
+    if (m_spellBeingAssigned) {
+        helper::drawTexture(m_bind_popup);
+        const auto spellIcon = helper::getTexture(m_spellBeingAssigned->iconPath);
+
+        helper::drawTexture(
+            spellIcon, helper::frac2pixel(helper::from1080p(885, 446)), helper::frac2pixel(helper::from1080p(150, 150)));
+    }
+
 
     ImGui::End();
 }
@@ -133,6 +152,9 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &
 
 void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &game)
 {
+    if (m_spellBeingAssigned) return;
+
+
     const auto *parent = findParent(m_selection->cl);
     spdlog::info("self index {}", m_selection->selfIndex);
 
@@ -168,6 +190,7 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
     if (select() && isPurchaseable(m_selection->cl) && sp >= m_selection->cl->cost) {
         game.logics()->onPlayerPurchase.publish(world, m_player, *m_selection->cl);
 
+        m_spellBeingAssigned = &game.dbSpells().db.at(m_selection->cl->spells.front());
         updateClassTree(world, game);
         m_selection = findInTree(game.dbClasses().getByName(world.get<Classes>(m_player).ids.back()));
     }
@@ -359,7 +382,7 @@ void game::menu::UpgradePanel::printClassTreeDebug() const noexcept
 }
 
 
-void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const engine::Event &e)
+void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, const engine::Event &e)
 {
     std::visit(
         engine::overloaded{
@@ -378,4 +401,72 @@ void game::menu::UpgradePanel::event(entt::registry &, ThePURGE &game, const eng
             [&](auto) {},
         },
         e);
+
+
+    if (m_spellBeingAssigned) {
+        const auto spell_map = []<typename T>(T k) {
+            struct SpellMap {
+                int key;
+                std::size_t id;
+            };
+            if constexpr (std::is_same<T, engine::Joystick::Buttons>::value) {
+                const auto map = std::to_array<SpellMap>({{engine::Joystick::LS, 0}, {engine::Joystick::RS, 1}});
+                return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+
+            } else if constexpr (std::is_same<T, engine::Joystick::Axis>::value) {
+                const auto map = std::to_array<SpellMap>({{engine::Joystick::LST, 2}, {engine::Joystick::RST, 3}});
+                return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+
+            } else { // todo : should be engine::Keyboard::Key
+                const auto map =
+                    std::to_array<SpellMap>({{GLFW_KEY_U, 0}, {GLFW_KEY_Y, 1}, {GLFW_KEY_T, 2}, {GLFW_KEY_R, 3}});
+                return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
+            }
+        };
+
+        std::visit(
+            engine::overloaded{
+                [&](const engine::Pressed<engine::Key> &key) {
+                    switch (key.source.key) {
+                    case GLFW_KEY_U:
+                    case GLFW_KEY_Y:
+                    case GLFW_KEY_R:
+                    case GLFW_KEY_T: {
+                        const auto id = spell_map(key.source.key);
+
+                        world.get<SpellSlots>(m_player).spells[id] = game.dbSpells().instantiate(m_spellBeingAssigned->name);
+                        m_spellBeingAssigned = nullptr;
+                    } break;
+                    default: break;
+                    }
+                },
+                [&](const engine::Moved<engine::JoystickAxis> &joy) {
+                    switch (joy.source.axis) {
+                    case engine::Joystick::LST:
+                    case engine::Joystick::RST: {
+                        const auto id = spell_map(joy.source.axis);
+                        spdlog::info("Assign to {}", id);
+                        world.get<SpellSlots>(m_player).spells[id] = game.dbSpells().instantiate(m_spellBeingAssigned->name);
+                        m_spellBeingAssigned = nullptr;
+                    } break;
+                    default: break;
+                    }
+                },
+                [&](const engine::Pressed<engine::JoystickButton> &joy) {
+                    switch (joy.source.button) {
+                    case engine::Joystick::LS:
+                    case engine::Joystick::RS: {
+                        const auto id = spell_map(joy.source.button);
+                        spdlog::info("Assign to {}", id);
+
+                        world.get<SpellSlots>(m_player).spells[id] = game.dbSpells().instantiate(m_spellBeingAssigned->name);
+                        m_spellBeingAssigned = nullptr;
+                    } break;
+                    default: return;
+                    }
+                },
+                [&](auto) {},
+            },
+            e);
+    }
 }

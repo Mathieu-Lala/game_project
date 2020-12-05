@@ -44,7 +44,10 @@ private:
     void printClassTreeDebug() const noexcept;
 private:
     GUITexture m_static_background;
+    GUITexture m_bind_popup;
     entt::entity m_player;
+
+    const SpellData * m_spellBeingAssigned;
 
     const ClassTreeNode *m_selection;
     ImVec2 m_cursorCurrentPos; // in tree unit (@see `ClassTreeNode`)
