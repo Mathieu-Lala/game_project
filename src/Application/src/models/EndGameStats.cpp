@@ -7,4 +7,6 @@ game::EndGameStats::EndGameStats(entt::registry &world, const entt::entity playe
 	finalLevel = world.get<Level>(player).current_level;
 
 	gameTimeInSeconds = gameTime;
+
+	enemyKilled = world.get<StatsTracking>(player).enemyKilled;
 }

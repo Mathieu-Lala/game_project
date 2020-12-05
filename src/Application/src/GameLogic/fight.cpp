@@ -274,7 +274,10 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
                                 : holder.instance->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
-        if (world.has<entt::tag<"player"_hs>>(killer)) { addXp(world, killer, world.get<Experience>(killed).xp); }
+        if (world.has<entt::tag<"player"_hs>>(killer)) { 
+            addXp(world, killer, world.get<Experience>(killed).xp);
+            world.get<StatsTracking>(killer).enemyKilled++;
+        }
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
             const auto &pos = world.get<engine::d3::Position>(killed);

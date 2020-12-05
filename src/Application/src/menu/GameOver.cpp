@@ -104,6 +104,12 @@ void game::menu::GameOver::drawGameStats()
         fmt::format("{}", m_stats.finalLevel),
         ImVec4(1, 1, 1, 1),
         Fonts::kimberley_62);
+
+    helper::drawText(
+        helper::frac2pixel(helper::from1080p(1018, 463)),
+        fmt::format("{}", m_stats.enemyKilled),
+        ImVec4(1, 1, 1, 1),
+        Fonts::kimberley_62);
 }
 
 auto game::menu::GameOver::clean_world(entt::registry &world) -> void
