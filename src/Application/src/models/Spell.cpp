@@ -95,6 +95,7 @@ auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
             }(data.at("type").get<std::vector<std::string>>());
         } catch (nlohmann::json::exception &e) {
             spdlog::error("failed: {}", e.what());
+            throw; // we probably don't want to continue
         }
 
         this->db[name] = spell;
