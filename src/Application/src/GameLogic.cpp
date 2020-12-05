@@ -76,7 +76,11 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 
 
     m_game.player = EntityFactory::create<EntityFactory::PLAYER>(m_game, world, {}, {});
-    slots_apply_classes(world, m_game.player, m_game.dbClasses().getStarterClass());
+
+    const auto &starterClass = m_game.dbClasses().getStarterClass();
+    slots_apply_classes(world, m_game.player, starterClass);
+    for (int i = 0; const auto &spell : starterClass.spells)
+        world.get<SpellSlots>(m_game.player).spells[i++] = m_game.dbSpells().instantiate(spell); 
 
     auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(m_game, world, {}, {});
 

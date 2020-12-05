@@ -1,3 +1,5 @@
+#include <Engine/Core.hpp>
+#include <Engine/Graphics/Window.hpp>
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 
@@ -14,9 +16,19 @@ auto game::menu::GameOver::clean_world(entt::registry &world) -> void
     for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
     for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
     for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }
-    for (const auto &i : world.view<entt::tag<"player"_hs>>()) { world.destroy(i); world.destroy(world.get<AimSight>(i).entity); }
+    for (const auto &i : world.view<entt::tag<"player"_hs>>()) {
+        world.destroy(i);
+        world.destroy(world.get<AimSight>(i).entity);
+    }
     for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
 }
+
+void game::menu::GameOver::create(entt::registry &, ThePURGE &)
+{
+    engine::Core::Holder{}.instance->window()->setCursorVisible(true);
+}
+
+game::menu::GameOver::~GameOver() { engine::Core::Holder{}.instance->window()->setCursorVisible(false); }
 
 void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 {

@@ -242,7 +242,10 @@ auto engine::Core::main(int argc, char **argv) -> int
                     switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
                     case GLFW_KEY_ESCAPE: this->close(); break;
 #ifndef NDEBUG
-                    case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
+                    case GLFW_KEY_F1:
+                        m_show_debug_info = !m_show_debug_info;
+                        window()->setCursorVisible(m_show_debug_info);
+                        break;
                     case GLFW_KEY_F2:
                         m_eventMode = m_eventMode == EventMode::PAUSED ? EventMode::RECORD : EventMode::PAUSED;
                         break;

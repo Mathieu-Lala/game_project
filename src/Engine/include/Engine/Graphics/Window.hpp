@@ -60,6 +60,8 @@ public:
 
     bool screenshot(const std::string_view filename);
 
+    void setCursorVisible(bool visible) noexcept;
+
 private:
     static Window *s_instance;
 

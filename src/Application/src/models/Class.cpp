@@ -54,6 +54,7 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
         };
         // Note creating the `Class` instance during assignment raises internal compiler error on MSVC
         // note : is it still the case ?
+        // note : I don't know
         db.emplace_back(c);
     }
 

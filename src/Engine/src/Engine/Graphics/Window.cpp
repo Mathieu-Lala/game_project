@@ -147,6 +147,13 @@ bool engine::Window::screenshot(const std::string_view filename)
     return !!::stbi_write_png(filename.data(), width, height, 4, pixels.data(), 0);
 }
 
+void engine::Window::setCursorVisible(bool visible) noexcept
+{
+    if (!visible)
+    	glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    else
+    	glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
 auto engine::Window::isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
 
 auto engine::Window::close() -> void { ::glfwSetWindowShouldClose(m_handle, GLFW_TRUE); }
