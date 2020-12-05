@@ -1,7 +1,7 @@
-#include <Engine/Core.hpp>
 #include <Engine/Graphics/Window.hpp>
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
+#include <Engine/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -13,14 +13,7 @@
 
 auto game::menu::GameOver::clean_world(entt::registry &world) -> void
 {
-    for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
-    for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
-    for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }
-    for (const auto &i : world.view<entt::tag<"player"_hs>>()) {
-        world.destroy(i);
-        world.destroy(world.get<AimSight>(i).entity);
-    }
-    for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
+    Stage{}.clear(world, true);
 }
 
 void game::menu::GameOver::create(entt::registry &, ThePURGE &)

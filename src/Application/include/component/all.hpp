@@ -9,6 +9,7 @@
 #include <Engine/component/Source.hpp>
 #include <Engine/component/Spritesheet.hpp>
 #include <Engine/component/Lifetime.hpp>
+#include <Engine/component/Copy.hpp>
 
 #include "component/AimSight.hpp"
 #include "component/AimingDirection.hpp"

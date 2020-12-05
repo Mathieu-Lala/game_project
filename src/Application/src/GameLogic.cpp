@@ -79,8 +79,8 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 
     const auto &starterClass = m_game.dbClasses().getStarterClass();
     slots_apply_classes(world, m_game.player, starterClass);
-    for (int i = 0; const auto &spell : starterClass.spells)
-        world.get<SpellSlots>(m_game.player).spells[i++] = m_game.dbSpells().instantiate(spell); 
+    for (auto i = 0ul; const auto &spell : starterClass.spells)
+        world.get<SpellSlots>(m_game.player).spells[i++] = m_game.dbSpells().instantiate(spell);
 
     auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(m_game, world, {}, {});
 
@@ -93,6 +93,8 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
     m_game.getCamera().setViewportSize(glm::vec2(25, 17));
 
     onFloorChange.publish(world);
+
+    spdlog::info("Game is started ! Ready to play !");
 }
 
 auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event &e) -> void
@@ -228,7 +230,6 @@ auto game::GameLogic::slots_update_cooldown(entt::registry &world, const engine:
             } else {
                 cd.remaining_cooldown = 0ms;
                 cd.is_in_cooldown = false;
-                spdlog::warn("attack is up !");
             }
         }
     });
@@ -359,20 +360,22 @@ auto game::GameLogic::slots_update_player_sigh(entt::registry &world, const engi
 
 auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
 {
-    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
+    Stage{}.clear(world, false);
+
+    spdlog::info("Creating the terrain...");
 
     // keep the stage instance somewhere
     const auto data = Stage{}.generate(m_game, world, m_map_generation_params, m_nextFloorSeed);
     m_nextFloorSeed = data.nextFloorSeed;
 
-    for (const auto &player : world.view<entt::tag<"player"_hs>>()) {
-        auto &pos = world.get<engine::d3::Position>(player);
+    spdlog::info("Terrain generation done, spawning players...");
 
-        pos.x = data.spawn.x + data.spawn.w * 0.5;
-        pos.y = data.spawn.y + data.spawn.h * 0.5;
+    for (const auto &player : world.view<entt::tag<"player"_hs>>()) {
+        world.emplace_or_replace<engine::d3::Position>(
+            player,
+            engine::d3::Position{
+                data.spawn.x + data.spawn.w * 0.5,
+                data.spawn.y + data.spawn.h * 0.5,
+                EntityFactory::get_z_layer<EntityFactory::PLAYER>()});
     }
 }

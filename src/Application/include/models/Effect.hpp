@@ -12,6 +12,7 @@ namespace game {
 struct Effect {
     enum Type {
         DOT,
+        DASH,
 
         TYPE_MAX,
     };
@@ -37,6 +38,8 @@ struct Effect {
     std::chrono::milliseconds lifetime;
     std::chrono::milliseconds cooldown;
 
+    float strength;
+
 };
 
 inline void to_json([[maybe_unused]] nlohmann::json &j, [[maybe_unused]] const Effect &effect) {}
@@ -47,6 +50,10 @@ inline void from_json(const nlohmann::json &j, Effect &effect) {
         effect.damage = j.at("damage");
         effect.cooldown = std::chrono::milliseconds{j.at("cooldown")};
         effect.lifetime = std::chrono::milliseconds{j.at("lifetime")};
+    } else if (effect.type == Effect::DASH) {
+        effect.lifetime = std::chrono::milliseconds{j.at("lifetime")};
+        effect.cooldown = std::chrono::milliseconds{j.at("cooldown")};
+        effect.strength = j.at("strength");
     }
 }
 

@@ -31,8 +31,6 @@ auto engine::Texture::ctor(const std::string_view filepath) -> Texture
     CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
     CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
-    spdlog::info("{} {}", texture.width, texture.height);
-
     CALL_OPEN_GL(::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.px));
     CALL_OPEN_GL(::glGenerateMipmap(GL_TEXTURE_2D));
 
