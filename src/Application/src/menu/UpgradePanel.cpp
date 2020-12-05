@@ -195,6 +195,20 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
     }
 }
 
+void game::menu::UpgradePanel::onBuyHp(entt::registry &world)
+{
+    constexpr int kCost = 1;
+    constexpr float kHeal = 5;
+
+    auto &sp = world.get<SkillPoint>(m_player).count;
+    auto &health = world.get<Health>(m_player);
+
+    if (sp > kCost && health.current < health.max) {
+        sp -= kCost;
+        health.current = std::min(health.current + kHeal, health.max);
+    }
+}
+
 void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
 {
     std::vector<const ClassTreeNode *> todo = {&m_root};
@@ -272,7 +286,12 @@ void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &
     }
 
     // remove owned classes from purchaseable
-    m_purchaseable.erase(std::remove_if(std::begin(m_purchaseable), std::end(m_purchaseable), [this](const auto &c) { return std::find(std::begin(m_owned), std::end(m_owned), c) != std::end(m_owned); }), std::end(m_purchaseable));
+    m_purchaseable.erase(
+        std::remove_if(
+            std::begin(m_purchaseable),
+            std::end(m_purchaseable),
+            [this](const auto &c) { return std::find(std::begin(m_owned), std::end(m_owned), c) != std::end(m_owned); }),
+        std::end(m_purchaseable));
 
     printClassTreeDebug();
 
@@ -386,25 +405,6 @@ void game::menu::UpgradePanel::printClassTreeDebug() const noexcept
 
 void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, const engine::Event &e)
 {
-    std::visit(
-        engine::overloaded{
-            [&](const engine::Pressed<engine::Key> &key) {
-                switch (key.source.key) {
-                case GLFW_KEY_P: game.setMenu(nullptr); break;
-                default: break;
-                }
-            },
-            [&](const engine::Pressed<engine::JoystickButton> &joy) {
-                switch (joy.source.button) {
-                case engine::Joystick::CENTER2: game.setMenu(nullptr); break;
-                default: break;
-                }
-            },
-            [&](auto) {},
-        },
-        e);
-
-
     if (m_spellBeingAssigned) {
         const auto spell_map = []<typename T>(T k) {
             struct SpellMap {
@@ -436,7 +436,8 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                     case GLFW_KEY_T: {
                         const auto id = spell_map(key.source.key);
 
-                        world.get<SpellSlots>(m_player).spells[id] = game.dbSpells().instantiate(m_spellBeingAssigned->name);
+                        world.get<SpellSlots>(m_player).spells[id] =
+                            game.dbSpells().instantiate(m_spellBeingAssigned->name);
                         m_spellBeingAssigned = nullptr;
                     } break;
                     default: break;
@@ -447,7 +448,8 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                     case engine::Joystick::LST:
                     case engine::Joystick::RST: {
                         const auto id = spell_map(joy.source.axis);
-                        world.get<SpellSlots>(m_player).spells[id] = game.dbSpells().instantiate(m_spellBeingAssigned->name);
+                        world.get<SpellSlots>(m_player).spells[id] =
+                            game.dbSpells().instantiate(m_spellBeingAssigned->name);
                         m_spellBeingAssigned = nullptr;
                     } break;
                     default: break;
@@ -458,7 +460,8 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                     case engine::Joystick::LS:
                     case engine::Joystick::RS: {
                         const auto id = spell_map(joy.source.button);
-                        world.get<SpellSlots>(m_player).spells[id] = game.dbSpells().instantiate(m_spellBeingAssigned->name);
+                        world.get<SpellSlots>(m_player).spells[id] =
+                            game.dbSpells().instantiate(m_spellBeingAssigned->name);
                         m_spellBeingAssigned = nullptr;
                     } break;
                     default: return;
@@ -467,5 +470,28 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                 [&](auto) {},
             },
             e);
+
+        return;
     }
+
+    std::visit(
+        engine::overloaded{
+            [&](const engine::Pressed<engine::Key> &key) {
+                switch (key.source.key) {
+                case GLFW_KEY_ESCAPE:
+                case GLFW_KEY_P: game.setMenu(nullptr); break;
+                case GLFW_KEY_E: onBuyHp(world); break;
+                default: break;
+                }
+            },
+            [&](const engine::Pressed<engine::JoystickButton> &joy) {
+                switch (joy.source.button) {
+                case engine::Joystick::CENTER2: game.setMenu(nullptr); break;
+                case engine::Joystick::Buttons::ACTION_TOP: onBuyHp(world); break;
+                default: break;
+                }
+            },
+            [&](auto) {},
+        },
+        e);
 }

@@ -26,6 +26,7 @@ private:
 private:
 
     void processInputs(entt::registry &world, ThePURGE &game);
+    void onBuyHp(entt::registry &world);
 
     void drawTree(entt::registry &world, ThePURGE &game) noexcept;
     auto getTreeDrawPos(const ImVec2 &relPos, float elemSize) const noexcept -> ImVec2;
