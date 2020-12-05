@@ -156,7 +156,6 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
 
 
     const auto *parent = findParent(m_selection->cl);
-    spdlog::info("self index {}", m_selection->selfIndex);
 
     if (up() && parent) {
         m_selection = parent;
@@ -271,6 +270,9 @@ void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &
 
         m_classes.push_back(std::move(thisRow));
     }
+
+    // remove owned classes from purchaseable
+    m_purchaseable.erase(std::remove_if(std::begin(m_purchaseable), std::end(m_purchaseable), [this](const auto &c) { return std::find(std::begin(m_owned), std::end(m_owned), c) != std::end(m_owned); }), std::end(m_purchaseable));
 
     printClassTreeDebug();
 
@@ -445,7 +447,6 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                     case engine::Joystick::LST:
                     case engine::Joystick::RST: {
                         const auto id = spell_map(joy.source.axis);
-                        spdlog::info("Assign to {}", id);
                         world.get<SpellSlots>(m_player).spells[id] = game.dbSpells().instantiate(m_spellBeingAssigned->name);
                         m_spellBeingAssigned = nullptr;
                     } break;
@@ -457,8 +458,6 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                     case engine::Joystick::LS:
                     case engine::Joystick::RS: {
                         const auto id = spell_map(joy.source.button);
-                        spdlog::info("Assign to {}", id);
-
                         world.get<SpellSlots>(m_player).spells[id] = game.dbSpells().instantiate(m_spellBeingAssigned->name);
                         m_spellBeingAssigned = nullptr;
                     } break;
