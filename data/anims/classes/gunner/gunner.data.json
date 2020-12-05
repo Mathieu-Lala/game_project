@@ -66,7 +66,7 @@
                 ]
             },
             "death": {
-                "file": "/anims/classes//_spritesheet.png",
+                "file": "/anims/classes/gunner/gunner_spritesheet.png",
                 "width": 38,
                 "height": 48,
                 "cooldown": 50,
