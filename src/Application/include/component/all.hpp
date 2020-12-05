@@ -18,6 +18,7 @@
 #include "component/SpellEffect.hpp"
 //#include "component/Effect.hpp"
 #include "component/Speed.hpp"
+#include "component/StatsTracking.hpp"
 
 #include "component/ViewRange.hpp"
 #include "component/Health.hpp"

@@ -5,7 +5,6 @@
 #include "AMenu.hpp"
 #include "widgets/helpers.hpp"
 
-
 namespace game::menu {
 
 class MainMenu : public AMenu {

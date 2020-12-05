@@ -192,6 +192,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<ControllerAxis>(player, glm::vec2(0.f, 0.f), glm::vec2(0.f, 0.f));
     world.emplace<AimSight>(player);
     world.emplace<AimingDirection>(player, glm::vec2(1.f, 0.f));
+    world.emplace<StatsTracking>(player);
 
     engine::DrawableFactory::fix_color(world, player, {1.0f, 1.0f, 1.0f});
 

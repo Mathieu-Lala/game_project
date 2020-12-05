@@ -4,7 +4,7 @@
 #include <array>
 //#include <string>
 
-//#include "models/Spell.hpp"
+#include "models/Spell.hpp"
 
 namespace game {
 

@@ -10,6 +10,7 @@ add_library(
   src/models/Class.cpp
   src/models/Enemy.cpp
   src/models/Effect.cpp
+  src/models/EndGameStats.cpp
   src/factory/EntityFactory.cpp
   src/factory/SpellFactory.cpp
   src/factory/ParticuleFactory.cpp
@@ -23,7 +24,7 @@ add_library(
   src/menu/Credits.cpp
   src/menu/HowToPlay.cpp
   src/widgets/helpers.cpp
-  src/widgets/Fonts.cpp)
+  src/widgets/Fonts.cpp "include/component/StatsTracking.hpp")
 
 target_link_libraries(ThePURGE PRIVATE engine_core) # note : should be engine_api or something ..
 

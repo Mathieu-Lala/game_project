@@ -25,13 +25,13 @@ auto frac2pixel(ImVec2 fraction) noexcept -> ImVec2
     return ImVec2(static_cast<float>(winSize.x) * fraction.x, static_cast<float>(winSize.y) * fraction.y);
 }
 
-void drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) noexcept
+void drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size, ImVec4 tintColor) noexcept
 {
     ImGui::SetCursorPos(topLeft);
-    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(id)), size);
+    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(id)), size, ImVec2(0, 0), ImVec2(1, 1),  tintColor);
 }
 
-void drawTexture(const GUITexture &t) noexcept { drawTexture(t.id, frac2pixel(t.topleft), frac2pixel(t.size)); }
+void drawTexture(const GUITexture &t, ImVec4 tintColor) noexcept { drawTexture(t.id, frac2pixel(t.topleft), frac2pixel(t.size), tintColor); }
 
 void drawText(ImVec2 pos, const std::string &str, ImVec4 color, ImFont *font) noexcept
 {

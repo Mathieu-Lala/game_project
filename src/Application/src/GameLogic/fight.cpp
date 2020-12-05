@@ -13,6 +13,7 @@
 
 #include "models/Spell.hpp"
 #include "models/Class.hpp"
+#include "models/EndGameStats.hpp"
 
 #include "GameLogic.hpp"
 #include "ThePURGE.hpp"
@@ -281,7 +282,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
             .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
             ->play();
 
-        m_game.setMenu(std::make_unique<menu::GameOver>());
+        m_game.setMenu(std::make_unique<menu::GameOver>(EndGameStats(world, killed, m_gameTime)));
 
     } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
         // TODO: actual random utilities
@@ -292,10 +293,13 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
                                 : holder.instance->settings().data_folder + "sounds/death_02.wav")
             ->play();
 
-        if (world.has<entt::tag<"player"_hs>>(killer)) { addXp(world, killer, world.get<Experience>(killed).xp); }
+        if (world.has<entt::tag<"player"_hs>>(killer)) { 
+            addXp(world, killer, world.get<Experience>(killed).xp);
+            world.get<StatsTracking>(killer).enemyKilled++;
+        }
 
         if (world.has<entt::tag<"boss"_hs>>(killed)) {
-            auto pos = world.get<engine::d3::Position>(killed);
+            const auto &pos = world.get<engine::d3::Position>(killed);
             EntityFactory::create<EntityFactory::KEY>(m_game, world, {pos.x, pos.y}, {1.0, 1.0});
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
