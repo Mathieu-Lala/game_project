@@ -324,7 +324,7 @@ void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &
             [this](const auto &c) { return std::find(std::begin(m_owned), std::end(m_owned), c) != std::end(m_owned); }),
         std::end(m_purchaseable));
 
-    printClassTreeDebug();
+    //printClassTreeDebug();
 
     m_root = generateTreeRec(game, m_classes[0][0]);
 }
