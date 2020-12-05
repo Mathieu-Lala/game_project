@@ -71,72 +71,77 @@ auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uin
     while (level.current_xp >= level.xp_require) { onPlayerLevelUp.publish(world, player); }
 }
 
-auto game::GameLogic::slots_update_effect(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
     auto holder = engine::Core::Holder{};
 
-    const auto elapsed = dt.elapsed.count();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
 
     world.view<entt::tag<"effect"_hs>, engine::Cooldown>().each([&elapsed](auto &, auto &cd) {
-        if (cd.is_in_cooldown) return;
+        if (!cd.is_in_cooldown) return;
 
-        if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
+        if (std::chrono::milliseconds{elapsed} <= cd.remaining_cooldown) {
             cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
         } else {
             cd.remaining_cooldown = 0ms;
             cd.is_in_cooldown = false;
-            spdlog::warn("attack is up !");
         }
     });
 
     for (const auto &effect : world.view<entt::tag<"effect"_hs>>()) {
         auto &cd = world.get<engine::Cooldown>(effect);
         if (cd.is_in_cooldown) continue;
+        cd.is_in_cooldown = true;
+        cd.remaining_cooldown = cd.cooldown;
 
-        const auto &source = world.get<engine::Source>(effect).source;
+        const auto &receiver = world.get<engine::Source>(effect).source;
         const auto &sender = world.get<engine::SourceBis>(effect).source;
-        if (!world.valid(source)) {
+        if (!world.valid(receiver)) {
             world.destroy(effect);
             continue;
         }
 
-        auto &source_hp = world.get<game::Health>(source);
+        switch (world.get<Effect::Type>(effect)) {
+        case Effect::Type::DOT: {
+            auto &receiver_hp = world.get<game::Health>(receiver);
 
-        // note : duplicated code !!! send a signal instead
+            // note : duplicated code !!! send a signal instead
 
-        source_hp.current -= world.get<AttackDamage>(effect).damage;
-        const auto is_player = world.has<entt::tag<"player"_hs>>(source);
+            receiver_hp.current -= world.get<AttackDamage>(effect).damage;
+            const auto is_player = world.has<entt::tag<"player"_hs>>(receiver);
 
-        if (is_player) { holder.instance->setScreenshake(true, 350ms); }
+            if (is_player) { holder.instance->setScreenshake(true, 350ms); }
 
-        const auto &entity_pos = world.get<engine::d3::Position>(source);
-        ParticuleFactory::create<Particule::HITMARKER>(
-            world, {entity_pos.x, entity_pos.y}, is_player ? glm::vec3{255, 0, 0} : glm::vec3{0, 0, 0});
+            const auto &entity_pos = world.get<engine::d3::Position>(receiver);
+            ParticuleFactory::create<Particule::HITMARKER>(
+                world, {entity_pos.x, entity_pos.y}, is_player ? glm::vec3{255, 0, 0} : glm::vec3{0, 0, 0});
 
-        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")->play();
+            holder.instance->getAudioManager()
+                .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
+                ->play();
 
-        if (source_hp.current <= 0.0f) { onEntityKilled.publish(world, source, sender); }
+            if (receiver_hp.current <= 0.0f) {
+                onEntityKilled.publish(world, receiver, sender);
+                world.destroy(effect);
+            }
 
+        } break;
+        case Effect::Type::DASH: {
+            const auto &initial_speed = world.get<engine::Copy<Speed>>(receiver).data;
+            world.replace<Speed>(receiver, initial_speed);
+            world.remove_if_exists<engine::Copy<Speed>>(receiver);
 
-        cd.is_in_cooldown = true;
-        cd.remaining_cooldown = cd.cooldown;
+            const auto &initial_color = world.get<engine::Copy<engine::Color>>(receiver).data;
+            engine::DrawableFactory::fix_color(
+                world,
+                receiver,
+                {engine::Color::r(initial_color), engine::Color::g(initial_color), engine::Color::b(initial_color)});
+            world.remove_if_exists<engine::Copy<engine::Color>>(receiver);
+
+        } break;
+        default: break;
+        }
     }
-
-    //    auto player_health = world.get<game::Health>(m_game.player);
-    //
-    //    world.view<game::Effect>().each([&](auto &effect) {
-    //        if (!effect.is_in_effect) return;
-    //        if (dt.elapsed < effect.remaining_time_effect) {
-    //            effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-    //            if (effect.effect_name == "stun") spdlog::warn("stun");
-    //            if (effect.effect_name == "bleed") {
-    //                /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so
-    //                TODO*/ player_health.current -= 0.01f;
-    //            }
-    //        } else {
-    //            effect.is_in_effect = false;
-    //        }
-    //    });
 }
 
 // note : not really on damage taken but rather, on collide with spell
@@ -144,8 +149,6 @@ auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity rec
     -> void
 {
     auto holder = engine::Core::Holder{};
-
-    auto &entity_health = world.get<Health>(receiver);
 
     const auto effects = [&](const auto &ref) {
         struct sPsE {
@@ -169,26 +172,42 @@ auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity rec
             });
 
         if (exist) {
-            spdlog::info("skipping effect already exist");
+            // spdlog::info("skipping effect already exist");
 
             // todo refresh cd
 
         } else {
-            spdlog::info("create effect");
-
             auto new_effect = world.create();
             world.emplace<entt::tag<"effect"_hs>>(new_effect);
             world.emplace<engine::Source>(new_effect, receiver);
             world.emplace<engine::SourceBis>(new_effect, sender);
             world.emplace<engine::Lifetime>(new_effect, i->lifetime);
-            world.emplace<engine::Cooldown>(new_effect, false, i->cooldown, 0ms);
+            world.emplace<engine::Cooldown>(new_effect, true, i->cooldown, i->cooldown);
             world.emplace<std::string>(new_effect, new_tag);
 
-            world.emplace<AttackDamage>(new_effect, i->damage);
+            world.emplace<Effect::Type>(new_effect, i->type);
+
+            if (i->type == Effect::DOT) {
+                world.emplace<AttackDamage>(new_effect, i->damage);
+            } else if (i->type == Effect::DASH) {
+                spdlog::info("seting velocity");
+
+                if (!world.has<engine::Copy<Speed>>(receiver)) {
+                    const auto &current_speed = world.get<Speed>(receiver);
+                    world.emplace<engine::Copy<Speed>>(receiver, current_speed);
+                    world.replace<Speed>(receiver, current_speed.speed / i->strength);
+
+                    const auto &current_color = world.get<engine::Color>(receiver);
+                    world.emplace<engine::Copy<engine::Color>>(receiver, current_color);
+                    engine::DrawableFactory::fix_color(world, receiver, {0, 0, 1});
+                }
+            }
         }
     }
 
     if (world.has<entt::tag<"projectile"_hs>>(spell)) {
+        auto &entity_health = world.get<Health>(receiver);
+
         entity_health.current -= world.get<AttackDamage>(spell).damage;
 
         const auto is_player = world.has<entt::tag<"player"_hs>>(receiver);

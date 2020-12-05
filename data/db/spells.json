@@ -155,6 +155,31 @@
       "projectile"
     ]
   },
+  "thunder": {
+    "icon": "icons/spells/fireball_blue.png",
+    "description": "A strike from the sky",
+    "cooldown": 2000,
+    "damage": 5,
+    "scale": {
+      "x": 2.5,
+      "y": 2.5
+    },
+    "hitbox": {
+      "x": 1.2,
+      "y": 1.2
+    },
+    "lifetime": 900,
+    "audio_on_cast": "sounds/fire_cast.wav",
+    "animation": "anims/spells/thunder/thunder.data.json",
+    "speed": 0.1,
+    "offset_to_source": {
+      "x": 2,
+      "y": 2
+    },
+    "type": [
+      "projectile"
+    ]
+  },
   "arrow": {
     "icon": "icons/spells/arrow.png",
     "description": "Shoots a basic arrow",
@@ -178,6 +203,90 @@
     },
     "type": [
       "projectile"
+    ]
+  },
+  "after_shock": {
+    "icon": "icons/spells/after_shock/after_shock.spritesheet.png",
+    "description": "Create a shockwave slowing all the enemies nearby",
+    "cooldown": 2000,
+    "damage": 0,
+    "scale": {
+      "x": 6,
+      "y": 6
+    },
+    "hitbox": {
+      "x": 5,
+      "y": 5
+    },
+    "lifetime": 300,
+    "audio_on_cast": "sounds/spells/stick.wav",
+    "animation": "anims/spells/after_shock/after_shock.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "slow"
+    ]
+  },
+  "freeze": {
+    "icon": "icons/spells/after_shock/after_shock.spritesheet.png",
+    "description": "A cold strike reducing the target's speed",
+    "cooldown": 2000,
+    "damage": 0,
+    "scale": {
+      "x": 3,
+      "y": 3
+    },
+    "hitbox": {
+      "x": 2.5,
+      "y": 2.5
+    },
+    "lifetime": 300,
+    "audio_on_cast": "sounds/spells/stick.wav",
+    "animation": "anims/spells/after_shock/after_shock.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "slow"
+    ]
+  },
+  "explosion": {
+    "icon": "icons/spells/after_shock/after_shock.spritesheet.png",
+    "description": "A very powerfull and explosive attack",
+    "cooldown": 4000,
+    "damage": 0,
+    "scale": {
+      "x": 3,
+      "y": 3
+    },
+    "hitbox": {
+      "x": 2.5,
+      "y": 2.5
+    },
+    "lifetime": 460,
+    "audio_on_cast": "sounds/spells/stick.wav",
+    "animation": "anims/spells/explosion/explosion.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "explosion_effect"
     ]
   }
 }

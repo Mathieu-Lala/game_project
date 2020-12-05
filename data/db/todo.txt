@@ -1,12 +1,9 @@
 class speed += instead of =
 
-frost // tank spell ? = zone de slow
-
 ? // archer // dash & attack_buffed
 
 shadow_dash // assassin
 
 barrel // gunner
 
-explosion_on_death // fire_skeleton
-forst_on_death // ice_skeleton
+// add effect kill_caster ?

@@ -54,8 +54,6 @@ void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
 
 void game::menu::UpgradePanel::draw(entt::registry &world, ThePURGE &game)
 {
-    static auto holder = engine::Core::Holder{};
-
     processInputs(world, game);
 
     GameHUD::draw(game, world);
@@ -176,16 +174,16 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
             }
         }
     } else if (left() && parent) {
-        for (int i = m_selection->selfIndex - 1; i >= 0; --i) {
-            const auto *it = &parent->children[i];
+        for (auto i = static_cast<std::size_t>(m_selection->selfIndex) - 1ul; i != 0; --i) {
+            const auto *it = &parent->children.at(i);
             if (!isUnavailable(it->cl)) {
                 m_selection = it;
                 break;
             }
         }
     } else if (right() && parent)
-        for (int i = m_selection->selfIndex + 1; i < parent->children.size(); ++i) {
-            const auto *it = &parent->children[i];
+        for (auto i = static_cast<std::size_t>(m_selection->selfIndex) + 1ul; i < parent->children.size(); ++i) {
+            const auto *it = &parent->children.at(i);
             if (!isUnavailable(it->cl)) {
                 m_selection = it;
                 break;
@@ -201,7 +199,7 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
     }
 
     const auto sp = world.get<SkillPoint>(m_player).count;
-    if (select())
+    if (select()) {
         if (isPurchaseable(m_selection->cl) && sp >= m_selection->cl->cost) {
             game.logics()->onPlayerPurchase.publish(world, m_player, *m_selection->cl);
             holder.instance->getAudioManager()
@@ -215,6 +213,7 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
             holder.instance->getAudioManager()
                 .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/error.wav")
                 ->play();
+    }
 }
 
 void game::menu::UpgradePanel::onBuyHp(entt::registry &world)
@@ -324,7 +323,7 @@ void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &
             [this](const auto &c) { return std::find(std::begin(m_owned), std::end(m_owned), c) != std::end(m_owned); }),
         std::end(m_purchaseable));
 
-    //printClassTreeDebug();
+    // printClassTreeDebug();
 
     m_root = generateTreeRec(game, m_classes[0][0]);
 }
@@ -332,14 +331,14 @@ void game::menu::UpgradePanel::updateClassTree(entt::registry &world, ThePURGE &
 auto game::menu::UpgradePanel::generateTreeRec(ThePURGE &game, const Class *cl, int selfIndex, int depth) const noexcept
     -> ClassTreeNode
 {
-    float yPos = static_cast<float>(depth) / (m_classes.size() - 1);
+    const auto yPos = static_cast<float>(depth) / static_cast<float>(m_classes.size() - 1);
 
-    if (depth == m_classes.size() - 1) {
+    if (static_cast<std::size_t>(depth) == m_classes.size() - 1) {
         const auto &lastRow = m_classes.back();
         const auto iter = std::find(std::begin(lastRow), std::end(lastRow), cl);
         auto idx = std::distance(std::begin(lastRow), iter);
 
-        float xPos = static_cast<float>(idx) / (lastRow.size() - 1);
+        const auto xPos = static_cast<float>(idx) / static_cast<float>(lastRow.size() - 1);
 
         return ClassTreeNode{.selfIndex = selfIndex, .cl = cl, .relPos = ImVec2(xPos, yPos), .children = {}};
     }
@@ -353,7 +352,7 @@ auto game::menu::UpgradePanel::generateTreeRec(ThePURGE &game, const Class *cl, 
 
     for (int idx = 0; const auto &childName : cl->children) {
         result.children.push_back(generateTreeRec(game, game.dbClasses().getByName(childName), idx++, depth + 1));
-        result.relPos.x += result.children.back().relPos.x / cl->children.size();
+        result.relPos.x += result.children.back().relPos.x / static_cast<float>(cl->children.size());
     }
 
     return result;

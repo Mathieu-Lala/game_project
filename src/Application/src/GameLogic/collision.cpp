@@ -89,7 +89,7 @@ auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_un
         }
 
         const auto &spd = world.get<Speed>(entity).speed;
-        const auto result = glm::normalize(diff) * 7.f;
+        const auto result = glm::normalize(diff);
         out = {result.x * spd, result.y * spd};
 
         return true;

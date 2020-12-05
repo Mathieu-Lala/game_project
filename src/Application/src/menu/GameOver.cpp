@@ -1,8 +1,8 @@
-#include <Engine/Core.hpp>
 #include <Engine/Graphics/Window.hpp>
 #include <Engine/component/Color.hpp>
 #include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/TextureLoader.hpp>
+#include <Engine/Core.hpp>
 
 #include "models/Spell.hpp"
 
@@ -13,6 +13,11 @@
 #include "menu/MainMenu.hpp"
 
 #include "widgets/Fonts.hpp"
+
+auto game::menu::GameOver::clean_world(entt::registry &world) -> void
+{
+    Stage{}.clear(world, true);
+}
 
 void game::menu::GameOver::create(entt::registry &, ThePURGE &)
 {
@@ -110,18 +115,6 @@ void game::menu::GameOver::drawGameStats()
         fmt::format("{}", m_stats.enemyKilled),
         ImVec4(1, 1, 1, 1),
         Fonts::kimberley_62);
-}
-
-auto game::menu::GameOver::clean_world(entt::registry &world) -> void
-{
-    for (const auto &i : world.view<entt::tag<"enemy"_hs>>()) { world.destroy(i); }
-    for (const auto &i : world.view<entt::tag<"terrain"_hs>>()) { world.destroy(i); }
-    for (const auto &i : world.view<entt::tag<"key"_hs>>()) { world.destroy(i); }
-    for (const auto &i : world.view<entt::tag<"player"_hs>>()) {
-        world.destroy(i);
-        world.destroy(world.get<AimSight>(i).entity);
-    }
-    for (const auto &i : world.view<entt::tag<"spell"_hs>>()) { world.destroy(i); }
 }
 
 void game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const engine::Event &e)

@@ -31,14 +31,23 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
     m_logics = std::make_unique<GameLogic>(*this);
 
     const auto data_folder = holder.instance->settings().data_folder;
+    spdlog::trace("Loading the spells");
     m_db_spell.fromFile(data_folder + "db/spells.json");
+    spdlog::trace("OK");
+    spdlog::trace("Loading the classes");
     m_db_class.fromFile(data_folder + "db/classes.json");
+    spdlog::trace("OK");
+    spdlog::trace("Loading the enemies");
     m_db_enemy.fromFile(data_folder + "db/enemies.json");
+    spdlog::trace("OK");
+    spdlog::trace("Loading the effects");
     m_db_effects.fromFile(data_folder + "db/effects.json");
+    spdlog::trace("OK");
 
     setMenu(std::make_unique<menu::MainMenu>());
     setBackgroundMusic("sounds/menu/background_music.wav", 0.5f);
 
+    spdlog::info("Starting the game");
     holder.instance->window()->setCursorVisible(false);
 }
 
