@@ -36,7 +36,7 @@ private:
 
     EndGameStats m_stats;
 
-    float m_timeElapsed = 0;
+    double m_timeElapsed = 0;
 };
 
 } // namespace game::menu

@@ -66,7 +66,7 @@
                 ]
             },
             "death": {
-                "file": "/anims/classes//_spritesheet.png",
+                "file": "/anims/classes/tank/tank_spritesheet.png",
                 "width": 40,
                 "height": 48,
                 "cooldown": 50,

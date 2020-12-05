@@ -39,10 +39,10 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
 
     // Vsync
     ::glfwSwapInterval(1);
-    ::glEnable(GL_DEPTH_TEST);
+    CALL_OPEN_GL(::glEnable(GL_DEPTH_TEST));
 
-    ::glEnable(GL_BLEND);
-    ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    CALL_OPEN_GL(::glEnable(GL_BLEND));
+    CALL_OPEN_GL(::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     s_instance = this;
 
@@ -63,7 +63,7 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
         setFullscreen(true);
     }
 
-    ::glViewport(0, 0, m_size.x, m_size.y);
+    CALL_OPEN_GL(::glViewport(0, 0, m_size.x, m_size.y));
 }
 
 engine::Window::~Window()
@@ -121,7 +121,7 @@ bool engine::Window::screenshot(const std::string_view filename)
 {
     GLint viewport[4];
 
-    ::glGetIntegerv(GL_VIEWPORT, viewport);
+    CALL_OPEN_GL(::glGetIntegerv(GL_VIEWPORT, viewport));
     const auto &x = viewport[0];
     const auto &y = viewport[1];
     const auto &width = viewport[2];
@@ -130,8 +130,8 @@ bool engine::Window::screenshot(const std::string_view filename)
     constexpr auto CHANNEL = 4ul;
     std::vector<char> pixels(static_cast<std::size_t>(width * height) * CHANNEL);
 
-    ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    ::glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+    CALL_OPEN_GL(::glPixelStorei(GL_PACK_ALIGNMENT, 1));
+    CALL_OPEN_GL(::glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data()));
 
     std::array<char, CHANNEL> pixel;
     for (auto j = 0; j < height / 2; ++j)
@@ -139,9 +139,9 @@ bool engine::Window::screenshot(const std::string_view filename)
             const auto top = static_cast<std::size_t>(i + j * width) * pixel.size();
             const auto bottom = static_cast<std::size_t>(i + (height - j - 1) * width) * pixel.size();
 
-            std::memcpy(pixel.data(),           pixels.data() + top,    pixel.size());
-            std::memcpy(pixels.data() + top,    pixels.data() + bottom, pixel.size());
-            std::memcpy(pixels.data() + bottom, pixel.data(),           pixel.size());
+            std::memcpy(pixel.data(), pixels.data() + top, pixel.size());
+            std::memcpy(pixels.data() + top, pixels.data() + bottom, pixel.size());
+            std::memcpy(pixels.data() + bottom, pixel.data(), pixel.size());
         }
 
     return !!::stbi_write_png(filename.data(), width, height, 4, pixels.data(), 0);
@@ -149,11 +149,9 @@ bool engine::Window::screenshot(const std::string_view filename)
 
 void engine::Window::setCursorVisible(bool visible) noexcept
 {
-    if (!visible)
-    	glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    else
-    	glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    ::glfwSetInputMode(m_handle, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
+
 auto engine::Window::isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
 
 auto engine::Window::close() -> void { ::glfwSetWindowShouldClose(m_handle, GLFW_TRUE); }
@@ -162,9 +160,10 @@ auto engine::Window::render() -> void { ::glfwSwapBuffers(m_handle); }
 
 auto engine::Window::setActive() -> void { ::glfwMakeContextCurrent(m_handle); }
 
-auto engine::Window::setSize(glm::ivec2 &&size) -> void {
+auto engine::Window::setSize(glm::ivec2 &&size) -> void
+{
     ::glfwSetWindowSize(m_handle, size.x, size.y);
-    ::glViewport(0, 0, size.x, size.y);
+    CALL_OPEN_GL(::glViewport(0, 0, size.x, size.y));
     m_size = size;
 }
 

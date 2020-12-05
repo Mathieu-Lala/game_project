@@ -206,7 +206,6 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
 
                 console.info(
                     "Class {} :\n"
-                    "\tdescription : {}\n"
                     "\ticon : {}\n"
                     "\tgraph asset : {}\n"
                     "\tspells : {}\n"
@@ -214,12 +213,10 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_getClassInfo =
                     "\tdamage : {}\n"
                     "\tchildren classes : {}",
                     data->name,
-                    data->description,
                     data->iconPath,
                     data->assetGraphPath,
                     spellNames.str(),
                     data->health,
-                    // data->damage,
                     childrenesNames.str());
             }
 
@@ -232,4 +229,3 @@ game::CommandHandler::handler_t game::CommandHandler::cmd_giantfireball =
     [](entt::registry &, ThePURGE &, std::vector<std::string> &&, DebugConsole &) {
         // SpellFactory::create(SpellFactory::DEBUG_GIANT_FIREBALL, world, game.player, glm::vec2(0, 0));
     };
-

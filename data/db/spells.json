@@ -169,7 +169,7 @@
       "y": 1.2
     },
     "lifetime": 900,
-    "audio_on_cast": "sounds/fire_cast.wav",
+    "audio_on_cast": "sounds/spells/thunder.wav",
     "animation": "anims/spells/thunder/thunder.data.json",
     "speed": 0.1,
     "offset_to_source": {
@@ -194,7 +194,7 @@
       "y": 0.3
     },
     "lifetime": 1000,
-    "audio_on_cast": "sounds/spells/stick.wav",
+    "audio_on_cast": "sounds/spells/shooter_attack.wav",
     "animation": "anims/spells/arrow/arrow.data.json",
     "speed": 8.0,
     "offset_to_source": {
@@ -219,7 +219,7 @@
       "y": 5
     },
     "lifetime": 300,
-    "audio_on_cast": "sounds/spells/stick.wav",
+    "audio_on_cast": "sounds/spells/after_shock.wav",
     "animation": "anims/spells/after_shock/after_shock.data.json",
     "speed": 0,
     "offset_to_source": {
@@ -275,7 +275,7 @@
       "y": 2.5
     },
     "lifetime": 460,
-    "audio_on_cast": "sounds/spells/stick.wav",
+    "audio_on_cast": "sounds/spells/explosion.wav",
     "animation": "anims/spells/explosion/explosion.data.json",
     "speed": 0,
     "offset_to_source": {

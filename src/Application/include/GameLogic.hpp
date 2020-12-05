@@ -92,8 +92,7 @@ private: // slots
     auto slots_update_cooldown(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_check_collision(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_check_floor_change(entt::registry &, const engine::TimeElapsed &) -> void;
-
-    /*[[deprecated]]*/ auto slots_update_effect(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_effect(entt::registry &, const engine::TimeElapsed &) -> void;
 
     // todo : should not be a slots connected to onGameUpdate but a callback connected to replace<Velocity>
     auto slots_update_animation_spritesheet(entt::registry &, const engine::TimeElapsed &) -> void;

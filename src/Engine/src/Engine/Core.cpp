@@ -271,8 +271,7 @@ auto engine::Core::main(int argc, char **argv) -> int
 
         if (timeElapsed) { this->tickOnce(std::get<TimeElapsed>(event)); }
 
-        if (!timeElapsed || (timeElapsed && m_eventMode != EventMode::PAUSED))
-            m_game->onUpdate(m_world, event);
+        if (!timeElapsed || (timeElapsed && m_eventMode != EventMode::PAUSED)) m_game->onUpdate(m_world, event);
     }
 
     m_world.view<engine::Drawable>().each(engine::Drawable::dtor);
@@ -428,8 +427,8 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         const auto background = m_game->getBackgroundColor();
 
-        ::glClearColor(background.r, background.g, background.b, 1.0f);
-        ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        CALL_OPEN_GL(::glClearColor(background.r, background.g, background.b, 1.0f));
+        CALL_OPEN_GL(::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
         // todo : add rendering
         // texture and no color
@@ -450,8 +449,8 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
                 model = glm::rotate(model, rotation, glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored->setUniform("model", model);
-                ::glBindVertexArray(drawable.VAO);
-                ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
+                CALL_OPEN_GL(::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0));
             });
 
         m_shader_colored_textured->use();
@@ -467,9 +466,9 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored_textured->setUniform("model", model);
                 m_shader_colored_textured->setUniform("mirrored", texture.mirrored);
-                ::glBindTexture(GL_TEXTURE_2D, getCache<Texture>().handle(texture.id)->id);
-                ::glBindVertexArray(drawable.VAO);
-                ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                CALL_OPEN_GL(::glBindTexture(GL_TEXTURE_2D, getCache<Texture>().handle(texture.id)->id));
+                CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
+                CALL_OPEN_GL(::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0));
             });
     });
 }

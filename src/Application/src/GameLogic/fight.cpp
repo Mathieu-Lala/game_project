@@ -101,6 +101,8 @@ auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::T
             continue;
         }
 
+        spdlog::info("here");
+
         switch (world.get<Effect::Type>(effect)) {
         case Effect::Type::DOT: {
             auto &receiver_hp = world.get<game::Health>(receiver);
@@ -172,7 +174,7 @@ auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity rec
             });
 
         if (exist) {
-            // spdlog::info("skipping effect already exist");
+            spdlog::info("skipping effect already exist");
 
             // todo refresh cd
 
@@ -188,9 +190,11 @@ auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity rec
             world.emplace<Effect::Type>(new_effect, i->type);
 
             if (i->type == Effect::DOT) {
+                spdlog::info("effect dot created");
+
                 world.emplace<AttackDamage>(new_effect, i->damage);
             } else if (i->type == Effect::DASH) {
-                spdlog::info("seting velocity");
+                spdlog::info("setting velocity");
 
                 if (!world.has<engine::Copy<Speed>>(receiver)) {
                     const auto &current_speed = world.get<Speed>(receiver);
@@ -289,11 +293,11 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
         bool lazyDevCoinflip = static_cast<std::uint32_t>(killed) % 2;
         holder.instance->getAudioManager()
             .getSound(
-                lazyDevCoinflip ? holder.instance->settings().data_folder + "sounds/death_01.wav"
-                                : holder.instance->settings().data_folder + "sounds/death_02.wav")
+                lazyDevCoinflip ? holder.instance->settings().data_folder + "sounds/death/death_01.wav"
+                                : holder.instance->settings().data_folder + "sounds/death/death_02.wav")
             ->play();
 
-        if (world.has<entt::tag<"player"_hs>>(killer)) { 
+        if (world.has<entt::tag<"player"_hs>>(killer)) {
             addXp(world, killer, world.get<Experience>(killed).xp);
             world.get<StatsTracking>(killer).enemyKilled++;
         }
