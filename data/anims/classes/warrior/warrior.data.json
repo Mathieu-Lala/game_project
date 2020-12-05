@@ -1,0 +1,106 @@
+{
+    "object": {
+        "animations": {
+            "idle_left": {
+                "file": "/anims/classes/warrior/warrior_spritesheet.png",
+                "width": 36,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 36,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_left": {
+                "file": "/anims/classes/warrior/warrior_spritesheet.png",
+                "width": 36,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 72,
+                        "y": 48
+                    },
+                    {
+                        "x": 36,
+                        "y": 48
+                    },
+                    {
+                        "x": 0,
+                        "y": 48
+                    }
+                ]
+            },
+            "idle_right": {
+                "file": "/anims/classes/warrior/warrior_spritesheet.png",
+                "width": 36,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 36,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_right": {
+                "file": "/anims/classes/warrior/warrior_spritesheet.png",
+                "width": 36,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 96
+                    },
+                    {
+                        "x": 36,
+                        "y": 96
+                    },
+                    {
+                        "x": 72,
+                        "y": 96
+                    }
+                ]
+            },
+            "death": {
+                "file": "/anims/classes//_spritesheet.png",
+                "width": 36,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_left": {
+                "file": "/anims/classes/warrior/warrior_spritesheet.png",
+                "width": 36,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 36,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_right": {
+                "file": "/anims/classes/warrior/warrior_spritesheet.png",
+                "width": 36,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 72,
+                        "y": 144
+                    }
+                ]
+            }
+        }
+    }
+}

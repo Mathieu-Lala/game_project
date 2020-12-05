@@ -1,0 +1,106 @@
+{
+    "object": {
+        "animations": {
+            "idle_left": {
+                "file": "/anims/classes/gunner/gunner_spritesheet.png",
+                "width": 38,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 38,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_left": {
+                "file": "/anims/classes/gunner/gunner_spritesheet.png",
+                "width": 38,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 76,
+                        "y": 48
+                    },
+                    {
+                        "x": 38,
+                        "y": 48
+                    },
+                    {
+                        "x": 0,
+                        "y": 48
+                    }
+                ]
+            },
+            "idle_right": {
+                "file": "/anims/classes/gunner/gunner_spritesheet.png",
+                "width": 38,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 38,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_right": {
+                "file": "/anims/classes/gunner/gunner_spritesheet.png",
+                "width": 38,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 96
+                    },
+                    {
+                        "x": 38,
+                        "y": 96
+                    },
+                    {
+                        "x": 76,
+                        "y": 96
+                    }
+                ]
+            },
+            "death": {
+                "file": "/anims/classes//_spritesheet.png",
+                "width": 38,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_left": {
+                "file": "/anims/classes/gunner/gunner_spritesheet.png",
+                "width": 38,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 38,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_right": {
+                "file": "/anims/classes/gunner/gunner_spritesheet.png",
+                "width": 38,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 76,
+                        "y": 144
+                    }
+                ]
+            }
+        }
+    }
+}

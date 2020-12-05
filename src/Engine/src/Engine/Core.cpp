@@ -103,6 +103,7 @@ auto engine::Core::getNextEvent() -> Event
     ::glfwPollEvents();
 
     switch (m_eventMode) {
+    case EventMode::PAUSED:
     case EventMode::RECORD: {
         m_joystickManager->poll();
 
@@ -245,6 +246,10 @@ auto engine::Core::main(int argc, char **argv) -> int
                         m_show_debug_info = !m_show_debug_info;
                         window()->setCursorVisible(m_show_debug_info);
                         break;
+                    case GLFW_KEY_F2:
+                        m_eventMode = m_eventMode == EventMode::PAUSED ? EventMode::RECORD : EventMode::PAUSED;
+                        break;
+
 #endif
                     case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
                     case GLFW_KEY_F12: {
@@ -266,7 +271,8 @@ auto engine::Core::main(int argc, char **argv) -> int
 
         if (timeElapsed) { this->tickOnce(std::get<TimeElapsed>(event)); }
 
-        m_game->onUpdate(m_world, event);
+        if (!timeElapsed || (timeElapsed && m_eventMode != EventMode::PAUSED))
+            m_game->onUpdate(m_world, event);
     }
 
     m_world.view<engine::Drawable>().each(engine::Drawable::dtor);
@@ -289,120 +295,122 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
-    for (const auto &i : m_world.view<Lifetime>()) {
-        auto &lifetime = m_world.get<Lifetime>(i);
+    if (m_eventMode != EventMode::PAUSED) {
+        for (const auto &i : m_world.view<Lifetime>()) {
+            auto &lifetime = m_world.get<Lifetime>(i);
 
-        if (t.elapsed < lifetime.remaining_lifetime) {
-            lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed);
-        } else {
-            m_world.destroy(i);
-        }
-    }
-
-    // should have only one entity cooldown
-    m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
-        if (!cd.is_in_cooldown) return;
-
-        if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
-            cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
-        } else {
-            cd.remaining_cooldown = std::chrono::milliseconds(0);
-            cd.is_in_cooldown = false;
-            setScreenshake(false);
-        }
-    });
-
-    // check if the spritesheet need to update the texture
-    m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
-        if (!sprite.cooldown.is_in_cooldown) return;
-
-        if (std::chrono::milliseconds{elapsed} < sprite.cooldown.remaining_cooldown) {
-            sprite.cooldown.remaining_cooldown -= std::chrono::milliseconds{elapsed};
-        } else {
-            sprite.cooldown.remaining_cooldown = std::chrono::milliseconds(0);
-            sprite.cooldown.is_in_cooldown = false;
-        }
-    });
-
-
-    // update and reset the cooldown of the spritesheet
-    for (auto &i : m_world.view<Spritesheet>()) {
-        auto &sprite = m_world.get<Spritesheet>(i);
-        if (sprite.cooldown.is_in_cooldown) continue;
-        sprite.cooldown.is_in_cooldown = true;
-        sprite.cooldown.remaining_cooldown = sprite.cooldown.cooldown;
-        sprite.current_frame++;
-        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).frames.size());
-
-        auto &vbo_texture = m_world.get<VBOTexture>(i);
-        auto &texture = *getCache<Texture>().handle(vbo_texture.id);
-
-        DrawableFactory::fix_texture(
-            m_world,
-            i,
-            m_settings.data_folder + sprite.animations.at(sprite.current_animation).file,
-            {static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).x)
-                 / static_cast<float>(texture.width),
-             static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).y)
-                 / static_cast<float>(texture.height),
-             sprite.animations.at(sprite.current_animation).width / static_cast<float>(texture.width),
-             sprite.animations.at(sprite.current_animation).height / static_cast<float>(texture.height)});
-    }
-
-    m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
-        vel.x += acc.x;
-        vel.y += acc.y;
-
-        // todo : add max velocity
-    });
-
-    // todo : exclude the d2::Hitbox on this system
-    //            m_world.view<d3::Position, d2::Velocity>().each(
-    //                [&elapsed](auto &pos, auto &vel) {
-    //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
-    //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
-    //                });
-
-    m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel) {
-        pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
-        pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
-    });
-
-    for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
-        auto &moving_pos = m_world.get<d3::Position>(moving);
-        auto &moving_vel = m_world.get<d2::Velocity>(moving);
-        auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
-        d2::Velocity actual_tick_velocity = moving_vel;
-
-        const auto pred_pos = d3::Position{
-            moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-            moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-            moving_pos.z};
-
-        d3::Position other_pos;
-        d2::HitboxSolid other_hitbox;
-
-        for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
-            if (moving == others) continue;
-
-            other_pos = m_world.get<d3::Position>(others);
-            other_hitbox = m_world.get<d2::HitboxSolid>(others);
-
-            if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, pred_pos, other_hitbox, other_pos)) {
-                auto xDiff = other_pos.x - pred_pos.x;
-                auto xLastDiff = other_pos.x - moving_pos.x;
-                auto xMinSpace = (moving_hitbox.width + other_hitbox.width) / 2;
-                if (std::abs(xDiff) < xMinSpace && std::abs(xLastDiff) >= xMinSpace) actual_tick_velocity.x = 0;
-
-                auto yDiff = other_pos.y - pred_pos.y;
-                auto yLastDiff = other_pos.y - moving_pos.y;
-                auto yMinSpace = (moving_hitbox.height + other_hitbox.height) / 2;
-                if (std::abs(yDiff) < yMinSpace && std::abs(yLastDiff) >= yMinSpace) actual_tick_velocity.y = 0;
+            if (t.elapsed < lifetime.remaining_lifetime) {
+                lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed);
+            } else {
+                m_world.destroy(i);
             }
         }
 
-        moving_pos.x += actual_tick_velocity.x * static_cast<d2::Velocity::type>(elapsed) * 0.001;
-        moving_pos.y += actual_tick_velocity.y * static_cast<d2::Velocity::type>(elapsed) * 0.001;
+        // should have only one entity cooldown
+        m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
+            if (!cd.is_in_cooldown) return;
+
+            if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
+                cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+            } else {
+                cd.remaining_cooldown = std::chrono::milliseconds(0);
+                cd.is_in_cooldown = false;
+                setScreenshake(false);
+            }
+        });
+
+        // check if the spritesheet need to update the texture
+        m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
+            if (!sprite.cooldown.is_in_cooldown) return;
+
+            if (std::chrono::milliseconds{elapsed} < sprite.cooldown.remaining_cooldown) {
+                sprite.cooldown.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+            } else {
+                sprite.cooldown.remaining_cooldown = std::chrono::milliseconds(0);
+                sprite.cooldown.is_in_cooldown = false;
+            }
+        });
+
+        // update and reset the cooldown of the spritesheet
+        for (auto &i : m_world.view<Spritesheet>()) {
+            auto &sprite = m_world.get<Spritesheet>(i);
+            if (sprite.cooldown.is_in_cooldown) continue;
+            sprite.cooldown.is_in_cooldown = true;
+            sprite.cooldown.remaining_cooldown = sprite.cooldown.cooldown;
+            sprite.current_frame++;
+            sprite.current_frame %=
+                static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).frames.size());
+
+            auto &vbo_texture = m_world.get<VBOTexture>(i);
+            auto &texture = *getCache<Texture>().handle(vbo_texture.id);
+
+            DrawableFactory::fix_texture(
+                m_world,
+                i,
+                m_settings.data_folder + sprite.animations.at(sprite.current_animation).file,
+                {static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).x)
+                     / static_cast<float>(texture.width),
+                 static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).y)
+                     / static_cast<float>(texture.height),
+                 sprite.animations.at(sprite.current_animation).width / static_cast<float>(texture.width),
+                 sprite.animations.at(sprite.current_animation).height / static_cast<float>(texture.height)});
+        }
+
+        m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
+            vel.x += acc.x;
+            vel.y += acc.y;
+
+            // todo : add max velocity
+        });
+
+        // todo : exclude the d2::Hitbox on this system
+        //            m_world.view<d3::Position, d2::Velocity>().each(
+        //                [&elapsed](auto &pos, auto &vel) {
+        //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
+        //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+        //                });
+
+        m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel) {
+            pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+            pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+        });
+
+        for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
+            auto &moving_pos = m_world.get<d3::Position>(moving);
+            auto &moving_vel = m_world.get<d2::Velocity>(moving);
+            auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
+            d2::Velocity actual_tick_velocity = moving_vel;
+
+            const auto pred_pos = d3::Position{
+                moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                moving_pos.z};
+
+            d3::Position other_pos;
+            d2::HitboxSolid other_hitbox;
+
+            for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
+                if (moving == others) continue;
+
+                other_pos = m_world.get<d3::Position>(others);
+                other_hitbox = m_world.get<d2::HitboxSolid>(others);
+
+                if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, pred_pos, other_hitbox, other_pos)) {
+                    auto xDiff = other_pos.x - pred_pos.x;
+                    auto xLastDiff = other_pos.x - moving_pos.x;
+                    auto xMinSpace = (moving_hitbox.width + other_hitbox.width) / 2;
+                    if (std::abs(xDiff) < xMinSpace && std::abs(xLastDiff) >= xMinSpace) actual_tick_velocity.x = 0;
+
+                    auto yDiff = other_pos.y - pred_pos.y;
+                    auto yLastDiff = other_pos.y - moving_pos.y;
+                    auto yMinSpace = (moving_hitbox.height + other_hitbox.height) / 2;
+                    if (std::abs(yDiff) < yMinSpace && std::abs(yLastDiff) >= yMinSpace) actual_tick_velocity.y = 0;
+                }
+            }
+
+            moving_pos.x += actual_tick_velocity.x * static_cast<d2::Velocity::type>(elapsed) * 0.001;
+            moving_pos.y += actual_tick_velocity.y * static_cast<d2::Velocity::type>(elapsed) * 0.001;
+        }
     }
 
     m_window->draw([&] {

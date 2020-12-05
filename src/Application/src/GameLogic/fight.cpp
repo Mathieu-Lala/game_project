@@ -70,6 +70,75 @@ auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uin
     while (level.current_xp >= level.xp_require) { onPlayerLevelUp.publish(world, player); }
 }
 
+auto game::GameLogic::slots_update_effect(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+{
+    auto holder = engine::Core::Holder{};
+
+    const auto elapsed = dt.elapsed.count();
+
+    world.view<entt::tag<"effect"_hs>, engine::Cooldown>().each([&elapsed](auto &, auto &cd) {
+        if (cd.is_in_cooldown) return;
+
+        if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
+            cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+        } else {
+            cd.remaining_cooldown = 0ms;
+            cd.is_in_cooldown = false;
+            spdlog::warn("attack is up !");
+        }
+    });
+
+    for (const auto &effect : world.view<entt::tag<"effect"_hs>>()) {
+        auto &cd = world.get<engine::Cooldown>(effect);
+        if (cd.is_in_cooldown) continue;
+
+        const auto &source = world.get<engine::Source>(effect).source;
+        const auto &sender = world.get<engine::SourceBis>(effect).source;
+        if (!world.valid(source)) {
+            world.destroy(effect);
+            continue;
+        }
+
+        auto &source_hp = world.get<game::Health>(source);
+
+        // note : duplicated code !!! send a signal instead
+
+        source_hp.current -= world.get<AttackDamage>(effect).damage;
+        const auto is_player = world.has<entt::tag<"player"_hs>>(source);
+
+        if (is_player) { holder.instance->setScreenshake(true, 350ms); }
+
+        const auto &entity_pos = world.get<engine::d3::Position>(source);
+        ParticuleFactory::create<Particule::HITMARKER>(
+            world, {entity_pos.x, entity_pos.y}, is_player ? glm::vec3{255, 0, 0} : glm::vec3{0, 0, 0});
+
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")->play();
+
+        if (source_hp.current <= 0.0f) { onEntityKilled.publish(world, source, sender); }
+
+
+        cd.is_in_cooldown = true;
+        cd.remaining_cooldown = cd.cooldown;
+    }
+
+    //    auto player_health = world.get<game::Health>(m_game.player);
+    //
+    //    world.view<game::Effect>().each([&](auto &effect) {
+    //        if (!effect.is_in_effect) return;
+    //        if (dt.elapsed < effect.remaining_time_effect) {
+    //            effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
+    //            if (effect.effect_name == "stun") spdlog::warn("stun");
+    //            if (effect.effect_name == "bleed") {
+    //                /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so
+    //                TODO*/ player_health.current -= 0.01f;
+    //            }
+    //        } else {
+    //            effect.is_in_effect = false;
+    //        }
+    //    });
+}
+
+// note : not really on damage taken but rather, on collide with spell
 auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity receiver, entt::entity sender, entt::entity spell)
     -> void
 {
@@ -77,23 +146,67 @@ auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity rec
 
     auto &entity_health = world.get<Health>(receiver);
 
-    entity_health.current -= world.get<AttackDamage>(spell).damage;
-    const auto is_player = world.has<entt::tag<"player"_hs>>(receiver);
+    const auto effects = [&](const auto &ref) {
+        struct sPsE {
+            std::string_view tag;
+            const Effect *effect;
+        };
+        std::vector<sPsE> out;
+        std::transform(ref.begin(), ref.end(), std::back_inserter(out), [&](const auto &id) {
+            return sPsE{id, &m_game.dbEffects().db.at(id)};
+        });
+        return out;
+    }(world.get<SpellEffect>(spell).ref);
 
-    if (is_player) { holder.instance->setScreenshake(true, 350ms); }
+    for (auto &[new_tag, i] : effects) {
+        // check if already instanciated & update the effect
 
-    const auto &entity_pos = world.get<engine::d3::Position>(receiver);
-    const auto &spell_pos = world.get<engine::d3::Position>(spell);
-    ParticuleFactory::create<Particule::HITMARKER>(
-        world,
-        {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0},
-        is_player ? glm::vec3{255, 0, 0} : glm::vec3{0, 0, 0});
+        bool exist = false;
+        world.view<entt::tag<"effect"_hs>, engine::Source, std::string>().each(
+            [&exist, &new_tag, &receiver](auto &, const auto &source, const auto &tag) {
+                exist |= tag == new_tag && source.source == receiver;
+            });
 
-    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")->play();
+        if (exist) {
+            spdlog::info("skipping effect already exist");
 
-    if (world.has<entt::tag<"projectile"_hs>>(spell)) { world.destroy(spell); }
+            // todo refresh cd
 
-    if (entity_health.current <= 0.0f) { onEntityKilled.publish(world, receiver, sender); }
+        } else {
+            spdlog::info("create effect");
+
+            auto new_effect = world.create();
+            world.emplace<entt::tag<"effect"_hs>>(new_effect);
+            world.emplace<engine::Source>(new_effect, receiver);
+            world.emplace<engine::SourceBis>(new_effect, sender);
+            world.emplace<engine::Lifetime>(new_effect, i->lifetime);
+            world.emplace<engine::Cooldown>(new_effect, false, i->cooldown, 0ms);
+            world.emplace<std::string>(new_effect, new_tag);
+
+            world.emplace<AttackDamage>(new_effect, i->damage);
+        }
+    }
+
+    if (world.has<entt::tag<"projectile"_hs>>(spell)) {
+        entity_health.current -= world.get<AttackDamage>(spell).damage;
+
+        const auto is_player = world.has<entt::tag<"player"_hs>>(receiver);
+
+        if (is_player) { holder.instance->setScreenshake(true, 350ms); }
+
+        const auto &entity_pos = world.get<engine::d3::Position>(receiver);
+        const auto &spell_pos = world.get<engine::d3::Position>(spell);
+        ParticuleFactory::create<Particule::HITMARKER>(
+            world,
+            {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0},
+            is_player ? glm::vec3{255, 0, 0} : glm::vec3{0, 0, 0});
+
+        holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")->play();
+
+        world.destroy(spell);
+
+        if (entity_health.current <= 0.0f) { onEntityKilled.publish(world, receiver, sender); }
+    }
 }
 
 auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)

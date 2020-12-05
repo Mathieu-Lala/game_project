@@ -1,3 +1,5 @@
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/Core.hpp>
 
 #include "widgets/Fonts.hpp"

@@ -1,0 +1,106 @@
+{
+    "object": {
+        "animations": {
+            "idle_left": {
+                "file": "/anims/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 40,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_left": {
+                "file": "/anims/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 80,
+                        "y": 48
+                    },
+                    {
+                        "x": 40,
+                        "y": 48
+                    },
+                    {
+                        "x": 0,
+                        "y": 48
+                    }
+                ]
+            },
+            "idle_right": {
+                "file": "/anims/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 40,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_right": {
+                "file": "/anims/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 96
+                    },
+                    {
+                        "x": 40,
+                        "y": 96
+                    },
+                    {
+                        "x": 80,
+                        "y": 96
+                    }
+                ]
+            },
+            "death": {
+                "file": "/anims/classes//_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_left": {
+                "file": "/anims/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 40,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_right": {
+                "file": "/anims/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 80,
+                        "y": 144
+                    }
+                ]
+            }
+        }
+    }
+}

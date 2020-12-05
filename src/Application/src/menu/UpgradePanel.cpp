@@ -521,6 +521,7 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                     holder.instance->getAudioManager()
                         .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/open_close.wav")
                         ->play();
+                    holder.instance->setEventMode(engine::Core::EventMode::RECORD);
                     game.setMenu(nullptr);
                     break;
                 case GLFW_KEY_E: onBuyHp(world); break;
@@ -533,6 +534,7 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                     holder.instance->getAudioManager()
                         .getSound(holder.instance->settings().data_folder + "/sounds/menu/upgrade_panel/open_close.wav")
                         ->play();
+                    holder.instance->setEventMode(engine::Core::EventMode::RECORD);
                     game.setMenu(nullptr);
                     break;
                 case engine::Joystick::Buttons::ACTION_TOP: onBuyHp(world); break;

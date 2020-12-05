@@ -1,0 +1,106 @@
+{
+    "object": {
+        "animations": {
+            "idle_left": {
+                "file": "/anims/classes/mage/mage_spritesheet.png",
+                "width": 47,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 47,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_left": {
+                "file": "/anims/classes/mage/mage_spritesheet.png",
+                "width": 47,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 94,
+                        "y": 48
+                    },
+                    {
+                        "x": 47,
+                        "y": 48
+                    },
+                    {
+                        "x": 0,
+                        "y": 48
+                    }
+                ]
+            },
+            "idle_right": {
+                "file": "/anims/classes/mage/mage_spritesheet.png",
+                "width": 47,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 47,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_right": {
+                "file": "/anims/classes/mage/mage_spritesheet.png",
+                "width": 47,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 96
+                    },
+                    {
+                        "x": 47,
+                        "y": 96
+                    },
+                    {
+                        "x": 94,
+                        "y": 96
+                    }
+                ]
+            },
+            "death": {
+                "file": "/anims/classes//_spritesheet.png",
+                "width": 47,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_left": {
+                "file": "/anims/classes/mage/mage_spritesheet.png",
+                "width": 47,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 47,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_right": {
+                "file": "/anims/classes/mage/mage_spritesheet.png",
+                "width": 47,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 94,
+                        "y": 144
+                    }
+                ]
+            }
+        }
+    }
+}

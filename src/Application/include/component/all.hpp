@@ -14,8 +14,9 @@
 #include "component/AimingDirection.hpp"
 #include "component/AttackRange.hpp"
 #include "component/AttackDamage.hpp"
-#include "component/Effect.hpp"
-#include <component/Speed.hpp>
+#include "component/SpellEffect.hpp"
+//#include "component/Effect.hpp"
+#include "component/Speed.hpp"
 
 #include "component/ViewRange.hpp"
 #include "component/Health.hpp"

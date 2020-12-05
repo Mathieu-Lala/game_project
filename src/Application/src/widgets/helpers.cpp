@@ -1,6 +1,8 @@
-#include <Engine/Core.hpp>
 #include <Engine/Graphics/Window.hpp>
+#include <Engine/component/Color.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/TextureLoader.hpp>
+#include <Engine/Core.hpp>
 
 #include "widgets/helpers.hpp"
 

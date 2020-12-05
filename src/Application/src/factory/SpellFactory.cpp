@@ -36,7 +36,8 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
         caster_pos.x + (data.scale.x / 3.0 + data.offset_to_source_x) * direction.x,
         caster_pos.y + (data.scale.y / 3.0 + data.offset_to_source_y) * direction.y,
         -1.0);
-    world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
+    world.emplace<engine::d2::Rotation>(
+        spell, (direction.y < 0) ? -glm::acos(glm::dot({1.f, 0.f}, direction)) : glm::acos(glm::dot({1.f, 0.f}, direction)));
 
     world.emplace<engine::d2::Scale>(spell, data.scale);
     world.emplace<engine::d2::HitboxFloat>(spell, data.hitbox);
@@ -47,6 +48,8 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
         spell, engine::Spritesheet::from_json(holder.instance->settings().data_folder + data.animation));
     engine::DrawableFactory::fix_spritesheet(world, spell, "default");
     world.emplace<engine::d2::Velocity>(spell, direction.x * data.speed, direction.y * data.speed);
+
+    world.emplace<SpellEffect>(spell, data.effects);
 
     if (data.type[SpellData::Type::PROJECTILE]) world.emplace<entt::tag<"projectile"_hs>>(spell);
     if (data.type[SpellData::Type::AOE]) world.emplace<entt::tag<"aoe"_hs>>(spell);

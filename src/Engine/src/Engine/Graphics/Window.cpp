@@ -175,23 +175,23 @@ auto engine::Window::setCursorPosition(glm::dvec2 &&pos) -> void { ::glfwSetCurs
 
 auto engine::Window::callback_eventClose([[maybe_unused]] GLFWwindow *window) -> void
 {
-    IF_RECORD(s_instance->m_events.emplace_back(CloseWindow{}));
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(CloseWindow{}));
 }
 
 auto engine::Window::callback_eventResized([[maybe_unused]] GLFWwindow *window, int w, int h) -> void
 {
-    IF_RECORD(s_instance->m_events.emplace_back(ResizeWindow{w, h}));
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(ResizeWindow{w, h}));
 }
 
 auto engine::Window::callback_eventMoved([[maybe_unused]] GLFWwindow *window, int x, int y) -> void
 {
-    IF_RECORD(s_instance->m_events.emplace_back(MoveWindow{x, y}));
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(MoveWindow{x, y}));
 }
 
 auto engine::Window::callback_eventKeyBoard([[maybe_unused]] GLFWwindow *window, int key, int scancode, int action, int mods)
     -> void
 {
-    IF_RECORD(
+    IF_NOT_PLAYBACK(
         // clang-format off
         Key k{
             .alt        = !!(mods & GLFW_MOD_ALT), // NOLINT
@@ -214,7 +214,7 @@ auto engine::Window::callback_eventKeyBoard([[maybe_unused]] GLFWwindow *window,
 
 auto engine::Window::callback_eventMousePressed(GLFWwindow *window, int button, int action, [[maybe_unused]] int mods) -> void
 {
-    IF_RECORD(
+    IF_NOT_PLAYBACK(
         // NOLINTNEXTLINE
         double x = 0; double y = 0;
         // NOLINTNEXTLINE
@@ -230,7 +230,7 @@ auto engine::Window::callback_eventMousePressed(GLFWwindow *window, int button, 
 
 auto engine::Window::callback_eventMouseMoved([[maybe_unused]] GLFWwindow *window, double x, double y) -> void
 {
-    IF_RECORD(s_instance->m_events.emplace_back(Moved<Mouse>{x, y}));
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(Moved<Mouse>{x, y}));
 }
 
 using namespace engine;
