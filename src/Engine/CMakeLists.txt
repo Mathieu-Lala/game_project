@@ -13,8 +13,8 @@ download_imgui(imgui_impl_glfw.h)
 download_imgui(imgui_impl_opengl3.cpp)
 download_imgui(imgui_impl_opengl3.h)
 
-add_library(glfw_imgui_impl STATIC ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}/imgui_impl_glfw.cpp
-                                   ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}/imgui_impl_opengl3.cpp)
+add_library(glfw_imgui_impl STATIC ${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version}/imgui_impl_glfw.cpp
+                                   ${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version}/imgui_impl_opengl3.cpp)
 target_link_libraries(glfw_imgui_impl PUBLIC project_options CONAN_PKG::glew CONAN_PKG::glfw CONAN_PKG::imgui)
 target_compile_definitions(glfw_imgui_impl PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 target_include_directories(glfw_imgui_impl PUBLIC ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version})
