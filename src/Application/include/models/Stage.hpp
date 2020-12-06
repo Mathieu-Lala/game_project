@@ -38,14 +38,14 @@ struct Stage {
         int maxCorridorWidth = 4;
 
         std::unordered_map<std::string, float> mobDensity{
-            {"skeleton", 0.03f},
-            {"golem", 0.003f},
-            {"zombie", 0.02f},
-            {"summoner", 0.001f},
-            {"electric_skeleton", 0.005f},
-            {"ice_skeleton", 0.01f},
-            {"fire_skeleton", 0.01f}
-            };
+            {"skeleton", 1.01f},
+            {"golem", 3.005f},
+            {"zombie", 3.01f},
+            {"summoner", 3.005f},
+            {"electric_skeleton", 2.005f},
+            {"ice_skeleton", 2.01f},
+            {"fire_skeleton", 1.01f}
+        };
     };
 
     auto generate(ThePURGE &, entt::registry &, const Parameters &, std::optional<std::uint32_t> seed = {}) -> Stage &;

@@ -8,6 +8,8 @@
 
 #include "ThePURGE.hpp"
 
+int levelStage = 1;
+
 // If gap is even, center will be chosen randomly between the two center tiles
 static int getOnePossibleCenterOf(int a, int b)
 {
@@ -249,13 +251,18 @@ auto game::Stage::create_floor(ThePURGE &game, entt::registry &world, const Para
 auto game::Stage::spawn_mob(ThePURGE &game, entt::registry &world, const Parameters &params, const Room &r) -> void
 {
     for (const auto &[id, density] : params.mobDensity) {
-        if (density == 0.0f) continue;
+        std::cout << id << " => " << static_cast<int>(density) << std::endl;
+        const int isLevelAccepted = static_cast<int>(density);
+        if (isLevelAccepted <= levelStage) {
+            float newDensity = density - static_cast<float>(static_cast<int>(density));
+            if (newDensity == 0.0f) continue;
 
-        for (auto x = r.x + 1; x < r.x + r.w - 1; ++x) {
-            for (auto y = r.y + 1; y < r.y + r.h - 1; ++y) {
-                if (randRange(0, static_cast<int>(1.0f / density)) == 0) {
-                    spdlog::warn("{}", id);
-                    EntityFactory::create(game, world, glm::vec2{x + 0.5, y + 0.5}, game.dbEnemies().db.at(id));
+            for (auto x = r.x + 1; x < r.x + r.w - 1; ++x) {
+                for (auto y = r.y + 1; y < r.y + r.h - 1; ++y) {
+                    if (randRange(0, static_cast<int>(1.0f / (newDensity + (0.01f * levelStage)))) == 0) {
+                        spdlog::warn("{}", id);
+                        EntityFactory::create(game, world, glm::vec2{x + 0.5, y + 0.5}, game.dbEnemies().db.at(id));
+                    }
                 }
             }
         }
@@ -264,6 +271,7 @@ auto game::Stage::spawn_mob(ThePURGE &game, entt::registry &world, const Paramet
 
 auto game::Stage::populate_enemies(ThePURGE &game, entt::registry &world, const Parameters &params)
 {
+    std::cout << "LevelStage => " << levelStage << std::endl;
     for (const auto &r : regularRooms) spawn_mob(game, world, params, r);
 
     decltype(game.dbEnemies().db) bosses;
@@ -275,6 +283,7 @@ auto game::Stage::populate_enemies(ThePURGE &game, entt::registry &world, const 
     std::advance(selected_one, static_cast<std::size_t>(std::rand()) % bosses.size());
 
     spdlog::warn("Adding boss !");
+    levelStage++;
 
     EntityFactory::create(game, world, glm::vec2{boss.x + boss.w * 0.5, boss.y + boss.h * 0.5}, selected_one->second);
 }
@@ -307,6 +316,7 @@ auto game::Stage::clear(entt::registry &world, bool kill_the_players) -> void
     world.view<entt::tag<"effect"_hs>>().each([&](auto &e){ world.destroy(e); });
     world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
     if (kill_the_players) {
+        levelStage = 1;
         for (const auto &i : world.view<entt::tag<"player"_hs>>()) {
             world.destroy(world.get<AimSight>(i).entity);
             world.destroy(i);

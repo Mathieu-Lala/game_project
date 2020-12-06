@@ -222,7 +222,7 @@ auto game::GameLogic::slots_update_game_time(entt::registry &, [[maybe_unused]] 
     -> void
 {
     m_gameTime += static_cast<double>(dt.elapsed.count()) / 1e9;
-    spdlog::info("game time : {}", m_gameTime);
+    //spdlog::info("game time : {}", m_gameTime);
 }
 
 auto game::GameLogic::slots_update_cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void

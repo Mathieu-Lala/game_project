@@ -1,0 +1,42 @@
+{
+    "object": {
+        "animations": {
+            "default": {
+                "file": "/anims/spells/rock/rock.spritesheet.png",
+                "width": 215,
+                "height": 185,
+                "cooldown": 100,
+              "frames": [
+                {
+                  "x": 35,
+                  "y": 39
+                },
+                {
+                  "x": 267,
+                  "y": 39
+                },
+                {
+                  "x": 525,
+                  "y": 39
+                },
+                {
+                  "x": 770,
+                  "y": 39
+                },
+                {
+                  "x": 1037,
+                  "y": 39
+                },
+                {
+                  "x": 1550,
+                  "y": 39
+                },
+                {
+                  "x": 1816,
+                  "y": 39
+                }
+              ]
+            }
+        }
+    }
+}
