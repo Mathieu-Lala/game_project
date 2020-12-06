@@ -106,7 +106,7 @@ auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::T
 
         } break;
         case Effect::Type::DASH: {
-            const auto &initial_speed = world.get<engine::Copy<Speed>>(receiver).data;
+            const auto &initial_speed = world.get_or_emplace<engine::Copy<Speed>>(receiver, world.get<Speed>(receiver)).data;
             world.replace<Speed>(receiver, initial_speed);
             world.remove_if_exists<engine::Copy<Speed>>(receiver);
 
@@ -140,15 +140,8 @@ auto game::GameLogic::slots_collide_with_spell(
         });
         return out;
     }(world.get<SpellEffect>(spell).ref);
+
     for (auto &[new_tag, i] : effects) {
-        // check if already instanciated & update the effect
-
-        //        bool exist = false;
-        //        world.view<entt::tag<"effect"_hs>, engine::Source, std::string>().each(
-        //            [&exist, &new_tag, &receiver](auto &, const auto &source, const auto &tag) {
-        //                exist |= tag == new_tag && source.source == receiver;
-        //            });
-
         const auto view = world.view<entt::tag<"effect"_hs>, engine::Source, std::string>();
         const auto found = std::find_if(view.begin(), view.end(), [&world, &new_tag, &receiver](const auto &entity) {
             const auto &source = world.get<engine::Source>(entity);
@@ -159,6 +152,7 @@ auto game::GameLogic::slots_collide_with_spell(
         if (found != view.end()) {
             spdlog::info("skipping effect already exist");
 
+            // check if already instanciated & update the effect
             // todo refresh cd
 
         } else {
@@ -181,15 +175,13 @@ auto game::GameLogic::slots_collide_with_spell(
             } else if (i->type == Effect::DASH) {
                 spdlog::info("setting velocity");
 
-                if (!world.has<engine::Copy<Speed>>(receiver)) {
-                    const auto &current_speed = world.get<Speed>(receiver);
-                    world.emplace<engine::Copy<Speed>>(receiver, current_speed);
-                    world.replace<Speed>(receiver, current_speed.speed / i->strength);
+                const auto &current_speed = world.get<Speed>(receiver);
+                world.emplace<engine::Copy<Speed>>(receiver, current_speed);
+                world.replace<Speed>(receiver, current_speed.speed / i->strength);
 
-                    const auto &current_color = world.get<engine::Color>(receiver);
-                    world.emplace<engine::Copy<engine::Color>>(receiver, current_color);
-                    engine::DrawableFactory::fix_color(world, receiver, {0, 0, 1, 1});
-                }
+                const auto &current_color = world.get<engine::Color>(receiver);
+                world.emplace_or_replace<engine::Copy<engine::Color>>(receiver, current_color);
+                engine::DrawableFactory::fix_color(world, receiver, {0, 0, 1, 1});
             }
         }
     }
@@ -225,7 +217,22 @@ auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity rec
 
     holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")->play();
 
-    if (entity_health.current <= 0.0f) { onEntityKilled.publish(world, receiver, sender); }
+    if (entity_health.current <= 0.0f) {
+        onEntityKilled.publish(world, receiver, sender);
+    } else {
+        auto new_effect = world.create();
+        world.emplace<entt::tag<"effect"_hs>>(new_effect);
+        world.emplace<engine::Source>(new_effect, receiver);
+        world.emplace<engine::SourceBis>(new_effect, sender);
+        world.emplace<engine::Lifetime>(new_effect, 200ms);
+        world.emplace<engine::Cooldown>(new_effect, true, 180ms, 180ms);
+
+        world.emplace<Effect::Type>(new_effect, Effect::Type::DASH);
+
+        const auto &current_color = world.get<engine::Color>(receiver);
+        world.emplace_or_replace<engine::Copy<engine::Color>>(receiver, current_color);
+        engine::DrawableFactory::fix_color(world, receiver, {0.2, 0.2, 0.2, 1});
+    }
 }
 
 auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)

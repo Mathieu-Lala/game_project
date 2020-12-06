@@ -111,8 +111,24 @@ auto engine::JoystickManager::pollAxis() -> void
         const auto axes = ::glfwGetJoystickAxes(joy.id, &count);
         for (std::uint32_t i = 0; i != static_cast<std::uint32_t>(count); i++) {
             if (std::abs(joy.axes[i] - axes[i]) >= 0.05f) {
-                this->m_events.emplace_back(
-                    Moved<JoystickAxis>({joy.id, magic_enum::enum_cast<Joystick::Axis>(i).value(), axes[i]}));
+                const auto axis = magic_enum::enum_cast<Joystick::Axis>(i).value();
+                const auto found = std::find_if(m_events.begin(), m_events.end(), [&](auto &event) {
+                    auto ret = false;
+                    std::visit(
+                        engine::overloaded{
+                            [&](const Moved<JoystickAxis> &old) {
+                                ret = old.source.id == joy.id && old.source.axis == axis;
+                            },
+                            [&](auto) {},
+                        },
+                        event);
+                    return ret;
+                });
+                if (found == m_events.end()) {
+                    this->m_events.emplace_back(Moved<JoystickAxis>({joy.id, axis, axes[i]}));
+                } else {
+                    *found = Moved<JoystickAxis>{{ joy.id, axis, axes[i] }};
+                }
             }
         }
     }
