@@ -132,7 +132,7 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
         const auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
 
         if (engine::d2::overlapped<engine::d2::WITHOUT_EDGE>(entity_hitbox, entity_pos, spell_hitbox, spell_pos)) {
-            onDamageTaken.publish(world, entity, source, spell);
+            onCollideWithSpell.publish(world, entity, source, spell);
         }
     };
 
@@ -140,16 +140,13 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
         const auto &source = world.get<engine::Source>(spell).source;
         if (!world.valid(source)) return;
 
-        if (world.has<entt::tag<"player"_hs>>(source)) {
-            for (const auto &enemy : world.view<entt::tag<"enemy"_hs>, engine::d2::HitboxSolid>()) {
-                if (!world.valid(spell)) break;
-                check_spell_collision(enemy, spell, source);
-            }
-        } else {
-            for (const auto &player : world.view<entt::tag<"player"_hs>, engine::d2::HitboxSolid>()) {
-                if (!world.valid(spell)) break;
-                check_spell_collision(player, spell, source);
-            }
+        for (const auto &player : world.view<entt::tag<"player"_hs>, engine::d2::HitboxSolid>()) {
+            if (!world.valid(spell)) break;
+            check_spell_collision(player, spell, source);
+        }
+        for (const auto &enemy : world.view<entt::tag<"enemy"_hs>, engine::d2::HitboxSolid>()) {
+            if (!world.valid(spell)) break;
+            check_spell_collision(enemy, spell, source);
         }
     }
 

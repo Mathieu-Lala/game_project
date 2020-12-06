@@ -14,10 +14,7 @@
 
 #include "widgets/Fonts.hpp"
 
-auto game::menu::GameOver::clean_world(entt::registry &world) -> void
-{
-    Stage{}.clear(world, true);
-}
+auto game::menu::GameOver::clean_world(entt::registry &world) -> void { Stage{}.clear(world, true); }
 
 void game::menu::GameOver::create(entt::registry &, ThePURGE &)
 {
@@ -56,7 +53,11 @@ void game::menu::GameOver::draw(entt::registry &world, ThePURGE &game)
 
     ImGui::Begin("GameOver", nullptr, ImGuiWindowFlags_NoDecoration);
 
-    helper::drawTexture(m_backgroundTexture, ImVec2(0, 0), helper::frac2pixel({1.f, 1.f}), ImVec4(1, 1, 1, std::clamp(m_timeElapsed, 0.f, 1.f)));
+    helper::drawTexture(
+        m_backgroundTexture,
+        ImVec2(0, 0),
+        helper::frac2pixel({1.f, 1.f}),
+        ImVec4(1, 1, 1, static_cast<float>(std::clamp(m_timeElapsed, 0.0, 1.0))));
 
     if (up() && m_selected > 0) {
         holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/menu/change.wav")->play();
@@ -102,7 +103,11 @@ void game::menu::GameOver::drawGameStats()
     const int sec = static_cast<int>(time - min * 60);
     const int ms = static_cast<int>((time - min * 60 - sec) * 1000);
 
-    helper::drawText(helper::frac2pixel(helper::from1080p(1018, 321)), fmt::format("{}m {}.{}s", min, sec, ms), ImVec4(1, 1, 1, 1), Fonts::kimberley_62);
+    helper::drawText(
+        helper::frac2pixel(helper::from1080p(1018, 321)),
+        fmt::format("{}m {}.{}s", min, sec, ms),
+        ImVec4(1, 1, 1, 1),
+        Fonts::kimberley_62);
 
     helper::drawText(
         helper::frac2pixel(helper::from1080p(1018, 392)),
@@ -130,7 +135,7 @@ void game::menu::GameOver::event(entt::registry &world, ThePURGE &game, const en
                 default: break;
                 }
             },
-            [&](const engine::TimeElapsed &dt) { m_timeElapsed += static_cast<float>(dt.elapsed.count() / 1e9); },
+            [&](const engine::TimeElapsed &dt) { m_timeElapsed += static_cast<double>(dt.elapsed.count()) / 1e9; },
             [&](auto) {},
         },
         e);

@@ -15,20 +15,17 @@ namespace game {
 
 struct Class { // todo : name very confusing
     std::string name;
-    std::string description;
     std::string iconPath;
     std::string assetGraphPath;
 
     bool is_starter = false;
-
-    std::vector<std::string> spells;
+    int cost;
 
     float health;
-
     float speed;
-    int cost;
     engine::d2::HitboxSolid hitbox;
 
+    std::vector<std::string> spells;
     std::vector<std::string> children;
 };
 

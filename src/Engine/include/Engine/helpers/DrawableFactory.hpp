@@ -5,7 +5,7 @@
 #include <array>
 #include <stdexcept>
 
-#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include <entt/entt.hpp>
 
@@ -21,7 +21,7 @@ struct VBOTexture;
 struct DrawableFactory {
     static auto rectangle() -> Drawable;
 
-    static auto fix_color(entt::registry &, entt::entity, glm::vec3 &&color) -> Color &;
+    static auto fix_color(entt::registry &, entt::entity, glm::vec4 &&color) -> Color &;
     static auto fix_texture(
         entt::registry &,
         entt::entity,

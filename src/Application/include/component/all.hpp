@@ -5,6 +5,7 @@
 #include <Engine/component/Scale.hpp>
 #include <Engine/component/Velocity.hpp>
 #include <Engine/component/Acceleration.hpp>
+#include <Engine/component/Rotation.hpp>
 #include <Engine/component/Hitbox.hpp>
 #include <Engine/component/Source.hpp>
 #include <Engine/component/Spritesheet.hpp>

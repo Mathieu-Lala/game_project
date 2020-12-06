@@ -86,6 +86,7 @@ auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
             spell.speed = data.at("speed");
             spell.offset_to_source_x = data.at("offset_to_source").at("x");
             spell.offset_to_source_y = data.at("offset_to_source").at("y");
+            spell.effects = data.value("effect", decltype(spell.effects){});
             spell.type = [](const auto &type) {
                 decltype(SpellData{}.type) out;
                 for (const auto &i : type) {

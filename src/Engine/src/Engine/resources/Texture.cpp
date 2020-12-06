@@ -40,5 +40,5 @@ auto engine::Texture::ctor(const std::string_view filepath) -> Texture
 auto engine::Texture::dtor(Texture *obj) -> void
 {
     ::stbi_image_free(obj->px);
-    ::glDeleteTextures(1, &obj->id);
+    CALL_OPEN_GL(::glDeleteTextures(1, &obj->id));
 }

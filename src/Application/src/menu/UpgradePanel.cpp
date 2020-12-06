@@ -13,7 +13,6 @@
 
 #include "component/all.hpp"
 
-
 #include "menu/UpgradePanel.hpp"
 #include "widgets/Fonts.hpp"
 #include "widgets/GameHUD.hpp"
@@ -23,6 +22,8 @@
 void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
 {
     static auto holder = engine::Core::Holder{};
+
+    holder.instance->setEventMode(engine::Core::EventMode::PAUSED);
 
     m_static_background = GUITexture{
         helper::getTexture("menus/upgrade_panel/static_background.png"),
