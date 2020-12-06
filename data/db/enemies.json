@@ -1,7 +1,7 @@
 {
   "summoner": {
     "asset": "anims/enemies/summoner/summoner.data.json",
-    "health": 1,
+    "health": 3,
     "speed": 9.0,
     "view_range": 10,
     "attack_range": 8,
@@ -25,7 +25,7 @@
   },
   "zombie": {
     "asset": "anims/enemies/zombie/zombie.data.json",
-    "health": 1,
+    "health": 4,
     "speed": 7.0,
     "view_range": 10,
     "attack_range": 8,
@@ -73,7 +73,7 @@
   },
   "skeleton": {
     "asset": "anims/enemies/skeleton/skeleton.data.json",
-    "health": 1,
+    "health": 2,
     "speed": 9.0,
     "view_range": 6,
     "attack_range": 4,

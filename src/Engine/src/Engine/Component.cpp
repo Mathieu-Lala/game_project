@@ -17,15 +17,15 @@ auto engine::Drawable::dtor(const Drawable &drawable) -> void
     CALL_OPEN_GL(::glDeleteBuffers(1, &drawable.EBO));
 }
 
-auto engine::Color::ctor(glm::vec3 &&color) -> Color
+auto engine::Color::ctor(glm::vec4 &&color) -> Color
 {
     // clang-format off
     Color out = {
         .vertices = {
-            color.r, color.g, color.b,
-            color.r, color.g, color.b,
-            color.r, color.g, color.b,
-            color.r, color.g, color.b,
+            color.r, color.g, color.b, color.a,
+            color.r, color.g, color.b, color.a,
+            color.r, color.g, color.b, color.a,
+            color.r, color.g, color.b, color.a,
         }};
     // clang-format on
 

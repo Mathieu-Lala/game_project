@@ -8,7 +8,7 @@
     "cost": 0,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
     "spells": [
       "shovel"
@@ -27,7 +27,7 @@
     "cost": 1,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
     "spells": [
       "sword"
@@ -46,7 +46,7 @@
     "cost": 1,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
     "spells": [
       "arrow"
@@ -64,7 +64,7 @@
     "cost": 1,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
     "spells": [
       "fireball"
@@ -81,9 +81,11 @@
     "cost": 2,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
-    "spells": [],
+    "spells": [
+      "shadow_jump"
+    ],
     "children": []
   },
   "warrior": {
@@ -94,7 +96,7 @@
     "cost": 2,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
     "spells": [
       "tornado_sword"
@@ -109,7 +111,7 @@
     "cost": 2,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
     "spells": [
       "after_shock"
@@ -124,9 +126,11 @@
     "cost": 2,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
-    "spells": [],
+    "spells": [
+      "shadow_jump"
+    ],
     "children": []
   },
   "gunner": {
@@ -137,9 +141,11 @@
     "cost": 2,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
-    "spells": [],
+    "spells": [
+      "explosion"
+    ],
     "children": []
   },
   "mage": {
@@ -150,7 +156,7 @@
     "cost": 2,
     "hitbox": {
       "x": 0.75,
-      "y": 2.0
+      "y": 1.4
     },
     "spells": [
       "firewall"

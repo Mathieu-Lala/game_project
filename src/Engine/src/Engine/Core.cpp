@@ -56,8 +56,8 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
     spdlog::trace("Engine::Core instanciated");
     if (::glfwInit() == GLFW_FALSE) { throw std::logic_error(fmt::format("Engine::Core initialization failed")); }
 
-    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     ::glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
     ::glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -248,6 +248,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                         break;
                     case GLFW_KEY_F2:
                         m_eventMode = m_eventMode == EventMode::PAUSED ? EventMode::RECORD : EventMode::PAUSED;
+                        m_window->setCursorVisible(m_eventMode == EventMode::PAUSED);
                         break;
 
 #endif

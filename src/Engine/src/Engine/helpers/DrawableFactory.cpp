@@ -50,7 +50,7 @@ auto engine::DrawableFactory::rectangle() -> Drawable
     return out;
 }
 
-auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, glm::vec3 &&color) -> Color &
+auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, glm::vec4 &&color) -> Color &
 {
     static Core::Holder holder{};
 
@@ -59,7 +59,7 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
     CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
 
     auto handle = holder.instance->getCache<Color>().load<LoaderColor>(
-        entt::hashed_string{fmt::format("resource/color/identifier/{}_{}_{}", color.r, color.g, color.b).data()},
+        entt::hashed_string{fmt::format("resource/color/identifier/{}_{}_{}_{}", color.r, color.g, color.b, color.a).data()},
         std::move(color));
     if (handle) {
         CALL_OPEN_GL(::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO));
@@ -69,10 +69,10 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
             handle->vertices.data(),
             GL_STATIC_DRAW));
 
-            CALL_OPEN_GL(::glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(0)));
-            CALL_OPEN_GL(::glEnableVertexAttribArray(1));
+        CALL_OPEN_GL(::glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), static_cast<void *>(0)));
+        CALL_OPEN_GL(::glEnableVertexAttribArray(1));
 
-            return world.emplace_or_replace<Color>(e, *handle);
+        return world.emplace_or_replace<Color>(e, *handle);
     } else {
         spdlog::error("could not load color in cache !");
         throw std::runtime_error("could not load color in cache !");
@@ -99,8 +99,7 @@ auto engine::DrawableFactory::fix_texture(
         return *world.try_get<VBOTexture>(e);
     } else {
         CALL_OPEN_GL(::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO));
-        CALL_OPEN_GL(
-            ::glBufferData(
+        CALL_OPEN_GL(::glBufferData(
             GL_ARRAY_BUFFER,
             static_cast<GLsizeiptr>(handle->vertices.size() * sizeof(float)),
             handle->vertices.data(),

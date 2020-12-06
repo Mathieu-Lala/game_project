@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <nlohmann/json.hpp>
 
 #include <Engine/component/Hitbox.hpp>
@@ -21,7 +21,7 @@ struct Enemy {
     float health;
     float speed;
 
-    glm::vec3 color;
+    glm::vec4 color;
 
     engine::d2::HitboxSolid hitbox;
 
@@ -55,6 +55,7 @@ inline void from_json(const nlohmann::json &j, Enemy &enemy)
     enemy.color.r = j.at("color").at("r");
     enemy.color.g = j.at("color").at("g");
     enemy.color.b = j.at("color").at("b");
+    enemy.color.a = j.at("color").value("a", 1.0f);
     enemy.hitbox.width = j.at("hitbox").at("x");
     enemy.hitbox.height = j.at("hitbox").at("y");
     enemy.scale.x = j.at("scale").at("x");

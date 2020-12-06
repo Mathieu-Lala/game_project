@@ -29,7 +29,7 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
     world.emplace<engine::d2::Scale>(enemy, data.scale);
     world.emplace<engine::d2::HitboxSolid>(enemy, data.hitbox);
 
-    engine::DrawableFactory::fix_color(world, enemy, glm::vec3{data.color});
+    engine::DrawableFactory::fix_color(world, enemy, glm::vec4{data.color});
 
     world.emplace<engine::Spritesheet>(
         enemy, engine::Spritesheet::from_json(holder.instance->settings().data_folder + data.asset));
@@ -43,23 +43,24 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
     world.emplace<game::AttackRange>(enemy, data.attack_range);
     world.emplace<game::Speed>(enemy, data.speed);
 
-    // world.emplace<game::Effect>(enemy, false, false, "bleed", 2000ms, 0ms, 5000ms, 0ms);
-
     world.emplace<Health>(enemy, data.health, data.health);
     world.emplace<Experience>(enemy, data.experience);
 
     auto &slots = world.emplace<SpellSlots>(enemy);
     for (auto i = 0ul; i != data.spells.size(); i++) slots.spells[i] = game.dbSpells().instantiate(data.spells[i]);
 
-#ifndef NDEBUG
-
-    auto hitbox_entity = world.create();
-    world.emplace<engine::Drawable>(hitbox_entity, engine::DrawableFactory::rectangle());
-    world.emplace<engine::d2::Rotation>(hitbox_entity, 0.f);
-    world.emplace<engine::d3::Position>(hitbox_entity, pos.x, pos.y, get_z_layer<LAYER_DEBUG>());
-    engine::DrawableFactory::fix_color(world, hitbox_entity, {1, 0, 0});
-
-#endif
+//#ifndef NDEBUG
+//
+//    auto hitbox_entity = world.create();
+//    world.emplace<entt::tag<"debug_hitbox"_hs>>(hitbox_entity);
+//    world.emplace<engine::Source>(hitbox_entity, enemy);
+//    world.emplace<engine::Drawable>(hitbox_entity, engine::DrawableFactory::rectangle());
+//    world.emplace<engine::d2::Rotation>(hitbox_entity, 0.f);
+//    world.emplace<engine::d3::Position>(hitbox_entity, pos.x, pos.y, get_z_layer<LAYER_DEBUG>());
+//    world.emplace<engine::d2::Scale>(hitbox_entity, data.hitbox.width, data.hitbox.height);
+//    engine::DrawableFactory::fix_color(world, hitbox_entity, {1, 0, 0, 0.07});
+//
+//#endif
 
     return enemy;
 }
@@ -76,7 +77,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
     world.emplace<engine::d2::Rotation>(player, 0.f);
     world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
-    world.emplace<engine::d2::Scale>(player, 1.5, 2.5);
+    world.emplace<engine::d2::Scale>(player, 0.7, 1.2);
     world.emplace<engine::Drawable>(player, engine::DrawableFactory::rectangle());
     world.emplace<Level>(player, 0u, 0u, 10u);
     world.emplace<KeyPicker>(player);
@@ -88,14 +89,14 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<AimingDirection>(player, glm::vec2(1.f, 0.f));
     world.emplace<StatsTracking>(player);
 
-    engine::DrawableFactory::fix_color(world, player, {1.0f, 1.0f, 1.0f});
+    engine::DrawableFactory::fix_color(world, player, {1.0f, 1.0f, 1.0f, 1.0f});
 
     // class dependant, see `GameLogic::apply_class_to_player`
     world.emplace<engine::Spritesheet>(player);
     world.emplace<Health>(player, 0.f, 0.f);
     world.emplace<AttackDamage>(player, 0.f);
     world.emplace<Speed>(player, 1.f);
-    world.emplace<engine::d2::HitboxSolid>(player, 0.75, 2.0);
+    world.emplace<engine::d2::HitboxSolid>(player, 1, 1);
     // --
 
     return player;
@@ -114,7 +115,7 @@ auto game::EntityFactory::create<game::EntityFactory::KEY>(
     world.emplace<engine::d2::Rotation>(key, 0.f);
     world.emplace<engine::d2::Scale>(key, size.x, size.y);
     world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, key, {1, 1, 0});
+    engine::DrawableFactory::fix_color(world, key, {1, 1, 0, 1});
     engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "textures/key.png");
     return key;
 }
@@ -150,7 +151,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
@@ -167,7 +168,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
@@ -184,7 +185,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor_boss.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
@@ -201,7 +202,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/corridor.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
@@ -218,7 +219,7 @@ auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
     engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/door.png");
 
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
@@ -250,7 +251,7 @@ auto game::EntityFactory::create<game::EntityFactory::DEBUG_TILE>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 0});
+    engine::DrawableFactory::fix_color(world, e, {1, 1, 0, 1});
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }

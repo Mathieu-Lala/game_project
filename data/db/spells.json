@@ -13,7 +13,7 @@
       "y": 0.7
     },
     "lifetime": 200,
-    "audio_on_cast": "sounds/spells/stick.wav",
+    "audio_on_cast": "sounds/spells/shovel.wav",
     "animation": "anims/spells/farmer_attack/farmer_anim.data.json",
     "speed": 0,
     "offset_to_source": {
@@ -38,7 +38,7 @@
       "y": 0.3
     },
     "lifetime": 200,
-    "audio_on_cast": "sounds/spells/soldier_attack.wav",
+    "audio_on_cast": "sounds/spells/sword.wav",
     "animation": "anims/spells/soldier_attack/soldier_attack.data.json",
     "speed": 0,
     "offset_to_source": {
@@ -63,7 +63,7 @@
       "y": 5.0
     },
     "lifetime": 1000,
-    "audio_on_cast": "sounds/spells/soldier_attack.wav",
+    "audio_on_cast": "sounds/spells/sword.wav",
     "animation": "anims/spells/firewall/firewall.data.json",
     "speed": 0,
     "offset_to_source": {
@@ -206,7 +206,7 @@
     ]
   },
   "after_shock": {
-    "icon": "icons/spells/after_shock/after_shock.spritesheet.png",
+    "icon": "icons/spells/after_shock.png",
     "description": "Create a shockwave slowing all the enemies nearby",
     "cooldown": 2000,
     "damage": 0,
@@ -234,7 +234,7 @@
     ]
   },
   "freeze": {
-    "icon": "icons/spells/after_shock/after_shock.spritesheet.png",
+    "icon": "icons/spells/freeze.png",
     "description": "A cold strike reducing the target's speed",
     "cooldown": 2000,
     "damage": 0,
@@ -247,7 +247,7 @@
       "y": 2.5
     },
     "lifetime": 300,
-    "audio_on_cast": "sounds/spells/stick.wav",
+    "audio_on_cast": "sounds/spells/freeze.wav",
     "animation": "anims/spells/after_shock/after_shock.data.json",
     "speed": 0,
     "offset_to_source": {
@@ -262,20 +262,20 @@
     ]
   },
   "explosion": {
-    "icon": "icons/spells/after_shock/after_shock.spritesheet.png",
+    "icon": "icons/spells/explosion.png",
     "description": "A very powerfull and explosive attack",
     "cooldown": 4000,
     "damage": 0,
     "scale": {
-      "x": 3,
-      "y": 3
+      "x": 3.1,
+      "y": 3.1
     },
     "hitbox": {
-      "x": 2.5,
-      "y": 2.5
+      "x": 3.5,
+      "y": 3.5
     },
     "lifetime": 460,
-    "audio_on_cast": "sounds/spells/explosion.wav",
+    "audio_on_cast": "sounds/spells/stick.wav",
     "animation": "anims/spells/explosion/explosion.data.json",
     "speed": 0,
     "offset_to_source": {
@@ -287,6 +287,34 @@
     ],
     "effect": [
       "explosion_effect"
+    ]
+  },
+  "shadow_jump": {
+    "icon": "icons/spells/explosion.png",
+    "description": "Jump to a position quickly",
+    "cooldown": 2000,
+    "damage": 0,
+    "scale": {
+      "x": 3,
+      "y": 3
+    },
+    "hitbox": {
+      "x": 0,
+      "y": 0
+    },
+    "lifetime": 200,
+    "audio_on_cast": "sounds/spells/stick.wav",
+    "animation": "anims/spells/steam/steam.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "shadow_jump_effect"
     ]
   }
 }
