@@ -62,7 +62,8 @@ struct EntityFactory {
     // note : should take a path to a json config instead ... ?
     // todo : normalize arguments , Args...&& ?
     template<ID>
-    /*[[deprecated]]*/ static auto create(ThePURGE &, entt::registry &, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity;
+    /*[[deprecated]]*/ static auto create(ThePURGE &, entt::registry &, const glm::vec2 &pos, const glm::vec2 &size)
+        -> entt::entity;
 
     template<ID id>
     constexpr static auto get_z_layer() noexcept -> double
@@ -90,8 +91,6 @@ DECL_SPEC(WALL);
 DECL_SPEC(AIMING_SIGHT);
 DECL_SPEC(PLAYER);
 DECL_SPEC(KEY);
-
-DECL_SPEC(BACKGROUND);
 
 #undef DECL_SPEC
 

@@ -55,6 +55,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkAfterGameUpdated.connect<&GameLogic::slots_update_player_sigh>(*this);
 
     sinkCastSpell.connect<&GameLogic::slots_cast_spell>(*this);
+    sinkCollideSpell.connect<&GameLogic::slots_collide_with_spell>(*this);
 
     sinkGetKilled.connect<&GameLogic::slots_kill_entity>(*this);
     sinkDamageTaken.connect<&GameLogic::slots_damage_taken>(*this);
@@ -69,7 +70,17 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
     m_gameTime = 0;
 
     // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
-    EntityFactory::create<EntityFactory::ID::BACKGROUND>(m_game, world, glm::vec2(25, 25), glm::vec2(75, 75));
+    // EntityFactory::create<EntityFactory::ID::BACKGROUND>(m_game, world, glm::vec2(25, 25), glm::vec2(75, 75));
+    {
+        const auto e = world.create();
+        world.emplace<engine::d3::Position>(
+            e, 25.0, 25.0, EntityFactory::get_z_layer<EntityFactory::ID::LAYER_BACKGROUND>());
+        world.emplace<engine::d2::Rotation>(e, 0.f);
+        world.emplace<engine::d2::Scale>(e, 75.0, 75.0);
+        world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
+        engine::DrawableFactory::fix_color(world, e, {0.15, 0.15, 0.15, 1});
+        engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/background.jpg");
+    }
 
     holder.instance->getAudioManager()
         .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
@@ -87,8 +98,7 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 
     auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(m_game, world, {}, {});
 
-    glm::vec3 playerColor(1.f, 0.2f, 0.2f);
-    engine::DrawableFactory::fix_color(world, aimingSight, std::move(playerColor));
+    engine::DrawableFactory::fix_color(world, aimingSight, {1.f, 0.2f, 0.2f, 0.8f});
     world.get<AimSight>(m_game.player).entity = aimingSight;
 
     // default camera value to see the generated terrain properly
@@ -135,7 +145,6 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
                 case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, true); break;
                 case GLFW_KEY_P: {
                     m_game.setMenu(std::make_unique<menu::UpgradePanel>());
-                    holder.instance->setEventMode(engine::Core::EventMode::PAUSED);
                 } break;
 
                 case GLFW_KEY_U:
@@ -218,11 +227,10 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
         e);
 }
 
-auto game::GameLogic::slots_update_game_time(entt::registry &, [[maybe_unused]] const engine::TimeElapsed &dt)
-    -> void
+auto game::GameLogic::slots_update_game_time(entt::registry &, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     m_gameTime += static_cast<double>(dt.elapsed.count()) / 1e9;
-    //spdlog::info("game time : {}", m_gameTime);
+    spdlog::info("game time : {}", m_gameTime);
 }
 
 auto game::GameLogic::slots_update_cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
@@ -256,7 +264,8 @@ auto game::GameLogic::slots_update_particle(
             const auto r = engine::Color::r(color);
             const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
             const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
-            engine::DrawableFactory::fix_color(world, i, {r, g, b});
+            const auto a = engine::Color::a(color);
+            engine::DrawableFactory::fix_color(world, i, {r, g, b, a});
 
             auto &vel = world.get<engine::d2::Velocity>(i);
             vel.x += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
@@ -267,7 +276,8 @@ auto game::GameLogic::slots_update_particle(
             const auto r = engine::Color::r(color);
             const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
             const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
-            engine::DrawableFactory::fix_color(world, i, {r, g, b});
+            const auto a = engine::Color::a(color);
+            engine::DrawableFactory::fix_color(world, i, {r, g, b, a});
 
             auto &vel = world.get<engine::d2::Velocity>(i);
             vel.x -= ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
@@ -386,6 +396,6 @@ auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
             engine::d3::Position{
                 data.spawn.x + data.spawn.w * 0.5,
                 data.spawn.y + data.spawn.h * 0.5,
-                EntityFactory::get_z_layer<EntityFactory::PLAYER>()});
+                EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>()});
     }
 }

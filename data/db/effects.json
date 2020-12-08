@@ -20,7 +20,16 @@
     "explosion_effect": {
         "type": "dot",
         "damage": 8,
-        "lifetime": 3000,
-        "cooldown": 2900
+        "lifetime": 100,
+        "cooldown": 50
+    },
+    "shadow_jump_effect": {
+        "type": "dash",
+        "lifetime": 150,
+        "cooldown": 50,
+        "strength": 0.1,
+        "target": [
+            "caster"
+        ]
     }
 }

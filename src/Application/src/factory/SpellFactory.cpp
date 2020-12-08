@@ -28,16 +28,15 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
 
     const auto spell = world.create();
     world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<engine::Source>(spell, caster);
     world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, spell, glm::vec3{1, 1, 1}); // todo : add color in db ?
+    engine::DrawableFactory::fix_color(world, spell, {1, 1, 1, 1}); // todo : add color in db ?
     world.emplace<engine::d3::Position>(
         spell,
         caster_pos.x + (data.scale.x / 3.0 + data.offset_to_source_x) * direction.x,
         caster_pos.y + (data.scale.y / 3.0 + data.offset_to_source_y) * direction.y,
         -1.0);
     world.emplace<engine::d2::Rotation>(
-        spell, (direction.y < 0) ? -glm::acos(glm::dot({1.f, 0.f}, direction)) : glm::acos(glm::dot({1.f, 0.f}, direction)));
+        spell, glm::acos(glm::dot({1.f, 0.f}, direction)) * (direction.y < 0 ? -1.0 : 1.0));
 
     world.emplace<engine::d2::Scale>(spell, data.scale);
     world.emplace<engine::d2::HitboxFloat>(spell, data.hitbox);
@@ -50,6 +49,8 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
     world.emplace<engine::d2::Velocity>(spell, direction.x * data.speed, direction.y * data.speed);
 
     world.emplace<SpellEffect>(spell, data.effects);
+
+    world.emplace<engine::Source>(spell, caster);
 
     if (data.type[SpellData::Type::PROJECTILE]) world.emplace<entt::tag<"projectile"_hs>>(spell);
     if (data.type[SpellData::Type::AOE]) world.emplace<entt::tag<"aoe"_hs>>(spell);

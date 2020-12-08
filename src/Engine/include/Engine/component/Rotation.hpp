@@ -9,7 +9,7 @@ namespace d2 {
 template<std::floating_point T>
 struct RotationT {
     // Radian
-    T angle; 
+    T angle;
 };
 
 using Rotation = RotationT<double>;

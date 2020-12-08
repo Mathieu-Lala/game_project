@@ -41,15 +41,14 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
     for (const auto &[name, data] : jsonData.items()) {
         Class c{
             .name = name,
-            .description = data["desc"].get<std::string>(),
             .iconPath = data["icon"],
             .assetGraphPath = data["assetGraph"],
             .is_starter = data.value("starter", false),
-            .spells = data["spells"].get<std::vector<std::string>>(),
+            .cost = data["cost"].get<int>(),
             .health = data["health"].get<float>(),
             .speed = data["speed"].get<float>(),
-            .cost = data["cost"].get<int>(),
             .hitbox = engine::d2::HitboxSolid{data["hitbox"]["x"].get<double>(), data["hitbox"]["y"].get<double>()},
+            .spells = data["spells"].get<std::vector<std::string>>(),
             .children = {},
         };
         // Note creating the `Class` instance during assignment raises internal compiler error on MSVC
@@ -70,7 +69,6 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
     for (const auto &classes : this->db) {
         spdlog::info(
             "\tname={}\n"
-            "\tdescription={}\n"
             "\ticonPath={}\n"
             "\tassetGraphPath={}\n"
             "\tis_starter={}\n"
@@ -81,7 +79,6 @@ auto game::ClassDatabase::fromFile(const std::string_view path) -> ClassDatabase
             "\thitbox={},{}\n"
             "\tchildren={}\n",
             classes.name,
-            classes.description,
             classes.iconPath,
             classes.assetGraphPath,
             classes.is_starter,
