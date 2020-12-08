@@ -130,6 +130,31 @@
       "burn"
     ]
   },
+  "rock": {
+    "icon": "icons/spells/fireball_blue.png",
+    "description": "Creates a powerfull rock ball dealing extremely high damages",
+    "cooldown": 2000,
+    "damage": 10,
+    "scale": {
+      "x": 1.5,
+      "y": 1.5
+    },
+    "hitbox": {
+      "x": 1.5,
+      "y": 1.5
+    },
+    "lifetime": 3000,
+    "audio_on_cast": "sounds/fire_cast.wav",
+    "animation": "anims/spells/rock/rock.data.json",
+    "speed": 1.0,
+    "offset_to_source": {
+      "x": 2,
+      "y": 2
+    },
+    "type": [
+      "projectile"
+    ]
+  },
   "fireball_blue": {
     "icon": "icons/spells/fireball_blue.png",
     "description": "Creates a powerfull fireballdealing extremely high damages",
