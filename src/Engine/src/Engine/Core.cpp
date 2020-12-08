@@ -107,6 +107,13 @@ auto engine::Core::getNextEvent() -> Event
     case EventMode::RECORD: {
         m_joystickManager->poll();
 
+        static bool b = false;
+
+        b = !b;
+        if (b) {
+            return TimeElapsed{getElapsedTime()};
+        }
+
         // 1. poll the window event
         // 2. poll the joysticks event
         // 3. send elapsed time
