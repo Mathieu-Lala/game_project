@@ -39,12 +39,12 @@ struct Stage {
 
         std::unordered_map<std::string, float> mobDensity{
             {"skeleton", 1.01f},
-            {"golem", 3.005f},
-            {"zombie", 3.01f},
+            {"golem", 5.005f},
+            {"zombie", 4.01f},
             {"summoner", 3.005f},
             {"electric_skeleton", 2.005f},
-            {"ice_skeleton", 2.01f},
-            {"fire_skeleton", 1.01f}
+            {"ice_skeleton", 1.01f},
+            {"fire_skeleton", 3.01f}
         };
     };
 
