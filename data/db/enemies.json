@@ -171,7 +171,7 @@
   "monster_guy": {
     "asset": "anims/enemies/monster_guy/monster_guy.data.json",
     "health": 15,
-    "speed": 9.0,
+    "speed": 5.0,
     "view_range": 7,
     "attack_range": 5,
     "experience": 4,
@@ -189,7 +189,7 @@
       "y": 2.5
     },
     "spells": [
-      "sword",
+      "small_rock",
       "thunder"
     ],
     "is_boss": true
