@@ -59,8 +59,8 @@
       "y": 5.0
     },
     "hitbox": {
-      "x": 10.0,
-      "y": 10.0
+      "x": 12.0,
+      "y": 12.0
     },
     "lifetime": 1000,
     "audio_on_cast": "sounds/spells/sword.wav",
@@ -194,7 +194,7 @@
       "y": 0.3
     },
     "lifetime": 1000,
-    "audio_on_cast": "sounds/spells/shooter_attack.wav",
+    "audio_on_cast": "sounds/spells/shovel.wav",
     "animation": "anims/spells/arrow/arrow.data.json",
     "speed": 8.0,
     "offset_to_source": {
@@ -287,6 +287,10 @@
     ],
     "effect": [
       "explosion_effect"
+    ],
+    "target": [
+      "enemy",
+      "caster"
     ]
   },
   "shadow_jump": {
@@ -315,6 +319,9 @@
     ],
     "effect": [
       "shadow_jump_effect"
+    ],
+    "target": [
+      "caster"
     ]
   }
 }

@@ -8,7 +8,7 @@
     "sliced": {
         "type": "dot",
         "damage": 3,
-        "lifetime": 100,
+        "lifetime": 130,
         "cooldown": 100
     },
     "slow": {
@@ -21,15 +21,12 @@
         "type": "dot",
         "damage": 8,
         "lifetime": 100,
-        "cooldown": 50
+        "cooldown": 70
     },
     "shadow_jump_effect": {
         "type": "dash",
-        "lifetime": 150,
+        "lifetime": 80,
         "cooldown": 50,
-        "strength": 0.1,
-        "target": [
-            "caster"
-        ]
+        "strength": 0.1
     }
 }
