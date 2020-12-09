@@ -95,6 +95,30 @@
       "shovel"
     ]
   },
+  "golem_turret": {
+    "asset": "anims/enemies/golem_turret/golem_turret.data.json",
+    "health": 1,
+    "speed": 0.0001,
+    "view_range": 6,
+    "attack_range": 10,
+    "experience": 2,
+    "color": {
+      "r": 1,
+      "g": 1,
+      "b": 1
+    },
+    "hitbox": {
+      "x": 0.8,
+      "y": 0.8
+    },
+    "scale": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "spells": [
+      "small_rock"
+    ]
+  },
   "electric_skeleton": {
     "asset": "anims/enemies/skeleton/skeleton.data.json",
     "health": 1,
@@ -121,7 +145,7 @@
   },
   "dark_skeleton": {
     "asset": "anims/enemies/skeleton/skeleton.data.json",
-    "health": 4,
+    "health": 15,
     "speed": 7.0,
     "view_range": 7,
     "attack_range": 5,
