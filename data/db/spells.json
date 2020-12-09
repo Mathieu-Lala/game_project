@@ -34,12 +34,12 @@
       "y": 1.5
     },
     "hitbox": {
-      "x": 0.7,
-      "y": 0.3
+      "x": 0.3,
+      "y": 0.8
     },
     "lifetime": 200,
     "audio_on_cast": "sounds/spells/sword.wav",
-    "animation": "anims/spells/soldier_attack/soldier_attack.data.json",
+    "animation": "anims/spells/sword/sword.data.json",
     "speed": 0,
     "offset_to_source": {
       "x": 0.7,
@@ -59,8 +59,8 @@
       "y": 5.0
     },
     "hitbox": {
-      "x": 12.0,
-      "y": 12.0
+      "x": 7.0,
+      "y": 7.0
     },
     "lifetime": 1000,
     "audio_on_cast": "sounds/spells/sword.wav",
@@ -251,6 +251,33 @@
       "x": 1.5,
       "y": 1.5
     },
+    "type": [
+      "projectile"
+    ]
+  },
+  "triple_arrow": {
+    "icon": "icons/spells/arrow.png",
+    "description": "Shoots a basic arrow",
+    "cooldown": 1000,
+    "damage": 2,
+    "scale": {
+      "x": 1,
+      "y": 0.2
+    },
+    "hitbox": {
+      "x": 0.7,
+      "y": 0.3
+    },
+    "lifetime": 1000,
+    "audio_on_cast": "sounds/spells/shovel.wav",
+    "animation": "anims/spells/arrow/arrow.data.json",
+    "speed": 8.0,
+    "offset_to_source": {
+      "x": 1.5,
+      "y": 1.5
+    },
+    "quantity": 3,
+    "angle": 0.2,
     "type": [
       "projectile"
     ]

@@ -70,11 +70,11 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
     m_gameTime = 0;
 
     // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
-    // EntityFactory::create<EntityFactory::ID::BACKGROUND>(m_game, world, glm::vec2(25, 25), glm::vec2(75, 75));
+    // EntityFactory::create<EntityFactory::Layer::BACKGROUND>(m_game, world, glm::vec2(25, 25), glm::vec2(75, 75));
     {
         const auto e = world.create();
         world.emplace<engine::d3::Position>(
-            e, 25.0, 25.0, EntityFactory::get_z_layer<EntityFactory::ID::LAYER_BACKGROUND>());
+            e, 25.0, 25.0, EntityFactory::get_z_layer<EntityFactory::Layer::LAYER_BACKGROUND>());
         world.emplace<engine::d2::Rotation>(e, 0.f);
         world.emplace<engine::d2::Scale>(e, 75.0, 75.0);
         world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
@@ -395,6 +395,6 @@ auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
             engine::d3::Position{
                 data.spawn.x + data.spawn.w * 0.5,
                 data.spawn.y + data.spawn.h * 0.5,
-                EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>()});
+                EntityFactory::get_z_layer<EntityFactory::Layer::LAYER_PLAYER>()});
     }
 }

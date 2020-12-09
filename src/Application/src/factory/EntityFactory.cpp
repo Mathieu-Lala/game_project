@@ -24,7 +24,7 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
 
     world.emplace<engine::Drawable>(enemy, engine::DrawableFactory::rectangle());
     world.emplace<engine::d2::Rotation>(enemy, 0.f);
-    world.emplace<engine::d3::Position>(enemy, pos.x, pos.y, get_z_layer<LAYER_ENEMY>());
+    world.emplace<engine::d3::Position>(enemy, pos.x, pos.y, get_z_layer<Layer::LAYER_ENEMY>());
 
     world.emplace<engine::d2::Scale>(enemy, data.scale);
     world.emplace<engine::d2::HitboxSolid>(enemy, data.hitbox);
@@ -49,18 +49,20 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
     auto &slots = world.emplace<SpellSlots>(enemy);
     for (auto i = 0ul; i != data.spells.size(); i++) slots.spells[i] = game.dbSpells().instantiate(data.spells[i]);
 
-//#ifndef NDEBUG
-//
-//    auto hitbox_entity = world.create();
-//    world.emplace<entt::tag<"debug_hitbox"_hs>>(hitbox_entity);
-//    world.emplace<engine::Source>(hitbox_entity, enemy);
-//    world.emplace<engine::Drawable>(hitbox_entity, engine::DrawableFactory::rectangle());
-//    world.emplace<engine::d2::Rotation>(hitbox_entity, 0.f);
-//    world.emplace<engine::d3::Position>(hitbox_entity, pos.x, pos.y, get_z_layer<LAYER_DEBUG>());
-//    world.emplace<engine::d2::Scale>(hitbox_entity, data.hitbox.width, data.hitbox.height);
-//    engine::DrawableFactory::fix_color(world, hitbox_entity, {1, 0, 0, 0.07});
-//
-//#endif
+#ifndef NDEBUG
+
+    auto hitbox_entity = world.create();
+    world.emplace<entt::tag<"debug_hitbox"_hs>>(hitbox_entity);
+    world.emplace<engine::Source>(hitbox_entity, enemy);
+    world.emplace<engine::Drawable>(hitbox_entity, engine::DrawableFactory::rectangle());
+    world.emplace<engine::d2::Rotation>(hitbox_entity, 0.f);
+    world.emplace<engine::d3::Position>(hitbox_entity, pos.x, pos.y, get_z_layer<Layer::LAYER_DEBUG>());
+    world.emplace<engine::d2::Scale>(hitbox_entity, data.hitbox.width, data.hitbox.height);
+    engine::DrawableFactory::fix_color(world, hitbox_entity, {1, 1, 1, 0.5});
+    engine::DrawableFactory::fix_texture(
+        world, hitbox_entity, holder.instance->settings().data_folder + "textures/transparent.png");
+
+#endif
 
     return enemy;
 }
@@ -73,7 +75,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     auto player = world.create();
 
     world.emplace<entt::tag<"player"_hs>>(player);
-    world.emplace<engine::d3::Position>(player, 0.0, 0.0, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
+    world.emplace<engine::d3::Position>(player, 0.0, 0.0, EntityFactory::get_z_layer<Layer::LAYER_PLAYER>());
     world.emplace<engine::d2::Velocity>(player, 0.0, 0.0);
     world.emplace<engine::d2::Rotation>(player, 0.f);
     world.emplace<engine::d2::Acceleration>(player, 0.0, 0.0);
@@ -111,7 +113,7 @@ auto game::EntityFactory::create<game::EntityFactory::KEY>(
     auto key = world.create();
     world.emplace<entt::tag<"key"_hs>>(key);
     world.emplace<engine::d2::HitboxFloat>(key);
-    world.emplace<engine::d3::Position>(key, pos.x, pos.y, get_z_layer<LAYER_PLAYER>());
+    world.emplace<engine::d3::Position>(key, pos.x, pos.y, get_z_layer<Layer::LAYER_PLAYER>());
     world.emplace<engine::d2::Rotation>(key, 0.f);
     world.emplace<engine::d2::Scale>(key, size.x, size.y);
     world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
@@ -129,7 +131,7 @@ auto game::EntityFactory::create<game::EntityFactory::AIMING_SIGHT>(
 
     auto e = world.create();
 
-    world.emplace<engine::d3::Position>(e, 0.0, 0.0, EntityFactory::get_z_layer<EntityFactory::LAYER_AIMING_SIGHT>());
+    world.emplace<engine::d3::Position>(e, 0.0, 0.0, EntityFactory::get_z_layer<Layer::PARTICULE>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, 0.0, 0.0);
 
@@ -147,7 +149,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
     static auto holder = engine::Core::Holder{};
 
     const auto e = world.create();
-    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<Layer::LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
@@ -164,7 +166,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
     static auto holder = engine::Core::Holder{};
 
     const auto e = world.create();
-    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<Layer::LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
@@ -181,7 +183,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
     static auto holder = engine::Core::Holder{};
 
     const auto e = world.create();
-    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<Layer::LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
@@ -198,7 +200,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
     static auto holder = engine::Core::Holder{};
 
     const auto e = world.create();
-    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<Layer::LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
@@ -215,7 +217,7 @@ auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
     static auto holder = engine::Core::Holder{};
 
     const auto e = world.create();
-    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<Layer::LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
@@ -233,7 +235,7 @@ auto game::EntityFactory::create<game::EntityFactory::WALL>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     const auto e = world.create();
-    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<Layer::LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
@@ -247,7 +249,7 @@ auto game::EntityFactory::create<game::EntityFactory::DEBUG_TILE>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
 {
     const auto e = world.create();
-    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<LAYER_TERRAIN>());
+    world.emplace<engine::d3::Position>(e, pos.x, pos.y, get_z_layer<Layer::LAYER_TERRAIN>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());

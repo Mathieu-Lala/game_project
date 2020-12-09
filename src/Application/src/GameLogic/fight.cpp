@@ -59,7 +59,7 @@ auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity)
     level.current_level++;
 
     const auto &pos = world.get<engine::d3::Position>(entity);
-    ParticuleFactory::create<Particule::POSITIVE>(world, {pos.x, pos.y}, {255, 255, 0});
+    ParticuleFactory::create<Particule::POSITIVE>(world, {pos.x, pos.y}, {0, 127.5, 255});
 }
 
 auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uint32_t xp) -> void
