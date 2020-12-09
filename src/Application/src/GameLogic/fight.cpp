@@ -106,7 +106,7 @@ auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::T
 
         } break;
         case Effect::Type::DASH: {
-            const auto &initial_speed = world.get<engine::Copy<Speed>>(receiver).data;
+            const auto &initial_speed = world.get_or_emplace<engine::Copy<Speed>>(receiver, world.get<Speed>(receiver)).data;
             world.replace<Speed>(receiver, initial_speed);
             world.remove_if_exists<engine::Copy<Speed>>(receiver);
 
@@ -129,79 +129,75 @@ auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::T
 auto game::GameLogic::slots_collide_with_spell(
     entt::registry &world, entt::entity receiver, entt::entity sender, entt::entity spell) -> void
 {
-    const auto effects = [&](const auto &ref) {
-        struct sPsE {
-            std::string_view tag;
-            const Effect *effect;
-        };
-        std::vector<sPsE> out;
-        std::transform(ref.begin(), ref.end(), std::back_inserter(out), [&](const auto &id) {
-            return sPsE{id, &m_game.dbEffects().db.at(id)};
-        });
-        return out;
-    }(world.get<SpellEffect>(spell).ref);
-    for (auto &[new_tag, i] : effects) {
-        // check if already instanciated & update the effect
+    if (!world.valid(receiver) || !world.valid(sender) || !world.valid(spell))
+        return;
 
-        //        bool exist = false;
-        //        world.view<entt::tag<"effect"_hs>, engine::Source, std::string>().each(
-        //            [&exist, &new_tag, &receiver](auto &, const auto &source, const auto &tag) {
-        //                exist |= tag == new_tag && source.source == receiver;
-        //            });
+    const auto targets = world.get<SpellTarget>(spell).ref;
 
-        const auto view = world.view<entt::tag<"effect"_hs>, engine::Source, std::string>();
-        const auto found = std::find_if(view.begin(), view.end(), [&world, &new_tag, &receiver](const auto &entity) {
-            const auto &source = world.get<engine::Source>(entity);
-            const auto &tag = world.get<std::string>(entity);
-            return tag == new_tag && source.source == receiver;
-        });
+    const auto to_the_caster = targets[SpellData::Target::CASTER] && (receiver == sender);
+    const auto to_an_enemy = targets[SpellData::Target::ENEMY]
+                             && (world.has<entt::tag<"enemy"_hs>>(receiver) ^ world.has<entt::tag<"enemy"_hs>>(sender));
 
-        if (found != view.end()) {
-            spdlog::info("skipping effect already exist");
+    if (to_the_caster || to_an_enemy) {
+        const auto effects = [&](const auto &ref) {
+            struct sPsE {
+                std::string_view tag;
+                const Effect *effect;
+            };
+            std::vector<sPsE> out;
+            std::transform(ref.begin(), ref.end(), std::back_inserter(out), [&](const auto &id) {
+                return sPsE{id, &m_game.dbEffects().db.at(id)};
+            });
+            return out;
+        }(world.get<SpellEffect>(spell).ref);
 
-            // todo refresh cd
+        for (auto &[new_tag, i] : effects) {
+            const auto view = world.view<entt::tag<"effect"_hs>, engine::Source, std::string>();
+            const auto found = std::find_if(view.begin(), view.end(), [&world, &new_tag, &receiver](const auto &entity) {
+                const auto &source = world.get<engine::Source>(entity);
+                const auto &tag = world.get<std::string>(entity);
+                return tag == new_tag && source.source == receiver;
+            });
 
-        } else {
-            spdlog::info("create effect");
+            if (found != view.end()) {
+                spdlog::info("skipping effect already exist");
 
-            auto new_effect = world.create();
-            world.emplace<entt::tag<"effect"_hs>>(new_effect);
-            world.emplace<engine::Source>(new_effect, receiver);
-            world.emplace<engine::SourceBis>(new_effect, sender);
-            world.emplace<engine::Lifetime>(new_effect, i->lifetime);
-            world.emplace<engine::Cooldown>(new_effect, true, i->cooldown, i->cooldown);
-            world.emplace<std::string>(new_effect, new_tag);
+                world.emplace_or_replace<engine::Lifetime>(*found, i->lifetime);
 
-            world.emplace<Effect::Type>(new_effect, i->type);
+            } else {
+                spdlog::info("create effect");
 
-            if (i->type == Effect::DOT) {
-                spdlog::info("effect dot created");
+                auto new_effect = world.create();
+                world.emplace<entt::tag<"effect"_hs>>(new_effect);
+                world.emplace<engine::Source>(new_effect, receiver);
+                world.emplace<engine::SourceBis>(new_effect, sender);
+                world.emplace<engine::Lifetime>(new_effect, i->lifetime);
+                world.emplace<engine::Cooldown>(new_effect, true, i->cooldown, i->cooldown);
+                world.emplace<std::string>(new_effect, new_tag);
 
-                world.emplace<AttackDamage>(new_effect, i->damage);
-            } else if (i->type == Effect::DASH) {
-                spdlog::info("setting velocity");
+                world.emplace<Effect::Type>(new_effect, i->type);
 
-                if (!world.has<engine::Copy<Speed>>(receiver)) {
+                if (i->type == Effect::DOT) {
+                    world.emplace<AttackDamage>(new_effect, i->damage);
+                } else if (i->type == Effect::DASH) {
                     const auto &current_speed = world.get<Speed>(receiver);
                     world.emplace<engine::Copy<Speed>>(receiver, current_speed);
                     world.replace<Speed>(receiver, current_speed.speed / i->strength);
 
                     const auto &current_color = world.get<engine::Color>(receiver);
-                    world.emplace<engine::Copy<engine::Color>>(receiver, current_color);
+                    world.emplace_or_replace<engine::Copy<engine::Color>>(receiver, current_color);
                     engine::DrawableFactory::fix_color(world, receiver, {0, 0, 1, 1});
                 }
             }
         }
-    }
 
-    if (world.has<entt::tag<"projectile"_hs>>(spell) && receiver != sender
-        && (world.has<entt::tag<"enemy"_hs>>(receiver) ^ world.has<entt::tag<"enemy"_hs>>(sender))) {
-        onDamageTaken.publish(world, receiver, sender, spell);
-        world.destroy(spell);
+        if (world.has<entt::tag<"projectile"_hs>>(spell)) {
+            onDamageTaken.publish(world, receiver, sender, spell);
+            world.destroy(spell);
+        }
     }
 }
 
-// note : not really on damage taken but rather, on collide with spell
 auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity receiver, entt::entity sender, entt::entity spell)
     -> void
 {
@@ -225,7 +221,22 @@ auto game::GameLogic::slots_damage_taken(entt::registry &world, entt::entity rec
 
     holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")->play();
 
-    if (entity_health.current <= 0.0f) { onEntityKilled.publish(world, receiver, sender); }
+    if (entity_health.current <= 0.0f) {
+        onEntityKilled.publish(world, receiver, sender);
+    } else {
+        // auto new_effect = world.create();
+        // world.emplace<entt::tag<"effect"_hs>>(new_effect);
+        // world.emplace<engine::Source>(new_effect, receiver);
+        // world.emplace<engine::SourceBis>(new_effect, sender);
+        // world.emplace<engine::Lifetime>(new_effect, 200ms);
+        // world.emplace<engine::Cooldown>(new_effect, true, 180ms, 180ms);
+        //
+        // world.emplace<Effect::Type>(new_effect, Effect::Type::DASH);
+        //
+        // const auto &current_color = world.get<engine::Color>(receiver);
+        // world.emplace_or_replace<engine::Copy<engine::Color>>(receiver, current_color);
+        // engine::DrawableFactory::fix_color(world, receiver, {0.2, 0.2, 0.2, 1});
+    }
 }
 
 auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)
@@ -301,7 +312,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
             const auto &pos = world.get<engine::d3::Position>(killed);
             EntityFactory::create<EntityFactory::KEY>(m_game, world, {pos.x, pos.y}, {1.0, 1.0});
             holder.instance->getAudioManager()
-                .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
+                .getSound(holder.instance->settings().data_folder + "sounds/death/boss_death.wav")
                 ->play();
         }
     }

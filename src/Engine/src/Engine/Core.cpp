@@ -107,6 +107,13 @@ auto engine::Core::getNextEvent() -> Event
     case EventMode::RECORD: {
         m_joystickManager->poll();
 
+        static bool b = false;
+
+        b = !b;
+        if (b) {
+            return TimeElapsed{getElapsedTime()};
+        }
+
         // 1. poll the window event
         // 2. poll the joysticks event
         // 3. send elapsed time
@@ -242,7 +249,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                 [&]([[maybe_unused]] const Pressed<Key> &) {
                     // todo : abstract glfw keyboard
                     switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
-                    case GLFW_KEY_ESCAPE: this->close(); break;
+//                    case GLFW_KEY_ESCAPE: this->close(); break;
 #ifndef NDEBUG
                     case GLFW_KEY_F1:
                         m_show_debug_info = !m_show_debug_info;
