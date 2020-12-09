@@ -46,7 +46,6 @@ struct Stage {
             {"ice_skeleton", 1.01f},
             {"golem_turret", 1.001f},
             {"fire_skeleton", 3.001f}
-
         };
     };
 
