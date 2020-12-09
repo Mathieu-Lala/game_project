@@ -49,6 +49,7 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
     world.emplace<engine::d2::Velocity>(spell, direction.x * data.speed, direction.y * data.speed);
 
     world.emplace<SpellEffect>(spell, data.effects);
+    world.emplace<SpellTarget>(spell, data.targets);
 
     world.emplace<engine::Source>(spell, caster);
 
