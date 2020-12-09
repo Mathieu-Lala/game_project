@@ -175,7 +175,7 @@ void game::menu::UpgradePanel::processInputs(entt::registry &world, ThePURGE &ga
             }
         }
     } else if (left() && parent) {
-        for (auto i = static_cast<std::size_t>(m_selection->selfIndex) - 1ul; i != 0; --i) {
+        for (auto i = m_selection->selfIndex - 1; i > -1; --i) {
             const auto *it = &parent->children.at(i);
             if (!isUnavailable(it->cl)) {
                 m_selection = it;
