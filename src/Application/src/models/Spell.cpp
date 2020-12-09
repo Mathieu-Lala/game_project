@@ -107,6 +107,8 @@ auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
                 }
                 return out;
             }(data.value("target", std::vector<std::string>({"enemy"})));
+            spell.quantity = data.value("quantity", 1);
+            spell.angle = data.value("angle", 0.0f);
         } catch (nlohmann::json::exception &e) {
             spdlog::error("failed: {}", e.what());
             throw; // we probably don't want to continue

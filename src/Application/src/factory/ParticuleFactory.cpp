@@ -29,7 +29,7 @@ auto game::ParticuleFactory::create<game::Particule::ID::HITMARKER>(
 
         auto e = world.create();
         world.emplace<engine::d3::Position>(
-            e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
+            e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::Layer::PARTICULE>());
         world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
         world.emplace<engine::d2::Rotation>(e, 0.f);
         world.emplace<engine::d2::Velocity>(e, (particule_pos.x - pos.x) * speed, (particule_pos.y - pos.y) * speed);
@@ -54,7 +54,7 @@ auto game::ParticuleFactory::create<game::Particule::ID::POSITIVE>(
 
         auto e = world.create();
         world.emplace<engine::d3::Position>(
-            e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
+            e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::Layer::PARTICULE>());
         world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
         world.emplace<engine::d2::Rotation>(e, 0.f);
         world.emplace<engine::d2::Velocity>(e, -(particule_pos.x - pos.x) * speed, -(particule_pos.y - pos.y) * speed);
@@ -79,7 +79,7 @@ auto game::ParticuleFactory::create<game::Particule::ID::NEUTRAL>(
         const auto particule_pos = pos + glm::vec2{std::cos(angle), std::sin(angle)};
         auto e = world.create();
         world.emplace<engine::d3::Position>(
-            e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::LAYER_PLAYER>());
+            e, particule_pos.x, particule_pos.y, EntityFactory::get_z_layer<EntityFactory::Layer::PARTICULE>());
         world.emplace<engine::d2::Scale>(e, 0.1, 0.1);
         world.emplace<engine::d2::Rotation>(e, 0.f);
         world.emplace<engine::d2::Velocity>(
