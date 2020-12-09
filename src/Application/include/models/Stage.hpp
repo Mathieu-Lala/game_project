@@ -44,7 +44,8 @@ struct Stage {
             {"summoner", 3.005f},
             {"electric_skeleton", 2.005f},
             {"ice_skeleton", 1.01f},
-            {"fire_skeleton", 3.01f}
+            {"golem_turret", 1.001f},
+            {"fire_skeleton", 3.001f}
         };
     };
 
