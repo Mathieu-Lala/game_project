@@ -532,9 +532,15 @@ auto engine::Core::loadOpenGL() -> void
 
 auto engine::Core::getElapsedTime() noexcept -> std::chrono::nanoseconds
 {
+    static constexpr auto kMax = std::chrono::milliseconds(50);
+
     const auto nextTick = std::chrono::steady_clock::now();
-    const auto timeElapsed = nextTick - m_lastTick;
-    m_lastTick = nextTick;
+    auto timeElapsed = nextTick - m_lastTick;
+
+    if (timeElapsed > kMax)
+        timeElapsed = std::chrono::nanoseconds(kMax);
+
+    m_lastTick += timeElapsed;
     return timeElapsed;
 }
 
