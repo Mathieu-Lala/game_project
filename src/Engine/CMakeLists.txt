@@ -17,7 +17,7 @@ add_library(glfw_imgui_impl STATIC ${CMAKE_BINARY_DIR}/download/imgui/v${imgui_v
                                    ${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version}/imgui_impl_opengl3.cpp)
 target_link_libraries(glfw_imgui_impl PUBLIC project_options CONAN_PKG::glew CONAN_PKG::glfw CONAN_PKG::imgui)
 target_compile_definitions(glfw_imgui_impl PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
-target_include_directories(glfw_imgui_impl PUBLIC ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version})
+target_include_directories(glfw_imgui_impl PUBLIC ${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version})
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/download/adamstark/v1.0.8/AudioFile.hpp")
   message(STATUS "Downloading from https://github.com/adamstark/AudioFile/blob/1.0.8/AudioFile.h")
