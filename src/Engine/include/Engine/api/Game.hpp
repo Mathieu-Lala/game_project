@@ -2,7 +2,7 @@
 
 #include <entt/entt.hpp>
 
-#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include "Engine/Event/Event.hpp"
 
@@ -37,7 +37,7 @@ public:
     /**
      * function called at every frame, return the clear color
      */
-    virtual auto getBackgroundColor() const noexcept -> glm::vec3 = 0;
+    virtual auto getBackgroundColor() const noexcept -> glm::vec4 = 0;
 
 };
 

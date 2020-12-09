@@ -69,6 +69,9 @@ struct SpellData {
 
     std::bitset<Target::TARGET_MAX> targets;
 
+    int quantity;
+    double angle;
+
 };
 
 void to_json(nlohmann::json &j, const SpellData &spell);

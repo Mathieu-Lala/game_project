@@ -18,6 +18,7 @@
 #include "Engine/component/Velocity.hpp"
 #include "Engine/component/Acceleration.hpp"
 #include "Engine/component/Hitbox.hpp"
+#include "Engine/component/Source.hpp"
 #include "Engine/component/Color.hpp"
 #include "Engine/component/Spritesheet.hpp"
 #include "Engine/component/VBOTexture.hpp"
@@ -110,9 +111,7 @@ auto engine::Core::getNextEvent() -> Event
         static bool b = false;
 
         b = !b;
-        if (b) {
-            return TimeElapsed{getElapsedTime()};
-        }
+        if (b) { return TimeElapsed{getElapsedTime()}; }
 
         // 1. poll the window event
         // 2. poll the joysticks event
@@ -124,10 +123,10 @@ auto engine::Core::getNextEvent() -> Event
 
         // TEMPORARY, BY YANIS. Allows for keyboard input to work. waiting for Mathieu to help do it a clean way
         std::visit(
-            overloaded{
-                [&](const auto &e) { m_window->applyEvent(e); },
-            },
-            event.value());
+           overloaded{
+               [&](const auto &e) { m_window->applyEvent(e); },
+           },
+           event.value());
         // ----
         return event.value();
     } break;
@@ -422,6 +421,20 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         }
     }
 
+#ifndef NDEBUG
+    for (auto &i : m_world.view<entt::tag<"debug_hitbox"_hs>, Source, d3::Position>()) {
+        auto &source = m_world.get<Source>(i);
+        if (!m_world.valid(source.source))
+            m_world.destroy(i);
+        else {
+            const auto &pos_source = m_world.get<d3::Position>(source.source);
+            auto &pos = m_world.get<d3::Position>(i);
+            pos.x = pos_source.x;
+            pos.y = pos_source.y;
+        }
+    }
+#endif
+
     m_window->draw([&] {
         m_game->drawUserInterface(m_world);
 
@@ -437,7 +450,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         const auto background = m_game->getBackgroundColor();
 
-        CALL_OPEN_GL(::glClearColor(background.r, background.g, background.b, 1.0f));
+        CALL_OPEN_GL(::glClearColor(background.r, background.g, background.b, background.a));
         CALL_OPEN_GL(::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
         // todo : add rendering
@@ -546,8 +559,7 @@ auto engine::Core::getElapsedTime() noexcept -> std::chrono::nanoseconds
     const auto nextTick = std::chrono::steady_clock::now();
     auto timeElapsed = nextTick - m_lastTick;
 
-    if (timeElapsed > kMax)
-        timeElapsed = std::chrono::nanoseconds(kMax);
+    if (timeElapsed > kMax) timeElapsed = std::chrono::nanoseconds(kMax);
 
     m_lastTick += timeElapsed;
     return timeElapsed;
