@@ -107,20 +107,29 @@ auto engine::Core::getNextEvent() -> Event
     case EventMode::RECORD: {
         m_joystickManager->poll();
 
+        static bool b = false;
+
+        b = !b;
+        if (b) {
+            return TimeElapsed{getElapsedTime()};
+        }
+
         // 1. poll the window event
         // 2. poll the joysticks event
         // 3. send elapsed time
-        auto event =
-            m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
+
+        auto event = m_window->getNextEvent();
+        if (!event) event = m_joystickManager->getNextEvent();
+        if (!event) event = TimeElapsed{getElapsedTime()};
 
         // TEMPORARY, BY YANIS. Allows for keyboard input to work. waiting for Mathieu to help do it a clean way
         std::visit(
             overloaded{
                 [&](const auto &e) { m_window->applyEvent(e); },
             },
-            event);
+            event.value());
         // ----
-        return event;
+        return event.value();
     } break;
     case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
@@ -240,7 +249,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                 [&]([[maybe_unused]] const Pressed<Key> &) {
                     // todo : abstract glfw keyboard
                     switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
-                    case GLFW_KEY_ESCAPE: this->close(); break;
+//                    case GLFW_KEY_ESCAPE: this->close(); break;
 #ifndef NDEBUG
                     case GLFW_KEY_F1:
                         m_show_debug_info = !m_show_debug_info;
