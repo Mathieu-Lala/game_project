@@ -129,6 +129,9 @@ auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::T
 auto game::GameLogic::slots_collide_with_spell(
     entt::registry &world, entt::entity receiver, entt::entity sender, entt::entity spell) -> void
 {
+    if (!world.valid(receiver) || !world.valid(sender) || !world.valid(spell))
+        return;
+
     const auto targets = world.get<SpellTarget>(spell).ref;
 
     const auto to_the_caster = targets[SpellData::Target::CASTER] && (receiver == sender);
@@ -309,7 +312,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
             const auto &pos = world.get<engine::d3::Position>(killed);
             EntityFactory::create<EntityFactory::KEY>(m_game, world, {pos.x, pos.y}, {1.0, 1.0});
             holder.instance->getAudioManager()
-                .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
+                .getSound(holder.instance->settings().data_folder + "sounds/death/boss_death.wav")
                 ->play();
         }
     }
