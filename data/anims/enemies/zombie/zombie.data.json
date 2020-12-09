@@ -4,32 +4,32 @@
         "idle_right": {
           "file": "/anims/enemies/zombie/spritesheet/zombie_idle.png",
           "width": 39,
-          "height": 75,
-          "cooldown": 70,
+          "height": 70,
+          "cooldown": 100,
           "frames": [
             {
               "x": 2,
-              "y": 71
+              "y": 72
             },
             {
-              "x": 43,
-              "y": 71
+              "x": 48,
+              "y": 72
             },
             {
-              "x": 91,
-              "y": 71
+              "x": 93,
+              "y": 72
             },
             {
-              "x": 137,
-              "y": 71
+              "x": 142,
+              "y": 72
             },
             {
-              "x": 187,
-              "y": 71
+              "x": 190,
+              "y": 72
             },
             {
-              "x": 231,
-              "y": 71
+              "x": 234,
+              "y": 72
             }
           ]
         },
@@ -37,14 +37,14 @@
           "file": "/anims/enemies/zombie/spritesheet/zombie_idle.png",
           "width": 35,
           "height": 75,
-          "cooldown": 70,
+          "cooldown": 100,
           "frames": [
             {
-              "x": 233,
+              "x": 232,
               "y": 0
             },
             {
-              "x": 189,
+              "x": 195,
               "y": 0
             },
             {
@@ -52,11 +52,11 @@
               "y": 0
             },
             {
-              "x": 98,
+              "x": 90,
               "y": 0
             },
             {
-              "x": 46,
+              "x": 44,
               "y": 0
             },
             {
@@ -179,41 +179,41 @@
         },
         "death": {
           "file": "/anims/enemies/zombie/spritesheet/zombie_death.png",
-          "width": 45,
+          "width": 48,
           "height": 70,
           "cooldown": 100,
           "frames": [
             {
-              "x": 9,
-              "y": 2
+              "x": 12,
+              "y": 0
             },
             {
-              "x": 55,
-              "y": 2
+              "x": 56,
+              "y": 0
             },
             {
               "x": 110,
-              "y": 2
+              "y": 0
             },
             {
               "x": 163,
-              "y": 2
+              "y": 0
             },
             {
               "x": 216,
-              "y": 2
+              "y": 0
             },
             {
               "x": 268,
-              "y": 2
+              "y": 0
             },
             {
-              "x": 316,
-              "y": 2
+              "x": 319,
+              "y": 0
             },
             {
-              "x": 369,
-              "y": 2
+              "x": 372,
+              "y": 0
             }
           ]
         },
