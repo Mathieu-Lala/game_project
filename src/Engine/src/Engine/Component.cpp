@@ -36,7 +36,8 @@ auto engine::Color::ctor(glm::vec4 &&color) -> Color
 
 auto engine::Color::dtor(Color *color) -> void { CALL_OPEN_GL(::glDeleteBuffers(1, &color->VBO)); }
 
-auto engine::VBOTexture::ctor(const std::string_view path, const std::array<float, 4ul> &clip) -> VBOTexture
+auto engine::VBOTexture::ctor(const std::string_view path, bool mirrored_repeated, const std::array<float, 4ul> &clip)
+    -> VBOTexture
 {
     // clang-format off
     VBOTexture out = {
@@ -55,7 +56,9 @@ auto engine::VBOTexture::ctor(const std::string_view path, const std::array<floa
     CALL_OPEN_GL(::glGenBuffers(1, &out.VBO));
 
     auto handle = Core::Holder{}.instance->getCache<Texture>().load<LoaderTexture>(
-        entt::hashed_string{fmt::format("resource/texture/identifier/{}", path.data()).data()}, path);
+        entt::hashed_string{fmt::format("resource/texture/identifier/{}_{}", path.data(), mirrored_repeated).data()},
+        path,
+        mirrored_repeated);
     if (!handle) {
         spdlog::error("could not load texture in cache !");
         throw std::runtime_error("could not load texture in cache !");
@@ -66,7 +69,4 @@ auto engine::VBOTexture::ctor(const std::string_view path, const std::array<floa
     return out;
 }
 
-auto engine::VBOTexture::dtor(VBOTexture *ptr) -> void
-{
-    CALL_OPEN_GL(::glDeleteBuffers(1, &ptr->VBO));
-}
+auto engine::VBOTexture::dtor(VBOTexture *ptr) -> void { CALL_OPEN_GL(::glDeleteBuffers(1, &ptr->VBO)); }

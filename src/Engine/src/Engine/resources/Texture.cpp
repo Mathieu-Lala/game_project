@@ -1,6 +1,6 @@
 #include "Engine/resources/Texture.hpp"
 
-auto engine::Texture::ctor(const std::string_view filepath) -> Texture
+auto engine::Texture::ctor(const std::string_view filepath, bool mirrored_repeated) -> Texture
 {
     Texture texture = {
         .id = 0,
@@ -18,18 +18,19 @@ auto engine::Texture::ctor(const std::string_view filepath) -> Texture
     CALL_OPEN_GL(::glGenTextures(1, &texture.id));
     CALL_OPEN_GL(::glBindTexture(GL_TEXTURE_2D, texture.id));
 
-    CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    if (!mirrored_repeated) {
+        CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-    // ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    } else {
+        CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT));
+        CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT));
 
-    //    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    //
-
-    CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-    CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        CALL_OPEN_GL(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    }
 
     CALL_OPEN_GL(::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.px));
     CALL_OPEN_GL(::glGenerateMipmap(GL_TEXTURE_2D));

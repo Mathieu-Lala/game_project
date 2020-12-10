@@ -188,7 +188,8 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor_boss.jpg");
+    engine::DrawableFactory::fix_texture(
+        world, e, holder.instance->settings().data_folder + "textures/floor_boss.jpg");
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }

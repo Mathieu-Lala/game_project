@@ -80,8 +80,11 @@ auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, g
 }
 
 auto engine::DrawableFactory::fix_texture(
-    entt::registry &world, entt::entity e, const std::string_view filepath, const std::array<float, 4ul> &clip)
-    -> VBOTexture &
+    entt::registry &world,
+    entt::entity e,
+    const std::string_view filepath,
+    bool mirrored_repeated,
+    const std::array<float, 4ul> &clip) -> VBOTexture &
 {
     static Core::Holder holder{};
 
@@ -91,8 +94,9 @@ auto engine::DrawableFactory::fix_texture(
 
     if (const auto handle = holder.instance->getCache<VBOTexture>().load<LoaderVBOTexture>(
             entt::hashed_string{
-                fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}", filepath, clip[0], clip[1], clip[2], clip[3]).data()},
+                fmt::format("resource/texture/identifier/{}_{}_{}_{}_{}_{}", filepath, mirrored_repeated, clip[0], clip[1], clip[2], clip[3]).data()},
             filepath,
+            mirrored_repeated,
             clip);
         !handle) {
         spdlog::error("could not load texture in cache : {}", filepath);

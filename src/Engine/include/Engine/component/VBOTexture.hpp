@@ -17,11 +17,10 @@ struct VBOTexture {
     // clang-format on
 
     std::uint32_t VBO;
-//    std::uint32_t texture;
     std::uint32_t id;
     bool mirrored;
 
-    static auto ctor(const std::string_view path, const std::array<float, 4ul> &) -> VBOTexture;
+    static auto ctor(const std::string_view path, bool mirrored_repeated, const std::array<float, 4ul> &) -> VBOTexture;
 
     static auto dtor(VBOTexture *ptr) -> void;
 };

@@ -85,6 +85,8 @@ private:
     static auto callback_eventMousePressed(GLFWwindow *window, int button, int action, int mods) -> void;
 
     static auto callback_eventMouseMoved(GLFWwindow *window, double x, double y) -> void;
+
+    static auto callback_char(GLFWwindow *window, unsigned int codepoint) -> void;
 };
 
 template<>
@@ -98,5 +100,8 @@ auto Window::applyEvent(const Pressed<Key> &) -> void;
 
 template<>
 auto Window::applyEvent(const Released<Key> &) -> void;
+
+template<>
+auto Window::applyEvent(const Character &) -> void;
 
 } // namespace engine
