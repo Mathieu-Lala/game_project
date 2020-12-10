@@ -154,7 +154,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg");
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg", true);
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -171,7 +171,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg");
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg", true);
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -189,7 +189,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
     engine::DrawableFactory::fix_texture(
-        world, e, holder.instance->settings().data_folder + "textures/floor_boss.jpg");
+        world, e, holder.instance->settings().data_folder + "textures/floor_boss.jpg", true);
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -206,7 +206,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/corridor.jpg");
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/corridor.jpg", true);
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }

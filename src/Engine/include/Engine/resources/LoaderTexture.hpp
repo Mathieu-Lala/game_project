@@ -4,6 +4,8 @@
 
 #include <entt/entt.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include "Engine/resources/Texture.hpp"
 
 namespace engine {

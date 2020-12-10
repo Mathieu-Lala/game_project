@@ -12,8 +12,8 @@ namespace game {
 class ThePURGE;
 
 struct EntityFactory {
-    enum class Layer {
-        ERROR,
+    enum class Layer : std::uint8_t {
+        LAYER_ERROR,
         PARTICULE,
         LAYER_PLAYER,
         LAYER_ENEMY,
@@ -23,7 +23,7 @@ struct EntityFactory {
         MAX_LAYER,
     };
 
-    enum ID {
+    enum ID : std::uint8_t {
         DEBUG_TILE,
         AIMING_SIGHT,
         PLAYER,

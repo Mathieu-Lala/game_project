@@ -8,6 +8,8 @@ macro(download_imgui file)
   endif()
 endmacro()
 
+## Note : These files exists in the conan package, so we don t want to download them like that
+
 download_imgui(imgui_impl_glfw.cpp)
 download_imgui(imgui_impl_glfw.h)
 download_imgui(imgui_impl_opengl3.cpp)

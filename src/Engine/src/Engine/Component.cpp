@@ -63,7 +63,8 @@ auto engine::VBOTexture::ctor(const std::string_view path, bool mirrored_repeate
         spdlog::error("could not load texture in cache !");
         throw std::runtime_error("could not load texture in cache !");
     } else {
-        out.id = entt::hashed_string{fmt::format("resource/texture/identifier/{}", path.data()).data()};
+        out.id =
+            entt::hashed_string{fmt::format("resource/texture/identifier/{}_{}", path.data(), mirrored_repeated).data()};
     }
 
     return out;
