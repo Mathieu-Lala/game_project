@@ -37,10 +37,15 @@ struct Stage {
         int minCorridorWidth = 3; // min 3 or player may not fit
         int maxCorridorWidth = 4;
 
-        // float mobDensity = 0.05f; // Average mob per tile
-
         std::unordered_map<std::string, float> mobDensity{
-            {"skeleton", 0.03f}, {"golem", 0.01f}, {"zombie", 0.04f}, {"electric_skeleton", 0.01f}, {"summoner", 0.01f} 
+            {"skeleton", 1.01f},
+            {"golem", 5.005f},
+            {"zombie", 4.01f},
+            {"summoner", 3.005f},
+            {"electric_skeleton", 2.005f},
+            {"ice_skeleton", 1.01f},
+            {"golem_turret", 1.001f},
+            {"fire_skeleton", 3.001f}
         };
     };
 
@@ -57,8 +62,9 @@ struct Stage {
 
     std::uint32_t nextFloorSeed;
 
-private:
+    auto clear(entt::registry &, bool kill_the_players) -> void;
 
+private:
     static std::default_random_engine random_engine;
 
     auto create_floor(ThePURGE &, entt::registry &, const Parameters &);
@@ -66,7 +72,6 @@ private:
 
     // todo : add parameter enemy type
     auto spawn_mob(ThePURGE &, entt::registry &, const Parameters &, const Room &r) -> void;
-
 };
 
 } // namespace game

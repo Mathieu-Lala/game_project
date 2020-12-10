@@ -18,6 +18,7 @@
 #include "Engine/component/Velocity.hpp"
 #include "Engine/component/Acceleration.hpp"
 #include "Engine/component/Hitbox.hpp"
+#include "Engine/component/Source.hpp"
 #include "Engine/component/Color.hpp"
 #include "Engine/component/Spritesheet.hpp"
 #include "Engine/component/VBOTexture.hpp"
@@ -56,8 +57,8 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
     spdlog::trace("Engine::Core instanciated");
     if (::glfwInit() == GLFW_FALSE) { throw std::logic_error(fmt::format("Engine::Core initialization failed")); }
 
-    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     ::glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
     ::glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -107,20 +108,27 @@ auto engine::Core::getNextEvent() -> Event
     case EventMode::RECORD: {
         m_joystickManager->poll();
 
+        static bool b = false;
+
+        b = !b;
+        if (b) { return TimeElapsed{getElapsedTime()}; }
+
         // 1. poll the window event
         // 2. poll the joysticks event
         // 3. send elapsed time
-        auto event =
-            m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
+
+        auto event = m_window->getNextEvent();
+        if (!event) event = m_joystickManager->getNextEvent();
+        if (!event) event = TimeElapsed{getElapsedTime()};
 
         // TEMPORARY, BY YANIS. Allows for keyboard input to work. waiting for Mathieu to help do it a clean way
         std::visit(
-            overloaded{
-                [&](const auto &e) { m_window->applyEvent(e); },
-            },
-            event);
+           overloaded{
+               [&](const auto &e) { m_window->applyEvent(e); },
+           },
+           event.value());
         // ----
-        return event;
+        return event.value();
     } break;
     case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
@@ -240,7 +248,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                 [&]([[maybe_unused]] const Pressed<Key> &) {
                     // todo : abstract glfw keyboard
                     switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
-                    case GLFW_KEY_ESCAPE: this->close(); break;
+//                    case GLFW_KEY_ESCAPE: this->close(); break;
 #ifndef NDEBUG
                     case GLFW_KEY_F1:
                         m_show_debug_info = !m_show_debug_info;
@@ -248,6 +256,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                         break;
                     case GLFW_KEY_F2:
                         m_eventMode = m_eventMode == EventMode::PAUSED ? EventMode::RECORD : EventMode::PAUSED;
+                        m_window->setCursorVisible(m_eventMode == EventMode::PAUSED);
                         break;
 
 #endif
@@ -271,8 +280,7 @@ auto engine::Core::main(int argc, char **argv) -> int
 
         if (timeElapsed) { this->tickOnce(std::get<TimeElapsed>(event)); }
 
-        if (!timeElapsed || (timeElapsed && m_eventMode != EventMode::PAUSED))
-            m_game->onUpdate(m_world, event);
+        if (!timeElapsed || (timeElapsed && m_eventMode != EventMode::PAUSED)) m_game->onUpdate(m_world, event);
     }
 
     m_world.view<engine::Drawable>().each(engine::Drawable::dtor);
@@ -413,6 +421,20 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
         }
     }
 
+#ifndef NDEBUG
+    for (auto &i : m_world.view<entt::tag<"debug_hitbox"_hs>, Source, d3::Position>()) {
+        auto &source = m_world.get<Source>(i);
+        if (!m_world.valid(source.source))
+            m_world.destroy(i);
+        else {
+            const auto &pos_source = m_world.get<d3::Position>(source.source);
+            auto &pos = m_world.get<d3::Position>(i);
+            pos.x = pos_source.x;
+            pos.y = pos_source.y;
+        }
+    }
+#endif
+
     m_window->draw([&] {
         m_game->drawUserInterface(m_world);
 
@@ -428,8 +450,8 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         const auto background = m_game->getBackgroundColor();
 
-        ::glClearColor(background.r, background.g, background.b, 1.0f);
-        ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        CALL_OPEN_GL(::glClearColor(background.r, background.g, background.b, background.a));
+        CALL_OPEN_GL(::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
         // todo : add rendering
         // texture and no color
@@ -450,8 +472,8 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
                 model = glm::rotate(model, rotation, glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored->setUniform("model", model);
-                ::glBindVertexArray(drawable.VAO);
-                ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
+                CALL_OPEN_GL(::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0));
             });
 
         m_shader_colored_textured->use();
@@ -467,9 +489,9 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored_textured->setUniform("model", model);
                 m_shader_colored_textured->setUniform("mirrored", texture.mirrored);
-                ::glBindTexture(GL_TEXTURE_2D, getCache<Texture>().handle(texture.id)->id);
-                ::glBindVertexArray(drawable.VAO);
-                ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                CALL_OPEN_GL(::glBindTexture(GL_TEXTURE_2D, getCache<Texture>().handle(texture.id)->id));
+                CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
+                CALL_OPEN_GL(::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0));
             });
     });
 }
@@ -532,9 +554,14 @@ auto engine::Core::loadOpenGL() -> void
 
 auto engine::Core::getElapsedTime() noexcept -> std::chrono::nanoseconds
 {
+    static constexpr auto kMax = std::chrono::milliseconds(50);
+
     const auto nextTick = std::chrono::steady_clock::now();
-    const auto timeElapsed = nextTick - m_lastTick;
-    m_lastTick = nextTick;
+    auto timeElapsed = nextTick - m_lastTick;
+
+    if (timeElapsed > kMax) timeElapsed = std::chrono::nanoseconds(kMax);
+
+    m_lastTick += timeElapsed;
     return timeElapsed;
 }
 

@@ -12,29 +12,29 @@
 
 auto engine::Drawable::dtor(const Drawable &drawable) -> void
 {
-    ::glDeleteVertexArrays(1, &drawable.VAO);
-    ::glDeleteBuffers(1, &drawable.VBO);
-    ::glDeleteBuffers(1, &drawable.EBO);
+    CALL_OPEN_GL(::glDeleteVertexArrays(1, &drawable.VAO));
+    CALL_OPEN_GL(::glDeleteBuffers(1, &drawable.VBO));
+    CALL_OPEN_GL(::glDeleteBuffers(1, &drawable.EBO));
 }
 
-auto engine::Color::ctor(glm::vec3 &&color) -> Color
+auto engine::Color::ctor(glm::vec4 &&color) -> Color
 {
     // clang-format off
     Color out = {
         .vertices = {
-            color.r, color.g, color.b,
-            color.r, color.g, color.b,
-            color.r, color.g, color.b,
-            color.r, color.g, color.b,
+            color.r, color.g, color.b, color.a,
+            color.r, color.g, color.b, color.a,
+            color.r, color.g, color.b, color.a,
+            color.r, color.g, color.b, color.a,
         }};
     // clang-format on
 
-    ::glGenBuffers(1, &out.VBO);
+    CALL_OPEN_GL(::glGenBuffers(1, &out.VBO));
 
     return out;
 }
 
-auto engine::Color::dtor(Color *color) -> void { ::glDeleteBuffers(1, &color->VBO); }
+auto engine::Color::dtor(Color *color) -> void { CALL_OPEN_GL(::glDeleteBuffers(1, &color->VBO)); }
 
 auto engine::VBOTexture::ctor(const std::string_view path, const std::array<float, 4ul> &clip) -> VBOTexture
 {
@@ -52,7 +52,7 @@ auto engine::VBOTexture::ctor(const std::string_view path, const std::array<floa
     };
     // clang-format on
 
-    ::glGenBuffers(1, &out.VBO);
+    CALL_OPEN_GL(::glGenBuffers(1, &out.VBO));
 
     auto handle = Core::Holder{}.instance->getCache<Texture>().load<LoaderTexture>(
         entt::hashed_string{fmt::format("resource/texture/identifier/{}", path.data()).data()}, path);
@@ -68,5 +68,5 @@ auto engine::VBOTexture::ctor(const std::string_view path, const std::array<floa
 
 auto engine::VBOTexture::dtor(VBOTexture *ptr) -> void
 {
-    ::glDeleteBuffers(1, &ptr->VBO);
+    CALL_OPEN_GL(::glDeleteBuffers(1, &ptr->VBO));
 }

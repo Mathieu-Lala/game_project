@@ -1,10 +1,10 @@
 set(imgui_version "1.78")
 
 macro(download_imgui file)
-  if(NOT EXISTS "${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}/${file}")
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version}/${file}")
     message(STATUS "Downloading from https://github.com/ocornut/imgui/tree/v${imgui_version}/examples/${file}")
     file(DOWNLOAD "https://raw.githubusercontent.com/ocornut/imgui/v${imgui_version}/examples/${file}"
-         "${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}/${file}")
+         "${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version}/${file}")
   endif()
 endmacro()
 
@@ -13,11 +13,17 @@ download_imgui(imgui_impl_glfw.h)
 download_imgui(imgui_impl_opengl3.cpp)
 download_imgui(imgui_impl_opengl3.h)
 
-add_library(glfw_imgui_impl STATIC ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}/imgui_impl_glfw.cpp
-                                   ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version}/imgui_impl_opengl3.cpp)
+add_library(glfw_imgui_impl STATIC ${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version}/imgui_impl_glfw.cpp
+                                   ${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version}/imgui_impl_opengl3.cpp)
 target_link_libraries(glfw_imgui_impl PUBLIC project_options CONAN_PKG::glew CONAN_PKG::glfw CONAN_PKG::imgui)
 target_compile_definitions(glfw_imgui_impl PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
-target_include_directories(glfw_imgui_impl PUBLIC ${CMAKE_BINARY_DIR}/download/imgui/${imgui_version})
+target_include_directories(glfw_imgui_impl PUBLIC ${CMAKE_BINARY_DIR}/download/imgui/v${imgui_version})
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/download/adamstark/v1.0.8/AudioFile.hpp")
+  message(STATUS "Downloading from https://github.com/adamstark/AudioFile/blob/1.0.8/AudioFile.h")
+  file(DOWNLOAD "https://raw.githubusercontent.com/adamstark/AudioFile/1.0.8/AudioFile.h"
+       "${CMAKE_BINARY_DIR}/download/adamstark/v1.0.8/AudioFile.hpp")
+endif()
 
 configure_file(include/Engine/details/Version.hpp.in include/Engine/details/Version.hpp @ONLY)
 
@@ -38,7 +44,8 @@ add_library(
   src/Engine/audio/AudioFileBuffer.cpp
   src/Engine/resources/Texture.cpp)
 
-target_include_directories(engine_core PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(engine_core PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/include
+                                              ${CMAKE_BINARY_DIR}/download/adamstark/v1.0.8)
 target_link_libraries(
   engine_core
   PUBLIC project_options

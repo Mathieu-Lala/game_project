@@ -40,7 +40,7 @@ public: // api
 
     auto drawUserInterface(entt::registry &world) -> void final;
 
-    auto getBackgroundColor() const noexcept -> glm::vec3 final { return {0.0f, 0.0f, 0.0f}; }
+    auto getBackgroundColor() const noexcept -> glm::vec4 final { return {0.0f, 0.0f, 0.0f, 0.0f}; }
 
 public:
     auto logics() const noexcept -> const std::unique_ptr<GameLogic> & { return m_logics; }

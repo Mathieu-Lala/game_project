@@ -14,6 +14,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <spdlog/spdlog.h>
+
 namespace engine {
 
 inline constexpr auto GetGLErrorStr(GLenum err)
@@ -34,12 +36,16 @@ inline constexpr auto GetGLErrorStr(GLenum err)
 
 #ifndef NDEBUG
 
-#    define CALL_OPEN_GL(call)                                        \
-        do {                                                          \
-            call;                                                     \
-            if (const auto err = glGetError(); GL_NO_ERROR != err) {  \
-                throw std::runtime_error(engine::GetGLErrorStr(err)); \
-            }                                                         \
+#    define CALL_OPEN_GL(call)                                                     \
+        do {                                                                       \
+            call;                                                                  \
+            if (const auto err = glGetError(); GL_NO_ERROR != err) {               \
+                if constexpr (noexcept(__func__) == false) {                       \
+                    throw std::runtime_error(engine::GetGLErrorStr(err));          \
+                } else {                                                           \
+                    spdlog::error("CALL_OPEN_GL: {}", engine::GetGLErrorStr(err)); \
+                }                                                                  \
+            }                                                                      \
         } while (0)
 
 #else

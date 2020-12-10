@@ -17,10 +17,7 @@ auto getTexture(const std::string &simplePath) -> std::uint32_t
     return engine::helper::loadTexture(dataFolder + simplePath);
 }
 
-auto from1080p(float x, float y) noexcept -> ImVec2
-{
-    return ImVec2{x / 1920.0f, y / 1080.0f};
-}
+auto from1080p(float x, float y) noexcept -> ImVec2 { return ImVec2{x / 1920.0f, y / 1080.0f}; }
 
 auto frac2pixel(ImVec2 fraction) noexcept -> ImVec2
 {
@@ -28,36 +25,32 @@ auto frac2pixel(ImVec2 fraction) noexcept -> ImVec2
     return ImVec2(static_cast<float>(winSize.x) * fraction.x, static_cast<float>(winSize.y) * fraction.y);
 }
 
-void drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size) noexcept
+void drawTexture(std::uint32_t id, ImVec2 topLeft, ImVec2 size, ImVec4 tintColor) noexcept
 {
     ImGui::SetCursorPos(topLeft);
-    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(id)), size);
+    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(id)), size, ImVec2(0, 0), ImVec2(1, 1),  tintColor);
 }
 
-void drawTexture(const GUITexture &t) noexcept { drawTexture(t.id, frac2pixel(t.topleft), frac2pixel(t.size)); }
+void drawTexture(const GUITexture &t, ImVec4 tintColor) noexcept { drawTexture(t.id, frac2pixel(t.topleft), frac2pixel(t.size), tintColor); }
 
-void drawText(ImVec2 pos, const std::string & str, ImVec4 color, ImFont * font) noexcept
+void drawText(ImVec2 pos, const std::string &str, ImVec4 color, ImFont *font) noexcept
 {
-    if (font)
-        ImGui::PushFont(font);
+    if (font) ImGui::PushFont(font);
     ImGui::SetCursorPos(pos);
-    ImGui::TextColored(color, str.c_str());
-    if (font)
-        ImGui::PopFont();
+    ImGui::TextColored(color, "%s", str.c_str());
+    if (font) ImGui::PopFont();
 }
 
-void drawTextWrapped(ImVec2 pos, const std::string & str, float maxX, ImFont * font) noexcept
+void drawTextWrapped(ImVec2 pos, const std::string &str, float maxX, ImFont *font) noexcept
 {
-    if (font)
-        ImGui::PushFont(font);
+    if (font) ImGui::PushFont(font);
     ImGui::SetCursorPos(pos);
     ImGui::PushTextWrapPos(maxX);
 
-    ImGui::TextWrapped(str.c_str());
+    ImGui::TextWrapped("%s", str.c_str());
 
     ImGui::PopTextWrapPos();
-    if (font)
-        ImGui::PopFont();
+    if (font) ImGui::PopFont();
 }
 
 } // namespace game::helper

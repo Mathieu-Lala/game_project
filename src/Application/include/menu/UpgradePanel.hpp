@@ -62,7 +62,7 @@ private:
 
     ClassTreeNode m_root;
 private:
-    static inline constexpr auto kHeightMargins = 100; 
+    static inline constexpr auto kHeightMargins = 100;
     static inline constexpr auto kWidthMargins = 150;
 
     static inline const ImVec2 treeTopLeft{524 + kWidthMargins, 223 + kHeightMargins};

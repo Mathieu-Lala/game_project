@@ -18,12 +18,7 @@ class ThePURGE;
 struct Class;
 struct Spell;
 
-enum class Direction {
-    UP,
-    LEFT,
-    DOWN,
-    RIGHT
-};
+enum class Direction { UP, LEFT, DOWN, RIGHT };
 
 class GameLogic {
 public:
@@ -37,11 +32,10 @@ public:
     Stage::Parameters m_map_generation_params; // note : should be private
 
 private:
-
     std::uint32_t m_nextFloorSeed;
+    double m_gameTime; // seconds
 
 public: // signals
-
     // note : should have only one signal : onUserMove, or something like that
     entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir, bool is_pressed)> onMovement;
 
@@ -57,6 +51,7 @@ public: // signals
     entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> onGameUpdateAfter;
 
     entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell &)> onSpellCast;
+    entt::sigh<void(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell)> onCollideWithSpell;
 
     entt::sigh<void(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell)> onDamageTaken;
 
@@ -65,7 +60,6 @@ public: // signals
     entt::sigh<void(entt::registry &)> onFloorChange;
 
 private: // slots
-
     decltype(onMovement)::sink_type sinkMovement{onMovement};
     auto slots_move(entt::registry &, entt::entity &, const Direction &, bool is_pressed) -> void;
 
@@ -82,6 +76,7 @@ private: // slots
     auto slots_on_event(entt::registry &, const engine::Event &) -> void;
 
     decltype(onGameUpdate)::sink_type sinkGameUpdated{onGameUpdate}; // todo : cleaner
+    auto slots_update_game_time(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_check_animation_attack_status(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_update_player_movement(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_update_ai_movement(entt::registry &, const engine::TimeElapsed &) -> void;
@@ -91,8 +86,7 @@ private: // slots
     auto slots_update_cooldown(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_check_collision(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_check_floor_change(entt::registry &, const engine::TimeElapsed &) -> void;
-
-    /*[[deprecated]]*/ auto slots_update_effect(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_effect(entt::registry &, const engine::TimeElapsed &) -> void;
 
     // todo : should not be a slots connected to onGameUpdate but a callback connected to replace<Velocity>
     auto slots_update_animation_spritesheet(entt::registry &, const engine::TimeElapsed &) -> void;
@@ -104,6 +98,8 @@ private: // slots
     decltype(onSpellCast)::sink_type sinkCastSpell{onSpellCast};
     auto slots_cast_spell(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;
 
+    decltype(onCollideWithSpell)::sink_type sinkCollideSpell{onCollideWithSpell};
+    auto slots_collide_with_spell(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell) -> void;
 
     decltype(onDamageTaken)::sink_type sinkDamageTaken{onDamageTaken};
     auto slots_damage_taken(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell) -> void;

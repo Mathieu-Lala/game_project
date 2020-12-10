@@ -9,6 +9,8 @@
 #include "factory/SpellFactory.hpp"
 #include "models/Spell.hpp"
 
+#include "models/utils.hpp"
+
 using namespace std::chrono_literals;
 
 void game::to_json(nlohmann::json &j, const SpellData &spell)
@@ -86,13 +88,27 @@ auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
             spell.speed = data.at("speed");
             spell.offset_to_source_x = data.at("offset_to_source").at("x");
             spell.offset_to_source_y = data.at("offset_to_source").at("y");
+            spell.effects = data.value("effect", decltype(spell.effects){});
             spell.type = [](const auto &type) {
                 decltype(SpellData{}.type) out;
                 for (const auto &i : type) {
-                    if (const auto id = SpellData::toType(i); id != SpellData::Type::ZERO) { out[id] = true; }
+                    if (const auto id = toEnum<SpellData::Type>(i); id.has_value()) {
+                        out[static_cast<std::size_t>(id.value())] = true;
+                    }
                 }
                 return out;
             }(data.at("type").get<std::vector<std::string>>());
+            spell.targets = [](const std::vector<std::string> &in) {
+                decltype(SpellData{}.targets) out;
+                for (const auto &i : in) {
+                    if (const auto id = toEnum<SpellData::Target>(i); id.has_value()) {
+                        out[static_cast<std::size_t>(id.value())] = true;
+                    }
+                }
+                return out;
+            }(data.value("target", std::vector<std::string>({"enemy"})));
+            spell.quantity = data.value("quantity", 1);
+            spell.angle = data.value("angle", 0.0f);
         } catch (nlohmann::json::exception &e) {
             spdlog::error("failed: {}", e.what());
             throw; // we probably don't want to continue

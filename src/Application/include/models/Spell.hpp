@@ -44,8 +44,8 @@ struct SpellData {
     double offset_to_source_x;
     double offset_to_source_y;
 
-    enum Type {
-        ZERO = 0,
+    enum Type : std::uint8_t {
+        TYPE_ZERO = 0,
 
         PROJECTILE = 1 << 0,
         AOE = 1 << 1,
@@ -53,24 +53,25 @@ struct SpellData {
         TYPE_MAX,
     };
 
-    static auto toType(std::string in) noexcept -> Type
-    {
-        const auto to_lower = [](auto str) {
-            std::transform(str.begin(), str.end(), str.begin(), [](auto c) { return static_cast<char>(std::tolower(c)); });
-            return str;
-        };
-
-        in = to_lower(in);
-
-        for (const auto &i : magic_enum::enum_values<Type>()) {
-            if (in == to_lower(std::string{magic_enum::enum_name(i)})) { return static_cast<Type>(i); }
-        }
-        return ZERO;
-    }
-
-    std::bitset<TYPE_MAX> type;
+    std::bitset<Type::TYPE_MAX> type;
 
     std::vector<std::string> effects;
+
+
+    enum Target : std::uint8_t {
+        TARGET_ZERO = 0,
+
+        ENEMY = 1 << 0,
+        CASTER = 1 << 1,
+
+        TARGET_MAX,
+    };
+
+    std::bitset<Target::TARGET_MAX> targets;
+
+    int quantity;
+    double angle;
+
 };
 
 void to_json(nlohmann::json &j, const SpellData &spell);

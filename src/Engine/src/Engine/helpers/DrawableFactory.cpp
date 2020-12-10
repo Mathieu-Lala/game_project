@@ -31,46 +31,46 @@ auto engine::DrawableFactory::rectangle() -> Drawable
     Drawable out;
     out.triangle_count = 2;
 
-    ::glGenVertexArrays(1, &out.VAO);
-    ::glGenBuffers(1, &out.EBO);
+    CALL_OPEN_GL(::glGenVertexArrays(1, &out.VAO));
+    CALL_OPEN_GL(::glGenBuffers(1, &out.EBO));
 
-    ::glBindVertexArray(out.VAO);
+    CALL_OPEN_GL(::glBindVertexArray(out.VAO));
 
-    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, out.EBO);
-    ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    CALL_OPEN_GL(::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, out.EBO));
+    CALL_OPEN_GL(::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
 
-    ::glGenBuffers(1, &out.VBO);
+    CALL_OPEN_GL(::glGenBuffers(1, &out.VBO));
 
-    ::glBindBuffer(GL_ARRAY_BUFFER, out.VBO);
-    ::glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_pos), vertices_pos, GL_STATIC_DRAW);
+    CALL_OPEN_GL(::glBindBuffer(GL_ARRAY_BUFFER, out.VBO));
+    CALL_OPEN_GL(::glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_pos), vertices_pos, GL_STATIC_DRAW));
 
-    ::glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(0));
-    ::glEnableVertexAttribArray(0);
+    CALL_OPEN_GL(::glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(0)));
+    CALL_OPEN_GL(::glEnableVertexAttribArray(0));
 
     return out;
 }
 
-auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, glm::vec3 &&color) -> Color &
+auto engine::DrawableFactory::fix_color(entt::registry &world, entt::entity e, glm::vec4 &&color) -> Color &
 {
     static Core::Holder holder{};
 
     assert(world.has<Drawable>(e));
     auto &drawable = world.get<Drawable>(e);
-    ::glBindVertexArray(drawable.VAO);
+    CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
 
     auto handle = holder.instance->getCache<Color>().load<LoaderColor>(
-        entt::hashed_string{fmt::format("resource/color/identifier/{}_{}_{}", color.r, color.g, color.b).data()},
+        entt::hashed_string{fmt::format("resource/color/identifier/{}_{}_{}_{}", color.r, color.g, color.b, color.a).data()},
         std::move(color));
     if (handle) {
-        ::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO);
-        ::glBufferData(
+        CALL_OPEN_GL(::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO));
+        CALL_OPEN_GL(::glBufferData(
             GL_ARRAY_BUFFER,
             static_cast<GLsizeiptr>(handle->vertices.size() * sizeof(float)),
             handle->vertices.data(),
-            GL_STATIC_DRAW);
+            GL_STATIC_DRAW));
 
-        ::glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void *>(0));
-        ::glEnableVertexAttribArray(1);
+        CALL_OPEN_GL(::glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), static_cast<void *>(0)));
+        CALL_OPEN_GL(::glEnableVertexAttribArray(1));
 
         return world.emplace_or_replace<Color>(e, *handle);
     } else {
@@ -87,7 +87,7 @@ auto engine::DrawableFactory::fix_texture(
 
     assert(world.has<Drawable>(e));
     auto &drawable = world.get<Drawable>(e);
-    ::glBindVertexArray(drawable.VAO);
+    CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
 
     if (const auto handle = holder.instance->getCache<VBOTexture>().load<LoaderVBOTexture>(
             entt::hashed_string{
@@ -98,15 +98,15 @@ auto engine::DrawableFactory::fix_texture(
         spdlog::error("could not load texture in cache : {}", filepath);
         return *world.try_get<VBOTexture>(e);
     } else {
-        ::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO);
-        ::glBufferData(
+        CALL_OPEN_GL(::glBindBuffer(GL_ARRAY_BUFFER, handle->VBO));
+        CALL_OPEN_GL(::glBufferData(
             GL_ARRAY_BUFFER,
             static_cast<GLsizeiptr>(handle->vertices.size() * sizeof(float)),
             handle->vertices.data(),
-            GL_STATIC_DRAW);
+            GL_STATIC_DRAW));
 
-        ::glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), static_cast<void *>(0));
-        ::glEnableVertexAttribArray(2);
+        CALL_OPEN_GL(::glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), static_cast<void *>(0)));
+        CALL_OPEN_GL(::glEnableVertexAttribArray(2));
 
         return world.emplace_or_replace<VBOTexture>(e, *handle);
     }
