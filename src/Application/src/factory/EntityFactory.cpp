@@ -131,6 +131,7 @@ auto game::EntityFactory::create<game::EntityFactory::AIMING_SIGHT>(
 
     auto e = world.create();
 
+    world.emplace<entt::tag<"aiming_sight"_hs>>(e);
     world.emplace<engine::d3::Position>(e, 0.0, 0.0, EntityFactory::get_z_layer<Layer::PARTICULE>());
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, 0.0, 0.0);

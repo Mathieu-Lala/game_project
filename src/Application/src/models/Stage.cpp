@@ -316,10 +316,8 @@ auto game::Stage::clear(entt::registry &world, bool kill_the_players) -> void
     world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
     if (kill_the_players) {
         levelStage = 1;
-        for (const auto &i : world.view<entt::tag<"player"_hs>>()) {
-            world.destroy(world.get<AimSight>(i).entity);
-            world.destroy(i);
-        }
+        world.view<entt::tag<"player"_hs>>().each([&](auto &e) { world.destroy(e); });
+        world.view<entt::tag<"aiming_sight"_hs>>().each([&](auto &e) { world.destroy(e); });
     } else {
         world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
     }

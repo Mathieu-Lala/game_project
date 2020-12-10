@@ -15,7 +15,7 @@ class ThePURGE;
 
 struct EntityFactory {
     enum class Layer {
-        ERROR,
+        LAYER_ERROR,
 
         PARTICULE,
 
