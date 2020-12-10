@@ -74,6 +74,14 @@
                     {
                         "x": 0,
                         "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
                     }
                 ]
             },
@@ -81,8 +89,16 @@
                 "file": "/anims/classes/tank/tank_spritesheet.png",
                 "width": 40,
                 "height": 48,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 40,
+                        "y": 144
+                    },
+                    {
+                        "x": 40,
+                        "y": 144
+                    },
                     {
                         "x": 40,
                         "y": 144
@@ -93,8 +109,16 @@
                 "file": "/anims/classes/tank/tank_spritesheet.png",
                 "width": 40,
                 "height": 48,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 80,
+                        "y": 144
+                    },
+                    {
+                        "x": 80,
+                        "y": 144
+                    },
                     {
                         "x": 80,
                         "y": 144

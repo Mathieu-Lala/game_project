@@ -74,6 +74,14 @@
                     {
                         "x": 0,
                         "y": 135
+                    },
+                    {
+                        "x": 0,
+                        "y": 135
+                    },
+                    {
+                        "x": 0,
+                        "y": 135
                     }
                 ]
             },
@@ -81,8 +89,16 @@
                 "file": "/anims/classes/farmer/farmer_spritesheet.png",
                 "width": 33,
                 "height": 45,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 33,
+                        "y": 135
+                    },
+                    {
+                        "x": 33,
+                        "y": 135
+                    },
                     {
                         "x": 33,
                         "y": 135
@@ -93,8 +109,16 @@
                 "file": "/anims/classes/farmer/farmer_spritesheet.png",
                 "width": 33,
                 "height": 45,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 66,
+                        "y": 135
+                    },
+                    {
+                        "x": 66,
+                        "y": 135
+                    },
                     {
                         "x": 66,
                         "y": 135

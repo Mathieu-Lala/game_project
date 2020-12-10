@@ -74,6 +74,14 @@
                     {
                         "x": 0,
                         "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
                     }
                 ]
             },
@@ -81,8 +89,16 @@
                 "file": "/anims/classes/warrior/warrior_spritesheet.png",
                 "width": 36,
                 "height": 48,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 36,
+                        "y": 144
+                    },
+                    {
+                        "x": 36,
+                        "y": 144
+                    },
                     {
                         "x": 36,
                         "y": 144
@@ -93,8 +109,16 @@
                 "file": "/anims/classes/warrior/warrior_spritesheet.png",
                 "width": 36,
                 "height": 48,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 72,
+                        "y": 144
+                    },
+                    {
+                        "x": 72,
+                        "y": 144
+                    },
                     {
                         "x": 72,
                         "y": 144

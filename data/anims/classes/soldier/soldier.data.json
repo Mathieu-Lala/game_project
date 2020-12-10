@@ -74,6 +74,14 @@
                     {
                         "x": 0,
                         "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
                     }
                 ]
             },
@@ -81,8 +89,16 @@
                 "file": "/anims/classes/soldier/soldier_spritesheet.png",
                 "width": 37,
                 "height": 48,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 37,
+                        "y": 144
+                    },
+                    {
+                        "x": 37,
+                        "y": 144
+                    },
                     {
                         "x": 37,
                         "y": 144
@@ -93,8 +109,16 @@
                 "file": "/anims/classes/soldier/soldier_spritesheet.png",
                 "width": 37,
                 "height": 48,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 74,
+                        "y": 144
+                    },
+                    {
+                        "x": 74,
+                        "y": 144
+                    },
                     {
                         "x": 74,
                         "y": 144
