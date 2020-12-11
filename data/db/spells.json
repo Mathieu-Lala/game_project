@@ -136,12 +136,12 @@
     "cooldown": 2000,
     "damage": 10,
     "scale": {
-      "x": 1.5,
-      "y": 1.5
+      "x": 1.0,
+      "y": 1.0
     },
     "hitbox": {
-      "x": 1.5,
-      "y": 1.5
+      "x": 1.0,
+      "y": 1.0
     },
     "lifetime": 3000,
     "audio_on_cast": "sounds/fire_cast.wav",
@@ -150,6 +150,31 @@
     "offset_to_source": {
       "x": 2,
       "y": 2
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "small_rock": {
+    "icon": "icons/spells/fireball_blue.png",
+    "description": "Creates a small rock ball dealing extremely high damages",
+    "cooldown": 500,
+    "damage": 1,
+    "scale": {
+      "x": 0.3,
+      "y": 0.3
+    },
+    "hitbox": {
+      "x": 0.3,
+      "y": 0.3
+    },
+    "lifetime": 3000,
+    "audio_on_cast": "sounds/fire_cast.wav",
+    "animation": "anims/spells/rock/rock.data.json",
+    "speed": 5.0,
+    "offset_to_source": {
+      "x": 0.3,
+      "y": 0.3
     },
     "type": [
       "projectile"
