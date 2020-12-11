@@ -49,6 +49,7 @@ struct SpellData {
 
         PROJECTILE = 1 << 0,
         AOE = 1 << 1,
+        SUMMONER = 1 << 2,
 
         TYPE_MAX,
     };

@@ -1,7 +1,7 @@
 {
   "farmer": {
     "starter": true,
-    "icon": "icons/classes/farmer.png",
+    "icon": "textures/icons/classes/farmer.png",
     "assetGraph": "anims/classes/farmer/farmer.data.json",
     "health": 10,
     "speed": 10.1,
@@ -20,7 +20,7 @@
     ]
   },
   "soldier": {
-    "icon": "icons/classes/soldier.png",
+    "icon": "textures/icons/classes/soldier.png",
     "assetGraph": "anims/classes/soldier/soldier.data.json",
     "health": 20,
     "speed": 10.1,
@@ -39,7 +39,7 @@
     ]
   },
   "shooter": {
-    "icon": "icons/classes/shooter.png",
+    "icon": "textures/icons/classes/shooter.png",
     "assetGraph": "anims/classes/shooter/shooter.data.json",
     "health": 10,
     "speed": 10.3,
@@ -57,7 +57,7 @@
     ]
   },
   "sorcerer": {
-    "icon": "icons/classes/sorcerer.png",
+    "icon": "textures/icons/classes/sorcerer.png",
     "assetGraph": "anims/classes/sorcerer/sorcerer.data.json",
     "health": 5,
     "speed": 10.2,
@@ -74,7 +74,7 @@
     ]
   },
   "assassin": {
-    "icon": "icons/classes/assassin.png",
+    "icon": "textures/icons/classes/assassin.png",
     "assetGraph": "anims/classes/assassin/assassin.data.json",
     "health": 25,
     "speed": 11,
@@ -89,7 +89,7 @@
     "children": []
   },
   "warrior": {
-    "icon": "icons/classes/warrior.png",
+    "icon": "textures/icons/classes/warrior.png",
     "assetGraph": "anims/classes/warrior/warrior.data.json",
     "health": 35,
     "speed": 10.2,
@@ -104,7 +104,7 @@
     "children": []
   },
   "tank": {
-    "icon": "icons/classes/tank.png",
+    "icon": "textures/icons/classes/tank.png",
     "assetGraph": "anims/classes/tank/tank.data.json",
     "health": 50,
     "speed": 10,
@@ -119,7 +119,7 @@
     "children": []
   },
   "archer": {
-    "icon": "icons/classes/archer.png",
+    "icon": "textures/icons/classes/archer.png",
     "assetGraph": "anims/classes/archer/archer.data.json",
     "health": 22,
     "speed": 10.4,
@@ -134,7 +134,7 @@
     "children": []
   },
   "gunner": {
-    "icon": "icons/classes/gunner.png",
+    "icon": "textures/icons/classes/gunner.png",
     "assetGraph": "anims/classes/gunner/gunner.data.json",
     "health": 24,
     "speed": 10.4,
@@ -144,12 +144,12 @@
       "y": 1.4
     },
     "spells": [
-      "explosion"
+      "throw_barrel"
     ],
     "children": []
   },
   "mage": {
-    "icon": "icons/classes/mage.png",
+    "icon": "textures/icons/classes/mage.png",
     "assetGraph": "anims/classes/mage/mage.data.json",
     "health": 20,
     "speed": 10.3,

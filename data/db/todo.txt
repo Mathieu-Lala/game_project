@@ -1,7 +1,5 @@
 class speed += instead of =
 
-? // archer // dash & attack_buffed
-
 barrel // gunner
 
 // add effect kill_caster ?

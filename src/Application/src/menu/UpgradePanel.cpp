@@ -26,13 +26,13 @@ void game::menu::UpgradePanel::create(entt::registry &world, ThePURGE &game)
     holder.instance->setEventMode(engine::Core::EventMode::PAUSED);
 
     m_static_background = GUITexture{
-        helper::getTexture("menus/upgrade_panel/static_background.png"),
+        helper::getTexture("textures/menu/upgrade_panel/static_background.png"),
         ImVec2(0, 0),
         ImVec2(1, 1),
     };
 
     m_bind_popup = GUITexture{
-        helper::getTexture("menus/upgrade_panel/key_assignment_popup.png"),
+        helper::getTexture("textures/menu/upgrade_panel/key_assignment_popup.png"),
         ImVec2(0, 0),
         ImVec2(1, 1),
     };
@@ -97,17 +97,17 @@ void game::menu::UpgradePanel::drawDetailPanel(entt::registry &world, ThePURGE &
         helper::from1080p(100, 100),
     };
     const GUITexture btn_buy{
-        helper::getTexture("menus/upgrade_panel/button/buy.png"),
+        helper::getTexture("textures/menu/upgrade_panel/button/buy.png"),
         helper::from1080p(119, 855),
         helper::from1080p(317, 197),
     };
     const GUITexture btn_cant{
-        helper::getTexture("menus/upgrade_panel/button/cant.png"),
+        helper::getTexture("textures/menu/upgrade_panel/button/cant.png"),
         helper::from1080p(119, 855),
         helper::from1080p(317, 197),
     };
     const GUITexture btn_alreadyowned{
-        helper::getTexture("menus/upgrade_panel/button/owned.png"),
+        helper::getTexture("textures/menu/upgrade_panel/button/owned.png"),
         helper::from1080p(119, 855),
         helper::from1080p(317, 197),
     };
@@ -260,11 +260,11 @@ void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
         std::uint32_t glowTexture;
 
         if (isOwned(current->cl))
-            glowTexture = helper::getTexture("menus/upgrade_panel/tree/frames/owned.png");
+            glowTexture = helper::getTexture("textures/menu/upgrade_panel/tree/frames/owned.png");
         else if (isPurchaseable(current->cl))
-            glowTexture = helper::getTexture("menus/upgrade_panel/tree/frames/buyable.png");
+            glowTexture = helper::getTexture("textures/menu/upgrade_panel/tree/frames/buyable.png");
         else
-            glowTexture = helper::getTexture("menus/upgrade_panel/tree/frames/unavailable.png");
+            glowTexture = helper::getTexture("textures/menu/upgrade_panel/tree/frames/unavailable.png");
 
         helper::drawTexture(glowTexture, getTreeDrawPos(current->relPos, kFrameSize), ImVec2(kFrameSize, kFrameSize));
 
@@ -275,7 +275,7 @@ void game::menu::UpgradePanel::drawTree(entt::registry &, ThePURGE &) noexcept
     m_cursorCurrentPos.x = std::lerp(m_cursorCurrentPos.x, m_cursorDestinationPos.x, kSelectionAnimationSpeed);
     m_cursorCurrentPos.y = std::lerp(m_cursorCurrentPos.y, m_cursorDestinationPos.y, kSelectionAnimationSpeed);
 
-    const auto cursorTexture = helper::getTexture("menus/upgrade_panel/tree/cursor.png");
+    const auto cursorTexture = helper::getTexture("textures/menu/upgrade_panel/tree/cursor.png");
     helper::drawTexture(cursorTexture, getTreeDrawPos(m_cursorCurrentPos, kCursorSize), ImVec2(kCursorSize, kCursorSize));
 }
 

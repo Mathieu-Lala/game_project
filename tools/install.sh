@@ -25,7 +25,7 @@ case $key in
     usage $#
     shift
     ;;
-    -no-clone)
+    --no-clone)
     clone=False
     shift
     ;;

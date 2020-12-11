@@ -2,9 +2,9 @@
     "object": {
         "animations": {
             "default": {
-                "file": "/anims/spells/soldier_attack/soldier_attack.png",
-                "width": 480,
-                "height": 200,
+                "file": "/anims/spells/shovel/shovel.spritesheet.png",
+                "width": 192,
+                "height": 192,
                 "cooldown": 50,
                 "frames": [
                     {
@@ -12,19 +12,19 @@
                         "y": 0
                     },
                     {
-                        "x": 480,
+                        "x": 192,
                         "y": 0
                     },
                     {
-                        "x": 960,
+                        "x": 384,
                         "y": 0
                     },
                     {
-                        "x": 1440,
+                        "x": 576,
                         "y": 0
                     },
                     {
-                        "x": 1920,
+                        "x": 768,
                         "y": 0
                     }
                 ]

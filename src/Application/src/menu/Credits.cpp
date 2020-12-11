@@ -16,7 +16,7 @@ void game::menu::Credits::create(entt::registry &, ThePURGE &)
 
     const auto &dataFolder = holder.instance->settings().data_folder;
 
-    m_texture = engine::helper::loadTexture(dataFolder + "menus/credits.png");
+    m_texture = engine::helper::loadTexture(dataFolder + "textures/menu/credits.png");
 }
 
 void game::menu::Credits::draw(entt::registry &, ThePURGE &game)

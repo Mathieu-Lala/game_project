@@ -241,5 +241,27 @@
     "spells": [
       "explosion"
     ]
+  },
+  "rock_obstacle": {
+    "asset": "anims/map/rock/rock.data.json",
+    "health": 1000,
+    "speed": 0,
+    "view_range": 0,
+    "attack_range": 0,
+    "experience": 0,
+    "color": {
+      "r": 1,
+      "g": 1,
+      "b": 1
+    },
+    "hitbox": {
+      "x": 1.0,
+      "y": 1.0
+    },
+    "scale": {
+      "x": 0.8,
+      "y": 1
+    },
+    "spells": []
   }
 }

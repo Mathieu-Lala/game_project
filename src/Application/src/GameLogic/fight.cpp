@@ -129,8 +129,7 @@ auto game::GameLogic::slots_update_effect(entt::registry &world, const engine::T
 auto game::GameLogic::slots_collide_with_spell(
     entt::registry &world, entt::entity receiver, entt::entity sender, entt::entity spell) -> void
 {
-    if (!world.valid(receiver) || !world.valid(sender) || !world.valid(spell))
-        return;
+    if (!world.valid(receiver) || !world.valid(sender) || !world.valid(spell)) return;
 
     const auto targets = world.get<SpellTarget>(spell).ref;
 
@@ -251,12 +250,8 @@ auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caste
 
 auto game::GameLogic::slots_update_ai_attack(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
-    for (auto enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange>()) {
+    for (const auto &enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange, Health>()) {
         // TODO: Add brain to AI. current strategy : spam every spell towards the player
-
-        if (world.has<engine::Spritesheet>(enemy)
-            && world.get<engine::Spritesheet>(enemy).current_animation.find("run") == std::string::npos)
-            continue;
 
         for (auto &spell : world.get<SpellSlots>(enemy).spells) {
             if (!spell.has_value()) continue;
@@ -280,12 +275,17 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
     static auto holder = engine::Core::Holder{};
 
     engine::DrawableFactory::fix_spritesheet(world, killed, "death");
-    const auto &animation = world.get<engine::Spritesheet>(killed).animations["death"];
+    try {
+        const auto &animation = world.get<engine::Spritesheet>(killed).animations["death"];
 
-    world.emplace<engine::Lifetime>(killed, std::chrono::milliseconds(animation.frames.size() * animation.cooldown));
+        world.emplace<engine::Lifetime>(killed, std::chrono::milliseconds(animation.frames.size() * animation.cooldown));
+    } catch (...) {
+        world.emplace<engine::Lifetime>(killed, 0ms);
+    }
     world.get<engine::d2::Velocity>(killed) = {0.0, 0.0};
 
     world.remove<engine::d2::HitboxSolid>(killed);
+    world.remove<Health>(killed);
 
     if (world.has<entt::tag<"player"_hs>>(killed)) {
         holder.instance->getAudioManager()

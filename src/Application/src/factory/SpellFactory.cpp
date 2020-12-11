@@ -41,7 +41,6 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
             spell, glm::acos(glm::dot({1.f, 0.f}, direction)) * (direction.y < 0 ? -1.0 : 1.0) + i * data.angle);
 
         world.emplace<engine::d2::Scale>(spell, data.scale);
-        world.emplace<engine::d2::HitboxFloat>(spell, data.hitbox);
         world.emplace<game::AttackDamage>(spell, data.damage);
         world.emplace<engine::Lifetime>(spell, data.lifetime);
 
@@ -62,6 +61,14 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
 
         if (data.type[SpellData::Type::PROJECTILE]) world.emplace<entt::tag<"projectile"_hs>>(spell);
         if (data.type[SpellData::Type::AOE]) world.emplace<entt::tag<"aoe"_hs>>(spell);
+        if (data.type[SpellData::Type::SUMMONER]) {
+            world.emplace<Health>(spell, 1);
+            world.emplace<engine::d2::HitboxSolid>(spell, data.hitbox.width, data.hitbox.height);
+            world.emplace<Experience>(spell, 0);
+            world.emplace<entt::tag<"enemy"_hs>>(spell);
+        } else {
+            world.emplace<engine::d2::HitboxFloat>(spell, data.hitbox);
+        }
 
 #ifndef NDEBUG
         auto hitbox_entity = world.create();

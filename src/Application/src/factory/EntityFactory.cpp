@@ -162,7 +162,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {0.5, 0.5, 0.5, 1});
     engine::DrawableFactory::fix_texture(
         world, e, holder.instance->settings().data_folder + TexturePath::floor_normal, true, {0.0f, 0.0f, size.x, size.y});
     world.emplace<entt::tag<"terrain"_hs>>(e);
@@ -180,7 +180,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {0.5, 0.5, 0.5, 1});
     engine::DrawableFactory::fix_texture(
         world, e, holder.instance->settings().data_folder + TexturePath::floor_spawn, true, {0.0f, 0.0f, size.x, size.y});
     world.emplace<entt::tag<"terrain"_hs>>(e);
@@ -198,7 +198,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {0.5, 0.5, 0.5, 1});
     engine::DrawableFactory::fix_texture(
         world, e, holder.instance->settings().data_folder + TexturePath::floor_boss, true, {0.0f, 0.0f, size.x, size.y});
     world.emplace<entt::tag<"terrain"_hs>>(e);
@@ -216,7 +216,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
     world.emplace<engine::d2::Rotation>(e, 0.f);
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
+    engine::DrawableFactory::fix_color(world, e, {0.5, 0.5, 0.5, 1});
     engine::DrawableFactory::fix_texture(
         world, e, holder.instance->settings().data_folder + TexturePath::floor_corridor, true, {0.0f, 0.0f, size.x, size.y});
     world.emplace<entt::tag<"terrain"_hs>>(e);

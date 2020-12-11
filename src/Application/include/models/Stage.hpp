@@ -38,6 +38,7 @@ struct Stage {
         int maxCorridorWidth = 4;
 
         std::unordered_map<std::string, float> mobDensity{
+            {"rock_obstacle", 1.03f},
             {"skeleton", 1.01f},
             {"golem", 5.005f},
             {"zombie", 4.01f},
