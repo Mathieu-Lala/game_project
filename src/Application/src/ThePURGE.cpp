@@ -26,7 +26,7 @@ auto game::ThePURGE::onCreate([[maybe_unused]] entt::registry &world) -> void
     m_console->info("Press TAB to autocomplete known commands.\nPress F1 to toggle this console");
 #endif
 
-    holder.instance->window()->setSize(glm::ivec2(1920, 1080));
+    // holder.instance->window()->setSize(glm::ivec2(1920, 1080));
 
     m_logics = std::make_unique<GameLogic>(*this);
 

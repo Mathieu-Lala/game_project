@@ -108,6 +108,12 @@ struct MouseButton {
     Mouse mouse;
 };
 
+struct Character {
+    constexpr static std::string_view name{"Character"};
+    constexpr static auto elements = std::to_array<std::string_view>({"codepoint"});
+    std::uint32_t codepoint;
+};
+
 struct Joystick {
     constexpr static std::string_view name{"Joystick"};
     constexpr static auto elements = std::to_array<std::string_view>({"id", "axes", "buttons"});
@@ -195,6 +201,7 @@ using Event = std::variant<
 
     Pressed<Key>,
     Released<Key>,
+    Character,
 
     Moved<Mouse>,
     Pressed<MouseButton>,

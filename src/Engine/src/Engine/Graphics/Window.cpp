@@ -52,9 +52,9 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
     ::glfwSetKeyCallback(m_handle, callback_eventKeyBoard);
     ::glfwSetMouseButtonCallback(m_handle, callback_eventMousePressed);
     ::glfwSetCursorPosCallback(m_handle, callback_eventMouseMoved);
-    ::glfwSetCharCallback(m_handle, ImGui_ImplGlfw_CharCallback);
+    ::glfwSetCharCallback(m_handle, callback_char);
 
-    // todo : mouse wheel / request_focus ...
+    // todo : scroll / request_focus ...
 
     m_events.emplace_back(OpenWindow{});
 
@@ -232,6 +232,11 @@ auto engine::Window::callback_eventMouseMoved([[maybe_unused]] GLFWwindow *windo
     IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(Moved<Mouse>{x, y}));
 }
 
+auto engine::Window::callback_char([[maybe_unused]] GLFWwindow *window, unsigned int codepoint) -> void
+{
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(Character{codepoint}));
+}
+
 using namespace engine;
 
 template<>
@@ -256,4 +261,10 @@ template<>
 auto Window::applyEvent(const Released<Key> &k) -> void
 {
     ImGui_ImplGlfw_KeyCallback(m_handle, k.source.key, k.source.scancode, GLFW_RELEASE, 0 /* todo */);
+}
+
+template<>
+auto Window::applyEvent(const Character &character) -> void
+{
+    ImGui_ImplGlfw_CharCallback(m_handle, character.codepoint);
 }
