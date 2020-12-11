@@ -243,33 +243,30 @@ auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caste
     -> void
 {
     if (!spell.cd.is_in_cooldown) {
-        if (world.has<entt::tag<"player"_hs>>(caster)) {
-            const auto &vel = world.get<engine::d2::Velocity>(caster);
+        const auto &vel = world.get<engine::d2::Velocity>(caster);
 
-            const auto aiming = [](entt::registry &w, const entt::entity &e) -> std::optional<glm::vec2> {
-                if (w.has<AimingDirection>(e)) {
-                    return w.get<AimingDirection>(e).dir;
-                } else {
-                    return {};
-                }
-            }(world, caster);
+        const auto aiming = [](entt::registry &w, const entt::entity &e) -> std::optional<glm::vec2> {
+            if (w.has<AimingDirection>(e)) {
+                return w.get<AimingDirection>(e).dir;
+            } else {
+                return {};
+            }
+        }(world, caster);
 
-            const auto isFacingLeft = [](const auto &v, const auto &a) {
-                if (v.x < 0)
-                    return true;
-                else if (v.x > 0)
-                    return false;
-                else if (a.has_value() && a.value().x < 0)
-                    return true;
-                else
-                    return false;
-            }(vel, aiming);
+        const auto isFacingLeft = [](const auto &v, const auto &a) {
+            if (v.x < 0)
+                return true;
+            else if (v.x > 0)
+                return false;
+            else if (a.has_value() && a.value().x < 0)
+                return true;
+            else
+                return false;
+        }(vel, aiming);
 
-            const auto animation = fmt::format("{}_{}", "attack", isFacingLeft ? "left" : "right");
-            spdlog::info(animation);
-            engine::DrawableFactory::fix_spritesheet(world, caster, animation);
-            world.get<engine::Spritesheet>(caster).attack_animation_finish = false;
-        }
+        const auto animation = fmt::format("{}_{}", "attack", isFacingLeft ? "left" : "right");
+        engine::DrawableFactory::fix_spritesheet(world, caster, animation);
+        world.get<engine::Spritesheet>(caster).attack_animation_finish = false;
         SpellFactory::create(world, caster, glm::normalize(direction), m_game.dbSpells().db.at(std::string{spell.id}));
         spell.cd.remaining_cooldown = spell.cd.cooldown;
         spell.cd.is_in_cooldown = true;
