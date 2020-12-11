@@ -4,7 +4,7 @@
             "default": {
                 "file": "/anims/spells/barrel/barrel.spritesheet.png",
                 "width": 44,
-                "height": 52,
+                "height": 42,
                 "cooldown": 50,
                 "frames": [
                     {

@@ -278,13 +278,14 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
     try {
         const auto &animation = world.get<engine::Spritesheet>(killed).animations["death"];
 
-        world.emplace<engine::Lifetime>(killed, std::chrono::milliseconds(animation.frames.size() * animation.cooldown));
+        world.emplace_or_replace<engine::Lifetime>(killed, std::chrono::milliseconds(animation.frames.size() * animation.cooldown));
     } catch (...) {
-        world.emplace<engine::Lifetime>(killed, 0ms);
+        world.emplace_or_replace<engine::Lifetime>(killed, 0ms);
     }
     world.get<engine::d2::Velocity>(killed) = {0.0, 0.0};
 
-    world.remove<engine::d2::HitboxSolid>(killed);
+    world.remove_if_exists<engine::d2::HitboxSolid>(killed);
+    world.remove_if_exists<engine::d2::HitboxFloat>(killed);
     world.remove<Health>(killed);
 
     if (world.has<entt::tag<"player"_hs>>(killed)) {

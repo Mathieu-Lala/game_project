@@ -4,7 +4,7 @@
             "default": {
                 "file": "/anims/spells/arrow/arrow.png",
                 "width": 412,
-                "height": 42,
+                "height": 52,
                 "cooldown": 50,
                 "frames": [
                     {
