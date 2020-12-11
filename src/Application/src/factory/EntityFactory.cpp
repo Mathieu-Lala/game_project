@@ -142,6 +142,14 @@ auto game::EntityFactory::create<game::EntityFactory::AIMING_SIGHT>(
     return e;
 }
 
+struct TexturePath {
+    static constexpr auto floor_normal = "textures/map/stone4_b.jpg";
+    static constexpr auto floor_spawn = "textures/map/stone2_b.jpg";
+    static constexpr auto floor_boss = "textures/map/stone5_b.jpg";
+    static constexpr auto floor_corridor = "textures/map/stone3_b.jpg";
+};
+
+
 template<>
 auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
     ThePURGE &, entt::registry &world, const glm::vec2 &pos, const glm::vec2 &size) -> entt::entity
@@ -154,7 +162,8 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_NORMAL>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg", true);
+    engine::DrawableFactory::fix_texture(
+        world, e, holder.instance->settings().data_folder + TexturePath::floor_normal, true, {0.0f, 0.0f, size.x, size.y});
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -171,7 +180,8 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_SPAWN>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/floor.jpg", true);
+    engine::DrawableFactory::fix_texture(
+        world, e, holder.instance->settings().data_folder + TexturePath::floor_spawn, true, {0.0f, 0.0f, size.x, size.y});
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -189,7 +199,7 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_BOSS>(
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
     engine::DrawableFactory::fix_texture(
-        world, e, holder.instance->settings().data_folder + "textures/floor_boss.jpg", true);
+        world, e, holder.instance->settings().data_folder + TexturePath::floor_boss, true, {0.0f, 0.0f, size.x, size.y});
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -206,7 +216,8 @@ auto game::EntityFactory::create<game::EntityFactory::FLOOR_CORRIDOR>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/corridor.jpg", true);
+    engine::DrawableFactory::fix_texture(
+        world, e, holder.instance->settings().data_folder + TexturePath::floor_corridor, true, {0.0f, 0.0f, size.x, size.y});
     world.emplace<entt::tag<"terrain"_hs>>(e);
     return e;
 }
@@ -223,7 +234,7 @@ auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/door.png");
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/map/door.png");
 
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
     world.emplace<entt::tag<"terrain"_hs>>(e);
