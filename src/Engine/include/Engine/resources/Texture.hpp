@@ -19,7 +19,7 @@ struct Texture {
     std::int32_t channels;
     std::uint8_t *px;
 
-    static auto ctor(const std::string_view filepath) -> Texture;
+    static auto ctor(const std::string_view filepath, bool mirrored_repeated) -> Texture;
 
     static auto dtor(Texture *obj) -> void;
 };

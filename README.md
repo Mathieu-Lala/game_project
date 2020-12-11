@@ -57,6 +57,18 @@ Application version 0.1.9
 
 The build **require** an internet connection (download of dependencies if missing).
 
+You can use this command line.
+
+```sh
+# Shortcut command
+$> sh -c "$(curl -fsSL https://raw.githubusercontent.com/Mathieu-Lala/game_project/develop/tools/install.sh)"
+
+# Or
+$> sh -c "$(wget -O- https://raw.githubusercontent.com/Mathieu-Lala/game_project/develop/tools/install.sh)"
+```
+
+Or clone and inspect the install script.
+
 ```sh
 # Cloning the repository
 $> git clone git@github.com:Mathieu-Lala/game_project.git
@@ -65,7 +77,7 @@ $> git clone git@github.com:Mathieu-Lala/game_project.git
 $> cd game_project
 
 # Installing the required environment (partial)
-$> ./tools/install.sh
+$> ./tools/install.sh --no-clone
 ```
 
 ### Recommended environment
@@ -137,7 +149,12 @@ $> ./tools/install.sh
 
 * Visual Studio
 
-See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160).
+See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160) for further details.
+
+1. Open the project folder with Visual Studio
+1. Project > Generate Cache for GameProject
+1. Build > Build All
+1. Select Startup Item > engine_main
 
 ### Package Manager
 

@@ -107,28 +107,9 @@ auto engine::Core::getNextEvent() -> Event
     case EventMode::PAUSED:
     case EventMode::RECORD: {
         m_joystickManager->poll();
-
-        static bool b = false;
-
-        b = !b;
-        if (b) { return TimeElapsed{getElapsedTime()}; }
-
-        // 1. poll the window event
-        // 2. poll the joysticks event
-        // 3. send elapsed time
-
-        auto event = m_window->getNextEvent();
-        if (!event) event = m_joystickManager->getNextEvent();
-        if (!event) event = TimeElapsed{getElapsedTime()};
-
-        // TEMPORARY, BY YANIS. Allows for keyboard input to work. waiting for Mathieu to help do it a clean way
-        std::visit(
-           overloaded{
-               [&](const auto &e) { m_window->applyEvent(e); },
-           },
-           event.value());
-        // ----
-        return event.value();
+        if (const auto event = m_window->getNextEvent(); event.has_value()) return event.value();
+        if (const auto event = m_joystickManager->getNextEvent(); event.has_value()) return event.value();
+        return TimeElapsed{getElapsedTime()};
     } break;
     case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
@@ -136,7 +117,7 @@ auto engine::Core::getNextEvent() -> Event
             m_eventMode = EventMode::RECORD;
             return TimeElapsed{getElapsedTime()};
         }
-        auto event = m_eventsPlayback.front();
+        const auto event = m_eventsPlayback.front();
         m_eventsPlayback.erase(m_eventsPlayback.begin());
 
         std::visit(
@@ -151,7 +132,12 @@ auto engine::Core::getNextEvent() -> Event
                 [&](const Moved<Mouse> &m) {
                     m_window->setCursorPosition({m.source.x, m.source.y});
                 },
-                [&](const auto &e) { m_window->applyEvent(e); },
+                [&](const Pressed<MouseButton> &mouse) { m_window->applyEvent(mouse); },
+                [&](const Released<MouseButton> &mouse) { m_window->applyEvent(mouse); },
+                // [&](const Pressed<Key> &key) { m_window->applyEvent(key); },
+                // [&](const Released<Key> &key) { m_window->applyEvent(key); },
+                // [&](const Character &character) { m_window->applyEvent(character); },
+                [&](const auto &) {},
             },
             event);
         return event;
@@ -177,7 +163,6 @@ auto engine::Core::main(int argc, char **argv) -> int
 #endif
 
         opt.write_to_file(opt.settings.config_path + ".last");
-
 
 #ifndef NDEBUG
         if (!opt.options[Options::REPLAY_PATH]->empty()) {
@@ -245,10 +230,11 @@ auto engine::Core::main(int argc, char **argv) -> int
                     m_window->setSize({e.width, e.height});
                 },
                 [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
-                [&]([[maybe_unused]] const Pressed<Key> &) {
+                [&](const Character &character) { m_window->applyEvent(character); },
+                [&](const Released<Key> &key) { m_window->applyEvent(key); },
+                [&](const Pressed<Key> &key) {
                     // todo : abstract glfw keyboard
-                    switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
-//                    case GLFW_KEY_ESCAPE: this->close(); break;
+                    switch (key.source.key) {
 #ifndef NDEBUG
                     case GLFW_KEY_F1:
                         m_show_debug_info = !m_show_debug_info;
@@ -267,7 +253,7 @@ auto engine::Core::main(int argc, char **argv) -> int
                             m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
                         if (!m_window->screenshot(file)) { spdlog::warn("failed to take a screenshot: {}", file); }
                     } break;
-                    default: break;
+                    default: m_window->applyEvent(key); break;
                     }
                 },
                 [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
@@ -356,6 +342,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
                 m_world,
                 i,
                 m_settings.data_folder + sprite.animations.at(sprite.current_animation).file,
+                false,
                 {static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).x)
                      / static_cast<float>(texture.width),
                  static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).y)
