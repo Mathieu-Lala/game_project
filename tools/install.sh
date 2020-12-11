@@ -4,6 +4,8 @@
 # This script will install the system requirements for this project
 #
 
+clone=True
+
 usage() {
     cat << EOF
 Usage: $0
@@ -23,11 +25,20 @@ case $key in
     usage $#
     shift
     ;;
+    -no-clone)
+    clone=False
+    shift
+    ;;
     *)
     shift
     ;;
 esac
 done
+
+if [[ "$clone" == "True" ]]; then
+    git clone git@github.com:Mathieu-Lala/game_project.git
+    cd game_project
+fi
 
 if [[ $(uname -a) =~ "Ubuntu" ]]; then
     sudo apt update & > /dev/null

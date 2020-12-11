@@ -80,7 +80,7 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
         world.emplace<engine::d2::Scale>(e, 75.0, 75.0);
         world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
         engine::DrawableFactory::fix_color(world, e, {0.15, 0.15, 0.15, 1});
-        engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/background.jpg");
+        engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/background.jpg", true);
     }
 
     holder.instance->getAudioManager()

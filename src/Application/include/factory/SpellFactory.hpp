@@ -8,9 +8,8 @@ namespace game {
 struct SpellData;
 
 struct SpellFactory {
-
-    static auto create(entt::registry &, entt::entity caster, const glm::dvec2 &direction, const SpellData &) -> entt::entity;
-
+    static auto create(entt::registry &, entt::entity caster, const glm::dvec2 &direction, const SpellData &)
+        -> entt::entity;
 };
 
 } // namespace game
