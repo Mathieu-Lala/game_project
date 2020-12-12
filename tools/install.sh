@@ -12,6 +12,7 @@ Usage: $0
 
 Options:
     -h|--help       Display this message.
+    --no-clone      Does not clone. Assume executed in the repo.
 EOF
     exit 2
 }

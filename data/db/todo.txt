@@ -1,1 +1,0 @@
-class speed += instead of =

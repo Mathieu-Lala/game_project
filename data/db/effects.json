@@ -8,8 +8,8 @@
     "sliced": {
         "type": "dot",
         "damage": 3,
-        "lifetime": 130,
-        "cooldown": 100
+        "lifetime": 1000,
+        "cooldown": 550
     },
     "slow": {
         "type": "dash",

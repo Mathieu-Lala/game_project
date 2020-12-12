@@ -407,12 +407,12 @@
     "cooldown": 2500,
     "damage": 0,
     "scale": {
-      "x": 2,
-      "y": 2
+      "x": 1.2,
+      "y": 1.2
     },
     "hitbox": {
-      "x": 1.5,
-      "y": 1.5
+      "x": 1,
+      "y": 1
     },
     "lifetime": 10000,
     "audio_on_cast": "sounds/spells/stick.wav",
