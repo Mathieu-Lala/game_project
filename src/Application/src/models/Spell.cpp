@@ -94,6 +94,7 @@ auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
                 for (const auto &i : type) {
                     if (const auto id = toEnum<SpellData::Type>(i); id.has_value()) {
                         out[static_cast<std::size_t>(id.value())] = true;
+                        spdlog::info("{}", magic_enum::enum_name(id.value()).data());
                     }
                 }
                 return out;
@@ -109,6 +110,7 @@ auto game::SpellDatabase::fromFile(const std::string_view path) -> bool
             }(data.value("target", std::vector<std::string>({"enemy"})));
             spell.quantity = data.value("quantity", 1);
             spell.angle = data.value("angle", 0.0f);
+            spell.on_death = data.value("on_death", "");
         } catch (nlohmann::json::exception &e) {
             spdlog::error("failed: {}", e.what());
             throw; // we probably don't want to continue

@@ -279,7 +279,7 @@ auto game::GameLogic::slots_cast_spell(entt::registry &world, entt::entity caste
         const auto animation = fmt::format("{}_{}", "attack", isFacingLeft ? "left" : "right");
         engine::DrawableFactory::fix_spritesheet(world, caster, animation);
         world.get<engine::Spritesheet>(caster).attack_animation_finish = false;
-        SpellFactory::create(world, caster, glm::normalize(direction), m_game.dbSpells().db.at(std::string{spell.id}));
+        SpellFactory::create(m_game.dbSpells(), world, caster, glm::normalize(direction), m_game.dbSpells().db.at(std::string{spell.id}));
         spell.cd.remaining_cooldown = spell.cd.cooldown;
         spell.cd.is_in_cooldown = true;
     }
@@ -296,12 +296,12 @@ auto game::GameLogic::slots_update_ai_attack(entt::registry &world, [[maybe_unus
             const auto &selfPosition = world.get<engine::d3::Position>(enemy);
             const auto &targetPosition = world.get<engine::d3::Position>(m_game.player);
 
-            const glm::vec2 diff = {targetPosition.x - selfPosition.x, targetPosition.y - selfPosition.y};
+            const auto diff = glm::dvec2{targetPosition.x - selfPosition.x, targetPosition.y - selfPosition.y};
 
-            auto &attack_range = world.get<AttackRange>(enemy);
+            const auto &attack_range = world.get<AttackRange>(enemy);
 
-            if (glm::length(diff) <= attack_range.range) {
-                onSpellCast.publish(world, enemy, {diff.x, diff.y}, spell.value());
+            if (glm::length(diff) <= static_cast<double>(attack_range.range)) {
+                onSpellCast.publish(world, enemy, diff, spell.value());
             }
         }
     }
@@ -326,7 +326,13 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
     world.remove_if_exists<engine::d2::HitboxFloat>(killed);
     world.remove_if_exists<Health>(killed);
 
-    if (world.has<entt::tag<"player"_hs>>(killed)) {
+    if (world.has<entt::tag<"on_death"_hs>>(killed)) {
+
+        auto &spell_on_death = world.get<SpellSlots>(killed).spells[0];
+        onSpellCast.publish(world, killed, glm::dvec2{0.0, 0.0}, spell_on_death.value());
+        world.emplace_or_replace<engine::Lifetime>(killed, m_game.dbSpells().db.at(std::string{spell_on_death.value().id}).lifetime);
+
+    } if (world.has<entt::tag<"player"_hs>>(killed)) {
         holder.instance->getAudioManager()
             .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
             ->play();

@@ -423,7 +423,9 @@
       "y": 3
     },
     "type": [
-      "summoner"
-    ]
+      "summoner",
+      "on_death"
+    ],
+    "on_death": "explosion"
   }
 }

@@ -16,12 +16,12 @@
 
 using namespace std::chrono_literals;
 
-auto game::SpellFactory::create(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, const SpellData &data)
+auto game::SpellFactory::create(SpellDatabase &db, entt::registry &world, entt::entity caster, const glm::dvec2 &direction, const SpellData &data)
     -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
-    spdlog::trace("Casting a spell");
+    spdlog::trace("Casting a spell {}", data.name);
 
     holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + data.audio_on_cast)->play();
 
@@ -61,6 +61,10 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
 
         if (data.type[SpellData::Type::PROJECTILE]) world.emplace<entt::tag<"projectile"_hs>>(spell);
         if (data.type[SpellData::Type::AOE]) world.emplace<entt::tag<"aoe"_hs>>(spell);
+        if (data.type[SpellData::Type::ON_DEATH]) {
+            world.emplace<entt::tag<"on_death"_hs>>(spell);
+            world.emplace<SpellSlots>(spell).spells[0] = db.instantiate(data.on_death);
+        }
         if (data.type[SpellData::Type::SUMMONER]) {
             world.emplace<Health>(spell, 1);
             world.emplace<engine::d2::HitboxSolid>(spell, data.hitbox.width, data.hitbox.height);
@@ -76,7 +80,8 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
         world.emplace<engine::Source>(hitbox_entity, spell);
         world.emplace<engine::Drawable>(hitbox_entity, engine::DrawableFactory::rectangle());
         world.emplace<engine::d2::Rotation>(hitbox_entity, 0.f);
-        world.emplace<engine::d3::Position>(hitbox_entity, pos.x, pos.y, EntityFactory::get_z_layer<EntityFactory::Layer::LAYER_DEBUG>());
+        world.emplace<engine::d3::Position>(
+            hitbox_entity, pos.x, pos.y, EntityFactory::get_z_layer<EntityFactory::Layer::LAYER_DEBUG>());
         world.emplace<engine::d2::Scale>(hitbox_entity, data.hitbox.width, data.hitbox.height);
         engine::DrawableFactory::fix_color(world, hitbox_entity, {1, 1, 1, 0.5});
         engine::DrawableFactory::fix_texture(
