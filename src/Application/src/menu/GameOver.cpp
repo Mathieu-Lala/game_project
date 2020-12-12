@@ -23,18 +23,18 @@ void game::menu::GameOver::create(entt::registry &, ThePURGE &)
     const auto &dataFolder = holder.instance->settings().data_folder;
 
 
-    m_backgroundTexture = engine::helper::loadTexture(dataFolder + "menus/game_over/background.png");
+    m_backgroundTexture = engine::helper::loadTexture(dataFolder + "img/menu/game_over/background.png");
 
     // clang-format off
 
     // SAME ORDER AS `Button` ENUM
     m_buttons.emplace_back(GUITexture{
-        helper::getTexture("menus/game_over/btn_playagain_selected.png"),
+        helper::getTexture("img/menu/game_over/btn_playagain_selected.png"),
         helper::from1080p(701, 665),
         helper::from1080p(515, 156)
     });
     m_buttons.emplace_back(GUITexture{
-        helper::getTexture("menus/game_over/btn_menu_selected.png"),
+        helper::getTexture("img/menu/game_over/btn_menu_selected.png"),
         helper::from1080p(822, 884),
         helper::from1080p(276, 149)
     });

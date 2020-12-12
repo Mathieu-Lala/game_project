@@ -149,12 +149,12 @@ $> ./tools/install.sh --no-clone
 
 * Visual Studio
 
-See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160) for further details.
+  See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160) for further details.
 
-1. Open the project folder with Visual Studio
-1. Project > Generate Cache for GameProject
-1. Build > Build All
-1. Select Startup Item > engine_main
+  1. Open the project folder with Visual Studio
+  1. Project > Generate Cache for GameProject
+  1. Build > Build All
+  1. Select Startup Item > engine_main
 
 ### Package Manager
 

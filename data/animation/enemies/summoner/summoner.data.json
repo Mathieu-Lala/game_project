@@ -1,0 +1,222 @@
+{
+    "object": {
+      "animations": {
+        "idle_right": {
+          "file": "/animation/enemies/summoner/spritesheet/summoner.png",
+          "width": 48,
+          "height": 55,
+          "cooldown": 70,
+          "frames": [
+            {
+              "x": 51,
+              "y": 220
+            },
+            {
+              "x": 100,
+              "y": 220
+            },
+            {
+              "x": 162,
+              "y": 220
+            },
+            {
+              "x": 230,
+              "y": 220
+            },
+            {
+              "x": 298,
+              "y": 220
+            },
+            {
+              "x": 367,
+              "y": 220
+            }
+          ]
+        },
+        "idle_left": {
+          "file": "/animation/enemies/summoner/spritesheet/summoner.png",
+          "width": 48,
+          "height": 57,
+          "cooldown": 70,
+          "frames": [
+            {
+              "x": 51,
+              "y": 220
+            },
+            {
+              "x": 100,
+              "y": 220
+            },
+            {
+              "x": 162,
+              "y": 220
+            },
+            {
+              "x": 230,
+              "y": 220
+            },
+            {
+              "x": 298,
+              "y": 220
+            },
+            {
+              "x": 367,
+              "y": 220
+            }
+          ]
+        },
+        "run_right": {
+          "file": "/animation/enemies/summoner/spritesheet/summoner.png",
+          "width": 45,
+          "height": 48,
+          "cooldown": 50,
+          "frames": [
+            {
+              "x": 9,
+              "y": 402
+            },
+            {
+              "x": 58,
+              "y": 402
+            },
+            {
+              "x": 105,
+              "y": 402
+            },
+            {
+              "x": 150,
+              "y": 402
+            },
+            {
+              "x": 211,
+              "y": 402
+            },
+            {
+              "x": 275,
+              "y": 402
+            }
+          ]
+        },
+        "run_left": {
+          "file": "/animation/enemies/summoner/spritesheet/summoner.png",
+          "width": 45,
+          "height": 48,
+          "cooldown": 50,
+          "frames": [
+            {
+              "x": 723,
+              "y": 411
+            },
+            {
+              "x": 677,
+              "y": 411
+            },
+            {
+              "x": 633,
+              "y": 411
+            },
+            {
+              "x": 574,
+              "y": 411
+            },
+            {
+              "x": 517,
+              "y": 411
+            },
+            {
+              "x": 461,
+              "y": 411
+            }
+          ]
+        },
+        "death": {
+          "file": "/animation/enemies/summoner/spritesheet/summoner.png",
+          "width": 50,
+          "height": 55,
+          "cooldown": 50,
+          "frames": [
+            {
+              "x": 23,
+              "y": 1430
+            },
+            {
+              "x": 77,
+              "y": 1430
+            },
+            {
+              "x": 130,
+              "y": 1430
+            },
+            {
+              "x": 179,
+              "y": 1430
+            },
+            {
+              "x": 235,
+              "y": 1430
+            },
+            {
+              "x": 282,
+              "y": 1430
+            }
+          ]
+        },
+        "attack_left": {
+          "file": "/animation/enemies/summoner/spritesheet/summoner.png",
+          "width": 43,
+          "height": 60,
+          "cooldown": 50,
+          "frames": [
+            {
+              "x": 202,
+              "y": 1520
+            },
+            {
+              "x": 242,
+              "y": 1520
+            },
+            {
+              "x": 286,
+              "y": 1520
+            },
+            {
+              "x": 340,
+              "y": 1520
+            },
+            {
+              "x": 383,
+              "y": 1520
+            }
+          ]
+        },
+        "attack_right": {
+          "file": "/animation/enemies/summoner/spritesheet/summoner.png",
+          "width": 43,
+          "height": 60,
+          "cooldown": 50,
+          "frames": [
+            {
+              "x": 708,
+              "y": 1520
+            },
+            {
+              "x": 665,
+              "y": 1520
+            },
+            {
+              "x": 619,
+              "y": 1520
+            },
+            {
+              "x": 569,
+              "y": 1520
+            },
+            {
+              "x": 526,
+              "y": 1520
+            }
+          ]
+        }
+      }
+    }
+}

@@ -17,28 +17,28 @@ void game::menu::MainMenu::create(entt::registry &, ThePURGE &)
     const auto &dataFolder = holder.instance->settings().data_folder;
 
 
-    m_backgroundTexture = engine::helper::loadTexture(dataFolder + "menus/main/mainmenu.png");
+    m_backgroundTexture = engine::helper::loadTexture(dataFolder + "img/menu/main/mainmenu.png");
 
     // clang-format off
 
     // SAME ORDER AS `Button` ENUM
     m_buttons.emplace_back(GUITexture{
-        helper::getTexture("menus/main/btn_play_selected.png"),
+        helper::getTexture("img/menu/main/btn_play_selected.png"),
         helper::from1080p(1238, 259),
         helper::from1080p(229, 155)
     });
     m_buttons.emplace_back(GUITexture{
-        helper::getTexture("menus/main/btn_howtoplay_selected.png"),
+        helper::getTexture("img/menu/main/btn_howtoplay_selected.png"),
         helper::from1080p(1062, 441),
         helper::from1080p(590, 155)
     });
     m_buttons.emplace_back(GUITexture{
-        helper::getTexture("menus/main/btn_credits_selected.png"),
+        helper::getTexture("img/menu/main/btn_credits_selected.png"),
         helper::from1080p(1195, 629),
         helper::from1080p(345, 149)
     });
     m_buttons.emplace_back(GUITexture{
-        helper::getTexture("menus/main/btn_exit_selected.png"),
+        helper::getTexture("img/menu/main/btn_exit_selected.png"),
         helper::from1080p(1263, 820),
         helper::from1080p(195, 149)
     });
