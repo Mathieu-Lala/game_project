@@ -32,37 +32,37 @@ void game::GameHUD::draw(ThePURGE &game, entt::registry &world)
     // clang-format off
 
     static GUITexture staticBackground = {
-        .id =       helper::getTexture("textures/hud/hud_static.png"),
+        .id =       helper::getTexture("img/hud/hud_static.png"),
         .topleft =  helper::from1080p(25, 16),
         .size =     helper::from1080p(339, 152)
     };
 
     static GUITexture LB = {
-        .id =       helper::getTexture("textures/hud/LB.png"),
+        .id =       helper::getTexture("img/hud/LB.png"),
         .topleft =  helper::from1080p(5, 160),
         .size =     helper::from1080p(30, 22)
     };
 
     static GUITexture LT = {
-        .id =       helper::getTexture("textures/hud/LT.png"),
+        .id =       helper::getTexture("img/hud/LT.png"),
         .topleft =  helper::from1080p(80, 160),
         .size =     helper::from1080p(30, 27)
     };
 
     static GUITexture RT = {
-        .id =       helper::getTexture("textures/hud/RT.png"),
+        .id =       helper::getTexture("img/hud/RT.png"),
         .topleft =  helper::from1080p(155, 160),
         .size =     helper::from1080p(30, 27)
     };
 
      static GUITexture RB = {
-        .id =       helper::getTexture("textures/hud/RB.png"),
+        .id =       helper::getTexture("img/hud/RB.png"),
         .topleft =  helper::from1080p(230, 160),
         .size =     helper::from1080p(30, 22)
     };
 
     static GUITexture UpgradeIcon = {
-        .id =       helper::getTexture("textures/hud/UpgradeIcon.png"),
+        .id =       helper::getTexture("img/hud/UpgradeIcon.png"),
         .topleft =  helper::from1080p(337, 125),
         .size =     helper::from1080p(26, 33)
     };

@@ -1,0 +1,130 @@
+{
+    "object": {
+        "animations": {
+            "idle_left": {
+                "file": "/animation/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 40,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_left": {
+                "file": "/animation/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 80,
+                        "y": 48
+                    },
+                    {
+                        "x": 40,
+                        "y": 48
+                    },
+                    {
+                        "x": 0,
+                        "y": 48
+                    }
+                ]
+            },
+            "idle_right": {
+                "file": "/animation/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 40,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_right": {
+                "file": "/animation/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 96
+                    },
+                    {
+                        "x": 40,
+                        "y": 96
+                    },
+                    {
+                        "x": 80,
+                        "y": 96
+                    }
+                ]
+            },
+            "death": {
+                "file": "/animation/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_left": {
+                "file": "/animation/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 500,
+                "frames": [
+                    {
+                        "x": 40,
+                        "y": 144
+                    },
+                    {
+                        "x": 40,
+                        "y": 144
+                    },
+                    {
+                        "x": 40,
+                        "y": 144
+                    }
+                ]
+            },
+            "attack_right": {
+                "file": "/animation/classes/tank/tank_spritesheet.png",
+                "width": 40,
+                "height": 48,
+                "cooldown": 500,
+                "frames": [
+                    {
+                        "x": 80,
+                        "y": 144
+                    },
+                    {
+                        "x": 80,
+                        "y": 144
+                    },
+                    {
+                        "x": 80,
+                        "y": 144
+                    }
+                ]
+            }
+        }
+    }
+}

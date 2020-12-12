@@ -48,6 +48,7 @@ game::GameLogic::GameLogic(ThePURGE &game) :
     sinkGameUpdated.connect<&GameLogic::slots_update_effect>(*this);
     sinkGameUpdated.connect<&GameLogic::slots_check_collision>(*this);
     sinkGameUpdated.connect<&GameLogic::slots_check_floor_change>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_check_animation_attack_status>(*this);
 
     sinkGameUpdated.connect<&GameLogic::slots_update_animation_spritesheet>(*this);
 
@@ -79,7 +80,7 @@ auto game::GameLogic::slots_game_start(entt::registry &world) -> void
         world.emplace<engine::d2::Scale>(e, 75.0, 75.0);
         world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
         engine::DrawableFactory::fix_color(world, e, {0.15, 0.15, 0.15, 1});
-        engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/background.jpg", true);
+        engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "img/background.jpg", true);
     }
 
     holder.instance->getAudioManager()
@@ -299,6 +300,15 @@ auto game::GameLogic::slots_check_floor_change(entt::registry &world, const engi
         });
 }
 
+auto game::GameLogic::slots_check_animation_attack_status(entt::registry& world, const engine::TimeElapsed&) -> void
+{
+    world.view<engine::Spritesheet>(entt::exclude<entt::tag<"spell"_hs>>).each([&](engine::Spritesheet &sprite) {
+        if (sprite.current_animation != "attack_left" && sprite.current_animation != "attack_right") return;
+        auto size = sprite.animations.at(sprite.current_animation).frames.size();
+        if (sprite.current_frame == (size - 1)) sprite.attack_animation_finish = true;
+    });
+}
+
 auto game::GameLogic::slots_update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
 {
     auto player = m_game.player;
@@ -317,7 +327,7 @@ auto game::GameLogic::slots_update_animation_spritesheet(entt::registry &world, 
         const auto &vel = world.get<engine::d2::Velocity>(i);
         const auto &sp = world.get<engine::Spritesheet>(i);
 
-        if (world.has<engine::Spritesheet>(i) && world.get<engine::Spritesheet>(i).current_animation == "death")
+        if ((world.has<engine::Spritesheet>(i) && sp.current_animation == "death") || sp.attack_animation_finish == false)
             continue;
 
         const auto aiming = [](entt::registry &w, const entt::entity &e) -> std::optional<glm::vec2> {

@@ -80,7 +80,7 @@ auto game::SpellFactory::create(entt::registry &world, entt::entity caster, cons
         world.emplace<engine::d2::Scale>(hitbox_entity, data.hitbox.width, data.hitbox.height);
         engine::DrawableFactory::fix_color(world, hitbox_entity, {1, 1, 1, 0.5});
         engine::DrawableFactory::fix_texture(
-            world, hitbox_entity, holder.instance->settings().data_folder + "textures/transparent.png");
+            world, hitbox_entity, holder.instance->settings().data_folder + "img/transparent.png");
 #endif
     }
 

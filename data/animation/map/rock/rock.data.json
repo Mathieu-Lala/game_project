@@ -1,0 +1,30 @@
+{
+    "object": {
+        "animations": {
+            "idle_right": {
+                "file": "/animation/map/rock/rock.spritesheet.png",
+                "width": 900,
+                "height": 800,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 0
+                    }
+                ]
+            },
+            "idle_left": {
+                "file": "/animation/map/rock/rock.spritesheet.png",
+                "width": 900,
+                "height": 800,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 0
+                    }
+                ]
+            }
+        }
+    }
+}

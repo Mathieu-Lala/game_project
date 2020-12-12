@@ -77,6 +77,7 @@ private: // slots
 
     decltype(onGameUpdate)::sink_type sinkGameUpdated{onGameUpdate}; // todo : cleaner
     auto slots_update_game_time(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_check_animation_attack_status(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_update_player_movement(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_update_ai_movement(entt::registry &, const engine::TimeElapsed &) -> void;
     auto slots_update_ai_attack(entt::registry &, const engine::TimeElapsed &) -> void;

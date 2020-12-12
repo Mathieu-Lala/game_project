@@ -1,0 +1,130 @@
+{
+    "object": {
+        "animations": {
+            "idle_left": {
+                "file": "/animation/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 37,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_left": {
+                "file": "/animation/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 74,
+                        "y": 47
+                    },
+                    {
+                        "x": 37,
+                        "y": 47
+                    },
+                    {
+                        "x": 0,
+                        "y": 47
+                    }
+                ]
+            },
+            "idle_right": {
+                "file": "/animation/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 37,
+                        "y": 0
+                    }
+                ]
+            },
+            "run_right": {
+                "file": "/animation/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 94
+                    },
+                    {
+                        "x": 37,
+                        "y": 94
+                    },
+                    {
+                        "x": 74,
+                        "y": 94
+                    }
+                ]
+            },
+            "death": {
+                "file": "/animation/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 141
+                    },
+                    {
+                        "x": 0,
+                        "y": 141
+                    },
+                    {
+                        "x": 0,
+                        "y": 141
+                    }
+                ]
+            },
+            "attack_left": {
+                "file": "/animation/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 500,
+                "frames": [
+                    {
+                        "x": 37,
+                        "y": 141
+                    },
+                    {
+                        "x": 37,
+                        "y": 141
+                    },
+                    {
+                        "x": 37,
+                        "y": 141
+                    }
+                ]
+            },
+            "attack_right": {
+                "file": "/animation/classes/sorcerer/sorcerer_spritesheet.png",
+                "width": 37,
+                "height": 47,
+                "cooldown": 500,
+                "frames": [
+                    {
+                        "x": 74,
+                        "y": 141
+                    },
+                    {
+                        "x": 74,
+                        "y": 141
+                    },
+                    {
+                        "x": 74,
+                        "y": 141
+                    }
+                ]
+            }
+        }
+    }
+}

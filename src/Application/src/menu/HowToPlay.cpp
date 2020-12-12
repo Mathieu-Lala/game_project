@@ -16,8 +16,8 @@ void game::menu::HowToPlay::create(entt::registry &, ThePURGE &)
 
     const auto &dataFolder = holder.instance->settings().data_folder;
 
-    m_howToPlay = engine::helper::loadTexture(dataFolder + "textures/menu/how_to_play/howtoplay.png");
-    m_controls = engine::helper::loadTexture(dataFolder + "textures/menu/how_to_play/controls.png");
+    m_howToPlay = engine::helper::loadTexture(dataFolder + "img/menu/how_to_play/howtoplay.png");
+    m_controls = engine::helper::loadTexture(dataFolder + "img/menu/how_to_play/controls.png");
 }
 
 void game::menu::HowToPlay::draw(entt::registry &, ThePURGE &game)

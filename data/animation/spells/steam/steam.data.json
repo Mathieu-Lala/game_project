@@ -1,0 +1,30 @@
+{
+    "object": {
+        "animations": {
+            "default": {
+                "file": "/animation/spells/steam/steam.spritesheet.png",
+                "width": 256,
+                "height": 256,
+                "cooldown": 50,
+                "frames": [
+                    {
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "x": 256,
+                        "y": 0
+                    },
+                    {
+                        "x": 512,
+                        "y": 0
+                    },
+                    {
+                        "x": 768,
+                        "y": 0
+                    }
+                ]
+            }
+        }
+    }
+}

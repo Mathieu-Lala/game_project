@@ -1,6 +1,6 @@
 {
   "summoner": {
-    "asset": "anims/enemies/summoner/summoner.data.json",
+    "asset": "animation/enemies/summoner/summoner.data.json",
     "health": 3,
     "speed": 9.0,
     "view_range": 10,
@@ -24,7 +24,7 @@
     ]
   },
   "zombie": {
-    "asset": "anims/enemies/zombie/zombie.data.json",
+    "asset": "animation/enemies/zombie/zombie.data.json",
     "health": 4,
     "speed": 7.0,
     "view_range": 10,
@@ -48,7 +48,7 @@
     ]
   },
   "golem": {
-    "asset": "anims/enemies/golem/golem.data.json",
+    "asset": "animation/enemies/golem/golem.data.json",
     "health": 10,
     "speed": 5.0,
     "view_range": 7,
@@ -72,7 +72,7 @@
     ]
   },
   "skeleton": {
-    "asset": "anims/enemies/skeleton/skeleton.data.json",
+    "asset": "animation/enemies/skeleton/skeleton.data.json",
     "health": 2,
     "speed": 9.0,
     "view_range": 6,
@@ -96,7 +96,7 @@
     ]
   },
   "golem_turret": {
-    "asset": "anims/enemies/golem_turret/golem_turret.data.json",
+    "asset": "animation/enemies/golem_turret/golem_turret.data.json",
     "health": 1,
     "speed": 0.0001,
     "view_range": 6,
@@ -120,7 +120,7 @@
     ]
   },
   "electric_skeleton": {
-    "asset": "anims/enemies/skeleton/skeleton.data.json",
+    "asset": "animation/enemies/skeleton/skeleton.data.json",
     "health": 1,
     "speed": 5.0,
     "view_range": 10,
@@ -144,7 +144,7 @@
     ]
   },
   "dark_skeleton": {
-    "asset": "anims/enemies/skeleton/skeleton.data.json",
+    "asset": "animation/enemies/skeleton/skeleton.data.json",
     "health": 15,
     "speed": 7.0,
     "view_range": 7,
@@ -169,7 +169,7 @@
     "is_boss": true
   },
   "monster_guy": {
-    "asset": "anims/enemies/monster_guy/monster_guy.data.json",
+    "asset": "animation/enemies/monster_guy/monster_guy.data.json",
     "health": 15,
     "speed": 5.0,
     "view_range": 7,
@@ -195,7 +195,7 @@
     "is_boss": true
   },
   "ice_skeleton": {
-    "asset": "anims/enemies/skeleton/skeleton.data.json",
+    "asset": "animation/enemies/skeleton/skeleton.data.json",
     "health": 1,
     "speed": 6.0,
     "view_range": 9,
@@ -219,7 +219,7 @@
     ]
   },
   "fire_skeleton": {
-    "asset": "anims/enemies/skeleton/skeleton.data.json",
+    "asset": "animation/enemies/skeleton/skeleton.data.json",
     "health": 1,
     "speed": 6.0,
     "view_range": 9,
@@ -242,9 +242,9 @@
       "explosion"
     ]
   },
-  "rock_obstacle": {
-    "asset": "anims/map/rock/rock.data.json",
-    "health": 1000,
+  "rock_destructible": {
+    "asset": "animation/map/rock/rock.data.json",
+    "health": 1,
     "speed": 0,
     "view_range": 0,
     "attack_range": 0,
@@ -263,5 +263,30 @@
       "y": 1
     },
     "spells": []
+  },
+  "rock_obstacle": {
+    "asset": "animation/map/rock/rock.data.json",
+    "health": 1000,
+    "speed": 0,
+    "view_range": 0,
+    "attack_range": 0,
+    "experience": 0,
+    "color": {
+      "r": 0.3,
+      "g": 0.3,
+      "b": 0.3
+    },
+    "hitbox": {
+      "x": 1.0,
+      "y": 1.0
+    },
+    "scale": {
+      "x": 0.8,
+      "y": 1
+    },
+    "spells": [],
+    "tag": [
+      "wall"
+    ]
   }
 }

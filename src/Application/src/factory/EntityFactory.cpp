@@ -49,6 +49,10 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
     auto &slots = world.emplace<SpellSlots>(enemy);
     for (auto i = 0ul; i != data.spells.size(); i++) slots.spells[i] = game.dbSpells().instantiate(data.spells[i]);
 
+    for (const auto &i : data.tag) {
+        if (i == "wall") world.emplace<entt::tag<"wall"_hs>>(enemy);
+    }
+
 #ifndef NDEBUG
 
     auto hitbox_entity = world.create();
@@ -60,7 +64,7 @@ auto game::EntityFactory::create([[maybe_unused]] ThePURGE &game, entt::registry
     world.emplace<engine::d2::Scale>(hitbox_entity, data.hitbox.width, data.hitbox.height);
     engine::DrawableFactory::fix_color(world, hitbox_entity, {1, 1, 1, 0.5});
     engine::DrawableFactory::fix_texture(
-        world, hitbox_entity, holder.instance->settings().data_folder + "textures/transparent.png");
+        world, hitbox_entity, holder.instance->settings().data_folder + "img/transparent.png");
 
 #endif
 
@@ -118,7 +122,7 @@ auto game::EntityFactory::create<game::EntityFactory::KEY>(
     world.emplace<engine::d2::Scale>(key, size.x, size.y);
     world.emplace<engine::Drawable>(key, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, key, {1, 1, 0, 1});
-    engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "textures/key.png");
+    engine::DrawableFactory::fix_texture(world, key, holder.instance->settings().data_folder + "img/key.png");
     return key;
 }
 
@@ -138,16 +142,16 @@ auto game::EntityFactory::create<game::EntityFactory::AIMING_SIGHT>(
 
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
 
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/aim_sight.png");
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "img/aim_sight.png");
 
     return e;
 }
 
 struct TexturePath {
-    static constexpr auto floor_normal = "textures/map/stone4_b.jpg";
-    static constexpr auto floor_spawn = "textures/map/stone2_b.jpg";
-    static constexpr auto floor_boss = "textures/map/stone5_b.jpg";
-    static constexpr auto floor_corridor = "textures/map/stone3_b.jpg";
+    static constexpr auto floor_normal = "img/map/stone4_b.jpg";
+    static constexpr auto floor_spawn = "img/map/stone2_b.jpg";
+    static constexpr auto floor_boss = "img/map/stone5_b.jpg";
+    static constexpr auto floor_corridor = "img/map/stone3_b.jpg";
 };
 
 
@@ -235,7 +239,7 @@ auto game::EntityFactory::create<game::EntityFactory::EXIT_DOOR>(
     world.emplace<engine::d2::Scale>(e, size.x, size.y);
     world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
     engine::DrawableFactory::fix_color(world, e, {1, 1, 1, 1});
-    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "textures/map/door.png");
+    engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "img/map/door.png");
 
     world.emplace<engine::d2::HitboxSolid>(e, size.x, size.y);
     world.emplace<entt::tag<"terrain"_hs>>(e);

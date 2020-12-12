@@ -36,6 +36,8 @@ struct Enemy {
 
     std::uint32_t experience;
 
+    std::vector<std::string> tag;
+
 };
 
 inline void to_json([[maybe_unused]] nlohmann::json &j, [[maybe_unused]] const Enemy &enemy)
@@ -65,6 +67,7 @@ inline void from_json(const nlohmann::json &j, Enemy &enemy)
     enemy.view_range = j.at("view_range");
     enemy.attack_range = j.at("attack_range");
     enemy.experience = j.at("experience");
+    enemy.tag = j.value("tag", std::vector<std::string>{});
 }
 
 struct EnemyDatabase {
