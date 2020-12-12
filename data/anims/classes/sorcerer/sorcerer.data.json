@@ -74,6 +74,14 @@
                     {
                         "x": 0,
                         "y": 141
+                    },
+                    {
+                        "x": 0,
+                        "y": 141
+                    },
+                    {
+                        "x": 0,
+                        "y": 141
                     }
                 ]
             },
@@ -81,8 +89,16 @@
                 "file": "/anims/classes/sorcerer/sorcerer_spritesheet.png",
                 "width": 37,
                 "height": 47,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 37,
+                        "y": 141
+                    },
+                    {
+                        "x": 37,
+                        "y": 141
+                    },
                     {
                         "x": 37,
                         "y": 141
@@ -93,8 +109,16 @@
                 "file": "/anims/classes/sorcerer/sorcerer_spritesheet.png",
                 "width": 37,
                 "height": 47,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 74,
+                        "y": 141
+                    },
+                    {
+                        "x": 74,
+                        "y": 141
+                    },
                     {
                         "x": 74,
                         "y": 141

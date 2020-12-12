@@ -74,6 +74,14 @@
                     {
                         "x": 0,
                         "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
+                    },
+                    {
+                        "x": 0,
+                        "y": 144
                     }
                 ]
             },
@@ -81,8 +89,16 @@
                 "file": "/anims/classes/mage/mage_spritesheet.png",
                 "width": 47,
                 "height": 48,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 47,
+                        "y": 144
+                    },
+                    {
+                        "x": 47,
+                        "y": 144
+                    },
                     {
                         "x": 47,
                         "y": 144
@@ -93,8 +109,16 @@
                 "file": "/anims/classes/mage/mage_spritesheet.png",
                 "width": 47,
                 "height": 48,
-                "cooldown": 50,
+                "cooldown": 500,
                 "frames": [
+                    {
+                        "x": 94,
+                        "y": 144
+                    },
+                    {
+                        "x": 94,
+                        "y": 144
+                    },
                     {
                         "x": 94,
                         "y": 144

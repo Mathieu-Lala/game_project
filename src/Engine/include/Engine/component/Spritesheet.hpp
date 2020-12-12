@@ -33,6 +33,8 @@ struct Spritesheet {
     std::uint16_t current_frame{0};
     std::string current_animation{"default"};
 
+    bool attack_animation_finish{true};
+
     static auto from_json(const std::string_view file) -> Spritesheet;
 };
 

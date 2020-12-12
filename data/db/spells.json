@@ -1,7 +1,7 @@
 {
   "shovel": {
     "icon": "icons/spells/shovel.png",
-    "description": "A weak shovel hit. Everyone has to start somewhere...",
+    "description": "A weak shovel blow. Everyone have to start somewhere...",
     "cooldown": 700,
     "damage": 1,
     "scale": {
@@ -26,7 +26,7 @@
   },
   "sword": {
     "icon": "icons/spells/sword.png",
-    "description": "A powerful sword swing",
+    "description": "A powerful sword blow, all soldiers knows how to do it",
     "cooldown": 500,
     "damage": 5,
     "scale": {
@@ -51,7 +51,7 @@
   },
   "tornado_sword": {
     "icon": "icons/spells/shovel.png",
-    "description": "Powerful sword swing all around you",
+    "description": "An impressive circular sword blow, destroying everything around you. Learned from a certain hero in green...",
     "cooldown": 1500,
     "damage": 0,
     "scale": {
@@ -79,7 +79,7 @@
   },
   "fireball": {
     "icon": "icons/spells/fireball.png",
-    "description": "Throws a slow fireball dealing heavy damage",
+    "description": "Burn your enemies with a powerful fireball cast in front of you",
     "cooldown": 1500,
     "damage": 3,
     "scale": {
@@ -104,7 +104,7 @@
   },
   "firewall": {
     "icon": "icons/spells/firewall.png",
-    "description": "Creates a fire wall dealing continuous damage in the area",
+    "description": "Imprison your opponents within this fire wall dealing continous damages",
     "cooldown": 3000,
     "damage": 0,
     "scale": {
@@ -182,7 +182,7 @@
   },
   "fireball_blue": {
     "icon": "icons/spells/fireball_blue.png",
-    "description": "Creates a powerfull fireballdealing extremely high damages",
+    "description": "A fireball for advance mages. More hotter, more powerful, more impressive",
     "cooldown": 2000,
     "damage": 5,
     "scale": {
@@ -207,7 +207,7 @@
   },
   "thunder": {
     "icon": "icons/spells/fireball_blue.png",
-    "description": "A strike from the sky",
+    "description": "Electrocute the ennemis with a raging thunder",
     "cooldown": 2000,
     "damage": 5,
     "scale": {
@@ -232,7 +232,7 @@
   },
   "arrow": {
     "icon": "icons/spells/arrow.png",
-    "description": "Shoots a basic arrow",
+    "description": "Shoots a basic arrow. Don't miss your target",
     "cooldown": 1000,
     "damage": 2,
     "scale": {
@@ -257,7 +257,7 @@
   },
   "triple_arrow": {
     "icon": "icons/spells/arrow.png",
-    "description": "Shoots a basic arrow",
+    "description": "Experienced archer's favorite move. Shooting three arrows in front of you",
     "cooldown": 1000,
     "damage": 2,
     "scale": {
@@ -340,7 +340,7 @@
   },
   "explosion": {
     "icon": "icons/spells/explosion.png",
-    "description": "A very powerfull and explosive attack",
+    "description": "A very powerful and explosive attack. Don't hurt yourself with it",
     "cooldown": 4000,
     "damage": 0,
     "scale": {
@@ -372,7 +372,7 @@
   },
   "shadow_jump": {
     "icon": "icons/spells/explosion.png",
-    "description": "Jump to a position quickly",
+    "description": "Move like a shadow to change position quickly",
     "cooldown": 2000,
     "damage": 0,
     "scale": {
