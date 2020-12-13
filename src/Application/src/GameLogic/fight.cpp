@@ -51,6 +51,8 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
 
 auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity) -> void
 {
+    static auto holder = engine::Core::Holder{};
+
     world.get<SkillPoint>(entity).count++;
 
     auto &level = world.get<Level>(entity);
@@ -60,6 +62,8 @@ auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity)
 
     const auto &pos = world.get<engine::d3::Position>(entity);
     ParticuleFactory::create<Particule::POSITIVE>(world, {pos.x, pos.y}, {0, 127.5, 255});
+
+    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/level_up.wav")->play();
 }
 
 auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uint32_t xp) -> void
