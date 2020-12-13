@@ -14,13 +14,21 @@
 
 #include <spdlog/spdlog.h>
 
-int main(int argc, char **argv)
+int main(int argc, char **argv) try
 {
+#ifndef NDEBUG
     spdlog::set_level(spdlog::level::trace);
+#else
+    spdlog::set_level(spdlog::level::warn);
+#endif
 
     auto holder = engine::Core::Holder::init();
 
     holder.instance->game<game::ThePURGE>();
 
     return holder.instance->main(argc, argv);
+}
+catch (int code)
+{
+    return code;
 }

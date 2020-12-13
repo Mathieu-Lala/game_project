@@ -13,20 +13,20 @@ This repository contains the source code of the [game](src/Application) and his 
 
 ```sh
 $> ./tools/launch.sh -- --help
-ThePURGE 0.3.0
+ThePURGE 0.3.22
 Usage: ./engine_main [OPTIONS]
 
 Options:
-  -h,--help                     Print this help message and exit
-  --version                     Print the version number and exit.
-  --config=data/config/app.ini  Read an ini file
-  --fullscreen BOOLEAN=1        Launch the window in fullscreen mode.
-  --window-width UINT=1024      Width of the window.
-  --window-height UINT=768      Height of the window.
-  --replay-path TEXT            Path of the events to replay.
-  --replay-data TEXT            Json events to replay.
-  --data TEXT=data/             Path of the data folder.
-  --output-folder TEXT=data/    Path of the generated output.
+  -h,--help                           Print this help message and exit
+  --version                           Print the version number and exit.
+  --config=data/config/app.ini        Read an ini file
+  --fullscreen BOOLEAN=1              Launch the window in fullscreen mode.
+  --window-width UINT=1024            Width of the window.
+  --window-height UINT=768            Height of the window.
+  --replay-path TEXT                  Path of the events to replay.
+  --replay-data TEXT                  Json events to replay.
+  --data TEXT=data/                   Path of the data folder.
+  --output-folder TEXT=../generated/  Path of the generated output.
 ```
 
 ## Screenshots
@@ -43,17 +43,19 @@ Application version 0.1.9
 
 ### Requirements
 
+* All platforms
+
+  * python>=3.0
+
 * Unix systems
 
   * g++>=10 || clang>=11
   * cmake>=3.13
-  * python>=3.0
 
 * Visual Studio Extension
 
   * Visual Studio 2019>=16.7
   * Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
-  * python>=3.0
 
 The build **require** an internet connection (download of dependencies if missing).
 
@@ -162,6 +164,11 @@ $> ./tools/install.sh --no-clone
 
 ![Dependencies](doc/conan_dependencies.png)
 
+## Debugging
+
+When implementing a new feature (or just by curiousity), you might want to see what is happening behind the scene.
+With a debug build you have access to extra information such as the hitbox, a console (with cheat codes), opengl rendering options ...
+
 ## Testing
 
 [![codecov](https://codecov.io/gh/Mathieu-Lala/game_project/branch/develop/graph/badge.svg?token=E43G3XKG01)](https://codecov.io/gh/Mathieu-Lala/game_project)
@@ -180,6 +187,7 @@ $> ./tools/install.sh --no-clone
 ## Acknowledgement
 
 * Jason Turner's [Weekly Game Project](https://github.com/lefticus/cpp_weekly_game_project)
+* [learnopengl.com](http://learnopengl.com)
 
 ## Initial Authors
 
