@@ -18,7 +18,6 @@
 #include "component/AttackDamage.hpp"
 #include "component/SpellEffect.hpp"
 #include "component/SpellTarget.hpp"
-//#include "component/Effect.hpp"
 #include "component/Speed.hpp"
 #include "component/StatsTracking.hpp"
 

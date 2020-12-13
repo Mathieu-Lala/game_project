@@ -50,6 +50,7 @@ struct SpellData {
         PROJECTILE = 1 << 0,
         AOE = 1 << 1,
         SUMMONER = 1 << 2,
+        ON_DEATH = 1 << 3,
 
         TYPE_MAX,
     };
@@ -64,6 +65,7 @@ struct SpellData {
 
         ENEMY = 1 << 0,
         CASTER = 1 << 1,
+        ALL = 1 << 2,
 
         TARGET_MAX,
     };
@@ -72,6 +74,8 @@ struct SpellData {
 
     int quantity;
     double angle;
+
+    std::string on_death;
 
 };
 

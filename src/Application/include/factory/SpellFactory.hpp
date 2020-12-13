@@ -6,9 +6,10 @@
 namespace game {
 
 struct SpellData;
+struct SpellDatabase;
 
 struct SpellFactory {
-    static auto create(entt::registry &, entt::entity caster, const glm::dvec2 &direction, const SpellData &)
+    static auto create(SpellDatabase &, entt::registry &, entt::entity caster, const glm::dvec2 &direction, const SpellData &)
         -> entt::entity;
 };
 

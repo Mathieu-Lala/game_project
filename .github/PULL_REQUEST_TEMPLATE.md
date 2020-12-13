@@ -14,18 +14,6 @@
 
 ## Screenshots (if appropriate):
 
-## Types of changes
-<!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
-- [ ] Chore (anything related to the building tools or the pipeline)
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Refactor (A code change that neither fixes a bug nor adds a feature)
-- [ ] Style (Changes that do not affect the meaning of the code)
-- [ ] Perf (A code change that improves performance)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation (adding documentation of any kind to the project)
-- [ ] Other
-
 ## Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
