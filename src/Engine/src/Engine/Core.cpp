@@ -73,6 +73,10 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
 engine::Core::~Core()
 {
+    m_textures.clear();
+    m_vbo_textures.clear();
+    m_colors.clear();
+
     ::glfwTerminate();
     ::glfwSetErrorCallback(nullptr);
     spdlog::trace("Engine::Core destroyed");

@@ -137,8 +137,9 @@ auto game::GameLogic::slots_collide_with_spell(
     const auto to_the_caster = targets[SpellData::Target::CASTER] && (receiver == sender);
     const auto to_an_enemy = targets[SpellData::Target::ENEMY]
                              && (world.has<entt::tag<"enemy"_hs>>(receiver) ^ world.has<entt::tag<"enemy"_hs>>(sender));
+    const auto to_all = targets[SpellData::Target::ALL];
 
-    if (to_the_caster || to_an_enemy) {
+    if (to_the_caster || to_an_enemy || to_all) {
         const auto effects = [&](const auto &ref) {
             struct sPsE {
                 std::string_view tag;
@@ -329,7 +330,7 @@ auto game::GameLogic::slots_kill_entity(entt::registry &world, entt::entity kill
     if (world.has<entt::tag<"on_death"_hs>>(killed)) {
 
         auto &spell_on_death = world.get<SpellSlots>(killed).spells[0];
-        onSpellCast.publish(world, killed, glm::dvec2{0.0, 0.0}, spell_on_death.value());
+        onSpellCast.publish(world, killed, glm::dvec2{0.0, 1.0}, spell_on_death.value());
         world.emplace_or_replace<engine::Lifetime>(killed, m_game.dbSpells().db.at(std::string{spell_on_death.value().id}).lifetime);
 
     } if (world.has<entt::tag<"player"_hs>>(killed)) {

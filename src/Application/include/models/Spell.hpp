@@ -65,6 +65,7 @@ struct SpellData {
 
         ENEMY = 1 << 0,
         CASTER = 1 << 1,
+        ALL = 1 << 2,
 
         TARGET_MAX,
     };

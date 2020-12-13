@@ -366,8 +366,7 @@
       "explosion_effect"
     ],
     "target": [
-      "enemy",
-      "caster"
+      "all"
     ]
   },
   "shadow_jump": {
