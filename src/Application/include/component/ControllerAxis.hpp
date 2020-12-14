@@ -12,6 +12,9 @@ struct ControllerAxis {
 
     glm::vec2 movement;
     glm::vec2 aiming;
+
+    // virtual movement joystick corresponding to keyboard player movement. May not be normalized
+    glm::vec2 keyboard_movement; 
 };
 
 } // namespace game
