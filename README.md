@@ -29,15 +29,11 @@ Options:
   --output-folder TEXT=../generated/  Path of the generated output.
 ```
 
-## Screenshots
+## What it looks like
 
-Application version 0.2.12
+See [the trailer](https://www.youtube.com/watch?v=GQxOHtLU4U0) of the game on youtube !
 
-![v0.2.12](./doc/screenshots/app_v0.2.12.gif)
-
-Application version 0.1.9
-
-![v0.1.9](./doc/screenshots/app_v0.1.9.png)
+See [older version](./doc/history) of the project.
 
 ## Installing
 
@@ -52,12 +48,11 @@ Application version 0.1.9
   * g++>=10 || clang>=11
   * cmake>=3.13
 
-* Visual Studio Extension
+* Windows
 
-  * Visual Studio 2019>=16.7
-  * Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
+  * Visual Studio 2019>=16.7 && Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
 
-The build **require** an internet connection (download of dependencies if missing).
+### Command line
 
 You can use this command line.
 
@@ -73,7 +68,7 @@ Or clone and inspect the install script.
 
 ```sh
 # Cloning the repository
-$> git clone git@github.com:Mathieu-Lala/game_project.git
+$> git clone https://github.com/Mathieu-Lala/game_project.git
 
 # Go in the project
 $> cd game_project
@@ -136,13 +131,17 @@ $> ./tools/install.sh --no-clone
   </tr>
 </table>
 
+The build **require** an internet connection (download of dependencies if missing).
+
 * Unix systems
 
     ```sh
+    # See the --help message
+
     # Generate the cmake project
     $> ./tools/generate.sh
 
-    # Build all the target
+    # Build the target
     $> ./tools/build.sh
 
     # Run the executable
@@ -151,7 +150,7 @@ $> ./tools/install.sh --no-clone
 
 * Visual Studio
 
-  See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160) for further details.
+  See [the documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160) for further details.
 
   1. Open the project folder with Visual Studio
   1. Project > Generate Cache for GameProject
@@ -160,7 +159,9 @@ $> ./tools/install.sh --no-clone
 
 ### Package Manager
 
-[conan](https://conan.io/) - [documentation](https://docs.conan.io/en/1.31/)
+[Conan](https://conan.io/) is used for this project, see [the documentation](https://docs.conan.io/en/1.31/)
+
+The dependencies used :
 
 ![Dependencies](doc/conan_dependencies.png)
 

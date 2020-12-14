@@ -30,21 +30,24 @@ using namespace std::chrono_literals;
 auto game::GameLogic::slots_move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed)
     -> void
 {
+    auto &movement = world.get<ControllerAxis>(player).keyboard_movement;
+
     switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1 : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1 : 0.0f; break;
-    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1 : 0.0f; break;
-    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1 : 0.0f; break;
+    case Direction::UP: movement.y += is_pressed ? 1 : -1; break;
+    case Direction::DOWN: movement.y += is_pressed ? -1 : 1; break;
+    case Direction::RIGHT: movement.x += is_pressed ? 1 : -1; break;
+    case Direction::LEFT: movement.x += is_pressed ? -1 : 1; break;
     default: break;
     }
 
-    const auto &movement = world.get<ControllerAxis>(player).movement;
-    if (glm::length(movement) < 0.01f) return;
+    if (glm::length(movement) < 0.01f) {
+        world.get<ControllerAxis>(player).movement = glm::vec2(0.f, 0.f);
+    } else {
+        const auto &direction = glm::normalize(movement);
 
-    const auto &direction = glm::normalize(movement);
-
-    world.get<ControllerAxis>(player).aiming = direction;
-    world.get<ControllerAxis>(player).movement = direction;
+        world.get<ControllerAxis>(player).aiming = direction;
+        world.get<ControllerAxis>(player).movement = direction;
+    }
 }
 
 auto game::GameLogic::slots_update_player_movement(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt)

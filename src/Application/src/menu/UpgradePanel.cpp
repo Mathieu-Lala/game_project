@@ -453,8 +453,16 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                 return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
 
             } else { // todo : should be engine::Keyboard::Key
-                const auto map =
-                    std::to_array<SpellMap>({{GLFW_KEY_U, 0}, {GLFW_KEY_Y, 1}, {GLFW_KEY_T, 2}, {GLFW_KEY_R, 3}});
+                const auto map = std::to_array<SpellMap>(
+                    {{GLFW_KEY_J, 0},
+                     {GLFW_KEY_1, 0},
+                     {GLFW_KEY_2, 2},
+                     {GLFW_KEY_K, 2},
+                     {GLFW_KEY_3, 3},
+                     {GLFW_KEY_L, 3},
+                     {GLFW_KEY_M, 1},
+                     {GLFW_KEY_4, 1},
+                     {GLFW_KEY_SEMICOLON, 1}});
                 return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
             }
         };
@@ -463,10 +471,15 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
             engine::overloaded{
                 [&](const engine::Pressed<engine::Key> &key) {
                     switch (key.source.key) {
-                    case GLFW_KEY_U:
-                    case GLFW_KEY_Y:
-                    case GLFW_KEY_R:
-                    case GLFW_KEY_T: {
+                    case GLFW_KEY_SEMICOLON:
+                    case GLFW_KEY_1:
+                    case GLFW_KEY_2:
+                    case GLFW_KEY_3:
+                    case GLFW_KEY_4:
+                    case GLFW_KEY_J:
+                    case GLFW_KEY_K:
+                    case GLFW_KEY_L:
+                    case GLFW_KEY_M: {
                         const auto id = spell_map(key.source.key);
 
                         world.get<SpellSlots>(m_player).spells[id] =
@@ -524,7 +537,7 @@ void game::menu::UpgradePanel::event(entt::registry &world, ThePURGE &game, cons
                     holder.instance->setEventMode(engine::Core::EventMode::RECORD);
                     game.setMenu(nullptr);
                     break;
-                case GLFW_KEY_E: onBuyHp(world); break;
+                case GLFW_KEY_Y: onBuyHp(world); break;
                 default: break;
                 }
             },

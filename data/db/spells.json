@@ -26,7 +26,7 @@
   },
   "sword": {
     "icon": "img/icons/spells/sword.png",
-    "description": "A powerful sword blow, all soldiers knows how to do it",
+    "description": "A powerful sword blow, all soldiers know how to do it",
     "cooldown": 500,
     "damage": 5,
     "scale": {
@@ -79,7 +79,7 @@
   },
   "fireball": {
     "icon": "img/icons/spells/fireball.png",
-    "description": "Burn your enemies with a powerful fireball cast in front of you",
+    "description": "Burn your enemies with a powerful fireball",
     "cooldown": 1500,
     "damage": 3,
     "scale": {
@@ -104,7 +104,7 @@
   },
   "firewall": {
     "icon": "img/icons/spells/firewall.png",
-    "description": "Imprison your opponents within this fire wall dealing continous damages",
+    "description": "Imprison your opponents inside this fire wall dealing continous damages",
     "cooldown": 3000,
     "damage": 0,
     "scale": {
@@ -132,7 +132,7 @@
   },
   "rock": {
     "icon": "",
-    "description": "Creates a powerfull rock ball dealing extremely high damages",
+    "description": "Creates a powerful rock ball dealing extremely high damages",
     "cooldown": 2000,
     "damage": 10,
     "scale": {
@@ -182,7 +182,7 @@
   },
   "fireball_blue": {
     "icon": "",
-    "description": "A fireball for advance mages. More hotter, more powerful, more impressive",
+    "description": "A fireball for advance mages. Hotter, more powerful, more impressive",
     "cooldown": 2000,
     "damage": 5,
     "scale": {
@@ -207,7 +207,7 @@
   },
   "thunder": {
     "icon": "",
-    "description": "Electrocute the ennemis with a raging thunder",
+    "description": "Electrocute the ennemies with a raging thunder",
     "cooldown": 2000,
     "damage": 5,
     "scale": {
@@ -402,7 +402,7 @@
   },
   "throw_barrel": {
     "icon": "img/icons/spells/throw_barrel.png",
-    "description": "",
+    "description": "Places an explosive barrel waiting to be shot at",
     "cooldown": 2500,
     "damage": 0,
     "scale": {
