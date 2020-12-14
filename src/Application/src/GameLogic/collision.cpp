@@ -103,6 +103,8 @@ auto game::GameLogic::slots_update_ai_movement(entt::registry &world, [[maybe_un
 
 auto game::GameLogic::slots_check_collision(entt::registry &world, const engine::TimeElapsed &) -> void
 {
+    static auto holder = engine::Core::Holder{};
+
     // note : this is check at each frame but we only want it when the spell (or the wall) move
     for (auto &spell : world.view<entt::tag<"spell"_hs>, entt::tag<"projectile"_hs>>()) {
         const auto &spell_pos = world.get<engine::d3::Position>(spell);
@@ -159,6 +161,9 @@ auto game::GameLogic::slots_check_collision(entt::registry &world, const engine:
             if (engine::d2::overlapped<engine::d2::WITH_EDGE>(
                     pickerhitbox, pickerPos, world.get<engine::d2::HitboxFloat>(key), world.get<engine::d3::Position>(key))) {
                 picker.hasKey = true;
+                holder.instance->getAudioManager()
+                    .getSound(holder.instance->settings().data_folder + "sounds/key_pickup.wav")
+                    ->play();
                 world.destroy(key);
             }
         }
