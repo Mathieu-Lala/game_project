@@ -2,7 +2,7 @@
   "shovel": {
     "icon": "img/icons/spells/shovel.png",
     "description": "A weak shovel blow. Everyone have to start somewhere...",
-    "cooldown": 700,
+    "cooldown": 800,
     "damage": 1,
     "scale": {
       "x": 1.5,
@@ -42,8 +42,8 @@
     "animation": "animation/spells/sword/sword.data.json",
     "speed": 0,
     "offset_to_source": {
-      "x": 0.7,
-      "y": 0.7
+      "x": 1.2,
+      "y": 1.2
     },
     "type": [
       "projectile"
@@ -59,8 +59,8 @@
       "y": 5.0
     },
     "hitbox": {
-      "x": 7.0,
-      "y": 7.0
+      "x": 5.0,
+      "y": 5.0
     },
     "lifetime": 1000,
     "audio_on_cast": "sounds/spells/sword.wav",
@@ -234,7 +234,7 @@
     "icon": "img/icons/spells/arrow.png",
     "description": "Shoots a basic arrow. Don't miss your target",
     "cooldown": 1000,
-    "damage": 2,
+    "damage": 1.9,
     "scale": {
       "x": 1,
       "y": 0.2
@@ -246,7 +246,7 @@
     "lifetime": 1000,
     "audio_on_cast": "sounds/spells/shovel.wav",
     "animation": "animation/spells/arrow/arrow.data.json",
-    "speed": 8.0,
+    "speed": 11.0,
     "offset_to_source": {
       "x": 1.5,
       "y": 1.5
