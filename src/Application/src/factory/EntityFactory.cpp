@@ -101,7 +101,7 @@ auto game::EntityFactory::create<game::EntityFactory::PLAYER>(
     world.emplace<engine::Spritesheet>(player);
     world.emplace<Health>(player, 0.f, 0.f);
     world.emplace<AttackDamage>(player, 0.f);
-    world.emplace<Speed>(player, 1.f);
+    world.emplace<Speed>(player, 5.f);
     world.emplace<engine::d2::HitboxSolid>(player, 1.0f, 1.0f);
     // --
 
