@@ -32,12 +32,13 @@ auto game::GameLogic::slots_apply_classes(entt::registry &world, entt::entity pl
 {
     static auto holder = engine::Core::Holder{};
 
-    world.get<Speed>(player).speed = newClass.speed;
+    world.get<Speed>(player).speed += newClass.speed;
     world.get<engine::d2::HitboxSolid>(player) = newClass.hitbox;
 
     auto &health = world.get<Health>(player);
 
     health.current += newClass.health;
+    if (health.current <= 0) health.current = 1;
     health.max += newClass.health;
     world.get<Classes>(player).ids.push_back(newClass.name);
 
