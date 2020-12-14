@@ -129,7 +129,16 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
             return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
 
         } else { // todo : should be engine::Keyboard::Key
-            const auto map = std::to_array<SpellMap>({{GLFW_KEY_U, 0}, {GLFW_KEY_Y, 1}, {GLFW_KEY_T, 2}, {GLFW_KEY_R, 3}});
+            const auto map = std::to_array<SpellMap>(
+                {{GLFW_KEY_J, 0},
+                 {GLFW_KEY_1, 0},
+                 {GLFW_KEY_2, 2},
+                 {GLFW_KEY_K, 2},
+                 {GLFW_KEY_3, 3},
+                 {GLFW_KEY_L, 3},
+                 {GLFW_KEY_M, 1},
+                 {GLFW_KEY_4, 1},
+                 {GLFW_KEY_SEMICOLON, 1}});
             return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
         }
     };
@@ -140,18 +149,29 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, true); break;
-                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, true); break;
-                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, true); break;
-                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, true); break;
+                case GLFW_KEY_DOWN:
+                case GLFW_KEY_S: onMovement.publish(world, player, Direction::DOWN, true); break;
+                case GLFW_KEY_RIGHT:
+                case GLFW_KEY_D: onMovement.publish(world, player, Direction::RIGHT, true); break;
+                case GLFW_KEY_LEFT:
+                case GLFW_KEY_Q:
+                case GLFW_KEY_A: onMovement.publish(world, player, Direction::LEFT, true); break;
+                case GLFW_KEY_UP:
+                case GLFW_KEY_Z:
+                case GLFW_KEY_W: onMovement.publish(world, player, Direction::UP, true); break;
                 case GLFW_KEY_P: {
                     m_game.setMenu(std::make_unique<menu::UpgradePanel>());
                 } break;
 
-                case GLFW_KEY_U:
-                case GLFW_KEY_Y:
-                case GLFW_KEY_R:
-                case GLFW_KEY_T: {
+                case GLFW_KEY_SEMICOLON:
+                case GLFW_KEY_1:
+                case GLFW_KEY_2:
+                case GLFW_KEY_3:
+                case GLFW_KEY_4:
+                case GLFW_KEY_J:
+                case GLFW_KEY_K:
+                case GLFW_KEY_L:
+                case GLFW_KEY_M: {
                     const auto id = spell_map(key.source.key);
 
                     auto &spell = world.get<SpellSlots>(player).spells[id];
@@ -165,10 +185,16 @@ auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event 
             },
             [&](const engine::Released<engine::Key> &key) {
                 switch (key.source.key) {
-                case GLFW_KEY_I: onMovement.publish(world, player, Direction::UP, false); break;
-                case GLFW_KEY_K: onMovement.publish(world, player, Direction::DOWN, false); break;
-                case GLFW_KEY_L: onMovement.publish(world, player, Direction::RIGHT, false); break;
-                case GLFW_KEY_J: onMovement.publish(world, player, Direction::LEFT, false); break;
+                case GLFW_KEY_DOWN:
+                case GLFW_KEY_S: onMovement.publish(world, player, Direction::DOWN, false); break;
+                case GLFW_KEY_RIGHT:
+                case GLFW_KEY_D: onMovement.publish(world, player, Direction::RIGHT, false); break;
+                case GLFW_KEY_LEFT:
+                case GLFW_KEY_Q:
+                case GLFW_KEY_A: onMovement.publish(world, player, Direction::LEFT, false); break;
+                case GLFW_KEY_UP:
+                case GLFW_KEY_Z:
+                case GLFW_KEY_W: onMovement.publish(world, player, Direction::UP, false); break;
                 default: return;
                 }
             },
@@ -300,7 +326,7 @@ auto game::GameLogic::slots_check_floor_change(entt::registry &world, const engi
         });
 }
 
-auto game::GameLogic::slots_check_animation_attack_status(entt::registry& world, const engine::TimeElapsed&) -> void
+auto game::GameLogic::slots_check_animation_attack_status(entt::registry &world, const engine::TimeElapsed &) -> void
 {
     world.view<engine::Spritesheet>(entt::exclude<entt::tag<"spell"_hs>>).each([&](engine::Spritesheet &sprite) {
         if (sprite.current_animation != "attack_left" && sprite.current_animation != "attack_right") return;

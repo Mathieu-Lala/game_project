@@ -27,11 +27,18 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
         engine::overloaded{
             [&](const engine::Pressed<engine::Key> &key) {
                 switch (key.source.key) {
+                case GLFW_KEY_W:
+                case GLFW_KEY_Z:
                 case GLFW_KEY_UP: m_up = true; break;
+                case GLFW_KEY_D:
                 case GLFW_KEY_RIGHT: m_right = true; break;
+                case GLFW_KEY_S:
                 case GLFW_KEY_DOWN: m_down = true; break;
+                case GLFW_KEY_Q:
+                case GLFW_KEY_A:
                 case GLFW_KEY_LEFT: m_left = true; break;
                 case GLFW_KEY_ENTER: m_select = true; break;
+                case GLFW_KEY_ESCAPE: m_close = true; break;
                 default: break;
                 }
             },
@@ -53,7 +60,6 @@ void game::AMenu::onEvent(entt::registry &world, ThePURGE &game, const engine::E
 
                     float x = (*joystick)->axes[engine::Joystick::LSX];
                     float y = -(*joystick)->axes[engine::Joystick::LSY];
-                    // spdlog::info("Joystick x : {:.2f}, y : {:.2f}", x, y);
 
                     m_up = !m_recoveringUp && y > kTriggerThreshold;
                     m_recoveringUp = (!m_recoveringUp && m_up) || (m_recoveringUp && y > kRecoveryThreshold);
