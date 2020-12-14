@@ -66,7 +66,7 @@ auto game::SpellFactory::create(SpellDatabase &db, entt::registry &world, entt::
             world.emplace<SpellSlots>(spell).spells[0] = db.instantiate(data.on_death);
         }
         if (data.type[SpellData::Type::SUMMONER]) {
-            world.emplace<Health>(spell, 1.0f);
+            world.emplace<Health>(spell, 1.0f, 1.0f);
             world.emplace<engine::d2::HitboxSolid>(spell, data.hitbox.width, data.hitbox.height);
             world.emplace<Experience>(spell, static_cast<uint32_t>(0));
             world.emplace<entt::tag<"enemy"_hs>>(spell);
