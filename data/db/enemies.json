@@ -1,8 +1,8 @@
 {
   "summoner": {
     "asset": "animation/enemies/summoner/summoner.data.json",
-    "health": 3,
-    "speed": 5.0,
+    "health": 6,
+    "speed": 4.0,
     "view_range": 10,
     "attack_range": 8,
     "experience": 3,
@@ -25,8 +25,8 @@
   },
   "zombie": {
     "asset": "animation/enemies/zombie/zombie.data.json",
-    "health": 4,
-    "speed": 4.0,
+    "health": 6,
+    "speed": 5.0,
     "view_range": 10,
     "attack_range": 8,
     "experience": 3,
@@ -121,7 +121,7 @@
   },
   "electric_skeleton": {
     "asset": "animation/enemies/skeleton/skeleton.data.json",
-    "health": 2,
+    "health": 3,
     "speed": 5.0,
     "view_range": 10,
     "attack_range": 8,
@@ -145,7 +145,7 @@
   },
   "dark_skeleton": {
     "asset": "animation/enemies/skeleton/skeleton.data.json",
-    "health": 15,
+    "health": 20,
     "speed": 7.0,
     "view_range": 7,
     "attack_range": 5,

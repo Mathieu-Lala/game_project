@@ -28,7 +28,7 @@
     "icon": "img/icons/spells/sword.png",
     "description": "A powerful sword blow, all soldiers knows how to do it",
     "cooldown": 500,
-    "damage": 5,
+    "damage": 3,
     "scale": {
       "x": 1.5,
       "y": 1.5
@@ -81,7 +81,7 @@
     "icon": "img/icons/spells/fireball.png",
     "description": "Burn your enemies with a powerful fireball cast in front of you",
     "cooldown": 1500,
-    "damage": 3,
+    "damage": 5,
     "scale": {
       "x": 2.0,
       "y": 2.0
@@ -93,7 +93,7 @@
     "lifetime": 2000,
     "audio_on_cast": "sounds/fire_cast.wav",
     "animation": "animation/spells/fireball/fireball.data.json",
-    "speed": 4.0,
+    "speed": 7.0,
     "offset_to_source": {
       "x": 2,
       "y": 2
@@ -105,7 +105,7 @@
   "firewall": {
     "icon": "img/icons/spells/firewall.png",
     "description": "Imprison your opponents within this fire wall dealing continous damages",
-    "cooldown": 3000,
+    "cooldown": 5000,
     "damage": 0,
     "scale": {
       "x": 6.0,
@@ -115,7 +115,7 @@
       "x": 5.0,
       "y": 5.0
     },
-    "lifetime": 7000,
+    "lifetime": 3000,
     "audio_on_cast": "sounds/fire_cast.wav",
     "animation": "animation/spells/firewall/firewall.data.json",
     "speed": 0,
@@ -158,7 +158,7 @@
   "small_rock": {
     "icon": "",
     "description": "Creates a small rock ball dealing extremely high damages",
-    "cooldown": 500,
+    "cooldown": 1000,
     "damage": 1,
     "scale": {
       "x": 0.3,
@@ -168,7 +168,7 @@
       "x": 0.3,
       "y": 0.3
     },
-    "lifetime": 3000,
+    "lifetime": 2000,
     "audio_on_cast": "sounds/fire_cast.wav",
     "animation": "animation/spells/rock/rock.data.json",
     "speed": 5.0,
@@ -196,7 +196,7 @@
     "lifetime": 3000,
     "audio_on_cast": "sounds/fire_cast.wav",
     "animation": "animation/spells/fireball_blue/fireball_blue.data.json",
-    "speed": 3.0,
+    "speed": 5.0,
     "offset_to_source": {
       "x": 2,
       "y": 2
@@ -234,7 +234,7 @@
     "icon": "img/icons/spells/arrow.png",
     "description": "Shoots a basic arrow. Don't miss your target",
     "cooldown": 1000,
-    "damage": 2,
+    "damage": 3,
     "scale": {
       "x": 1,
       "y": 0.2
@@ -258,8 +258,8 @@
   "triple_arrow": {
     "icon": "img/icons/spells/triple_arrow.png",
     "description": "Experienced archer's favorite move. Shooting three arrows in front of you",
-    "cooldown": 1000,
-    "damage": 2,
+    "cooldown": 2000,
+    "damage": 4,
     "scale": {
       "x": 1,
       "y": 0.2
