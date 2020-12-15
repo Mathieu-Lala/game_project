@@ -62,7 +62,7 @@ auto game::GameLogic::slots_level_up(entt::registry &world, entt::entity entity)
     level.current_level++;
 
     const auto &pos = world.get<engine::d3::Position>(entity);
-    ParticuleFactory::create<Particule::POSITIVE>(world, {pos.x, pos.y}, {0, 127.5, 255});
+    ParticuleFactory::create<Particule::POSITIVE>(world, {pos.x, pos.y}, {255.f, 255.f, 35.f});
 
     holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/level_up.wav")->play();
 }

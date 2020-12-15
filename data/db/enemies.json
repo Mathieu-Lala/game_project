@@ -1,9 +1,9 @@
 {
   "summoner": {
     "asset": "animation/enemies/summoner/summoner.data.json",
-    "health": 3,
-    "speed": 5.0,
-    "view_range": 10,
+    "health": 6,
+    "speed": 4.0,
+    "view_range": 20,
     "attack_range": 8,
     "experience": 3,
     "color": {
@@ -25,9 +25,9 @@
   },
   "zombie": {
     "asset": "animation/enemies/zombie/zombie.data.json",
-    "health": 4,
-    "speed": 4.0,
-    "view_range": 10,
+    "health": 7,
+    "speed": 5.0,
+    "view_range": 15,
     "attack_range": 8,
     "experience": 3,
     "color": {
@@ -49,10 +49,10 @@
   },
   "golem": {
     "asset": "animation/enemies/golem/golem.data.json",
-    "health": 10,
-    "speed": 4.5,
-    "view_range": 7,
-    "attack_range": 5,
+    "health": 15,
+    "speed": 2.5,
+    "view_range": 18,
+    "attack_range": 10,
     "experience": 4,
     "color": {
       "r": 0.4,
@@ -75,7 +75,7 @@
     "asset": "animation/enemies/skeleton/skeleton.data.json",
     "health": 2,
     "speed": 5.0,
-    "view_range": 6,
+    "view_range": 9,
     "attack_range": 4,
     "experience": 2,
     "color": {
@@ -121,9 +121,9 @@
   },
   "electric_skeleton": {
     "asset": "animation/enemies/skeleton/skeleton.data.json",
-    "health": 2,
+    "health": 3,
     "speed": 5.0,
-    "view_range": 10,
+    "view_range": 15,
     "attack_range": 8,
     "experience": 3,
     "color": {
@@ -145,11 +145,11 @@
   },
   "dark_skeleton": {
     "asset": "animation/enemies/skeleton/skeleton.data.json",
-    "health": 15,
+    "health": 20,
     "speed": 7.0,
-    "view_range": 7,
+    "view_range": 15,
     "attack_range": 5,
-    "experience": 4,
+    "experience": 8,
     "color": {
       "r": 0.4,
       "g": 0.4,
@@ -170,23 +170,23 @@
   },
   "monster_guy": {
     "asset": "animation/enemies/monster_guy/monster_guy.data.json",
-    "health": 15,
-    "speed": 5.0,
-    "view_range": 7,
-    "attack_range": 5,
-    "experience": 4,
+    "health": 10,
+    "speed": 5.5,
+    "view_range": 15,
+    "attack_range": 8,
+    "experience": 10,
     "color": {
       "r": 1,
       "g": 1,
       "b": 1
     },
     "hitbox": {
-      "x": 3.0,
-      "y": 3.0
+      "x": 1.1,
+      "y": 1.1
     },
     "scale": {
-      "x": 2.2,
-      "y": 2.5
+      "x": 0.5,
+      "y": 0.5
     },
     "spells": [
       "small_rock",
@@ -194,11 +194,37 @@
     ],
     "is_boss": true
   },
+  "monster_guy2": {
+    "asset": "animation/enemies/monster_guy/monster_guy.data.json",
+    "health": 10,
+    "speed": 5.5,
+    "view_range": 15,
+    "attack_range": 8,
+    "experience": 10,
+    "color": {
+      "r": 0,
+      "g": 1,
+      "b": 0
+    },
+    "hitbox": {
+      "x": 1.1,
+      "y": 1.1
+    },
+    "scale": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "spells": [
+      "small_rock",
+      "dash"
+    ],
+    "is_boss": true
+  },
   "ice_skeleton": {
     "asset": "animation/enemies/skeleton/skeleton.data.json",
     "health": 2,
     "speed": 6.0,
-    "view_range": 9,
+    "view_range": 12,
     "attack_range": 2.2,
     "experience": 4,
     "color": {
@@ -222,7 +248,7 @@
     "asset": "animation/enemies/skeleton/skeleton.data.json",
     "health": 1,
     "speed": 6.0,
-    "view_range": 9,
+    "view_range": 8,
     "attack_range": 2.2,
     "experience": 4,
     "color": {
@@ -244,7 +270,7 @@
   },
   "rock_destructible": {
     "asset": "animation/map/rock/rock.data.json",
-    "health": 1,
+    "health": 2,
     "speed": 0,
     "view_range": 0,
     "attack_range": 0,
@@ -266,7 +292,7 @@
   },
   "rock_obstacle": {
     "asset": "animation/map/rock/rock.data.json",
-    "health": 1000,
+    "health": 10000,
     "speed": 0,
     "view_range": 0,
     "attack_range": 0,

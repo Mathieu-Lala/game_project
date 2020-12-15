@@ -167,7 +167,8 @@ void game::GameHUD::drawXpBar(const Level &level)
 
     ImVec2 topLeft = helper::frac2pixel(helper::from1080p(137, 57));
     ImVec2 bottomRight = helper::frac2pixel(helper::from1080p(std::lerp(137, 364, fraction), 92));
-    ImVec4 color(0, 0.5, 1, 1);
+    ImVec4 color(1.f, 1.f, 0.2f, 1);
+
 
     ImGui::GetWindowDrawList()->AddRectFilled(topLeft, bottomRight, ImGui::ColorConvertFloat4ToU32(color));
 }

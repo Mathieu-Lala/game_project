@@ -22,7 +22,7 @@
   "soldier": {
     "icon": "img/icons/classes/soldier.png",
     "assetGraph": "animation/classes/soldier/soldier.data.json",
-    "health": 2,
+    "health": 5,
     "speed": 0.5,
     "cost": 1,
     "hitbox": {
@@ -41,7 +41,7 @@
   "shooter": {
     "icon": "img/icons/classes/shooter.png",
     "assetGraph": "animation/classes/shooter/shooter.data.json",
-    "health": -2,
+    "health": 2,
     "speed": 0.7,
     "cost": 1,
     "hitbox": {
@@ -59,8 +59,8 @@
   "sorcerer": {
     "icon": "img/icons/classes/sorcerer.png",
     "assetGraph": "animation/classes/sorcerer/sorcerer.data.json",
-    "health": -1,
-    "speed": 0.4,
+    "health": 1,
+    "speed": 1.0,
     "cost": 1,
     "hitbox": {
       "x": 0.75,
@@ -76,7 +76,7 @@
   "assassin": {
     "icon": "img/icons/classes/assassin.png",
     "assetGraph": "animation/classes/assassin/assassin.data.json",
-    "health": -4,
+    "health": 5,
     "speed": 1.5,
     "cost": 2,
     "hitbox": {
@@ -91,7 +91,7 @@
   "warrior": {
     "icon": "img/icons/classes/warrior.png",
     "assetGraph": "animation/classes/warrior/warrior.data.json",
-    "health": 3,
+    "health": 8,
     "speed": 0.7,
     "cost": 2,
     "hitbox": {
@@ -106,8 +106,8 @@
   "tank": {
     "icon": "img/icons/classes/tank.png",
     "assetGraph": "animation/classes/tank/tank.data.json",
-    "health": 5,
-    "speed": -2,
+    "health": 10,
+    "speed": -1,
     "cost": 2,
     "hitbox": {
       "x": 0.75,
@@ -121,7 +121,7 @@
   "archer": {
     "icon": "img/icons/classes/archer.png",
     "assetGraph": "animation/classes/archer/archer.data.json",
-    "health": -3,
+    "health": 2,
     "speed": 0.8,
     "cost": 2,
     "hitbox": {
@@ -136,7 +136,7 @@
   "gunner": {
     "icon": "img/icons/classes/gunner.png",
     "assetGraph": "animation/classes/gunner/gunner.data.json",
-    "health": 2,
+    "health": 3,
     "speed": 0.7,
     "cost": 2,
     "hitbox": {
@@ -151,8 +151,8 @@
   "mage": {
     "icon": "img/icons/classes/mage.png",
     "assetGraph": "animation/classes/mage/mage.data.json",
-    "health": -2,
-    "speed": 0.6,
+    "health": 3,
+    "speed": 1.0,
     "cost": 2,
     "hitbox": {
       "x": 0.75,

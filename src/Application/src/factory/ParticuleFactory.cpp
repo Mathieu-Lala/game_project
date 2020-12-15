@@ -20,6 +20,7 @@ template<>
 auto game::ParticuleFactory::create<game::Particule::ID::HITMARKER>(
     entt::registry &world, const glm::vec2 &pos, const glm::vec3 &color) -> void
 {
+
     constexpr auto particule_count = 10.0f;
     constexpr auto speed = 2.0f;
 

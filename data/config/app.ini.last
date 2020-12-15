@@ -1,0 +1,22 @@
+; ThePURGE 0.3.22
+
+; Print the version number and exit.
+version=false
+
+; Launch the window in fullscreen mode.
+fullscreen=false
+
+; Width of the window.
+window-width=1920
+
+; Height of the window.
+window-height=1080
+
+; Path of the events to replay.
+replay-path="../generated/recoreded_events.json"
+
+; Path of the data folder.
+data="data/"
+
+; Path of the generated output.
+output-folder="../generated/"
