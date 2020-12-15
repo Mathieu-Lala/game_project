@@ -1,11 +1,11 @@
 name: C++ CMake Build
 
 on:
-#  push:
-#    branches-ignore:
-#      - 'doc/**'
-#      - 'tmp/**'
-#      - 'experimental/**'
+  push:
+    branches-ignore:
+      - 'doc/**'
+      - 'tmp/**'
+      - 'experimental/**'
   pull_request:
     branches:
       - '**'
@@ -89,6 +89,8 @@ jobs:
 
       # TODO :
         # add steps 'unit-tests'
+        # add steps 'fuzz'
+        # add steps 'golden-tests'
         # add steps 'benchmark'
         # add steps 'style & lint'
         # ..

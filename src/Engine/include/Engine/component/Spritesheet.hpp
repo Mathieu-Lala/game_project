@@ -16,47 +16,65 @@
 namespace engine {
 
 struct Spritesheet {
-    std::string file;
+    struct Animation {
+        std::string file;
+        std::uint16_t width;
+        std::uint16_t height;
 
-    std::uint16_t width;
-    std::uint16_t height;
+        std::vector<d2::PositionT<std::uint16_t>> frames;
 
-    std::unordered_map<std::string, std::vector<d2::PositionT<std::uint16_t>>> animations;
+        std::chrono::milliseconds cooldown;
+    };
 
-    Cooldown speed;
+    std::unordered_map<std::string, Animation> animations;
+
+    Cooldown cooldown;
+
     std::uint16_t current_frame{0};
     std::string current_animation{"default"};
+
+    bool attack_animation_finish{true};
 
     static auto from_json(const std::string_view file) -> Spritesheet;
 };
 
 // todo : move in .cpp
 
-inline void to_json(nlohmann::json &j, const engine::Spritesheet &sprite)
+inline void to_json(nlohmann::json &j, const engine::Spritesheet::Animation &animation)
 {
     // clang-format off
-    j = nlohmann::json{{"object", {
-        "file", sprite.file,
-        "width", sprite.width,
-        "height", sprite.height,
-        "animations", sprite.animations,
-        "speed", sprite.speed.cooldown.count()
-    }}};
+    j = nlohmann::json{{
+        "file", animation.file,
+        "width", animation.width,
+        "height", animation.height,
+        "cooldown", animation.cooldown.count(),
+        "frames", animation.frames,
+    }};
     // clang-format on
+}
+
+inline void from_json(const nlohmann::json &j, engine::Spritesheet::Animation &animation)
+{
+    animation.file = j.at("file");
+    animation.width = j.at("width");
+    animation.height = j.at("height");
+    animation.cooldown = std::chrono::milliseconds{j.at("cooldown")};
+    animation.frames = j.at("frames").get<std::decay_t<decltype(animation.frames)>>();
+}
+
+inline void to_json(nlohmann::json &j, const engine::Spritesheet &sprite)
+{
+    j = nlohmann::json{{"object", {"animations", sprite.animations}}};
 }
 
 inline void from_json(const nlohmann::json &j, engine::Spritesheet &sprite)
 {
     using namespace std::chrono_literals;
 
-    sprite.file = j.at("object").at("file");
-    sprite.width = j.at("object").at("width");
-    sprite.height = j.at("object").at("height");
     sprite.animations = j.at("object").at("animations").get<std::decay_t<decltype(sprite.animations)>>();
-    std::uint64_t value = j.at("object").at("speed");
-    sprite.speed.cooldown = std::chrono::milliseconds{value};
-    sprite.speed.is_in_cooldown = false;
-    sprite.speed.remaining_cooldown = 0ms;
+    sprite.cooldown.is_in_cooldown = false;
+    sprite.cooldown.cooldown = 0ms;
+    sprite.cooldown.remaining_cooldown = 0ms;
 }
 
 inline auto Spritesheet::from_json(const std::string_view file) -> Spritesheet

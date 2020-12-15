@@ -9,20 +9,16 @@
 
 #include <Engine/Event/Event.hpp>
 
-#include "component/all.hpp"
-#include "level/MapGenerator.hpp"
-#include "models/Class.hpp"
+#include "models/Stage.hpp"
 
 namespace game {
 
 class ThePURGE;
 
-enum class Direction {
-    UP,
-    LEFT,
-    DOWN,
-    RIGHT
-};
+struct Class;
+struct Spell;
+
+enum class Direction { UP, LEFT, DOWN, RIGHT };
 
 class GameLogic {
 public:
@@ -33,77 +29,86 @@ public:
     // todo : should be a signals slots too !
     auto addXp(entt::registry &, entt::entity player, std::uint32_t xp) -> void;
 
-    FloorGenParam m_map_generation_params; // note : should be private
+    Stage::Parameters m_map_generation_params; // note : should be private
 
 private:
-
     std::uint32_t m_nextFloorSeed;
-
-    static constexpr double kDoorInteractionRange = 3;
+    double m_gameTime; // seconds
 
 public: // signals
-
     // note : should have only one signal : onUserMove, or something like that
-    entt::sigh<void(entt::registry &, entt::entity &, const engine::d2::Acceleration &)> joystickMovement;
-    entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir, bool is_pressed)> movement;
+    entt::sigh<void(entt::registry &, entt::entity &, const Direction &dir, bool is_pressed)> onMovement;
 
-    entt::sigh<void(entt::registry &)> onGameStarted;
+    entt::sigh<void(entt::registry &)> onGameStart;
 
-    entt::sigh<void(entt::registry &, entt::entity player, const Class &)> onPlayerBuyClass;
+    entt::sigh<void(entt::registry &, entt::entity, const Class &)> onPlayerPurchase;
 
     entt::sigh<void(entt::registry &, entt::entity player)> onPlayerLevelUp;
 
-    entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> gameUpdated;
-    entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> afterGameUpdated;
+    entt::sigh<void(entt::registry &, const engine::Event &e)> onEvent;
 
-    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell &)> castSpell;
+    entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> onGameUpdate;
+    entt::sigh<void(entt::registry &, const engine::TimeElapsed &)> onGameUpdateAfter;
+
+    entt::sigh<void(entt::registry &, entt::entity, const glm::dvec2 &, Spell &)> onSpellCast;
+    entt::sigh<void(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell)> onCollideWithSpell;
+
+    entt::sigh<void(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell)> onDamageTaken;
 
     entt::sigh<void(entt::registry &, entt::entity killed, entt::entity killer)> onEntityKilled;
 
     entt::sigh<void(entt::registry &)> onFloorChange;
 
 private: // slots
+    decltype(onMovement)::sink_type sinkMovement{onMovement};
+    auto slots_move(entt::registry &, entt::entity &, const Direction &, bool is_pressed) -> void;
 
-    decltype(movement)::sink_type sinkMovement{movement};
-    auto move(entt::registry &, entt::entity &, const Direction &, bool is_pressed) -> void;
+    decltype(onGameStart)::sink_type sinkOnGameStarted{onGameStart};
+    auto slots_game_start(entt::registry &) -> void;
 
-    decltype(joystickMovement)::sink_type sinkJoystickMovement{joystickMovement};
-    auto joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void;
-
-    decltype(onGameStarted)::sink_type sinkOnGameStarted{onGameStarted};
-    auto on_game_started(entt::registry &) -> void;
-
-    decltype(onPlayerBuyClass)::sink_type sinkOnPlayerBuyClass{onPlayerBuyClass};
-    auto apply_class_to_player(entt::registry &, entt::entity, const Class &) -> void;
-    auto on_class_bought(entt::registry &, entt::entity, const Class &) -> void;
+    decltype(onPlayerPurchase)::sink_type sinkOnPlayerBuyClass{onPlayerPurchase};
+    auto slots_apply_classes(entt::registry &, entt::entity, const Class &) -> void;
 
     decltype(onPlayerLevelUp)::sink_type sinkOnPlayerLevelUp{onPlayerLevelUp};
-    auto on_player_level_up(entt::registry &, entt::entity) -> void;
+    auto slots_level_up(entt::registry &, entt::entity) -> void;
 
-    decltype(gameUpdated)::sink_type sinkGameUpdated{gameUpdated};
-    auto player_movement_update(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto ai_pursue(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto enemies_try_attack(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto update_lifetime(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto update_particule(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto cooldown(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto check_collision(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto effect(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto exit_door_interraction(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto boss_anim_update(entt::registry &, const engine::TimeElapsed &) -> void;
-    auto player_anim_update(entt::registry &, const engine::TimeElapsed &) -> void;
+    decltype(onEvent)::sink_type sinkOnEvent{onEvent};
+    auto slots_on_event(entt::registry &, const engine::Event &) -> void;
 
-    decltype(afterGameUpdated)::sink_type sinkAfterGameUpdated{afterGameUpdated};
-    auto update_camera(entt::registry &, const engine::TimeElapsed &) -> void;
+    decltype(onGameUpdate)::sink_type sinkGameUpdated{onGameUpdate}; // todo : cleaner
+    auto slots_update_game_time(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_check_animation_attack_status(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_player_movement(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_ai_movement(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_ai_attack(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_particle(entt::registry &, const engine::TimeElapsed &) -> void;
+    // note : should be in Core
+    auto slots_update_cooldown(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_check_collision(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_check_floor_change(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_effect(entt::registry &, const engine::TimeElapsed &) -> void;
 
-    decltype(castSpell)::sink_type sinkCastSpell{castSpell};
-    auto cast_attack(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;
+    // todo : should not be a slots connected to onGameUpdate but a callback connected to replace<Velocity>
+    auto slots_update_animation_spritesheet(entt::registry &, const engine::TimeElapsed &) -> void;
+
+    decltype(onGameUpdateAfter)::sink_type sinkAfterGameUpdated{onGameUpdateAfter}; // todo : cleaner
+    auto slots_update_camera(entt::registry &, const engine::TimeElapsed &) -> void;
+    auto slots_update_player_sigh(entt::registry &, const engine::TimeElapsed &) -> void;
+
+    decltype(onSpellCast)::sink_type sinkCastSpell{onSpellCast};
+    auto slots_cast_spell(entt::registry &, entt::entity, const glm::dvec2 &, Spell &) -> void;
+
+    decltype(onCollideWithSpell)::sink_type sinkCollideSpell{onCollideWithSpell};
+    auto slots_collide_with_spell(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell) -> void;
+
+    decltype(onDamageTaken)::sink_type sinkDamageTaken{onDamageTaken};
+    auto slots_damage_taken(entt::registry &, entt::entity receiver, entt::entity sender, entt::entity spell) -> void;
 
     decltype(onEntityKilled)::sink_type sinkGetKilled{onEntityKilled};
-    auto entity_killed(entt::registry &, entt::entity killed, entt::entity killer) -> void;
+    auto slots_kill_entity(entt::registry &, entt::entity killed, entt::entity killer) -> void;
 
     decltype(onFloorChange)::sink_type sinkOnFloorChange{onFloorChange};
-    auto goToTheNextFloor(entt::registry &) -> void;
+    auto slots_change_floor(entt::registry &) -> void;
 };
 
 } // namespace game

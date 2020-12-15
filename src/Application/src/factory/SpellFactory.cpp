@@ -4,213 +4,90 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include <Engine/component/Color.hpp>
-#include <Engine/component/Texture.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/component/Rotation.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
+
+#include "models/Spell.hpp"
 
 #include "component/all.hpp"
 #include "factory/SpellFactory.hpp"
 
 using namespace std::chrono_literals;
 
-
-template<>
-auto game::SpellFactory::create<game::SpellFactory::ENEMY_ATTACK>(
-    entt::registry &world, entt::entity caster, const glm::dvec2 &direction) -> entt::entity
-{
-    static auto holder = engine::Core::Holder{};
-
-    spdlog::info("Casting an enemy attack");
-    const auto &caster_pos = world.get<engine::d3::Position>(caster);
-    const auto &attack_damage = world.get<game::AttackDamage>(caster);
-
-    auto color = world.has<entt::tag<"enemy"_hs>>(caster) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 1};
-
-    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/spells/stick.wav")->play();
-    const auto spell = world.create();
-    world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 200ms);
-    world.emplace<game::AttackDamage>(spell, attack_damage.damage);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, spell, std::move(color));
-    auto &sp = world.emplace<engine::Spritesheet>(
-        spell,
-        engine::Spritesheet::from_json(
-            holder.instance->settings().data_folder + "anims/spells/farmer_attack/farmer_anim.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
-    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
-    world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
-    world.emplace<engine::d2::Scale>(spell, 1.0, 1.0);
-    world.emplace<engine::d2::HitboxFloat>(spell, 0.2, 0.7);
-    world.emplace<engine::Source>(spell, caster);
-    return spell;
-}
-
-template<>
-auto game::SpellFactory::create<game::SpellFactory::SHOVEL_ATTACK>(
-    entt::registry &world, entt::entity caster, const glm::dvec2 &direction) -> entt::entity
-{
-    static auto holder = engine::Core::Holder{};
-
-    spdlog::info("Casting a shovel attack");
-    const auto &caster_pos = world.get<engine::d3::Position>(caster);
-    const auto &attack_damage = world.get<game::AttackDamage>(caster);
-
-    auto color = world.has<entt::tag<"enemy"_hs>>(caster) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 1};
-
-    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/spells/stick.wav")->play();
-    const auto spell = world.create();
-    world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 200ms);
-    world.emplace<game::AttackDamage>(spell, attack_damage.damage);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, spell, std::move(color));
-    auto &sp = world.emplace<engine::Spritesheet>(
-        spell,
-        engine::Spritesheet::from_json(
-            holder.instance->settings().data_folder + "anims/spells/farmer_attack/farmer_anim.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
-    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y * 1.5, -1.0);
-    world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
-    world.emplace<engine::d2::Scale>(spell, 1.5, 1.5);
-    world.emplace<engine::d2::HitboxFloat>(spell, 0.2, 0.7);
-    world.emplace<engine::Source>(spell, caster);
-    return spell;
-}
-
-template<>
-auto game::SpellFactory::create<game::SpellFactory::SWORD_ATTACK>(
-    entt::registry &world, entt::entity caster, const glm::dvec2 &direction) -> entt::entity
-{
-    static engine::Core::Holder holder{};
-
-    spdlog::info("Casting a sword attack");
-
-    const auto &caster_pos = world.get<engine::d3::Position>(caster);
-    const auto &attack_damage = world.get<game::AttackDamage>(caster);
-
-    auto color = world.has<entt::tag<"enemy"_hs>>(caster) ? glm::vec3{0, 1, 0} : glm::vec3{1, 1, 1};
-
-    holder.instance->getAudioManager()
-        .getSound(holder.instance->settings().data_folder + "sounds/spells/soldier_attack.wav")
-        ->play();
-    const auto spell = world.create();
-    world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 200ms);
-    world.emplace<game::AttackDamage>(spell, attack_damage.damage);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, spell, std::move(color));
-    auto &sp = world.emplace<engine::Spritesheet>(
-        spell,
-        engine::Spritesheet::from_json(
-            holder.instance->settings().data_folder + "anims/spells/soldier_attack/soldier_attack.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
-    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0);
-    world.emplace<engine::d2::Rotation>(spell, 0.f);
-    world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
-    world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
-    world.emplace<engine::Source>(spell, caster);
-    return spell;
-}
-
-template<>
-auto game::SpellFactory::create<game::SpellFactory::FIREBALL>(entt::registry &world, entt::entity caster, const glm::dvec2 &direction)
+auto game::SpellFactory::create(SpellDatabase &db, entt::registry &world, entt::entity caster, const glm::dvec2 &direction, const SpellData &data)
     -> entt::entity
 {
     static auto holder = engine::Core::Holder{};
 
-    spdlog::info("Casting fireball");
+    spdlog::trace("Casting a spell {}", data.name);
 
-    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/fire_cast.wav")->play();
-
-    const auto &caster_pos = world.get<engine::d3::Position>(caster);
-    const auto &attack_damage = world.get<game::AttackDamage>(caster);
-
-    // note : should be in db.json
-    static constexpr auto speed = 5.0;
-
-    const auto spell = world.create();
-    world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 2000ms);
-    world.emplace<game::AttackDamage>(spell, attack_damage.damage * 1.5f);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
-    auto &sp = world.emplace<engine::Spritesheet>(
-        spell,
-        engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/spells/fireball/fireball.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
-
-    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0); // note : why -1
-    world.emplace<engine::d2::Velocity>(spell, direction.x * speed, direction.y * speed);
-    world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
-    world.emplace<engine::d2::Scale>(spell, 2.0, 2.0);
-    world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
-    world.emplace<engine::Source>(spell, caster);
-    return spell;
-}
-
-
-template<>
-auto game::SpellFactory::create<game::SpellFactory::DEBUG_GIANT_FIREBALL>(entt::registry &world, entt::entity caster, const glm::dvec2 &)
-    -> entt::entity
-{
-    static auto holder = engine::Core::Holder{};
-
-    spdlog::info("debug Giant fireball");
-
-    const auto spell = world.create();
-    world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 2000ms);
-    world.emplace<game::AttackDamage>(spell, 999999.0f);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
-    auto &sp = world.emplace<engine::Spritesheet>(
-        spell,
-        engine::Spritesheet::from_json(holder.instance->settings().data_folder + "anims/spells/fireball/fireball.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
-
-    world.emplace<engine::d3::Position>(spell, 0.0, 0.0, -1.0); // note : why -1
-    world.emplace<engine::d2::Velocity>(spell, 0.0, 0.0);
-    world.emplace<engine::d2::Rotation>(spell, 0.0);
-    world.emplace<engine::d2::Scale>(spell, 200.0, 200.0);
-    world.emplace<engine::d2::HitboxFloat>(spell, 200.0, 200.0);
-    world.emplace<engine::Source>(spell, caster);
-    return spell;
-}
-
-
-template<>
-auto game::SpellFactory::create<game::SpellFactory::PIERCING_ARROW>(
-    entt::registry &world, entt::entity caster, const glm::dvec2 &direction) -> entt::entity
-{
-    static engine::Core::Holder holder{};
-
-    spdlog::info("Casting a piercing arrow");
-
-    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + "sounds/spells/stick.wav")->play();
-
-    static constexpr auto speed = 6.0;
+    holder.instance->getAudioManager().getSound(holder.instance->settings().data_folder + data.audio_on_cast)->play();
 
     const auto &caster_pos = world.get<engine::d3::Position>(caster);
-    const auto &attack_damage = world.get<game::AttackDamage>(caster);
 
-    const auto spell = world.create();
-    world.emplace<entt::tag<"spell"_hs>>(spell);
-    world.emplace<game::Lifetime>(spell, 1000ms);
-    world.emplace<game::AttackDamage>(spell, attack_damage.damage * 1.25f);
-    world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
-    engine::DrawableFactory::fix_color(world, spell, {1, 1, 1});
-    auto &sp = world.emplace<engine::Spritesheet>(
-        spell,
-        engine::Spritesheet::from_json(
-            holder.instance->settings().data_folder + "anims/spells/shooter_attack/shooter_attack.data.json"));
-    engine::DrawableFactory::fix_texture(world, spell, holder.instance->settings().data_folder + sp.file);
-    world.emplace<engine::d3::Position>(spell, caster_pos.x + direction.x, caster_pos.y + direction.y, -1.0); // note : why -1
-    world.emplace<engine::d2::Velocity>(spell, direction.x * speed, direction.y * speed);
-    world.emplace<engine::d2::Rotation>(spell, glm::acos(glm::dot({1.f, 0.f}, direction)));
-    world.emplace<engine::d2::Scale>(spell, 0.7, 0.7);
-    world.emplace<engine::d2::HitboxFloat>(spell, 0.7, 0.7);
-    world.emplace<engine::Source>(spell, caster);
-    return spell;
+    for (int i = 0; i != data.quantity; i++) {
+        const auto spell = world.create();
+        world.emplace<entt::tag<"spell"_hs>>(spell);
+        world.emplace<engine::Drawable>(spell, engine::DrawableFactory::rectangle());
+        engine::DrawableFactory::fix_color(world, spell, {1, 1, 1, 1}); // todo : add color in db ?
+        [[maybe_unused]] const auto &pos = world.emplace<engine::d3::Position>(
+            spell,
+            caster_pos.x + (data.scale.x / 3.0 + data.offset_to_source_x) * direction.x,
+            caster_pos.y + (data.scale.y / 3.0 + data.offset_to_source_y) * direction.y,
+            -1.0);
+        world.emplace<engine::d2::Rotation>(
+            spell, glm::acos(glm::dot({1.f, 0.f}, direction)) * (direction.y < 0 ? -1.0 : 1.0) + i * data.angle);
+
+        world.emplace<engine::d2::Scale>(spell, data.scale);
+        world.emplace<game::AttackDamage>(spell, data.damage);
+        world.emplace<engine::Lifetime>(spell, data.lifetime);
+
+        world.emplace<engine::Spritesheet>(
+            spell, engine::Spritesheet::from_json(holder.instance->settings().data_folder + data.animation));
+        engine::DrawableFactory::fix_spritesheet(world, spell, "default");
+
+        const auto cross = glm::cross(glm::dvec3(1, 0, 0), glm::dvec3(0, 1, 0));
+        const auto matrix_rotation = glm::rotate(glm::dmat4(1.0f), i * data.angle, cross);
+        const auto rotated = glm::dvec3(matrix_rotation * glm::dvec4(direction.x, direction.y, 0.0f, 1.0f));
+
+        world.emplace<engine::d2::Velocity>(spell, rotated.x * data.speed, rotated.y * data.speed);
+
+        world.emplace<SpellEffect>(spell, data.effects);
+        world.emplace<SpellTarget>(spell, data.targets);
+
+        world.emplace<engine::Source>(spell, caster);
+
+        if (data.type[SpellData::Type::PROJECTILE]) world.emplace<entt::tag<"projectile"_hs>>(spell);
+        if (data.type[SpellData::Type::AOE]) world.emplace<entt::tag<"aoe"_hs>>(spell);
+        if (data.type[SpellData::Type::ON_DEATH]) {
+            world.emplace<entt::tag<"on_death"_hs>>(spell);
+            world.emplace<SpellSlots>(spell).spells[0] = db.instantiate(data.on_death);
+        }
+        if (data.type[SpellData::Type::SUMMONER]) {
+            world.emplace<Health>(spell, 1.0f, 1.0f);
+            world.emplace<engine::d2::HitboxSolid>(spell, data.hitbox.width, data.hitbox.height);
+            world.emplace<Experience>(spell, static_cast<uint32_t>(0));
+            world.emplace<entt::tag<"enemy"_hs>>(spell);
+        } else {
+            world.emplace<engine::d2::HitboxFloat>(spell, data.hitbox);
+        }
+
+#ifndef NDEBUG
+        auto hitbox_entity = world.create();
+        world.emplace<entt::tag<"debug_hitbox"_hs>>(hitbox_entity);
+        world.emplace<engine::Source>(hitbox_entity, spell);
+        world.emplace<engine::Drawable>(hitbox_entity, engine::DrawableFactory::rectangle());
+        world.emplace<engine::d2::Rotation>(hitbox_entity, 0.f);
+        world.emplace<engine::d3::Position>(
+            hitbox_entity, pos.x, pos.y, EntityFactory::get_z_layer<EntityFactory::Layer::LAYER_DEBUG>());
+        world.emplace<engine::d2::Scale>(hitbox_entity, data.hitbox.width, data.hitbox.height);
+        engine::DrawableFactory::fix_color(world, hitbox_entity, {1, 1, 1, 0.5});
+        engine::DrawableFactory::fix_texture(
+            world, hitbox_entity, holder.instance->settings().data_folder + "img/transparent.png");
+#endif
+    }
+
+    return {};
 }

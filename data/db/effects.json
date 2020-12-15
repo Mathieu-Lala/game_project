@@ -1,0 +1,32 @@
+{
+    "burn": {
+        "type": "dot",
+        "damage": 0.1,
+        "lifetime": 500,
+        "cooldown": 200
+    },
+    "sliced": {
+        "type": "dot",
+        "damage": 3,
+        "lifetime": 1000,
+        "cooldown": 550
+    },
+    "slow": {
+        "type": "dash",
+        "lifetime": 3000,
+        "cooldown": 2900,
+        "strength": 10
+    },
+    "explosion_effect": {
+        "type": "dot",
+        "damage": 8,
+        "lifetime": 300,
+        "cooldown": 230
+    },
+    "shadow_jump_effect": {
+        "type": "dash",
+        "lifetime": 80,
+        "cooldown": 50,
+        "strength": 0.1
+    }
+}

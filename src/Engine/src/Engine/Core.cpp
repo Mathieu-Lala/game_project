@@ -18,9 +18,11 @@
 #include "Engine/component/Velocity.hpp"
 #include "Engine/component/Acceleration.hpp"
 #include "Engine/component/Hitbox.hpp"
+#include "Engine/component/Source.hpp"
 #include "Engine/component/Color.hpp"
 #include "Engine/component/Spritesheet.hpp"
-#include "Engine/component/Texture.hpp"
+#include "Engine/component/VBOTexture.hpp"
+#include "Engine/component/Lifetime.hpp"
 
 #include "Engine/Event/Event.hpp"
 #include "Engine/Graphics/Shader.hpp"
@@ -52,17 +54,17 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
         spdlog::error("Engine::Core GLFW An error occured '{}' 'code={}'\n", message, code);
     });
 
-    spdlog::info("Engine::Core instanciated");
+    spdlog::trace("Engine::Core instanciated");
     if (::glfwInit() == GLFW_FALSE) { throw std::logic_error(fmt::format("Engine::Core initialization failed")); }
 
-    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    ::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     ::glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
     ::glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    spdlog::info("Engine::Core GLFW version: '{}'\n", ::glfwGetVersionString());
+    spdlog::trace("Engine::Core GLFW version: '{}'\n", ::glfwGetVersionString());
 
     IMGUI_CHECKVERSION();
 
@@ -71,12 +73,13 @@ engine::Core::Core([[maybe_unused]] hidden_type &&)
 
 engine::Core::~Core()
 {
+    m_textures.clear();
+    m_vbo_textures.clear();
+    m_colors.clear();
+
     ::glfwTerminate();
-
-    // note : otherwise we have a final error message at the end
     ::glfwSetErrorCallback(nullptr);
-
-    spdlog::info("Engine::Core destroyed");
+    spdlog::trace("Engine::Core destroyed");
 }
 
 auto engine::Core::setPendingEvents(std::vector<Event> &&events) -> void
@@ -105,31 +108,20 @@ auto engine::Core::getNextEvent() -> Event
     ::glfwPollEvents();
 
     switch (m_eventMode) {
+    case EventMode::PAUSED:
     case EventMode::RECORD: {
         m_joystickManager->poll();
-
-        // 1. poll the window event
-        // 2. poll the joysticks event
-        // 3. send elapsed time
-        auto event =
-            m_window->getNextEvent().value_or(m_joystickManager->getNextEvent().value_or(TimeElapsed{getElapsedTime()}));
-
-        // TEMPORARY, BY YANIS. Allows for keyboard input to work. waiting for Mathieu to help do it a clean way
-        std::visit(
-            overloaded{
-                [&](const auto &e) { m_window->applyEvent(e); },
-            },
-            event);
-        // ----
-        return event;
+        if (const auto event = m_window->getNextEvent(); event.has_value()) return event.value();
+        if (const auto event = m_joystickManager->getNextEvent(); event.has_value()) return event.value();
+        return TimeElapsed{getElapsedTime()};
     } break;
     case EventMode::PLAYBACK: {
         if (m_eventsPlayback.empty()) {
-            spdlog::warn("Engine::Window switching to record mode");
+            spdlog::info("Engine::Window switching to record mode");
             m_eventMode = EventMode::RECORD;
             return TimeElapsed{getElapsedTime()};
         }
-        auto event = m_eventsPlayback.front();
+        const auto event = m_eventsPlayback.front();
         m_eventsPlayback.erase(m_eventsPlayback.begin());
 
         std::visit(
@@ -144,7 +136,12 @@ auto engine::Core::getNextEvent() -> Event
                 [&](const Moved<Mouse> &m) {
                     m_window->setCursorPosition({m.source.x, m.source.y});
                 },
-                [&](const auto &e) { m_window->applyEvent(e); },
+                [&](const Pressed<MouseButton> &mouse) { m_window->applyEvent(mouse); },
+                [&](const Released<MouseButton> &mouse) { m_window->applyEvent(mouse); },
+                // [&](const Pressed<Key> &key) { m_window->applyEvent(key); },
+                // [&](const Released<Key> &key) { m_window->applyEvent(key); },
+                // [&](const Character &character) { m_window->applyEvent(character); },
+                [&](const auto &) {},
             },
             event);
         return event;
@@ -160,7 +157,7 @@ auto engine::Core::main(int argc, char **argv) -> int
 #ifdef LOGLOGLOG
         // todo : setup properly logging
         auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
-        logger->info("logger created");
+        logger->trace("logger created");
 #endif
 
         Options opt{argc, argv};
@@ -170,7 +167,6 @@ auto engine::Core::main(int argc, char **argv) -> int
 #endif
 
         opt.write_to_file(opt.settings.config_path + ".last");
-
 
 #ifndef NDEBUG
         if (!opt.options[Options::REPLAY_PATH]->empty()) {
@@ -210,10 +206,11 @@ auto engine::Core::main(int argc, char **argv) -> int
         const auto event = getNextEvent();
 
         std::visit(
-            overloaded{[](TimeElapsed &prev, const TimeElapsed &next) { prev.elapsed += next.elapsed; },
-                       [&]([[maybe_unused]] const auto &, [[maybe_unused]] const std::monostate &) {},
-                       // event in playback mode will be saved twice = bad !
-                       [&]([[maybe_unused]] const auto &, const auto &next) { eventsProcessed.push_back(next); }},
+            overloaded{
+                [](TimeElapsed &prev, const TimeElapsed &next) { prev.elapsed += next.elapsed; },
+                [&]([[maybe_unused]] const auto &, [[maybe_unused]] const std::monostate &) {},
+                // event in playback mode will be saved twice = bad !
+                [&]([[maybe_unused]] const auto &, const auto &next) { eventsProcessed.push_back(next); }},
             eventsProcessed.back(),
             event);
 
@@ -227,45 +224,53 @@ auto engine::Core::main(int argc, char **argv) -> int
         };
 
         std::visit(
-            overloaded{[&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
-                       [&]([[maybe_unused]] const CloseWindow &) {
-                           m_window->close();
-                           this->close();
-                       },
-                       [&](const ResizeWindow &e) {
-                           m_window->setSize({e.width, e.height});
-                       },
-                       [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
-                       [&]([[maybe_unused]] const Pressed<Key> &) {
-                           // todo : abstract glfw keyboard
-                           switch (const auto keyEvent = std::get<Pressed<Key>>(event); keyEvent.source.key) {
-                           case GLFW_KEY_ESCAPE: this->close(); break;
+            overloaded{
+                [&]([[maybe_unused]] const OpenWindow &) { m_lastTick = std::chrono::steady_clock::now(); },
+                [&]([[maybe_unused]] const CloseWindow &) {
+                    m_window->close();
+                    this->close();
+                },
+                [&](const ResizeWindow &e) {
+                    m_window->setSize({e.width, e.height});
+                },
+                [&]([[maybe_unused]] const TimeElapsed &) { timeElapsed = true; },
+                [&](const Character &character) { m_window->applyEvent(character); },
+                [&](const Released<Key> &key) { m_window->applyEvent(key); },
+                [&](const Pressed<Key> &key) {
+                    // todo : abstract glfw keyboard
+                    switch (key.source.key) {
 #ifndef NDEBUG
-                           case GLFW_KEY_F1: m_show_debug_info = !m_show_debug_info; break;
+                    case GLFW_KEY_F1:
+                        m_show_debug_info = !m_show_debug_info;
+                        window()->setCursorVisible(m_show_debug_info);
+                        break;
+                    case GLFW_KEY_F2:
+                        m_eventMode = m_eventMode == EventMode::PAUSED ? EventMode::RECORD : EventMode::PAUSED;
+                        m_window->setCursorVisible(m_eventMode == EventMode::PAUSED);
+                        break;
+
 #endif
-                           case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
-                           case GLFW_KEY_F12: {
-                               std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
-                               const auto file = fmt::format(
-                                   m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
-                               if (!m_window->screenshot(file)) {
-                                   spdlog::warn("failed to take a screenshot: {}", file);
-                               }
-                           } break;
-                           default: break;
-                           }
-                       },
-                       [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
-                       [&](const Disconnected<Joystick> &j) { m_joystickManager->remove(j.source); },
-                       [&](const Moved<JoystickAxis> &j) { m_joystickManager->update(j); },
-                       [&](const Pressed<JoystickButton> &j) { m_joystickManager->update(j); },
-                       [&](const Released<JoystickButton> &j) { m_joystickManager->update(j); },
-                       []([[maybe_unused]] const auto &) {}},
+                    case GLFW_KEY_F11: m_window->setFullscreen(!m_window->isFullscreen()); break;
+                    case GLFW_KEY_F12: {
+                        std::filesystem::create_directories(m_settings.output_folder + "screenshot/");
+                        const auto file = fmt::format(
+                            m_settings.output_folder + "screenshot/{}.png", time_to_string(std::time(nullptr)));
+                        if (!m_window->screenshot(file)) { spdlog::warn("failed to take a screenshot: {}", file); }
+                    } break;
+                    default: m_window->applyEvent(key); break;
+                    }
+                },
+                [&](const Connected<Joystick> &j) { m_joystickManager->add(j.source); },
+                [&](const Disconnected<Joystick> &j) { m_joystickManager->remove(j.source); },
+                [&](const Moved<JoystickAxis> &j) { m_joystickManager->update(j); },
+                [&](const Pressed<JoystickButton> &j) { m_joystickManager->update(j); },
+                [&](const Released<JoystickButton> &j) { m_joystickManager->update(j); },
+                []([[maybe_unused]] const auto &) {}},
             event);
 
         if (timeElapsed) { this->tickOnce(std::get<TimeElapsed>(event)); }
 
-        m_game->onUpdate(m_world, event);
+        if (!timeElapsed || (timeElapsed && m_eventMode != EventMode::PAUSED)) m_game->onUpdate(m_world, event);
     }
 
     m_world.view<engine::Drawable>().each(engine::Drawable::dtor);
@@ -279,7 +284,6 @@ auto engine::Core::main(int argc, char **argv) -> int
     f << serialized;
 #endif
 
-    // otherwise the singleton will be destroy after the main -> dead signal
     get().reset(nullptr);
 
     return 0;
@@ -289,118 +293,136 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed).count();
 
-    // should have only one entity cooldown
-    m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
-        if (!cd.is_in_cooldown) return;
+    if (m_eventMode != EventMode::PAUSED) {
+        for (const auto &i : m_world.view<Lifetime>()) {
+            auto &lifetime = m_world.get<Lifetime>(i);
 
-        if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
-            cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
-        } else {
-            cd.remaining_cooldown = std::chrono::milliseconds(0);
-            cd.is_in_cooldown = false;
-            setScreenshake(false);
-        }
-    });
-
-    // check if the spritesheet need to update the texture
-    m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
-        if (!sprite.speed.is_in_cooldown) return;
-
-        if (std::chrono::milliseconds{elapsed} < sprite.speed.remaining_cooldown) {
-            sprite.speed.remaining_cooldown -= std::chrono::milliseconds{elapsed};
-        } else {
-            sprite.speed.remaining_cooldown = std::chrono::milliseconds(0);
-            sprite.speed.is_in_cooldown = false;
-        }
-    });
-
-
-    // update and reset the cooldown of the spritesheet
-    for (auto &i : m_world.view<Spritesheet>()) {
-        auto &sprite = m_world.get<Spritesheet>(i);
-        if (sprite.speed.is_in_cooldown) continue;
-        sprite.speed.is_in_cooldown = true;
-        sprite.speed.remaining_cooldown = sprite.speed.cooldown;
-        sprite.current_frame++;
-        sprite.current_frame %= static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).size());
-
-        auto &texture = m_world.get<Texture>(i);
-
-        DrawableFactory::fix_texture(
-            m_world,
-            i,
-            m_settings.data_folder + sprite.file,
-            {static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].x)
-                 / static_cast<float>(texture.width),
-             static_cast<float>(sprite.animations[sprite.current_animation][sprite.current_frame].y)
-                 / static_cast<float>(texture.height),
-             sprite.width / static_cast<float>(texture.width),
-             sprite.height / static_cast<float>(texture.height)});
-    }
-
-    m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
-        vel.x += acc.x;
-        vel.y += acc.y;
-
-        // todo : add max velocity
-    });
-
-    // todo : exclude the d2::Hitbox on this system
-    //            m_world.view<d3::Position, d2::Velocity>().each(
-    //                [&elapsed](auto &pos, auto &vel) {
-    //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
-    //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
-    //                });
-
-    m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel) {
-        pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
-        pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
-    });
-
-    for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
-        auto &moving_pos = m_world.get<d3::Position>(moving);
-        auto &moving_vel = m_world.get<d2::Velocity>(moving);
-        auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
-        d2::Velocity actual_tick_velocity = moving_vel;
-
-        const auto pred_pos =
-            d3::Position{moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                         moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
-                         moving_pos.z};
-
-        d3::Position other_pos;
-        d2::HitboxSolid other_hitbox;
-
-        for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
-            if (moving == others) continue;
-
-            other_pos = m_world.get<d3::Position>(others);
-            other_hitbox = m_world.get<d2::HitboxSolid>(others);
-
-            if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, pred_pos, other_hitbox, other_pos)) {
-                auto xDiff = other_pos.x - pred_pos.x;
-                auto xLastDiff = other_pos.x - moving_pos.x;
-                auto xMinSpace = (moving_hitbox.width + other_hitbox.width) / 2;
-                if (std::abs(xDiff) < xMinSpace && std::abs(xLastDiff) >= xMinSpace) actual_tick_velocity.x = 0;
-
-                auto yDiff = other_pos.y - pred_pos.y;
-                auto yLastDiff = other_pos.y - moving_pos.y;
-                auto yMinSpace = (moving_hitbox.height + other_hitbox.height) / 2;
-                if (std::abs(yDiff) < yMinSpace && std::abs(yLastDiff) >= yMinSpace) actual_tick_velocity.y = 0;
+            if (t.elapsed < lifetime.remaining_lifetime) {
+                lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(t.elapsed);
+            } else {
+                m_world.destroy(i);
             }
         }
 
-        moving_pos.x += actual_tick_velocity.x * static_cast<d2::Velocity::type>(elapsed) * 0.001;
-        moving_pos.y += actual_tick_velocity.y * static_cast<d2::Velocity::type>(elapsed) * 0.001;
+        // should have only one entity cooldown
+        m_world.view<entt::tag<"screenshake"_hs>, Cooldown>().each([this, elapsed](auto &, auto &cd) {
+            if (!cd.is_in_cooldown) return;
+
+            if (std::chrono::milliseconds{elapsed} < cd.remaining_cooldown) {
+                cd.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+            } else {
+                cd.remaining_cooldown = std::chrono::milliseconds(0);
+                cd.is_in_cooldown = false;
+                setScreenshake(false);
+            }
+        });
+
+        // check if the spritesheet need to update the texture
+        m_world.view<Spritesheet>().each([&elapsed](engine::Spritesheet &sprite) {
+            if (!sprite.cooldown.is_in_cooldown) return;
+
+            if (std::chrono::milliseconds{elapsed} < sprite.cooldown.remaining_cooldown) {
+                sprite.cooldown.remaining_cooldown -= std::chrono::milliseconds{elapsed};
+            } else {
+                sprite.cooldown.remaining_cooldown = std::chrono::milliseconds(0);
+                sprite.cooldown.is_in_cooldown = false;
+            }
+        });
+
+        // update and reset the cooldown of the spritesheet
+        for (auto &i : m_world.view<Spritesheet>()) {
+            auto &sprite = m_world.get<Spritesheet>(i);
+            if (sprite.cooldown.is_in_cooldown) continue;
+            sprite.cooldown.is_in_cooldown = true;
+            sprite.cooldown.remaining_cooldown = sprite.cooldown.cooldown;
+            sprite.current_frame++;
+            sprite.current_frame %=
+                static_cast<std::uint16_t>(sprite.animations.at(sprite.current_animation).frames.size());
+
+            auto &vbo_texture = m_world.get<VBOTexture>(i);
+            auto &texture = *getCache<Texture>().handle(vbo_texture.id);
+
+            DrawableFactory::fix_texture(
+                m_world,
+                i,
+                m_settings.data_folder + sprite.animations.at(sprite.current_animation).file,
+                false,
+                {static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).x)
+                     / static_cast<float>(texture.width),
+                 static_cast<float>(sprite.animations.at(sprite.current_animation).frames.at(sprite.current_frame).y)
+                     / static_cast<float>(texture.height),
+                 sprite.animations.at(sprite.current_animation).width / static_cast<float>(texture.width),
+                 sprite.animations.at(sprite.current_animation).height / static_cast<float>(texture.height)});
+        }
+
+        m_world.view<d2::Velocity, d2::Acceleration>().each([](auto &vel, auto &acc) {
+            vel.x += acc.x;
+            vel.y += acc.y;
+
+            // todo : add max velocity
+        });
+
+        // todo : exclude the d2::Hitbox on this system
+        //            m_world.view<d3::Position, d2::Velocity>().each(
+        //                [&elapsed](auto &pos, auto &vel) {
+        //                    pos.x += vel.x * static_cast<decltype(vel.x)>(elapsed) / 1000.0;
+        //                    pos.y += vel.y * static_cast<decltype(vel.y)>(elapsed) / 1000.0;
+        //                });
+
+        m_world.view<d3::Position, d2::Velocity>(entt::exclude<d2::HitboxSolid>).each([&elapsed](auto &pos, auto &vel) {
+            pos.x += vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+            pos.y += vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0;
+        });
+
+        for (auto &moving : m_world.view<d3::Position, d2::Velocity, d2::HitboxSolid>()) {
+            auto &moving_pos = m_world.get<d3::Position>(moving);
+            auto &moving_vel = m_world.get<d2::Velocity>(moving);
+            auto &moving_hitbox = m_world.get<d2::HitboxSolid>(moving);
+            d2::Velocity actual_tick_velocity = moving_vel;
+
+            const auto pred_pos = d3::Position{
+                moving_pos.x + moving_vel.x * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                moving_pos.y + moving_vel.y * static_cast<d2::Velocity::type>(elapsed) / 1000.0,
+                moving_pos.z};
+
+            d3::Position other_pos;
+            d2::HitboxSolid other_hitbox;
+
+            for (auto &others : m_world.view<d3::Position, d2::HitboxSolid>()) {
+                if (moving == others) continue;
+
+                other_pos = m_world.get<d3::Position>(others);
+                other_hitbox = m_world.get<d2::HitboxSolid>(others);
+
+                if (d2::overlapped<d2::WITH_EDGE>(moving_hitbox, pred_pos, other_hitbox, other_pos)) {
+                    auto xDiff = other_pos.x - pred_pos.x;
+                    auto xLastDiff = other_pos.x - moving_pos.x;
+                    auto xMinSpace = (moving_hitbox.width + other_hitbox.width) / 2;
+                    if (std::abs(xDiff) < xMinSpace && std::abs(xLastDiff) >= xMinSpace) actual_tick_velocity.x = 0;
+
+                    auto yDiff = other_pos.y - pred_pos.y;
+                    auto yLastDiff = other_pos.y - moving_pos.y;
+                    auto yMinSpace = (moving_hitbox.height + other_hitbox.height) / 2;
+                    if (std::abs(yDiff) < yMinSpace && std::abs(yLastDiff) >= yMinSpace) actual_tick_velocity.y = 0;
+                }
+            }
+
+            moving_pos.x += actual_tick_velocity.x * static_cast<d2::Velocity::type>(elapsed) * 0.001;
+            moving_pos.y += actual_tick_velocity.y * static_cast<d2::Velocity::type>(elapsed) * 0.001;
+        }
     }
 
-#ifdef MODE_EPILEPTIC // change the color at every frame
-    for (const auto &i : m_world.view<Drawable, Color>()) {
-        auto &color = m_world.get<Color>(i);
-        const auto r = std::clamp(Color::r(color) - 0.01f, 0.0f, 1.0f);
-        const auto g = std::clamp(Color::g(color) - 0.01f, 0.0f, 1.0f);
-        const auto b = std::clamp(Color::b(color) - 0.01f, 0.0f, 1.0f);
-        DrawableFactory::fix_color(m_world, i, {r ? r : 1.0f, g ? g : 1.0f, b ? b : 1.0f});
+#ifndef NDEBUG
+    for (auto &i : m_world.view<entt::tag<"debug_hitbox"_hs>, Source, d3::Position>()) {
+        auto &source = m_world.get<Source>(i);
+        if (!m_world.valid(source.source))
+            m_world.destroy(i);
+        else {
+            const auto &pos_source = m_world.get<d3::Position>(source.source);
+            auto &pos = m_world.get<d3::Position>(i);
+            pos.x = pos_source.x;
+            pos.y = pos_source.y;
+        }
     }
 #endif
 
@@ -409,6 +431,7 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
 #ifndef NDEBUG
         if (isShowingDebugInfo()) {
+            ImGui::ShowDemoWindow();
             debugDrawJoystick();
             debugDrawDisplayOptions();
         }
@@ -418,8 +441,8 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         const auto background = m_game->getBackgroundColor();
 
-        ::glClearColor(background.r, background.g, background.b, 1.00f);
-        ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        CALL_OPEN_GL(::glClearColor(background.r, background.g, background.b, background.a));
+        CALL_OPEN_GL(::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
         // todo : add rendering
         // texture and no color
@@ -430,30 +453,36 @@ auto engine::Core::tickOnce(const TimeElapsed &t) -> void
 
         m_shader_colored->use();
         m_shader_colored->setUniform<float>("time", static_cast<float>(tmp));
-        m_world.view<Drawable, Color, d3::Position, d2::Scale, d2::Rotation>(entt::exclude<Texture>)
-            .each([this](auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale, auto &rot) {
+        m_world.view<Drawable, Color, d3::Position, d2::Scale>(entt::exclude<VBOTexture>)
+            .each([this](auto entity, auto &drawable, [[maybe_unused]] auto &color, auto &pos, auto &scale) {
+                auto *rotationComponent = m_world.try_get<d2::Rotation>(entity);
+                auto rotation = rotationComponent ? static_cast<float>(rotationComponent->angle) : 0.f;
+
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
-                model = glm::rotate(model, static_cast<float>(rot.angle), glm::vec3(0.f, 0.f, 1.f));
+                model = glm::rotate(model, rotation, glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored->setUniform("model", model);
-                ::glBindVertexArray(drawable.VAO);
-                ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
+                CALL_OPEN_GL(::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0));
             });
 
         m_shader_colored_textured->use();
         m_shader_colored_textured->setUniform<float>("time", static_cast<float>(tmp));
-        m_world.view<Drawable, Color, Texture, d3::Position, d2::Scale, d2::Rotation>().each(
-            [this](auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale, auto &rot) {
+        m_world.view<Drawable, Color, VBOTexture, d3::Position, d2::Scale>().each(
+            [this](auto entity, auto &drawable, [[maybe_unused]] auto &color, auto &texture, auto &pos, auto &scale) {
+                auto *rotationComponent = m_world.try_get<d2::Rotation>(entity);
+                auto rotation = rotationComponent ? static_cast<float>(rotationComponent->angle) : 0.f;
+
                 auto model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3{pos.x, pos.y, pos.z});
-                model = glm::rotate(model, static_cast<float>(rot.angle), glm::vec3(0.f, 0.f, 1.f));
+                model = glm::rotate(model, rotation, glm::vec3(0.f, 0.f, 1.f));
                 model = glm::scale(model, glm::vec3{scale.x, scale.y, 1.0f});
                 m_shader_colored_textured->setUniform("model", model);
                 m_shader_colored_textured->setUniform("mirrored", texture.mirrored);
-                ::glBindTexture(GL_TEXTURE_2D, texture.texture);
-                ::glBindVertexArray(drawable.VAO);
-                ::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0);
+                CALL_OPEN_GL(::glBindTexture(GL_TEXTURE_2D, getCache<Texture>().handle(texture.id)->id));
+                CALL_OPEN_GL(::glBindVertexArray(drawable.VAO));
+                CALL_OPEN_GL(::glDrawElements(m_displayMode, 3 * drawable.triangle_count, GL_UNSIGNED_INT, 0));
             });
     });
 }
@@ -495,6 +524,12 @@ auto engine::Core::getCache() noexcept -> entt::resource_cache<Color> &
 }
 
 template<>
+auto engine::Core::getCache() noexcept -> entt::resource_cache<VBOTexture> &
+{
+    return m_vbo_textures;
+}
+
+template<>
 auto engine::Core::getCache() noexcept -> entt::resource_cache<Texture> &
 {
     return m_textures;
@@ -510,9 +545,14 @@ auto engine::Core::loadOpenGL() -> void
 
 auto engine::Core::getElapsedTime() noexcept -> std::chrono::nanoseconds
 {
+    static constexpr auto kMax = std::chrono::milliseconds(50);
+
     const auto nextTick = std::chrono::steady_clock::now();
-    const auto timeElapsed = nextTick - m_lastTick;
-    m_lastTick = nextTick;
+    auto timeElapsed = nextTick - m_lastTick;
+
+    if (timeElapsed > kMax) timeElapsed = std::chrono::nanoseconds(kMax);
+
+    m_lastTick += timeElapsed;
     return timeElapsed;
 }
 

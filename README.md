@@ -5,7 +5,7 @@
 
 Keimyung University - Mobile Game Development - 2020 Fall Semester
 
-This project is a video game for PC. See the [Game Design Document](doc/GDD_ten_page.pdf) for more details.
+This project is a video game for PC. See the [Game Design Document](doc/ThePURGE_GameDesignDocument.pdf) for more details.
 
 This repository contains the source code of the [game](src/Application) and his [engine](src/Engine).
 
@@ -13,76 +13,84 @@ This repository contains the source code of the [game](src/Application) and his 
 
 ```sh
 $> ./tools/launch.sh -- --help
-ThePURGE 0.3.0
+ThePURGE 0.4.0
 Usage: ./engine_main [OPTIONS]
 
 Options:
-  -h,--help                   Print this help message and exit
-  --version                   Print the version number and exit.
-  --config=data/config/app.ini
-                              Read an ini file
-  --fullscreen BOOLEAN=1      Launch the window in fullscreen mode.
-  --window-width UINT=1024    Width of the window.
-  --window-height UINT=768    Height of the window.
-  --replay-path TEXT          Path of the events to replay.
-  --replay-data TEXT          Json events to replay.
-  --data TEXT=data/           Path of the data folder.
-  --output-folder TEXT=data/  Path of the generated output.
+  -h,--help                           Print this help message and exit
+  --version                           Print the version number and exit.
+  --config=data/config/app.ini        Read an ini file
+  --fullscreen BOOLEAN=1              Launch the window in fullscreen mode.
+  --window-width UINT=1024            Width of the window.
+  --window-height UINT=768            Height of the window.
+  --replay-path TEXT                  Path of the events to replay.
+  --replay-data TEXT                  Json events to replay.
+  --data TEXT=data/                   Path of the data folder.
+  --output-folder TEXT=../generated/  Path of the generated output.
 ```
 
-## Screenshots
+## What it looks like
 
-Application version 0.2.12
+See [the trailer](https://www.youtube.com/watch?v=GQxOHtLU4U0) of the game on youtube !
 
-![v0.2.12](./doc/screenshots/app_v0.2.12.gif)
-
-Application version 0.1.9
-
-![v0.1.9](./doc/screenshots/app_v0.1.9.png)
+See [older version](./doc/history) of the project.
 
 ## Installing
 
 ### Requirements
 
+* All platforms
+
+  * python>=3.0
+
 * Unix systems
 
-    * g++>=10 || clang>=12
-    * cmake>=3.13
-    * python>=3.0
+  * g++>=10 || clang>=11
+  * cmake>=3.13
 
-* Visual Studio Extension
+* Windows
 
-    * Visual Studio 2019>=16.7
-    * Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
-    * python>=3.0
+  * Visual Studio 2019>=16.7 && Linux CMake extension (see [the documentation](https://docs.microsoft.com/en-us/cpp/linux/cmake-linux-configure?view=vs-2019))
 
-The build **require** an internet connection (download of dependencies if missing).
+### Command line
+
+You can use this command line.
+
+```sh
+# Shortcut command
+$> sh -c "$(curl -fsSL https://raw.githubusercontent.com/Mathieu-Lala/game_project/develop/tools/install.sh)"
+
+# Or
+$> sh -c "$(wget -O- https://raw.githubusercontent.com/Mathieu-Lala/game_project/develop/tools/install.sh)"
+```
+
+Or clone and inspect the install script.
 
 ```sh
 # Cloning the repository
-$> git clone git@github.com:Mathieu-Lala/game_project.git
+$> git clone https://github.com/Mathieu-Lala/game_project.git
 
 # Go in the project
 $> cd game_project
 
 # Installing the required environment (partial)
-$> ./tools/install.sh
+$> ./tools/install.sh --no-clone
 ```
 
 ### Recommended environment
 
 * Unix systems
 
-    * [ccache](https://ccache.dev/)
-    * [cppcheck](http://cppcheck.sourceforge.net/)
-    * [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
+  * [ccache](https://ccache.dev/)
+  * [cppcheck](http://cppcheck.sourceforge.net/)
+  * [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
 
 * Windows
 
-    * [VS cppcheck extension](https://marketplace.visualstudio.com/items?itemName=Alexium.Cppcheckadd-in)
-    * [VS conan extension](https://marketplace.visualstudio.com/items?itemName=conan-io.conan-vs-extension)
-    * [VS GLSL extension](https://marketplace.visualstudio.com/items?itemName=DanielScherzer.GLSL)
-    * [VS clang-format extension](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
+  * [VS cppcheck extension](https://marketplace.visualstudio.com/items?itemName=Alexium.Cppcheckadd-in)
+  * [VS conan extension](https://marketplace.visualstudio.com/items?itemName=conan-io.conan-vs-extension)
+  * [VS GLSL extension](https://marketplace.visualstudio.com/items?itemName=DanielScherzer.GLSL)
+  * [VS clang-format extension](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
 
 ## Build and Run
 
@@ -123,13 +131,17 @@ $> ./tools/install.sh
   </tr>
 </table>
 
+The build **require** an internet connection (download of dependencies if missing).
+
 * Unix systems
 
     ```sh
+    # See the --help message
+
     # Generate the cmake project
     $> ./tools/generate.sh
 
-    # Build all the target
+    # Build the target
     $> ./tools/build.sh
 
     # Run the executable
@@ -138,13 +150,25 @@ $> ./tools/install.sh
 
 * Visual Studio
 
-See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160).
+  See [the documentation](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160) for further details.
+
+  1. Open the project folder with Visual Studio
+  1. Project > Generate Cache for GameProject
+  1. Build > Build All
+  1. Select Startup Item > engine_main
 
 ### Package Manager
 
-[conan](https://conan.io/) - [documentation](https://docs.conan.io/en/1.31/)
+[Conan](https://conan.io/) is used for this project, see [the documentation](https://docs.conan.io/en/1.31/)
+
+The dependencies used :
 
 ![Dependencies](doc/conan_dependencies.png)
+
+## Debugging
+
+When implementing a new feature (or just by curiousity), you might want to see what is happening behind the scene.
+With a debug build you have access to extra information such as the hitbox, a console (with cheat codes), opengl rendering options ...
 
 ## Testing
 
@@ -164,6 +188,7 @@ See the [Microsoft documentation](https://docs.microsoft.com/en-us/cpp/build/cma
 ## Acknowledgement
 
 * Jason Turner's [Weekly Game Project](https://github.com/lefticus/cpp_weekly_game_project)
+* [learnopengl.com](http://learnopengl.com)
 
 ## Initial Authors
 

@@ -6,206 +6,260 @@
 #include <Engine/audio/AudioManager.hpp>
 #include <Engine/Settings.hpp>
 #include <Engine/component/Color.hpp>
-#include <Engine/component/Texture.hpp>
+#include <Engine/component/VBOTexture.hpp>
 #include <Engine/helpers/DrawableFactory.hpp>
 #include <Engine/Core.hpp>
 
+
+#include "models/Spell.hpp"
+#include "models/Class.hpp"
+
 #include "GameLogic.hpp"
-#include "screen/MainMenu.hpp"
 #include "ThePURGE.hpp"
 #include "factory/EntityFactory.hpp"
 #include "factory/SpellFactory.hpp"
 #include "factory/ParticuleFactory.hpp"
 
-#include "models/ClassDatabase.hpp"
+#include "component/all.hpp"
+
+#include "menu/UpgradePanel.hpp"
+#include "menu/GameOver.hpp"
 
 using namespace std::chrono_literals;
 
 game::GameLogic::GameLogic(ThePURGE &game) :
     m_game{game}, m_nextFloorSeed(static_cast<std::uint32_t>(std::time(nullptr)))
 {
-    sinkMovement.connect<&GameLogic::move>(*this);
-    // sinkJoystickMovement.connect<&GameLogic::joystickMove>(*this);
+    sinkMovement.connect<&GameLogic::slots_move>(*this);
 
-    sinkOnGameStarted.connect<&GameLogic::on_game_started>(*this);
+    sinkOnGameStarted.connect<&GameLogic::slots_game_start>(*this);
 
-    sinkOnPlayerBuyClass.connect<&GameLogic::apply_class_to_player>(*this);
-    sinkOnPlayerBuyClass.connect<&GameLogic::on_class_bought>(*this);
-    sinkOnPlayerLevelUp.connect<&GameLogic::on_player_level_up>(*this);
+    sinkOnPlayerBuyClass.connect<&GameLogic::slots_apply_classes>(*this);
+    sinkOnPlayerLevelUp.connect<&GameLogic::slots_level_up>(*this);
 
-    sinkGameUpdated.connect<&GameLogic::player_movement_update>(*this);
-    sinkGameUpdated.connect<&GameLogic::ai_pursue>(*this);
-    sinkGameUpdated.connect<&GameLogic::cooldown>(*this);
-    sinkGameUpdated.connect<&GameLogic::effect>(*this);
-    sinkGameUpdated.connect<&GameLogic::enemies_try_attack>(*this);
-    sinkGameUpdated.connect<&GameLogic::update_lifetime>(*this);
-    sinkGameUpdated.connect<&GameLogic::update_particule>(*this);
-    sinkGameUpdated.connect<&GameLogic::check_collision>(*this);
-    sinkGameUpdated.connect<&GameLogic::exit_door_interraction>(*this);
-    sinkGameUpdated.connect<&GameLogic::player_anim_update>(*this);
-    sinkGameUpdated.connect<&GameLogic::boss_anim_update>(*this);
+    sinkOnEvent.connect<&GameLogic::slots_on_event>(*this);
 
-    sinkAfterGameUpdated.connect<&GameLogic::update_camera>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_game_time>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_player_movement>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_ai_movement>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_ai_attack>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_particle>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_cooldown>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_effect>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_check_collision>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_check_floor_change>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_check_animation_attack_status>(*this);
 
-    sinkCastSpell.connect<&GameLogic::cast_attack>(*this);
+    sinkGameUpdated.connect<&GameLogic::slots_update_animation_spritesheet>(*this);
 
-    sinkGetKilled.connect<&GameLogic::entity_killed>(*this);
-    sinkOnFloorChange.connect<&GameLogic::goToTheNextFloor>(*this);
+    sinkAfterGameUpdated.connect<&GameLogic::slots_update_camera>(*this);
+    sinkAfterGameUpdated.connect<&GameLogic::slots_update_player_sigh>(*this);
+
+    sinkCastSpell.connect<&GameLogic::slots_cast_spell>(*this);
+    sinkCollideSpell.connect<&GameLogic::slots_collide_with_spell>(*this);
+
+    sinkGetKilled.connect<&GameLogic::slots_kill_entity>(*this);
+    sinkDamageTaken.connect<&GameLogic::slots_damage_taken>(*this);
+
+    sinkOnFloorChange.connect<&GameLogic::slots_change_floor>(*this);
 }
 
-auto game::GameLogic::move([[maybe_unused]] entt::registry &world, entt::entity &player, const Direction &dir, bool is_pressed) -> void
-{
-    switch (dir) {
-    case Direction::UP: world.get<ControllerAxis>(player).movement.y = is_pressed ? -1.0f : 0.0f; break;
-    case Direction::DOWN: world.get<ControllerAxis>(player).movement.y = is_pressed ? 1.0f : 0.0f; break;
-    case Direction::RIGHT: world.get<ControllerAxis>(player).movement.x = is_pressed ? 1.0f : 0.0f; break;
-    case Direction::LEFT: world.get<ControllerAxis>(player).movement.x = is_pressed ? -1.0f : 0.0f; break;
-    default: break;
-    }
-}
-
-auto game::GameLogic::joystickMove(entt::registry &world, entt::entity &player, const engine::d2::Acceleration &accel) -> void
-{
-    world.get<engine::d2::Acceleration>(player) = accel;
-}
-
-auto game::GameLogic::on_game_started(entt::registry &world) -> void
+auto game::GameLogic::slots_game_start(entt::registry &world) -> void
 {
     static auto holder = engine::Core::Holder{};
+
+    m_gameTime = 0;
+
+    // pos and size based of `FloorGenParam::maxDungeonWidth / Height`
+    // EntityFactory::create<EntityFactory::Layer::BACKGROUND>(m_game, world, glm::vec2(25, 25), glm::vec2(75, 75));
+    {
+        const auto e = world.create();
+        world.emplace<engine::d3::Position>(
+            e, 25.0, 25.0, EntityFactory::get_z_layer<EntityFactory::Layer::LAYER_BACKGROUND>());
+        world.emplace<engine::d2::Rotation>(e, 0.f);
+        world.emplace<engine::d2::Scale>(e, 75.0, 75.0);
+        world.emplace<engine::Drawable>(e, engine::DrawableFactory::rectangle());
+        engine::DrawableFactory::fix_color(world, e, {0.15, 0.15, 0.15, 1});
+        engine::DrawableFactory::fix_texture(world, e, holder.instance->settings().data_folder + "img/background.jpg", true);
+    }
 
     holder.instance->getAudioManager()
         .getSound(holder.instance->settings().data_folder + "sounds/entrance_gong.wav")
         ->setVolume(0.2f)
         .play();
-    m_game.getMusic()->play();
+    m_game.setBackgroundMusic("sounds/dungeon_music.wav", 0.1f);
 
-    m_game.player = EntityFactory::create<EntityFactory::PLAYER>(world, {}, {});
-    apply_class_to_player(world, m_game.player, classes::getStarterClass(m_game.getClassDatabase()));
+
+    m_game.player = EntityFactory::create<EntityFactory::PLAYER>(m_game, world, {}, {});
+
+    const auto &starterClass = m_game.dbClasses().getStarterClass();
+    slots_apply_classes(world, m_game.player, starterClass);
+    for (auto i = 0ul; const auto &spell : starterClass.spells)
+        world.get<SpellSlots>(m_game.player).spells[i++] = m_game.dbSpells().instantiate(spell);
+
+    auto aimingSight = EntityFactory::create<EntityFactory::ID::AIMING_SIGHT>(m_game, world, {}, {});
+
+    engine::DrawableFactory::fix_color(world, aimingSight, {1.f, 0.2f, 0.2f, 0.8f});
+    world.get<AimSight>(m_game.player).entity = aimingSight;
 
     // default camera value to see the generated terrain properly
     m_game.getCamera().setCenter(glm::vec2(13, 22));
     m_game.getCamera().setViewportSize(glm::vec2(25, 17));
 
     onFloorChange.publish(world);
+
+    spdlog::info("Game is started ! Ready to play !");
 }
 
-auto game::GameLogic::apply_class_to_player(entt::registry &world, entt::entity player, const Class &newClass) -> void
+auto game::GameLogic::slots_on_event(entt::registry &world, const engine::Event &e) -> void
 {
     static auto holder = engine::Core::Holder{};
 
-    world.get<AttackDamage>(player).damage = newClass.damage;
+    const auto spell_map = []<typename T>(T k) {
+        struct SpellMap {
+            int key;
+            std::size_t id;
+        };
+        if constexpr (std::is_same<T, engine::Joystick::Buttons>::value) {
+            const auto map = std::to_array<SpellMap>({{engine::Joystick::LS, 0}, {engine::Joystick::RS, 1}});
+            return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
 
-    auto &health = world.get<Health>(player);
+        } else if constexpr (std::is_same<T, engine::Joystick::Axis>::value) {
+            const auto map = std::to_array<SpellMap>({{engine::Joystick::LST, 2}, {engine::Joystick::RST, 3}});
+            return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
 
-    health.current += newClass.maxHealth - health.max;
-    health.max = newClass.maxHealth;
-    world.get<Classes>(player).ids.push_back(newClass.id);
-
-
-    // TODO: actual spell selection ?
-
-    for (const auto &spell : newClass.spells)
-        for (auto &slot : world.get<SpellSlots>(player).spells) {
-            if (slot.has_value()) continue;
-
-            slot = Spell::create(spell);
-            break;
+        } else { // todo : should be engine::Keyboard::Key
+            const auto map = std::to_array<SpellMap>(
+                {{GLFW_KEY_J, 0},
+                 {GLFW_KEY_1, 0},
+                 {GLFW_KEY_2, 2},
+                 {GLFW_KEY_K, 2},
+                 {GLFW_KEY_3, 3},
+                 {GLFW_KEY_L, 3},
+                 {GLFW_KEY_M, 1},
+                 {GLFW_KEY_4, 1},
+                 {GLFW_KEY_SEMICOLON, 1}});
+            return std::find_if(map.begin(), map.end(), [&k](auto &i) { return i.key == k; })->id;
         }
-
-    auto &sp = world.replace<engine::Spritesheet>(
-        player, engine::Spritesheet::from_json(holder.instance->settings().data_folder + newClass.assetGraphPath));
-
-    // Doesn't really matter, will be overridden by correct one soon enough. Prevent segfault of accessing inexistant "default" animation
-    sp.current_animation = "hold_right";
-
-    engine::DrawableFactory::fix_texture(world, player, holder.instance->settings().data_folder + sp.file);
-
-
-    { // Logging
-        std::stringstream spellsId;
-        for (const auto &spell : newClass.spells) spellsId << spell << ", ";
-
-        std::stringstream childrens;
-        for (const auto &child : newClass.children) childrens << m_game.getClassDatabase().at(child).name << ", ";
-
-        spdlog::info(
-            "Applied class '{}' to player. Stats are now : \n"
-            "\tDamage : {:.3}\n"
-            "\tMax health : {:.3}\n"
-            "\tAdded spells {}\n"
-            "\tNew available classes : {}",
-            newClass.name,
-            newClass.damage,
-            newClass.maxHealth,
-            spellsId.str(),
-            childrens.str());
-    }
-}
-
-auto game::GameLogic::on_class_bought(entt::registry &world, entt::entity player, const Class &) -> void
-{
-    world.get<SkillPoint>(player).count--;
-}
-
-auto game::GameLogic::on_player_level_up(entt::registry &world, entt::entity player) -> void
-{
-    world.get<SkillPoint>(player).count++;
-}
-
-auto game::GameLogic::player_movement_update(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
-{
-    constexpr float kSpeed = 10;
+    };
 
     auto player = m_game.player;
 
-    auto &vel = world.get<engine::d2::Velocity>(player);
-    const auto &axis = world.get<ControllerAxis>(player);
+    std::visit(
+        engine::overloaded{
+            [&](const engine::Pressed<engine::Key> &key) {
+                switch (key.source.key) {
+                case GLFW_KEY_DOWN:
+                case GLFW_KEY_S: onMovement.publish(world, player, Direction::DOWN, true); break;
+                case GLFW_KEY_RIGHT:
+                case GLFW_KEY_D: onMovement.publish(world, player, Direction::RIGHT, true); break;
+                case GLFW_KEY_LEFT:
+                case GLFW_KEY_Q:
+                case GLFW_KEY_A: onMovement.publish(world, player, Direction::LEFT, true); break;
+                case GLFW_KEY_UP:
+                case GLFW_KEY_Z:
+                case GLFW_KEY_W: onMovement.publish(world, player, Direction::UP, true); break;
+                case GLFW_KEY_P: {
+                    m_game.setMenu(std::make_unique<menu::UpgradePanel>());
+                } break;
 
-    vel.x = axis.movement.x * kSpeed;
-    vel.y = -axis.movement.y * kSpeed;
-}
+                case GLFW_KEY_SEMICOLON:
+                case GLFW_KEY_1:
+                case GLFW_KEY_2:
+                case GLFW_KEY_3:
+                case GLFW_KEY_4:
+                case GLFW_KEY_J:
+                case GLFW_KEY_K:
+                case GLFW_KEY_L:
+                case GLFW_KEY_M: {
+                    const auto id = spell_map(key.source.key);
 
-auto game::GameLogic::ai_pursue(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
-{
-    const auto pursue = [&world](entt::entity entity, entt::entity target, engine::d2::Velocity &out) {
-        const auto &pos = world.get<engine::d3::Position>(entity);
-        const auto &view_range = world.get<ViewRange>(entity);
+                    auto &spell = world.get<SpellSlots>(player).spells[id];
+                    if (!spell.has_value()) break;
 
-        const auto &target_pos = world.get<engine::d3::Position>(target);
-        const auto diff = glm::vec2{target_pos.x - pos.x, target_pos.y - pos.y};
-
-        if (glm::length(diff) > view_range.range) return false;
-
-        for (float i = 0.0f; i != 10.0f; i++) {
-            const auto in_between =
-                glm::vec2{static_cast<float>(pos.x) + i * diff.x / 10.0f, static_cast<float>(pos.y) + i * diff.y / 10.0f};
-            for (const auto &wall : world.view<entt::tag<"wall"_hs>>()) {
-                const auto &wall_pos = world.get<engine::d3::Position>(wall);
-                const auto &wall_hitbox = world.get<engine::d2::HitboxSolid>(wall);
-
-                if (engine::d2::overlapped<engine::d2::WITHOUT_EDGE>(
-                        engine::d2::HitboxSolid{0.01, 0.01},
-                        engine::d3::Position{in_between.x, in_between.y, 0.0f},
-                        wall_hitbox,
-                        wall_pos)) {
-                    return false;
+                    auto &aim = world.get<AimingDirection>(player).dir;
+                    onSpellCast.publish(world, player, aim, spell.value());
+                } break;
+                default: return;
                 }
-            }
-        }
+            },
+            [&](const engine::Released<engine::Key> &key) {
+                switch (key.source.key) {
+                case GLFW_KEY_DOWN:
+                case GLFW_KEY_S: onMovement.publish(world, player, Direction::DOWN, false); break;
+                case GLFW_KEY_RIGHT:
+                case GLFW_KEY_D: onMovement.publish(world, player, Direction::RIGHT, false); break;
+                case GLFW_KEY_LEFT:
+                case GLFW_KEY_Q:
+                case GLFW_KEY_A: onMovement.publish(world, player, Direction::LEFT, false); break;
+                case GLFW_KEY_UP:
+                case GLFW_KEY_Z:
+                case GLFW_KEY_W: onMovement.publish(world, player, Direction::UP, false); break;
+                default: return;
+                }
+            },
+            [&](const engine::TimeElapsed &dt) {
+                onGameUpdate.publish(world, dt);
+                onGameUpdateAfter.publish(world, dt);
+            },
+            [&](const engine::Moved<engine::JoystickAxis> &joy) {
+                switch (joy.source.axis) {
+                case engine::Joystick::LST:
+                case engine::Joystick::RST: {
+                    const auto id = spell_map(joy.source.axis);
+                    auto &spell = world.get<SpellSlots>(player).spells[id];
+                    if (!spell.has_value()) break;
+                    auto &aim = world.get<AimingDirection>(player).dir;
+                    onSpellCast.publish(world, player, aim, spell.value());
+                } break;
+                case engine::Joystick::LSX:
+                case engine::Joystick::LSY: {
+                    auto joystick = holder.instance->getJoystick(joy.source.id);
 
-        auto result = glm::normalize(diff)* 7.f;
-        out =  {result.x, result.y} ;
+                    const auto newVal =
+                        glm::vec2{(*joystick)->axes[engine::Joystick::LSX], -(*joystick)->axes[engine::Joystick::LSY]};
+                    world.get<ControllerAxis>(player).movement =
+                        glm::length(newVal) > ControllerAxis::kDeadzone ? newVal : glm::vec2{0, 0};
 
-        return true;
-    };
+                } break;
+                case engine::Joystick::RSX:
+                case engine::Joystick::RSY: {
+                    auto joystick = holder.instance->getJoystick(joy.source.id);
 
-    for (auto &i : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, engine::d2::Velocity, game::ViewRange>()) {
-        auto &vel = world.get<engine::d2::Velocity>(i);
-        pursue(i, m_game.player, vel);
-    }
+                    const auto newVal =
+                        glm::vec2{(*joystick)->axes[engine::Joystick::RSX], -(*joystick)->axes[engine::Joystick::RSY]};
+                    world.get<ControllerAxis>(player).aiming =
+                        glm::length(newVal) > ControllerAxis::kDeadzone ? newVal : glm::vec2{0, 0};
+
+                } break;
+                default: break;
+                }
+            },
+            [&](const engine::Pressed<engine::JoystickButton> &joy) {
+                switch (joy.source.button) {
+                case engine::Joystick::CENTER2: m_game.setMenu(std::make_unique<menu::UpgradePanel>()); break;
+                case engine::Joystick::LS:
+                case engine::Joystick::RS: {
+                    const auto id = spell_map(joy.source.button);
+                    auto &spell = world.get<SpellSlots>(player).spells[id];
+                    if (!spell.has_value()) break;
+                    auto &aim = world.get<AimingDirection>(player).dir;
+                    onSpellCast.publish(world, player, aim, spell.value());
+                } break;
+                default: return;
+                }
+            },
+            [&](auto) {},
+        },
+        e);
 }
 
-auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_game_time(entt::registry &, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
+{
+    m_gameTime += static_cast<double>(dt.elapsed.count()) / 1e9;
+}
+
+auto game::GameLogic::slots_update_cooldown(entt::registry &world, const engine::TimeElapsed &dt) -> void
 {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
 
@@ -220,148 +274,13 @@ auto game::GameLogic::cooldown(entt::registry &world, const engine::TimeElapsed 
             } else {
                 cd.remaining_cooldown = 0ms;
                 cd.is_in_cooldown = false;
-                spdlog::warn("attack is up !");
             }
         }
     });
 }
 
-auto game::GameLogic::effect(entt::registry &world, const engine::TimeElapsed &dt) -> void
-{
-    auto player_health = world.get<game::Health>(m_game.player);
-
-    world.view<game::Effect>().each([&](auto &effect) {
-        if (!effect.is_in_effect) return;
-        if (dt.elapsed < effect.remaining_time_effect) {
-            effect.remaining_time_effect -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-            if (effect.effect_name == "stun") spdlog::warn("stun");
-            if (effect.effect_name == "bleed") {
-                /* (1 * (dt * 0.001)) true calcul but didn't found how do this calcul each sec to do it yet so TODO*/
-                player_health.current -= 0.01f;
-            }
-        } else {
-            effect.is_in_effect = false;
-        }
-    });
-}
-
-auto game::GameLogic::enemies_try_attack(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
-{
-    for (auto enemy : world.view<entt::tag<"enemy"_hs>, engine::d3::Position, AttackRange>()) {
-        // TODO: Add brain to AI. current strategy : spam every spell towards the player
-
-        for (auto &spell : world.get<SpellSlots>(enemy).spells) {
-            if (!spell.has_value()) continue;
-
-            const auto &selfPosition = world.get<engine::d3::Position>(enemy);
-            const auto &targetPosition = world.get<engine::d3::Position>(m_game.player);
-
-            const glm::vec2 diff = {targetPosition.x - selfPosition.x, targetPosition.y - selfPosition.y};
-
-            auto &attack_range = world.get<AttackRange>(enemy);
-
-            if (glm::length(diff) <= attack_range.range) {
-                castSpell.publish(world, enemy, {diff.x, diff.y}, spell.value());
-            }
-        }
-    }
-}
-
-auto game::GameLogic::check_collision(entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
-{
-    static auto holder = engine::Core::Holder{};
-
-     for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
-        const auto &spell_pos = world.get<engine::d3::Position>(spell);
-        const auto &spell_box = world.get<engine::d2::HitboxFloat>(spell);
-
-        for (auto &wall : world.view<entt::tag<"wall"_hs>>()) {
-            const auto &wall_pos = world.get<engine::d3::Position>(wall);
-            const auto &wall_box = world.get<engine::d2::HitboxSolid>(wall);
-
-            if (engine::d2::overlapped<engine::d2::WITH_EDGE>(spell_box, spell_pos, wall_box, wall_pos)) {
-                world.destroy(spell);
-                break;
-            }
-        }
-    }
-
-    const auto apply_damage = [this, &world](auto &entity, auto &spell, auto &spell_hitbox, auto &spell_pos, auto &source) {
-        auto &entity_pos = world.get<engine::d3::Position>(entity);
-        auto &entity_hitbox = world.get<engine::d2::HitboxSolid>(entity);
-
-        if (engine::d2::overlapped<engine::d2::WITHOUT_EDGE>(entity_hitbox, entity_pos, spell_hitbox, spell_pos)) {
-            auto &entity_health = world.get<Health>(entity);
-            auto &spell_damage = world.get<AttackDamage>(spell);
-
-            // todo : publish player_took_damage instead
-            entity_health.current -= spell_damage.damage;
-            spdlog::warn("player took damage");
-
-            if (world.has<entt::tag<"player"_hs>>(entity)) {
-                holder.instance->setScreenshake(true, 300ms);
-                ParticuleFactory::create<Particule::HITMARKER>(
-                    world, {(spell_pos.x + entity_pos.x) / 2.0, (entity_pos.y + spell_pos.y) / 2.0});
-            }
-
-            holder.instance->getAudioManager()
-                .getSound(holder.instance->settings().data_folder + "sounds/fire_hit.wav")
-                ->play();
-            world.destroy(spell);
-            if (entity_health.current <= 0.0f) { onEntityKilled.publish(world, entity, source); }
-        }
-    };
-
-    for (auto &spell : world.view<entt::tag<"spell"_hs>>()) {
-        const auto &source = world.get<engine::Source>(spell).source;
-        if (!world.valid(source)) return;
-
-        auto &spell_pos = world.get<engine::d3::Position>(spell);
-        const auto &hitbox = world.get<engine::d2::HitboxFloat>(spell);
-
-        if (world.has<entt::tag<"player"_hs>>(source)) {
-            for (auto &enemy : world.view<entt::tag<"enemy"_hs>>()) {
-                if (world.valid(spell)) apply_damage(enemy, spell, hitbox, spell_pos, source);
-            }
-        } else {
-            for (auto &player : world.view<entt::tag<"player"_hs>>()) {
-                if (world.valid(spell)) apply_damage(player, spell, hitbox, spell_pos, source);
-            }
-        }
-    }
-
-    world.view<KeyPicker, engine::d2::HitboxSolid, engine::d3::Position>().each(
-        [&](KeyPicker &keypicker, const engine::d2::HitboxSolid &pickerhitbox, const engine::d3::Position &pickerPos) {
-            if (keypicker.hasKey) return;
-
-            for (auto &key : world.view<entt::tag<"key"_hs>>()) {
-                auto &keyHitbox = world.get<engine::d2::HitboxFloat>(key);
-                auto &keyPos = world.get<engine::d3::Position>(key);
-
-                if (engine::d2::overlapped<engine::d2::WITH_EDGE>(pickerhitbox, pickerPos, keyHitbox, keyPos)) {
-                    keypicker.hasKey = true;
-
-                    world.destroy(key);
-                }
-            }
-        });
-}
-
-// note : this should be in Core
-auto game::GameLogic::update_lifetime(entt::registry &world, const engine::TimeElapsed &dt) -> void
-{
-    for (auto &i : world.view<Lifetime>()) {
-        auto &lifetime = world.get<Lifetime>(i);
-
-        if (dt.elapsed < lifetime.remaining_lifetime) {
-            lifetime.remaining_lifetime -= std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed);
-        } else {
-            world.destroy(i);
-        }
-    }
-}
-
-auto game::GameLogic::update_particule(entt::registry &world, const engine::TimeElapsed &dt) -> void
+auto game::GameLogic::slots_update_particle(
+    [[maybe_unused]] entt::registry &world, [[maybe_unused]] const engine::TimeElapsed &dt) -> void
 {
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(dt.elapsed).count();
     for (const auto &i : world.view<Particule>()) {
@@ -371,200 +290,147 @@ auto game::GameLogic::update_particule(entt::registry &world, const engine::Time
             const auto r = engine::Color::r(color);
             const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
             const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
-            engine::DrawableFactory::fix_color(world, i, {r, g, b});
+            const auto a = engine::Color::a(color);
+            engine::DrawableFactory::fix_color(world, i, {r, g, b, a});
 
             auto &vel = world.get<engine::d2::Velocity>(i);
             vel.x += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
             vel.y += ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+        } break;
+        case Particule::POSITIVE: {
+            auto &color = world.get<engine::Color>(i);
+            const auto r = engine::Color::r(color);
+            const auto g = std::clamp(engine::Color::g(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+            const auto b = std::clamp(engine::Color::b(color) + 0.0001f * static_cast<float>(elapsed), 0.0f, 1.0f);
+            const auto a = engine::Color::a(color);
+            engine::DrawableFactory::fix_color(world, i, {r, g, b, a});
+
+            auto &vel = world.get<engine::d2::Velocity>(i);
+            vel.x -= ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
+            vel.y -= ((std::rand() & 1) ? -1 : 1) * 0.005 * static_cast<double>(elapsed);
         } break;
         default: break;
         }
     }
 }
 
-auto game::GameLogic::exit_door_interraction(entt::registry &world, const engine::TimeElapsed &) -> void
+auto game::GameLogic::slots_check_floor_change(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    const auto &door = world.view<entt::tag<"exit_door"_hs>>()[0];
-    const auto &doorPosition = world.get<engine::d3::Position>(door);
+    world.view<KeyPicker, engine::d3::Position>().each(
+        [door = world.view<entt::tag<"exit_door"_hs>>().front(), &world, this](const auto &picker, const auto &pos) {
+            if (!picker.hasKey) return;
 
-    const auto doorUsageSystem = [&](const KeyPicker &keypicker, const engine::d3::Position &playerPos) {
-        if (!keypicker.hasKey) return;
-
-        if (engine::d3::distance(doorPosition, playerPos) < kDoorInteractionRange) onFloorChange.publish(world);
-    };
-
-    world.view<KeyPicker, engine::d3::Position>().each(doorUsageSystem);
+            constexpr auto kDoorInteractionRange = 2.0;
+            if (engine::d3::distance(world.get<engine::d3::Position>(door), pos) < kDoorInteractionRange)
+                onFloorChange.publish(world);
+        });
 }
 
-auto game::GameLogic::player_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
+auto game::GameLogic::slots_check_animation_attack_status(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    const auto &vel = world.get<engine::d2::Velocity>(m_game.player);
-    const auto &facing = world.get<Facing>(m_game.player);
-    auto &sp = world.get<engine::Spritesheet>(m_game.player);
-
-    bool isFacingLeft;
-    if (vel.x < 0)
-        isFacingLeft = true;
-    else if (vel.x > 0)
-        isFacingLeft = false;
-    else if (facing.dir.x < 0)
-        isFacingLeft = true;
-    else
-        isFacingLeft = false;
-
-    std::string anim;
-
-    auto isMoving = vel.x != 0 || vel.y != 0;
-
-    if (isMoving)
-        if (isFacingLeft)
-            anim = "run_left";
-        else
-            anim = "run_right";
-    else if (isFacingLeft)
-        anim = "hold_left";
-    else
-        anim = "hold_right";
-
-    if (sp.current_animation != anim) {
-        sp.current_animation = anim;
-        sp.current_frame = 0;
-    }
+    world.view<engine::Spritesheet>(entt::exclude<entt::tag<"spell"_hs>>).each([&](engine::Spritesheet &sprite) {
+        if (sprite.current_animation != "attack_left" && sprite.current_animation != "attack_right") return;
+        auto size = sprite.animations.at(sprite.current_animation).frames.size();
+        if (sprite.current_frame == (size - 1)) sprite.attack_animation_finish = true;
+    });
 }
 
-auto game::GameLogic::update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
+auto game::GameLogic::slots_update_camera(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    static auto holder = engine::Core::Holder{};
-
     auto player = m_game.player;
 
     auto &pos = world.get<engine::d3::Position>(player);
     m_game.getCamera().setCenter({pos.x, pos.y});
-    if (m_game.getCamera().isUpdated()) holder.instance->updateView(m_game.getCamera().getViewProjMatrix());
-}
-
-auto game::GameLogic::boss_anim_update(entt::registry &world, const engine::TimeElapsed &) -> void
-{
-    // we keep it as static to be consister with previous frame on standstill
-    static bool isFacingLeft = false;
-
-    auto queryRes = world.view<entt::tag<"boss"_hs>>();
-
-    if (queryRes.size() == 0) // boss is dead
-        return;
-
-    auto boss = queryRes.front();
-
-    const auto &vel = world.get<engine::d2::Velocity>(boss);
-    auto &sp = world.get<engine::Spritesheet>(boss);
-
-    isFacingLeft = vel.x < 0 || (isFacingLeft && vel.x == 0);
-
-    std::string anim;
-
-    auto isMoving = vel.x != 0 || vel.y != 0;
-
-    if (isMoving)
-        if (isFacingLeft)
-            anim = "run_left";
-        else
-            anim = "run_right";
-    else if (isFacingLeft)
-        anim = "hold_left";
-    else
-        anim = "hold_right";
-
-    if (sp.current_animation != anim) {
-        spdlog::info("Changing anim from {} to {}. Vel is {}, {}", sp.current_animation, anim, vel.x, vel.y);
-        sp.current_animation = anim;
-        sp.current_frame = 0;
+    if (m_game.getCamera().isUpdated()) {
+        engine::Core::Holder{}.instance->updateView(m_game.getCamera().getViewProjMatrix());
     }
 }
 
-auto game::GameLogic::entity_killed(entt::registry &world, entt::entity killed, entt::entity killer) -> void
+// this function will try to update the spritesheet ate everyframe !!! BAD BAD BAD
+auto game::GameLogic::slots_update_animation_spritesheet(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    static auto holder = engine::Core::Holder{};
+    for (const auto &i : world.view<engine::Spritesheet, engine::d2::Velocity>(entt::exclude<entt::tag<"spell"_hs>>)) {
+        const auto &vel = world.get<engine::d2::Velocity>(i);
+        const auto &sp = world.get<engine::Spritesheet>(i);
 
-    if (world.has<entt::tag<"player"_hs>>(killed)) {
-        holder.instance->getAudioManager()
-            .getSound(holder.instance->settings().data_folder + "sounds/player_death.wav")
-            ->play();
+        if ((world.has<engine::Spritesheet>(i) && sp.current_animation == "death") || sp.attack_animation_finish == false)
+            continue;
 
-        m_game.setState(ThePURGE::State::GAME_OVER);
-    } else if (world.has<entt::tag<"enemy"_hs>>(killed)) {
-        spdlog::warn("!! entity killed : dropping xp !!");
+        const auto aiming = [](entt::registry &w, const entt::entity &e) -> std::optional<glm::vec2> {
+            if (w.has<AimingDirection>(e)) {
+                return w.get<AimingDirection>(e).dir;
+            } else {
+                return {};
+            }
+        }(world, i);
 
-        // TODO: actual random utilities
-        bool lazyDevCoinflip = static_cast<std::uint32_t>(killed) % 2;
-        holder.instance->getAudioManager()
-            .getSound(
-                lazyDevCoinflip ? holder.instance->settings().data_folder + "sounds/death_01.wav"
-                                : holder.instance->settings().data_folder + "sounds/death_02.wav")
-            ->play();
-
-        if (world.has<entt::tag<"player"_hs>>(killer)) {
-            // todo : move xp dropped as component or something
-            if (world.has<entt::tag<"boss"_hs>>(killed))
-                addXp(world, killer, 5);
+        const auto isFacingLeft = [](const auto &v, const auto &a) {
+            if (v.x < 0)
+                return true;
+            else if (v.x > 0)
+                return false;
+            else if (a.has_value() && a.value().x < 0)
+                return true;
             else
-                addXp(world, killer, 1);
-        }
+                return false;
+        }(vel, aiming);
 
-        if (world.has<entt::tag<"boss"_hs>>(killed)) {
-            auto pos = world.get<engine::d3::Position>(killed);
-            EntityFactory::create<EntityFactory::KEY>(world, {pos.x, pos.y}, {1.0, 1.0});
-            holder.instance->getAudioManager()
-                .getSound(holder.instance->settings().data_folder + "sounds/boss_death.wav")
-                ->play();
-        }
-        world.destroy(killed);
+        const auto isMoving = vel.x || vel.y;
+
+        // all the entity will be looking on the right by default because they don t have a AimingDirection BAD BAD BAD
+        const auto animation = fmt::format("{}_{}", isMoving ? "run" : "idle", isFacingLeft ? "left" : "right");
+
+        if (sp.current_animation != animation) { engine::DrawableFactory::fix_spritesheet(world, i, animation); }
     }
 }
 
-
-// todo : normalize direction
-auto game::GameLogic::cast_attack(entt::registry &world, entt::entity caster, const glm::dvec2 &direction, Spell &spell)
-    -> void
+auto game::GameLogic::slots_update_player_sigh(entt::registry &world, const engine::TimeElapsed &) -> void
 {
-    if (!spell.cd.is_in_cooldown) {
-        SpellFactory::create(spell.id, world, caster, glm::normalize(direction));
-        spell.cd.remaining_cooldown = spell.cd.cooldown;
-        spell.cd.is_in_cooldown = true;
+    constexpr auto kSightMaxDistance = 1.5;
+    constexpr auto kSightScaleMultiplier = 0.75;
+
+    auto player = m_game.player;
+    auto sight = world.get<AimSight>(player).entity;
+    const auto &aimInput = world.get<ControllerAxis>(player).aiming;
+
+    if (glm::length(aimInput)) {
+        auto &aim = world.get<AimingDirection>(player).dir;
+        auto newAim = glm::normalize(aimInput);
+
+        aim.x = newAim.x;
+        aim.y = newAim.y;
     }
+
+    const auto &playerPos = world.get<engine::d3::Position>(player);
+    auto &sightPos = world.get<engine::d3::Position>(sight);
+    auto &sightScale = world.get<engine::d2::Scale>(sight);
+
+    sightPos.x = playerPos.x + kSightMaxDistance * static_cast<double>(aimInput.x);
+    sightPos.y = playerPos.y + kSightMaxDistance * static_cast<double>(aimInput.y);
+
+    const auto scale = static_cast<double>(glm::length(aimInput));
+    sightScale.x = scale * kSightScaleMultiplier;
+    sightScale.y = scale * kSightScaleMultiplier;
 }
 
-auto game::GameLogic::goToTheNextFloor(entt::registry &world) -> void
+auto game::GameLogic::slots_change_floor(entt::registry &world) -> void
 {
-    world.view<entt::tag<"terrain"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<entt::tag<"enemy"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<entt::tag<"spell"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<entt::tag<"key"_hs>>().each([&](auto &e) { world.destroy(e); });
-    world.view<KeyPicker>().each([&](KeyPicker &kp) { kp.hasKey = false; });
+    Stage{}.clear(world, false);
 
-    auto data = generateFloor(world, m_map_generation_params, m_nextFloorSeed);
+    spdlog::info("Creating the terrain...");
+
+    // keep the stage instance somewhere
+    const auto data = Stage{}.generate(m_game, world, m_map_generation_params, m_nextFloorSeed);
     m_nextFloorSeed = data.nextFloorSeed;
 
-    auto allPlayers = world.view<entt::tag<"player"_hs>>();
+    spdlog::info("Terrain generation done, spawning players...");
 
-    for (auto &player : allPlayers) {
-        auto &pos = world.get<engine::d3::Position>(player);
-
-        pos.x = data.spawn.x + data.spawn.w * 0.5;
-        pos.y = data.spawn.y + data.spawn.h * 0.5;
-    }
-}
-
-auto game::GameLogic::addXp(entt::registry &world, entt::entity player, std::uint32_t xp) -> void
-{
-    auto &level = world.get<Level>(player);
-
-    level.current_xp += xp;
-
-    while (level.current_xp >= level.xp_require) {
-        level.current_xp -= level.xp_require;
-        level.xp_require = static_cast<std::uint32_t>(std::ceil(level.xp_require * 1.2));
-        level.current_level++;
-
-        onPlayerLevelUp.publish(world, player);
+    for (const auto &player : world.view<entt::tag<"player"_hs>>()) {
+        world.emplace_or_replace<engine::d3::Position>(
+            player,
+            engine::d3::Position{
+                data.spawn.x + data.spawn.w * 0.5,
+                data.spawn.y + data.spawn.h * 0.5,
+                EntityFactory::get_z_layer<EntityFactory::Layer::LAYER_PLAYER>()});
     }
 }

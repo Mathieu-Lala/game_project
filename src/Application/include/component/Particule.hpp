@@ -5,8 +5,9 @@ namespace game {
 struct Particule {
     enum ID {
         HITMARKER,
-
-        ID_MAX,
+        NEUTRAL,
+        POSITIVE,
+        ID_MAX
     };
 
     ID id;

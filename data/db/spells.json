@@ -1,0 +1,430 @@
+{
+  "shovel": {
+    "icon": "img/icons/spells/shovel.png",
+    "description": "A weak shovel blow. Everyone have to start somewhere...",
+    "cooldown": 800,
+    "damage": 1,
+    "scale": {
+      "x": 1.5,
+      "y": 1.5
+    },
+    "hitbox": {
+      "x": 0.2,
+      "y": 0.7
+    },
+    "lifetime": 200,
+    "audio_on_cast": "sounds/spells/shovel.wav",
+    "animation": "animation/spells/shovel/shovel.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "sword": {
+    "icon": "img/icons/spells/sword.png",
+    "description": "A powerful sword blow, all soldiers know how to do it",
+    "cooldown": 500,
+    "damage": 3,
+    "scale": {
+      "x": 1.5,
+      "y": 1.5
+    },
+    "hitbox": {
+      "x": 0.3,
+      "y": 0.8
+    },
+    "lifetime": 200,
+    "audio_on_cast": "sounds/spells/sword.wav",
+    "animation": "animation/spells/sword/sword.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": 1.05,
+      "y": 1.05
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "tornado_sword": {
+    "icon": "img/icons/spells/tornado_sword.png",
+    "description": "An impressive circular sword blow, destroying everything around you. Learned from a certain hero in green...",
+    "cooldown": 1500,
+    "damage": 0,
+    "scale": {
+      "x": 5.0,
+      "y": 5.0
+    },
+    "hitbox": {
+      "x": 5.0,
+      "y": 5.0
+    },
+    "lifetime": 1000,
+    "audio_on_cast": "sounds/spells/sword.wav",
+    "animation": "animation/spells/tornado_sword/tornado_sword.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -2,
+      "y": -2
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "sliced"
+    ]
+  },
+  "fireball": {
+    "icon": "img/icons/spells/fireball.png",
+    "description": "Burn your enemies with a powerful fireball",
+    "cooldown": 1500,
+    "damage": 5,
+    "scale": {
+      "x": 2.0,
+      "y": 2.0
+    },
+    "hitbox": {
+      "x": 0.7,
+      "y": 0.7
+    },
+    "lifetime": 2000,
+    "audio_on_cast": "sounds/fire_cast.wav",
+    "animation": "animation/spells/fireball/fireball.data.json",
+    "speed": 7.0,
+    "offset_to_source": {
+      "x": 2,
+      "y": 2
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "firewall": {
+    "icon": "img/icons/spells/firewall.png",
+    "description": "Imprison your opponents within this fire wall dealing continous damages",
+    "cooldown": 5000,
+    "damage": 0,
+    "scale": {
+      "x": 6.0,
+      "y": 6.0
+    },
+    "hitbox": {
+      "x": 5.0,
+      "y": 5.0
+    },
+    "lifetime": 3000,
+    "audio_on_cast": "sounds/fire_cast.wav",
+    "animation": "animation/spells/firewall/firewall.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": 5,
+      "y": 5
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "burn"
+    ]
+  },
+  "rock": {
+    "icon": "",
+    "description": "Creates a powerful rock ball dealing extremely high damages",
+    "cooldown": 2000,
+    "damage": 10,
+    "scale": {
+      "x": 1.0,
+      "y": 1.0
+    },
+    "hitbox": {
+      "x": 1.0,
+      "y": 1.0
+    },
+    "lifetime": 5000,
+    "audio_on_cast": "sounds/fire_cast.wav",
+    "animation": "animation/spells/rock/rock.data.json",
+    "speed": 3.0,
+    "offset_to_source": {
+      "x": 2,
+      "y": 2
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "small_rock": {
+    "icon": "",
+    "description": "Creates a small rock ball dealing extremely high damages",
+    "cooldown": 1000,
+    "damage": 1,
+    "scale": {
+      "x": 0.3,
+      "y": 0.3
+    },
+    "hitbox": {
+      "x": 0.3,
+      "y": 0.3
+    },
+    "lifetime": 5000,
+    "audio_on_cast": "sounds/fire_cast.wav",
+    "animation": "animation/spells/rock/rock.data.json",
+    "speed": 5.0,
+    "offset_to_source": {
+      "x": 0.3,
+      "y": 0.3
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "fireball_blue": {
+    "icon": "",
+    "description": "A fireball for advance mages. Hotter, more powerful, more impressive",
+    "cooldown": 2000,
+    "damage": 5,
+    "scale": {
+      "x": 2.5,
+      "y": 2.5
+    },
+    "hitbox": {
+      "x": 1.2,
+      "y": 1.2
+    },
+    "lifetime": 3000,
+    "audio_on_cast": "sounds/fire_cast.wav",
+    "animation": "animation/spells/fireball_blue/fireball_blue.data.json",
+    "speed": 5.0,
+    "offset_to_source": {
+      "x": 2,
+      "y": 2
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "thunder": {
+    "icon": "",
+    "description": "Electrocute the ennemies with a raging thunder",
+    "cooldown": 2000,
+    "damage": 5,
+    "scale": {
+      "x": 2.5,
+      "y": 2.5
+    },
+    "hitbox": {
+      "x": 1.2,
+      "y": 1.2
+    },
+    "lifetime": 900,
+    "audio_on_cast": "sounds/spells/thunder.wav",
+    "animation": "animation/spells/thunder/thunder.data.json",
+    "speed": 0.1,
+    "offset_to_source": {
+      "x": 2,
+      "y": 2
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "arrow": {
+    "icon": "img/icons/spells/arrow.png",
+    "description": "Shoots a basic arrow. Don't miss your target",
+    "cooldown": 1000,
+    "damage": 1.5,
+    "scale": {
+      "x": 1,
+      "y": 0.2
+    },
+    "hitbox": {
+      "x": 0.7,
+      "y": 0.3
+    },
+    "lifetime": 1000,
+    "audio_on_cast": "sounds/spells/shovel.wav",
+    "animation": "animation/spells/arrow/arrow.data.json",
+    "speed": 11.0,
+    "offset_to_source": {
+      "x": 1.5,
+      "y": 1.5
+    },
+    "type": [
+      "projectile"
+    ]
+  },
+  "triple_arrow": {
+    "icon": "img/icons/spells/triple_arrow.png",
+    "description": "Experienced archer's favorite move. Shooting three arrows in front of you",
+    "cooldown": 2000,
+    "damage": 2,
+    "scale": {
+      "x": 1,
+      "y": 0.2
+    },
+    "hitbox": {
+      "x": 0.7,
+      "y": 0.3
+    },
+    "lifetime": 1000,
+    "audio_on_cast": "sounds/spells/shovel.wav",
+    "animation": "animation/spells/arrow/arrow.data.json",
+    "speed": 8.0,
+    "offset_to_source": {
+      "x": 1.5,
+      "y": 1.5
+    },
+    "quantity": 3,
+    "angle": 0.2,
+    "type": [
+      "projectile"
+    ]
+  },
+  "after_shock": {
+    "icon": "img/icons/spells/freeze.png",
+    "description": "Create a shockwave slowing all the enemies nearby",
+    "cooldown": 2000,
+    "damage": 0,
+    "scale": {
+      "x": 6,
+      "y": 6
+    },
+    "hitbox": {
+      "x": 5,
+      "y": 5
+    },
+    "lifetime": 300,
+    "audio_on_cast": "sounds/spells/after_shock.wav",
+    "animation": "animation/spells/after_shock/after_shock.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "slow"
+    ]
+  },
+  "freeze": {
+    "icon": "",
+    "description": "A cold strike reducing the target's speed",
+    "cooldown": 2000,
+    "damage": 0,
+    "scale": {
+      "x": 3,
+      "y": 3
+    },
+    "hitbox": {
+      "x": 2.5,
+      "y": 2.5
+    },
+    "lifetime": 300,
+    "audio_on_cast": "sounds/spells/freeze.wav",
+    "animation": "animation/spells/after_shock/after_shock.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "slow"
+    ]
+  },
+  "explosion": {
+    "icon": "",
+    "description": "A very powerful and explosive attack. Don't hurt yourself with it",
+    "cooldown": 4000,
+    "damage": 0,
+    "scale": {
+      "x": 3.1,
+      "y": 3.1
+    },
+    "hitbox": {
+      "x": 3.5,
+      "y": 3.5
+    },
+    "lifetime": 460,
+    "audio_on_cast": "sounds/spells/explosion.wav",
+    "animation": "animation/spells/explosion/explosion.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "explosion_effect"
+    ],
+    "target": [
+      "all"
+    ]
+  },
+  "shadow_jump": {
+    "icon": "img/icons/spells/shadow_jump.png",
+    "description": "Move like a shadow to change position quickly",
+    "cooldown": 2000,
+    "damage": 0,
+    "scale": {
+      "x": 3,
+      "y": 3
+    },
+    "hitbox": {
+      "x": 0,
+      "y": 0
+    },
+    "lifetime": 200,
+    "audio_on_cast": "sounds/spells/stick.wav",
+    "animation": "animation/spells/steam/steam.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": -1,
+      "y": -1
+    },
+    "type": [
+      "aoe"
+    ],
+    "effect": [
+      "shadow_jump_effect"
+    ],
+    "target": [
+      "caster"
+    ]
+  },
+  "throw_barrel": {
+    "icon": "img/icons/spells/throw_barrel.png",
+    "description": "Places an explosive barrel waiting to be shot at",
+    "cooldown": 2500,
+    "damage": 0,
+    "scale": {
+      "x": 1.2,
+      "y": 1.2
+    },
+    "hitbox": {
+      "x": 1,
+      "y": 1
+    },
+    "lifetime": 10000,
+    "audio_on_cast": "sounds/spells/stick.wav",
+    "animation": "animation/spells/barrel/barrel.data.json",
+    "speed": 0,
+    "offset_to_source": {
+      "x": 3,
+      "y": 3
+    },
+    "type": [
+      "summoner",
+      "on_death"
+    ],
+    "on_death": "explosion"
+  }
+}

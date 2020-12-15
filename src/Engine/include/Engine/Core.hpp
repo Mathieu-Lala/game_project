@@ -9,7 +9,9 @@
 #include <glm/matrix.hpp>
 
 #include "Engine/resources/LoaderColor.hpp"
+#include "Engine/resources/LoaderVBOTexture.hpp"
 #include "Engine/resources/LoaderTexture.hpp"
+
 #include "Engine/Event/Event.hpp"
 #include "Engine/Settings.hpp"
 #include "Engine/audio/AudioManager.hpp"
@@ -87,6 +89,7 @@ public:
     enum class EventMode {
         RECORD,
         PLAYBACK,
+        PAUSED,
     };
 
     auto close() noexcept -> void { m_is_running = false; }
@@ -102,6 +105,7 @@ public:
     auto window() noexcept -> std::unique_ptr<Window> & { return m_window; }
 
     [[nodiscard]] auto getEventMode() const noexcept { return m_eventMode; }
+    auto setEventMode(EventMode mode) noexcept { m_eventMode = mode; }
 
     [[nodiscard]] auto isRunning() const noexcept -> bool { return m_is_running; }
 
@@ -150,8 +154,9 @@ private:
 
     std::unique_ptr<JoystickManager> m_joystickManager;
 
-    CacheColor m_colors;
-    CacheTexture m_textures;
+    entt::resource_cache<Color> m_colors;
+    entt::resource_cache<VBOTexture> m_vbo_textures;
+    entt::resource_cache<Texture> m_textures;
 
     std::unique_ptr<Shader> m_shader_colored;
     std::unique_ptr<Shader> m_shader_colored_textured;
@@ -172,18 +177,21 @@ template<>
 auto Core::getCache() noexcept -> entt::resource_cache<Color> &;
 
 template<>
+auto Core::getCache() noexcept -> entt::resource_cache<VBOTexture> &;
+
+template<>
 auto Core::getCache() noexcept -> entt::resource_cache<Texture> &;
 
 } // namespace engine
 
 #ifndef NDEBUG
-#    define IF_RECORD(...)                                                                                           \
-        do {                                                                                                         \
-            if (engine::Core::Holder{}.instance->getEventMode() == engine::Core::EventMode::RECORD) { __VA_ARGS__; } \
+#    define IF_NOT_PLAYBACK(...)                                                                                       \
+        do {                                                                                                           \
+            if (engine::Core::Holder{}.instance->getEventMode() != engine::Core::EventMode::PLAYBACK) { __VA_ARGS__; } \
         } while (0)
 #else
-#    define IF_RECORD(...) \
-        do {               \
-            __VA_ARGS__;   \
+#    define IF_NOT_PLAYBACK(...) \
+        do {                     \
+            __VA_ARGS__;         \
         } while (0)
 #endif

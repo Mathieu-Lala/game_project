@@ -61,6 +61,16 @@ template<WithEdgeInHitbox Edge, std::floating_point T, HitboxType Self, HitboxTy
         return aw > bx && ax < bw && ah > by && ay < bh;
 }
 
+template<WithEdgeInHitbox Edge, std::floating_point T, HitboxType Self, HitboxType Other>
+[[nodiscard]] constexpr auto overlapped(
+    const d3::PositionT<T> &self_pos,
+    const HitboxT<T, Self> &self,
+    const d3::PositionT<T> &other_pos,
+    const HitboxT<T, Other> &other) noexcept -> bool
+{
+    return overlapped<Edge, T, Self, Other>(self, self_pos, other, other_pos);
+}
+
 template<HitboxType T = SOLID>
 using Hitbox = HitboxT<double, T>;
 

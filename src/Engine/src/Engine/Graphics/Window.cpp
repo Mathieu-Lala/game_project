@@ -10,7 +10,7 @@
 #include "Engine/audio/AudioManager.hpp" // note : should not require this header here
 #include "Engine/Settings.hpp"           // note : should not require this header here
 #include "Engine/component/Color.hpp"
-#include "Engine/component/Texture.hpp"
+#include "Engine/component/VBOTexture.hpp"
 #include "Engine/Core.hpp"
 
 engine::Window *engine::Window::s_instance{nullptr};
@@ -21,7 +21,7 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
     m_handle{::glfwCreateWindow(size.x, size.y, title.data(), nullptr, nullptr)}, m_ui_context{ImGui::CreateContext()}
 {
     if (m_handle == nullptr) { throw std::logic_error("Engine::Window initialization failed"); }
-    spdlog::info("Engine::Window instanciated");
+    spdlog::trace("Engine::Window instanciated");
 
     ::glfwGetWindowSize(m_handle, &m_size.x, &m_size.y);
     ::glfwGetWindowPos(m_handle, &m_pos.x, &m_pos.y);
@@ -39,10 +39,10 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
 
     // Vsync
     ::glfwSwapInterval(1);
-    ::glEnable(GL_DEPTH_TEST);
+    CALL_OPEN_GL(::glEnable(GL_DEPTH_TEST));
 
-    ::glEnable(GL_BLEND);
-    ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    CALL_OPEN_GL(::glEnable(GL_BLEND));
+    CALL_OPEN_GL(::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     s_instance = this;
 
@@ -52,18 +52,18 @@ engine::Window::Window(glm::ivec2 &&size, const std::string_view title, std::uin
     ::glfwSetKeyCallback(m_handle, callback_eventKeyBoard);
     ::glfwSetMouseButtonCallback(m_handle, callback_eventMousePressed);
     ::glfwSetCursorPosCallback(m_handle, callback_eventMouseMoved);
-    ::glfwSetCharCallback(m_handle, ImGui_ImplGlfw_CharCallback);
+    ::glfwSetCharCallback(m_handle, callback_char);
 
-    // todo : mouse wheel / request_focus ...
+    // todo : scroll / request_focus ...
 
     m_events.emplace_back(OpenWindow{});
 
     if (property & FULLSCREEN) {
-        spdlog::info("Engine::Window Fullscreen");
+        spdlog::trace("Engine::Window Fullscreen");
         setFullscreen(true);
     }
 
-    ::glViewport(0, 0, m_size.x, m_size.y);
+    CALL_OPEN_GL(::glViewport(0, 0, m_size.x, m_size.y));
 }
 
 engine::Window::~Window()
@@ -75,7 +75,7 @@ engine::Window::~Window()
 
     if (m_handle != nullptr) { ::glfwDestroyWindow(m_handle); }
 
-    spdlog::info("Engine::Window destroyed");
+    spdlog::trace("Engine::Window destroyed");
 }
 
 auto engine::Window::draw(const std::function<void()> &drawer) -> void
@@ -121,7 +121,7 @@ bool engine::Window::screenshot(const std::string_view filename)
 {
     GLint viewport[4];
 
-    ::glGetIntegerv(GL_VIEWPORT, viewport);
+    CALL_OPEN_GL(::glGetIntegerv(GL_VIEWPORT, viewport));
     const auto &x = viewport[0];
     const auto &y = viewport[1];
     const auto &width = viewport[2];
@@ -130,8 +130,8 @@ bool engine::Window::screenshot(const std::string_view filename)
     constexpr auto CHANNEL = 4ul;
     std::vector<char> pixels(static_cast<std::size_t>(width * height) * CHANNEL);
 
-    ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    ::glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+    CALL_OPEN_GL(::glPixelStorei(GL_PACK_ALIGNMENT, 1));
+    CALL_OPEN_GL(::glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data()));
 
     std::array<char, CHANNEL> pixel;
     for (auto j = 0; j < height / 2; ++j)
@@ -139,12 +139,17 @@ bool engine::Window::screenshot(const std::string_view filename)
             const auto top = static_cast<std::size_t>(i + j * width) * pixel.size();
             const auto bottom = static_cast<std::size_t>(i + (height - j - 1) * width) * pixel.size();
 
-            std::memcpy(pixel.data(),           pixels.data() + top,    pixel.size());
-            std::memcpy(pixels.data() + top,    pixels.data() + bottom, pixel.size());
-            std::memcpy(pixels.data() + bottom, pixel.data(),           pixel.size());
+            std::memcpy(pixel.data(), pixels.data() + top, pixel.size());
+            std::memcpy(pixels.data() + top, pixels.data() + bottom, pixel.size());
+            std::memcpy(pixels.data() + bottom, pixel.data(), pixel.size());
         }
 
     return !!::stbi_write_png(filename.data(), width, height, 4, pixels.data(), 0);
+}
+
+void engine::Window::setCursorVisible(bool visible) noexcept
+{
+    ::glfwSetInputMode(m_handle, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
 auto engine::Window::isOpen() const -> bool { return ::glfwWindowShouldClose(m_handle) == GLFW_FALSE; }
@@ -155,9 +160,11 @@ auto engine::Window::render() -> void { ::glfwSwapBuffers(m_handle); }
 
 auto engine::Window::setActive() -> void { ::glfwMakeContextCurrent(m_handle); }
 
-auto engine::Window::setSize(glm::ivec2 &&size) -> void {
+auto engine::Window::setSize(glm::ivec2 &&size) -> void
+{
     ::glfwSetWindowSize(m_handle, size.x, size.y);
-    ::glViewport(0, 0, size.x, size.y);
+    CALL_OPEN_GL(::glViewport(0, 0, size.x, size.y));
+    m_size = size;
 }
 
 auto engine::Window::setPosition(glm::ivec2 &&pos) -> void { ::glfwSetWindowPos(m_handle, pos.x, pos.y); }
@@ -167,23 +174,23 @@ auto engine::Window::setCursorPosition(glm::dvec2 &&pos) -> void { ::glfwSetCurs
 
 auto engine::Window::callback_eventClose([[maybe_unused]] GLFWwindow *window) -> void
 {
-    IF_RECORD(s_instance->m_events.emplace_back(CloseWindow{}));
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(CloseWindow{}));
 }
 
 auto engine::Window::callback_eventResized([[maybe_unused]] GLFWwindow *window, int w, int h) -> void
 {
-    IF_RECORD(s_instance->m_events.emplace_back(ResizeWindow{w, h}));
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(ResizeWindow{w, h}));
 }
 
 auto engine::Window::callback_eventMoved([[maybe_unused]] GLFWwindow *window, int x, int y) -> void
 {
-    IF_RECORD(s_instance->m_events.emplace_back(MoveWindow{x, y}));
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(MoveWindow{x, y}));
 }
 
 auto engine::Window::callback_eventKeyBoard([[maybe_unused]] GLFWwindow *window, int key, int scancode, int action, int mods)
     -> void
 {
-    IF_RECORD(
+    IF_NOT_PLAYBACK(
         // clang-format off
         Key k{
             .alt        = !!(mods & GLFW_MOD_ALT), // NOLINT
@@ -206,7 +213,7 @@ auto engine::Window::callback_eventKeyBoard([[maybe_unused]] GLFWwindow *window,
 
 auto engine::Window::callback_eventMousePressed(GLFWwindow *window, int button, int action, [[maybe_unused]] int mods) -> void
 {
-    IF_RECORD(
+    IF_NOT_PLAYBACK(
         // NOLINTNEXTLINE
         double x = 0; double y = 0;
         // NOLINTNEXTLINE
@@ -222,7 +229,12 @@ auto engine::Window::callback_eventMousePressed(GLFWwindow *window, int button, 
 
 auto engine::Window::callback_eventMouseMoved([[maybe_unused]] GLFWwindow *window, double x, double y) -> void
 {
-    IF_RECORD(s_instance->m_events.emplace_back(Moved<Mouse>{x, y}));
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(Moved<Mouse>{x, y}));
+}
+
+auto engine::Window::callback_char([[maybe_unused]] GLFWwindow *window, unsigned int codepoint) -> void
+{
+    IF_NOT_PLAYBACK(s_instance->m_events.emplace_back(Character{codepoint}));
 }
 
 using namespace engine;
@@ -249,4 +261,10 @@ template<>
 auto Window::applyEvent(const Released<Key> &k) -> void
 {
     ImGui_ImplGlfw_KeyCallback(m_handle, k.source.key, k.source.scancode, GLFW_RELEASE, 0 /* todo */);
+}
+
+template<>
+auto Window::applyEvent(const Character &character) -> void
+{
+    ImGui_ImplGlfw_CharCallback(m_handle, character.codepoint);
 }

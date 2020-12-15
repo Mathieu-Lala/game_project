@@ -1,9 +1,9 @@
-#version 330 core
+#version 450 core
 
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
+layout (location = 1) in vec4 aColor;
 
-out vec3 OutColor;
+out vec4 OutColor;
 
 uniform mat4 model;
 uniform mat4 viewProj;
