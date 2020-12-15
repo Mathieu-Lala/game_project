@@ -2,7 +2,7 @@
   "shovel": {
     "icon": "img/icons/spells/shovel.png",
     "description": "A weak shovel blow. Everyone have to start somewhere...",
-    "cooldown": 700,
+    "cooldown": 800,
     "damage": 1,
     "scale": {
       "x": 1.5,
@@ -26,7 +26,7 @@
   },
   "sword": {
     "icon": "img/icons/spells/sword.png",
-    "description": "A powerful sword blow, all soldiers knows how to do it",
+    "description": "A powerful sword blow, all soldiers know how to do it",
     "cooldown": 500,
     "damage": 3,
     "scale": {
@@ -42,8 +42,8 @@
     "animation": "animation/spells/sword/sword.data.json",
     "speed": 0,
     "offset_to_source": {
-      "x": 0.7,
-      "y": 0.7
+      "x": 1.05,
+      "y": 1.05
     },
     "type": [
       "projectile"
@@ -59,8 +59,8 @@
       "y": 5.0
     },
     "hitbox": {
-      "x": 7.0,
-      "y": 7.0
+      "x": 5.0,
+      "y": 5.0
     },
     "lifetime": 1000,
     "audio_on_cast": "sounds/spells/sword.wav",
@@ -79,7 +79,7 @@
   },
   "fireball": {
     "icon": "img/icons/spells/fireball.png",
-    "description": "Burn your enemies with a powerful fireball cast in front of you",
+    "description": "Burn your enemies with a powerful fireball",
     "cooldown": 1500,
     "damage": 5,
     "scale": {
@@ -132,7 +132,7 @@
   },
   "rock": {
     "icon": "",
-    "description": "Creates a powerfull rock ball dealing extremely high damages",
+    "description": "Creates a powerful rock ball dealing extremely high damages",
     "cooldown": 2000,
     "damage": 10,
     "scale": {
@@ -143,10 +143,10 @@
       "x": 1.0,
       "y": 1.0
     },
-    "lifetime": 3000,
+    "lifetime": 5000,
     "audio_on_cast": "sounds/fire_cast.wav",
     "animation": "animation/spells/rock/rock.data.json",
-    "speed": 1.0,
+    "speed": 3.0,
     "offset_to_source": {
       "x": 2,
       "y": 2
@@ -168,7 +168,7 @@
       "x": 0.3,
       "y": 0.3
     },
-    "lifetime": 2000,
+    "lifetime": 5000,
     "audio_on_cast": "sounds/fire_cast.wav",
     "animation": "animation/spells/rock/rock.data.json",
     "speed": 5.0,
@@ -182,7 +182,7 @@
   },
   "fireball_blue": {
     "icon": "",
-    "description": "A fireball for advance mages. More hotter, more powerful, more impressive",
+    "description": "A fireball for advance mages. Hotter, more powerful, more impressive",
     "cooldown": 2000,
     "damage": 5,
     "scale": {
@@ -207,7 +207,7 @@
   },
   "thunder": {
     "icon": "",
-    "description": "Electrocute the ennemis with a raging thunder",
+    "description": "Electrocute the ennemies with a raging thunder",
     "cooldown": 2000,
     "damage": 5,
     "scale": {
@@ -234,7 +234,7 @@
     "icon": "img/icons/spells/arrow.png",
     "description": "Shoots a basic arrow. Don't miss your target",
     "cooldown": 1000,
-    "damage": 3,
+    "damage": 1.5,
     "scale": {
       "x": 1,
       "y": 0.2
@@ -246,7 +246,7 @@
     "lifetime": 1000,
     "audio_on_cast": "sounds/spells/shovel.wav",
     "animation": "animation/spells/arrow/arrow.data.json",
-    "speed": 8.0,
+    "speed": 11.0,
     "offset_to_source": {
       "x": 1.5,
       "y": 1.5
@@ -259,7 +259,7 @@
     "icon": "img/icons/spells/triple_arrow.png",
     "description": "Experienced archer's favorite move. Shooting three arrows in front of you",
     "cooldown": 2000,
-    "damage": 4,
+    "damage": 2,
     "scale": {
       "x": 1,
       "y": 0.2
@@ -402,7 +402,7 @@
   },
   "throw_barrel": {
     "icon": "img/icons/spells/throw_barrel.png",
-    "description": "",
+    "description": "Places an explosive barrel waiting to be shot at",
     "cooldown": 2500,
     "damage": 0,
     "scale": {

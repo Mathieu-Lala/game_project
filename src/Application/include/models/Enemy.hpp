@@ -51,6 +51,7 @@ inline void to_json([[maybe_unused]] nlohmann::json &j, [[maybe_unused]] const E
 
 inline void from_json(const nlohmann::json &j, Enemy &enemy)
 {
+
     enemy.asset = j.at("asset");
     enemy.health = j.at("health");
     enemy.speed = j.at("speed");
