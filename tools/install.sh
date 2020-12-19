@@ -37,7 +37,7 @@ esac
 done
 
 if [[ "$clone" == "True" ]]; then
-    git clone git@github.com:Mathieu-Lala/game_project.git
+    git clone https://github.com/Mathieu-Lala/game_project.git
     cd game_project
 fi
 
